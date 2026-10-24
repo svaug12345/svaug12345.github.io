@@ -2,34 +2,18 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#f6f9f9" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0e1a1c" media="(prefers-color-scheme: dark)">
-<meta name="description" content="Plume transforme ton écriture en police de caractères : imprime la grille et photographie-la, ou dessine chaque lettre sur l'écran.">
-<title>Plume</title>
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icones/icone.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Typographies de la charte SV : Manrope pour le texte, JetBrains Mono pour les chiffres -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Manrope:wght@400;500;700;800&display=swap">
-<link rel="apple-touch-icon" href="icones/icone-192.png">
-<link rel="stylesheet" href="style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- L'appli « Plume » s'appelle désormais « Paraphe » : on redirige vers sa nouvelle adresse.
+     Les polices déjà créées sont conservées (le stockage du navigateur est lié au site, pas au dossier). -->
+<meta http-equiv="refresh" content="0; url=/paraphe/">
+<title>Paraphe</title>
+<script>
+  // On désinstalle l'ancien service worker de /plume/ puis on part vers /paraphe/
+  if ("serviceWorker" in navigator) navigator.serviceWorker.getRegistrations()
+    .then(rs => Promise.all(rs.filter(r => r.scope.endsWith("/plume/")).map(r => r.unregister())))
+    .finally(() => location.replace("/paraphe/"));
+  else location.replace("/paraphe/");
+</script>
 </head>
-<body>
-  <!-- Écran de lancement (charte SV) : le geste se dessine, puis s'efface -->
-  <div class="lancement" id="lancement" aria-hidden="true"><div class="cadre"><span class="geste"></span></div></div>
-  <!-- Trois zones remplies par app.js selon l'écran affiché -->
-  <header class="barre" id="barre"></header>
-  <main id="contenu"><p class="chargement">Chargement…</p></main>
-  <div class="pied" id="pied" hidden></div>
-
-  <script src="version.js"></script>
-  <script src="moteur.js"></script>
-  <script src="grille.js"></script>
-  <script src="stockage.js"></script>
-  <script src="exemples.js"></script>
-  <script src="retouche.js"></script>
-  <script src="app.js"></script>
-</body>
+<body><p>L'appli s'appelle maintenant <a href="/paraphe/">Paraphe</a>.</p></body>
 </html>

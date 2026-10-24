@@ -1,5 +1,5 @@
 /* =============================================================================
-   Plume — génération de la grille à imprimer, en PDF, sans bibliothèque.
+   Paraphe — génération de la grille à imprimer, en PDF, sans bibliothèque.
    -----------------------------------------------------------------------------
    Un PDF est un fichier texte structuré : des « objets » numérotés (catalogue,
    pages, polices, contenus) et une table (xref) qui donne la position en octets

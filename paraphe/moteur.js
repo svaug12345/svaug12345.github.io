@@ -1,5 +1,5 @@
 /* =============================================================================
-   Plume — moteur de fabrication de police (aucune IA, aucun serveur)
+   Paraphe — moteur de fabrication de police (aucune IA, aucun serveur)
    -----------------------------------------------------------------------------
    Deux façons d'obtenir le dessin d'une lettre :
      - une PHOTO de la grille imprimée : on retrouve les 4 carrés noirs des coins,
@@ -519,7 +519,7 @@ const Moteur = (() => {
     os2.u16(4); os2.i16(Math.round(somme / Math.max(1, nbAv))); os2.u16(400); os2.u16(5); os2.u16(0);
     [650, 600, 0, 75, 650, 600, 0, 350, 50, 300].forEach(v => os2.i16(v)); os2.i16(0);
     for (let i = 0; i < 10; i++) os2.u8(0);
-    os2.u32(ur1 >>> 0); os2.u32(ur2); os2.u32(0); os2.u32(0); os2.tag("PLUM");
+    os2.u32(ur1 >>> 0); os2.u32(ur2); os2.u32(0); os2.u32(0); os2.tag("PARA");
     os2.u16(0x40); os2.u16(codes[0]); os2.u16(codes[codes.length - 1]);
     os2.i16(900); os2.i16(-300); os2.i16(100); os2.u16(Math.max(1000, bb[3])); os2.u16(Math.max(350, -bb[1]));
     os2.u32(1); os2.u32(0); os2.i16(350); os2.i16(700); os2.u16(0); os2.u16(32); os2.u16(2);

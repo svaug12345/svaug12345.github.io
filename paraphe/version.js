@@ -1,5 +1,5 @@
 /* =============================================================================
-   Plume — numéro de version, à UN SEUL endroit.
+   Paraphe — numéro de version, à UN SEUL endroit.
    -----------------------------------------------------------------------------
    À augmenter à chaque mise en ligne :
      - 3e chiffre (1.3.0 → 1.3.1) : petite correction ;
@@ -15,5 +15,6 @@
      1.3.0  harmonisation des dessins, caractères de secours, aperçu fixe
      1.3.1  numéro de version centralisé et affiché
      1.4.0  aperçu touchable, retouche vectorielle des lettres (points et poignées), bandeau entre deux lettres
+     1.5.0  l'appli s'appelle désormais Paraphe (adresse /paraphe/, l'ancienne /plume/ redirige)
    ========================================================================== */
-self.PLUME_VERSION = "1.4.0";
+self.PLUME_VERSION = "1.5.0";   // (nom de variable gardé : l'appli s'appelait Plume)

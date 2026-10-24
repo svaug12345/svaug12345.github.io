@@ -1,5 +1,5 @@
 /* =============================================================================
-   Plume — stockage local (IndexedDB), rien ne quitte le téléphone.
+   Paraphe — stockage local (IndexedDB), rien ne quitte le téléphone.
    -----------------------------------------------------------------------------
    Une « police » est un objet :
      { id, nom, cree, modifie, reglages, dessins: { "A": [traits…] }, pages: [Blob|null ×3] }

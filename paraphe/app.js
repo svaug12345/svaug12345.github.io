@@ -1,5 +1,5 @@
 /* =============================================================================
-   Plume — interface.
+   Paraphe — interface.
    -----------------------------------------------------------------------------
    Navigation par l'adresse (#/…), ce qui fait marcher le bouton « retour »
    d'Android tout seul :
@@ -122,7 +122,7 @@ async function calculer(c) {
   if (c.res && c.resVersion === c.version) return c.res;
   const v = c.version, p = c.police.reglages;
   const res = M.construire(source(c, p), p, c.police.nom, c.police.retouches);
-  const famille = "Plume" + (++numeroFace), face = new FontFace(famille, res.ttf.slice().buffer);
+  const famille = "Paraphe" + (++numeroFace), face = new FontFace(famille, res.ttf.slice().buffer);
   await face.load(); document.fonts.add(face);
   if (c.face) document.fonts.delete(c.face);
   Object.assign(c, { face, res: { ...res, famille }, resVersion: v });
@@ -154,7 +154,7 @@ async function vueAccueil() {
     titre: "",
     // Accueil façon charte SV : grand titre « display », une phrase, puis le contenu ;
     // la marque reste discrète, en bas, dans les crédits (le geste seul, couleur ink-muted).
-    contenu: `<div><h2 class="marque-titre">Plume</h2>
+    contenu: `<div><h2 class="marque-titre">Paraphe</h2>
       <p class="sous-titre">Ton écriture devient une police. Imprime la grille et photographie-la, ou dessine chaque lettre au doigt ou au stylet.</p></div>
       ${polices.length ? `<section><p class="etiquette">Mes polices</p><div class="liste">${polices.map(ligne).join("")}</div></section>`
         : `<div class="vide-accueil"><strong>Aucune police pour l'instant.</strong><span>Crée la première : il suffit de lui donner un nom.</span></div>`}

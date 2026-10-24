@@ -1,5 +1,5 @@
 /* =============================================================================
-   Plume — ordre de dessin et exemples de mots.
+   Paraphe — ordre de dessin et exemples de mots.
    -----------------------------------------------------------------------------
    À l'écran, on ne dessine pas dans l'ordre de la grille papier : on commence
    par les MINUSCULES (ce sont elles qui remplissent 95 % d'un texte), puis les

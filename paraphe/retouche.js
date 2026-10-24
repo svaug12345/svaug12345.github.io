@@ -1,5 +1,5 @@
 /* =============================================================================
-   Plume — retouche vectorielle d'une lettre (comme dans Illustrator ou Inkscape).
+   Paraphe — retouche vectorielle d'une lettre (comme dans Illustrator ou Inkscape).
    -----------------------------------------------------------------------------
    1. Le contour automatique d'une lettre contient des centaines de petits points :
       impossible à retoucher à la main. On le SIMPLIFIE en quelques « points
