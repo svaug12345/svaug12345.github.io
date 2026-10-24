@@ -1,11 +1,27 @@
-[{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "io.github.svaug12345.lecteurqr",
-    "sha256_cert_fingerprints": [
-      "DC:65:E8:27:48:11:2E:7E:83:0A:5C:43:68:36:83:1F:7F:B4:26:80:D5:1E:0B:A7:4C:A9:B1:D4:15:C8:8F:6F",
-      "DE:37:2B:CA:AA:A7:21:EE:26:54:A4:B7:9E:58:B7:3A:A9:C0:09:75:8A:EC:C5:19:C5:C9:34:82:81:8A:55:69"
-    ]
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "io.github.svaug12345.lecteurqr",
+      "sha256_cert_fingerprints": [
+        "DC:65:E8:27:48:11:2E:7E:83:0A:5C:43:68:36:83:1F:7F:B4:26:80:D5:1E:0B:A7:4C:A9:B1:D4:15:C8:8F:6F",
+        "DE:37:2B:CA:AA:A7:21:EE:26:54:A4:B7:9E:58:B7:3A:A9:C0:09:75:8A:EC:C5:19:C5:C9:34:82:81:8A:55:69"
+      ]
+    }
+  },
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "io.github.svaug12345.paraphe",
+      "sha256_cert_fingerprints": [
+        "16:C5:AA:63:40:08:6D:60:A7:C0:FD:4A:19:37:86:0B:4C:4E:3A:BC:3C:7C:F6:05:86:E9:96:6F:4C:07:B3:0A"
+      ]
+    }
   }
-}]
+]
