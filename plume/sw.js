@@ -2,10 +2,11 @@
    Plume — service worker : garde une copie de l'appli pour qu'elle marche
    sans connexion. Stratégie « cache d'abord » : on sert la copie locale tout de
    suite, et on la met à jour en arrière-plan quand le réseau est là.
-   Pour publier une nouvelle version : changer VERSION ci-dessous.
+   Pour publier une nouvelle version : augmenter le numéro dans version.js.
    ========================================================================== */
-const VERSION = "plume-v4";
-const FICHIERS = ["./", "index.html", "style.css", "moteur.js", "grille.js", "stockage.js", "exemples.js", "app.js",
+importScripts("version.js");                      // définit self.PLUME_VERSION
+const VERSION = "plume-" + self.PLUME_VERSION;   // nom du cache : change à chaque version
+const FICHIERS = ["./", "index.html", "version.js", "style.css", "moteur.js", "grille.js", "stockage.js", "exemples.js", "app.js",
   "manifest.webmanifest", "icones/icone.svg", "icones/geste.svg", "icones/icone-192.png", "icones/icone-512.png",
   "icones/icone-masquable-512.png"];
 // Polices Google (Manrope, JetBrains Mono) : gardées en cache dès la première visite pour le hors ligne

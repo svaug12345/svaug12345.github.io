@@ -158,7 +158,7 @@ async function vueAccueil() {
       ${polices.length ? `<section><p class="etiquette">Mes polices</p><div class="liste">${polices.map(ligne).join("")}</div></section>`
         : `<div class="vide-accueil"><strong>Aucune police pour l'instant.</strong><span>Crée la première : il suffit de lui donner un nom.</span></div>`}
       <footer class="credits"><span class="geste" role="img" aria-label="SV"></span>
-        <span class="version">v1.0</span><span>·</span><a href="confidentialite.html">Confidentialité</a></footer>`,
+        <span class="version">v${self.PLUME_VERSION}</span><span>·</span><a href="confidentialite.html">Confidentialité</a></footer>`,
     pied: `<button class="btn principal" id="nouvelle">${icone("plus", 20)} Nouvelle police</button>`,
   });
   // les liens <a href="#/p/…"> passent par aller() pour numéroter l'historique
