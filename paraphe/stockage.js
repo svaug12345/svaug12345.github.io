@@ -44,7 +44,7 @@ const Stockage = (() => {
 
   function nouvelle(nom) {
     const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    return { id, nom, cree: Date.now(), modifie: Date.now(), reglages: { ...Moteur.DEFAUT }, dessins: {}, pages: [null, null, null, null], bonus: {}, choix: {}, retouches: {} };
+    return { id, nom, cree: Date.now(), modifie: Date.now(), reglages: { ...Moteur.DEFAUT }, dessins: {}, pages: [null, null, null, null], bonus: {}, choix: {}, retouches: {}, feuilles: {}, reprises: {}, aRefaire: [] };
   }
 
   /** Page redressée (niveaux de gris) → JPEG compact pour le stockage. */

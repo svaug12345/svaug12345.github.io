@@ -118,7 +118,7 @@ section { display: grid; gap: 12px; min-width: 0; }
   aspect-ratio: 1; border: 1px solid var(--trait); border-radius: 10px; background: var(--carte); position: relative;
   display: grid; place-items: center; font-size: 28px; color: var(--encre); cursor: pointer; padding: 0; overflow: hidden;
 }
-.case small { position: absolute; top: 3px; left: 5px; font: 600 10px var(--ui); color: var(--doux); }
+.case small { position: absolute; top: 2px; left: 5px; font: 600 12.5px/1.25 var(--ui); color: var(--doux); }   /* assez grand pour lire les accents (é, è, ê, ë…) */
 .case.vide { border-style: dashed; color: var(--trait); font-family: var(--ui); font-size: 18px; }
 .case .point { position: absolute; bottom: 4px; right: 5px; width: 6px; height: 6px; border-radius: 50%; background: var(--vif); }
 
@@ -279,3 +279,23 @@ body { overflow-x: clip; }
 .version .badge { position: absolute; top: 8px; right: 8px; background: var(--accent); color: var(--sur-accent); font-size: 0.68rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; }
 .case .nb-versions { position: absolute; top: 3px; right: 4px; font: 700 10px var(--mono); color: var(--accent); }
 .message .btn.petit { margin-left: 6px; }
+
+/* ---------- Scanner : viseur de la caméra ---------- */
+.viseur { position: relative; border-radius: var(--rayon); overflow: hidden; background: #000; min-height: 240px; display: grid; place-items: center; }
+.viseur video { display: block; width: 100%; max-height: 62vh; object-fit: contain; }
+.viseur canvas { position: absolute; pointer-events: none; }   /* placé par scanner.js pile sur la vidéo */
+.etat-viseur { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); margin: 0; white-space: nowrap;
+  background: rgba(10, 20, 22, .72); color: #fff; padding: 7px 14px; border-radius: 999px; font-weight: 600; font-size: .92rem; }
+.etat-viseur.ok { background: var(--accent); color: var(--sur-accent); }
+.viseur.flash::after { content: ""; position: absolute; inset: 0; background: #fff; opacity: .7; animation: flash .25s ease-out forwards; }
+@keyframes flash { to { opacity: 0; } }
+.prises { display: flex; flex-wrap: wrap; gap: 8px; }
+.prise { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--trait);
+  background: var(--carte); font-weight: 600; font-size: .9rem; color: var(--doux); }
+.prise.ok { color: var(--accent); border-color: var(--accent); background: var(--accent-doux); }
+
+/* ---------- Lettres à refaire : puces qu'on touche pour retirer ---------- */
+.puces { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.puce { min-width: 48px; height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--trait); background: var(--carte);
+  font: 600 1.25rem var(--ui); color: var(--texte); display: inline-flex; align-items: center; gap: 8px; }
+.puce span { font-size: .9rem; color: var(--doux); }

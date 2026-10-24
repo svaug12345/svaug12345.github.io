@@ -5,7 +5,10 @@
    d'Android tout seul :
      #/                    accueil : liste des polices
      #/p/ID                une police : progression, papier, dessin, caractères
-     #/p/ID/photo/N        photographier la page N (0, 1 ou 2)
+     #/p/ID/scanner        scanner les feuilles à la caméra, à la suite
+     #/p/ID/import         importer des photos ou des PDF
+     #/p/ID/photo/N        voir la page enregistrée N (0 ou 1 ; 2 et 3 : anciennes grilles)
+     #/p/ID/reprise        lettres à refaire sur papier (feuille de reprise)
      #/p/ID/dessin/I       dessiner le caractère n° I
      #/p/ID/apercu         réglages, aperçu et export
    ========================================================================== */
@@ -98,8 +101,13 @@ async function ouvrirPolice(id) {
   police.bonus = police.bonus || {};                          // case bonus n° k → caractère refait
   police.choix = police.choix || {};                          // caractère → version préférée
   while (police.pages.length < 4) police.pages.push(null);    // page 4 (cases bonus) ajoutée en 1.6
+  police.feuilles = police.feuilles || {};                    // feuilles de reprise imprimées (1.8)
+  police.reprises = police.reprises || {};                    // leurs scans (JPEG)
+  police.aRefaire = police.aRefaire || [];                    // lettres de la prochaine feuille de reprise
   const pages = await Promise.all(police.pages.map(b => b ? Stockage.blobVersPage(b) : null));
-  courant = { police, pages, version: 1, res: null, face: null };
+  const reprises = {};
+  for (const [k, b] of Object.entries(police.reprises)) reprises[k] = await Stockage.blobVersPage(b);
+  courant = { police, pages, reprises, version: 1, res: null, face: null };
   return courant;
 }
 let minuteurSauvegarde = null;
@@ -180,7 +188,7 @@ async function vueProjet(c) {
   const f = c.police, nbDessins = Object.keys(f.dessins).length;
   const lignePage = n => {
     const ok = !!f.pages[n], nom = NOMS_PAGES[n];
-    const detail = ok ? "Enregistrée" : n === 2 ? "Facultative : règle l'espacement" : n === 3 ? "Facultative : pour refaire des lettres" : "À photographier";
+    const detail = ok ? "Enregistrée · touche pour la voir" : "Pas encore scannée";
     return `<button class="ligne" data-page="${n}"><span class="pastille ${ok ? "ok" : ""}">${icone(ok ? "coche" : "photo")}</span>
       <span class="corps"><span class="titre">${nom}</span><span class="detail ${ok ? "ok" : ""}">${detail}</span></span>${icone("suivant", 18)}</button>`;
   };
@@ -196,13 +204,18 @@ async function vueProjet(c) {
         <p class="etiquette">Sur papier</p>
         <div class="liste">
           <button class="ligne" id="grille"><span class="pastille">${icone("imprimer")}</span>
-            <span class="corps"><span class="titre">Imprimer la grille</span><span class="detail">3 pages A4 · PDF · cases bonus en bas des pages</span></span>${icone("suivant", 18)}</button>
-          <button class="ligne" id="importer-pdf"><span class="pastille">${icone("page")}</span>
-            <span class="corps"><span class="titre">Importer un PDF scanné</span><span class="detail">Plus net qu'une photo · pages dans n'importe quel ordre</span></span>${icone("suivant", 18)}</button>
-          ${[0, 1, 2].map(lignePage).join("")}
-          ${f.pages[3] ? lignePage(3) : "" /* ancienne grille 1.6 : page 4 de cases bonus */}
+            <span class="corps"><span class="titre">Imprimer la grille</span><span class="detail">2 pages A4 · PDF</span></span>${icone("suivant", 18)}</button>
+          <button class="ligne" id="scanner"><span class="pastille">${icone("photo")}</span>
+            <span class="corps"><span class="titre">Scanner les feuilles</span><span class="detail">Avec la caméra, les pages à la suite</span></span>${icone("suivant", 18)}</button>
+          <button class="ligne" id="importer"><span class="pastille">${icone("page")}</span>
+            <span class="corps"><span class="titre">Importer photos ou PDF</span><span class="detail">Une ou plusieurs pages, dans n'importe quel ordre</span></span>${icone("suivant", 18)}</button>
+          ${[0, 1].map(lignePage).join("")}
+          ${f.pages[2] ? lignePage(2) : "" /* anciennes grilles : page de phrases */}
+          ${f.pages[3] ? lignePage(3) : "" /* ancienne grille 1.6 : page de cases bonus */}
           ${casesBonus(c).length ? `<button class="ligne" id="attribuer"><span class="pastille ok">${icone("coche")}</span>
             <span class="corps"><span class="titre">Lettres des cases bonus</span><span class="detail">${Object.keys(f.bonus).length} case${Object.keys(f.bonus).length > 1 ? "s" : ""} attribuée${Object.keys(f.bonus).length > 1 ? "s" : ""}</span></span>${icone("suivant", 18)}</button>` : ""}
+          <button class="ligne" id="reprise"><span class="pastille ${f.aRefaire.length ? "ok" : ""}">${icone("annuler")}</span>
+            <span class="corps"><span class="titre">Refaire des lettres sur papier</span><span class="detail">${f.aRefaire.length ? `${f.aRefaire.length} lettre${f.aRefaire.length > 1 ? "s" : ""} à imprimer : ${esc(f.aRefaire.join(" "))}` : "Une feuille avec seulement les lettres à refaire"}</span></span>${icone("suivant", 18)}</button>
         </div>
       </section>
       <section>
@@ -229,7 +242,9 @@ async function vueProjet(c) {
     aller(`#/p/${f.id}/dessin/${M.CARS.indexOf(ch)}`);
   };
   document.querySelectorAll(".galerie .case").forEach(b => b.onclick = () => choisirLettre(c, M.CARS[b.dataset.i]));
-  $("#importer-pdf").onclick = () => aller(`#/p/${f.id}/pdf`);
+  $("#scanner").onclick = () => aller(`#/p/${f.id}/scanner`);
+  $("#importer").onclick = () => aller(`#/p/${f.id}/import`);
+  $("#reprise").onclick = () => aller(`#/p/${f.id}/reprise`);
   if ($("#attribuer")) $("#attribuer").onclick = () => aller(`#/p/${f.id}/bonus`);
   $("#apercu").onclick = () => aller(`#/p/${f.id}/apercu`);
   $("#options").onclick = () => optionsPolice(c);
@@ -288,17 +303,21 @@ async function optionsPolice(c) {
 }
 
 async function grilleAImprimer(nom) {
-  const pdf = Grille.pdf(nom), fichier = `Grille ${nom}.pdf`;
-  const f = new File([pdf], fichier, { type: "application/pdf" });
-  // Le partage permet d'envoyer directement vers une appli d'impression, Drive, un e-mail…
-  if (navigator.canShare && navigator.canShare({ files: [f] })) {
-    const choix = await demanderChoix("La grille à imprimer", "Imprime-la à 100 % (sans « ajuster à la page »), au feutre noir de préférence.",
-      [["partager", "Partager ou imprimer"], ["telecharger", "Télécharger le PDF"]]);
-    if (choix === "partager") { try { await navigator.share({ files: [f], title: fichier }); } catch (e) { /* partage annulé */ } return; }
+  await partagerOuTelecharger(Grille.pdf(nom), `Grille ${nom}.pdf`, "application/pdf",
+    "La grille à imprimer", "2 pages A4. Imprime-les à 100 % (sans « ajuster à la page »), au feutre noir de préférence.");
+}
+/** Propose de partager un fichier (impression, Drive, e-mail, WhatsApp…) ou de le télécharger.
+    Le partage passe par la feuille de partage d'Android (Web Share). Certains types de fichiers
+    sont refusés par le navigateur : dans ce cas on télécharge directement. */
+async function partagerOuTelecharger(octets, nomFichier, type, titre, texte) {
+  const fichier = new File([octets], nomFichier, { type });
+  if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
+    const choix = await demanderChoix(titre, texte, [["partager", "Partager ou imprimer"], ["telecharger", "Télécharger"]]);
+    if (choix === "partager") { try { await navigator.share({ files: [fichier], title: nomFichier }); } catch (e) { /* partage annulé */ } return; }
     if (choix !== "telecharger") return;
   }
-  telecharger(pdf, fichier, "application/pdf");
-  toast("Grille enregistrée dans Téléchargements");
+  telecharger(octets, nomFichier, type);
+  toast(`${nomFichier} enregistré dans Téléchargements`);
 }
 function demanderChoix(titre, texte, choix) {
   return new Promise(fin => {
@@ -327,49 +346,21 @@ function dessinerPage(cv, page, n) {
   else for (let r = 0; r < M.PHRASES.length; r++) { const y = (y0 + r * M.CASE + M.CASE * (1 - M.LB)) * k; cx.beginPath(); cx.moveTo(x0 * k, y); cx.lineTo((x0 + M.COLS * M.CASE) * k, y); cx.stroke(); }
 }
 
+/** Une page enregistrée, avec le quadrillage théorique par-dessus (il doit tomber sur les cases).
+    Pas encore de page : on va directement au scanner. */
 function vuePhoto(c, n) {
-  const f = c.police, existe = c.pages[n];
+  const f = c.police, page = c.pages[n];
+  if (!page) return aller(`#/p/${f.id}/scanner`, true);
   rendre({
     titre: NOMS_PAGES[n], retour: `#/p/${f.id}`,
-    contenu: `<div><h2 class="titre-page">Photographie la page ${n + 1}</h2>
-        <p class="sous-titre">L'appli retrouve les 4 carrés noirs des coins et redresse la feuille toute seule.</p></div>
-      <ul class="conseils"><li>Feuille bien à plat, en pleine lumière, sans ombre du téléphone.</li>
-        <li>Les 4 carrés noirs doivent être visibles, la feuille peut être un peu de travers.</li>
-        <li>Remplis bien l'écran avec la feuille.</li></ul>
-      <p class="message" id="message" role="status">${existe ? "Page enregistrée. Le quadrillage doit tomber pile sur les cases." : ""}</p>
-      <canvas class="page-scannee" id="rendu" ${existe ? "" : "hidden"}></canvas>
-      <input type="file" id="camera" accept="image/*" capture="environment" hidden>
-      <input type="file" id="fichier" accept="image/*" hidden>`,
-    pied: `<button class="btn discret" id="choisir" aria-label="Choisir dans la galerie">${icone("galerie", 20)}</button>
-      <button class="btn principal" id="prendre">${icone("photo", 20)} ${existe ? "Reprendre" : "Prendre la photo"}</button>`,
+    contenu: `<p class="aide">Le quadrillage vert doit tomber pile sur les cases imprimées. Sinon, scanne la feuille à nouveau.</p>
+      <canvas class="page-scannee" id="rendu"></canvas>`,
+    pied: `<button class="btn discret" id="importer">${icone("page", 20)} Importer</button>
+      <button class="btn principal" id="rescanner">${icone("photo", 20)} Scanner à nouveau</button>`,
   });
-  if (existe) dessinerPage($("#rendu"), existe, n);
-  $("#prendre").onclick = () => $("#camera").click();
-  $("#choisir").onclick = () => $("#fichier").click();
-  const traiter = async e => {
-    const fichier = e.target.files[0]; e.target.value = ""; if (!fichier) return;
-    const msg = $("#message"); msg.className = "message"; msg.textContent = "Analyse de la photo…";
-    await new Promise(r => setTimeout(r, 30));                    // laisse le message s'afficher
-    let page;
-    try { const bmp = await createImageBitmap(fichier); page = M.redresser(M.enGris(bmp, bmp.width, bmp.height)); }
-    catch (err) { page = { erreur: "Cette image n'a pas pu être lue." }; }
-    if (page.erreur) { msg.className = "message erreur"; msg.textContent = page.erreur + " Reprends la photo en suivant les conseils."; return; }
-    // Grilles récentes : les barres du coin disent quelle page c'est. Si ce n'est pas la bonne, on le signale.
-    const id = M.identifierPage(page);
-    if (id.num && id.num - 1 !== n) {
-      msg.className = "message erreur";
-      msg.innerHTML = `Cette photo ressemble à la <strong>${esc(NOMS_PAGES[id.num - 1])}</strong>. <button class="btn petit" id="ailleurs">L'enregistrer comme page ${id.num}</button>`;
-      $("#ailleurs").onclick = async () => { await enregistrerPage(c, id.num - 1, page); toast(`Enregistrée comme page ${id.num}`); revenir(`#/p/${f.id}`); };
-      return;
-    }
-    await enregistrerPage(c, n, page);
-    $("#rendu").hidden = false; dessinerPage($("#rendu"), page, n);
-    msg.className = "message ok"; msg.textContent = "Page enregistrée. Vérifie que le quadrillage tombe pile sur les cases.";
-    // page avec des cases bonus (ancienne page 4, ou pages 1-2 de la grille 4) : on propose de les attribuer
-    if (n === 3 || M.geo(page).bonus) { msg.innerHTML += ` <button class="btn petit" id="vers-bonus">Indiquer les lettres des cases bonus</button>`; $("#vers-bonus").onclick = () => aller(`#/p/${f.id}/bonus`); }
-    $("#prendre").innerHTML = `${icone("photo", 20)} Reprendre`;
-  };
-  $("#camera").onchange = traiter; $("#fichier").onchange = traiter;
+  dessinerPage($("#rendu"), page, n);
+  $("#rescanner").onclick = () => aller(`#/p/${f.id}/scanner`, true);
+  $("#importer").onclick = () => aller(`#/p/${f.id}/import`, true);
 }
 
 // ---------- Dessiner un caractère ----------
@@ -401,7 +392,7 @@ function vueDessin(c, i) {
   const feuille = $("#feuille"), fond = $("#fond"), encre = $("#encre");
   const couleur = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   // Si le caractère vient déjà d'une photo, on l'affiche en filigrane
-  const scan = (() => { const pg = c.pages[Math.floor(i / M.PAR_PAGE)]; return pg ? M.masqueScan(pg, i % M.PAR_PAGE, p) : null; })();
+  const scan = (() => { const cg = caseGrille(c, ch); return cg ? M.masqueScan(cg.page, cg.idx, p) : null; })();
   $("#info").textContent = scan && !traits.length ? "En filigrane : la version de ta photo. Dessine pour la remplacer." : "";
 
   function dimensionner() {
@@ -511,6 +502,32 @@ const REGLAGES = {
 };
 let texteEssai = null, tailleEssai = 34;
 
+/** Partager la police. Android (Chrome) refuse de partager un fichier .ttf : on essaie quand
+    même (d'autres navigateurs l'acceptent), sinon on partage un PDF « spécimen » qui montre la
+    police ET la contient en pièce jointe. Le .ttf est aussi joint quand c'est possible. */
+async function partagerPolice(c, res) {
+  const f = c.police, nom = f.nom, present = ch => !res.manquants.includes(ch) || res.remplaces.includes(ch);
+  const ttf = new File([res.ttf], `${nom}.ttf`, { type: "font/ttf" });
+  // Largeur de chaque caractère (millièmes de la taille du texte), pour le PDF
+  const largeurs = { " ": f.reglages.espace };
+  for (const [ch, g] of Object.entries(res.glyphes)) largeurs[ch] = g.avance;
+  const garder = t => [...t].filter(ch => ch === " " || present(ch)).join("");
+  const lignes = [[34, nom], [22, garder("ABCDEFGHIJKLMNOPQRSTUVWXYZ")], [22, garder("abcdefghijklmnopqrstuvwxyz")],
+    [20, garder("0123456789 éèêëàâùûôîïç ÉÈÀÇ")], [20, garder(".,;:!?'\"-()«»&@€$%/+=*#")],
+    ...(texteEssai || "").split("\n").filter(Boolean).map(l => [18, l]),
+    [16, "Portez ce vieux whisky au juge blond qui fume."], [12, "Voix ambiguë d'un cœur qui, au zéphyr, préfère les jattes de kiwis."]];
+  const pdf = new File([Grille.specimen(nom, res.ttf, largeurs, lignes)], `Police ${nom}.pdf`, { type: "application/pdf" });
+  const essais = [[ttf, pdf], [ttf], [pdf]];
+  for (const fichiers of essais) {
+    if (!(navigator.canShare && navigator.canShare({ files: fichiers }))) continue;
+    try { await navigator.share({ files: fichiers, title: `La police de ${nom}` }); } catch (e) { /* partage annulé */ }
+    return;
+  }
+  // Pas de partage possible ici (ordinateur…) : on télécharge les deux fichiers.
+  telecharger(res.ttf, `${nom}.ttf`, "font/ttf"); telecharger(Grille.specimen(nom, res.ttf, largeurs, lignes), `Police ${nom}.pdf`, "application/pdf");
+  toast("Police et spécimen enregistrés dans Téléchargements");
+}
+
 function vueApercu(c) {
   const f = c.police, p = f.reglages;
   const aPhotos = c.pages.some(Boolean), aDessins = Object.keys(f.dessins).length > 0;
@@ -599,8 +616,11 @@ function vueApercu(c) {
   $("#exporter").onclick = async () => {
     const res = await calculer(c);
     if (res.manquants.length === M.CARS.length) { toast("Il n'y a encore aucun caractère."); return; }
-    telecharger(res.ttf, `${f.nom}.ttf`, "font/ttf");
-    toast("Police enregistrée dans Téléchargements");
+    const choix = await demanderChoix("Exporter la police",
+      "Télécharge le fichier .ttf pour l'installer, ou partage-la (e-mail, WhatsApp…).",
+      [["partager", "Partager"], ["telecharger", "Télécharger le .ttf"]]);
+    if (choix === "telecharger") { telecharger(res.ttf, `${f.nom}.ttf`, "font/ttf"); toast("Police enregistrée dans Téléchargements"); }
+    if (choix === "partager") await partagerPolice(c, res);
   };
   recalculer();
 }
@@ -617,7 +637,8 @@ async function choisirLettre(c, ch) {
       <div class="lettre-choisie"><span style="font-family:'${res.famille}', var(--ui)">${esc(ch)}</span><div><h2>« ${esc(ch)} »</h2><p class="aide">${etat}</p></div></div>
       ${!manque && !remplace ? `<button class="btn plein principal" value="retoucher">${icone("stylo", 18)} Retoucher les points</button>` : ""}
       ${nbVersions(c, ch) > 1 ? `<button class="btn plein" value="versions">Choisir la version (${nbVersions(c, ch)})</button>` : ""}
-      <button class="btn plein ${manque || remplace ? "principal" : ""}" value="dessiner">${manque || remplace ? "Dessiner" : "Redessiner"}</button>
+      <button class="btn plein ${manque || remplace ? "principal" : ""}" value="dessiner">${manque || remplace ? "Dessiner" : "Redessiner"} à l'écran</button>
+      <button class="btn plein" value="papier">${f.aRefaire.includes(ch) ? "Déjà sur la feuille à refaire" : "Refaire sur papier"}</button>
       ${f.retouches[ch] ? `<button class="btn plein danger" value="annuler">Annuler la retouche</button>` : ""}
       <button class="btn plein discret" value="">Fermer</button></form>`;
   document.body.append(d); d.showModal();
@@ -626,6 +647,11 @@ async function choisirLettre(c, ch) {
     if (v === "retoucher") aller(`#/p/${f.id}/retouche/${i}`);
     if (v === "dessiner") aller(`#/p/${f.id}/dessin/${i}`);
     if (v === "versions") aller(`#/p/${f.id}/versions/${i}`);
+    if (v === "papier") {
+      // on l'ajoute à la prochaine feuille de reprise, et on y va (pour en ajouter d'autres ou imprimer)
+      if (!f.aRefaire.includes(ch)) { f.aRefaire.push(ch); modifie(c); }
+      aller(`#/p/${f.id}/reprise`);
+    }
     if (v === "annuler") { delete f.retouches[ch]; modifie(c); toast("Retouche annulée"); routeur(); }
   });
 }
@@ -640,7 +666,9 @@ async function routeur() {
     const [, , ecran, n] = morceaux;
     if (!ecran) return vueProjet(c);
     if (ecran === "photo" && +n >= 0 && +n <= 3) return vuePhoto(c, +n);
-    if (ecran === "pdf") return vueImportPDF(c);
+    if (ecran === "pdf" || ecran === "import") return vueImport(c);
+    if (ecran === "scanner") return vueScanner(c);
+    if (ecran === "reprise") return vueReprise(c);
     if (ecran === "bonus") return vueBonus(c);
     if (ecran === "versions" && +n >= 0 && +n < M.CARS.length) return vueVersions(c, +n);
     if (ecran === "dessin" && +n >= 0 && +n < M.CARS.length) return vueDessin(c, +n);

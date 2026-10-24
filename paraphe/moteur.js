@@ -140,6 +140,24 @@ const Moteur = (() => {
     return choisis.map(c => [c.cx, c.cy]);
   }
 
+  /** Pour le viseur de la caméra : image (petite, ~480 px) → les repères trouvés.
+      { coins: 4 points [x, y] (ou null), nb: combien de coins ont un carré candidat }.
+      Rapide : on travaille sur une image réduite, plusieurs fois par seconde. */
+  function viser(source, largeur, hauteur) {
+    const scan = normaliser(enGris(source, largeur, hauteur, 480));
+    const coins = trouverReperes(scan), k = largeur / scan.w;
+    if (coins) return { coins: coins.map(([x, y]) => [x * k, y * k]), nb: 4 };
+    // combien de coins de l'image ont un carré plausible : pour guider (« 3 carrés sur 4 »)
+    const t = Math.min(otsu(scan.gris), 140), bin = new Uint8Array(scan.w * scan.h);
+    for (let i = 0; i < bin.length; i++) bin[i] = scan.gris[i] < t ? 1 : 0;
+    const cand = taches(bin, scan.w, scan.h).filter(c => {
+      const bw = c.x1 - c.x0 + 1, bh = c.y1 - c.y0 + 1, cote = Math.max(bw, bh);
+      return cote > scan.w / 160 && cote < scan.w / 12 && c.aire > 0.65 * bw * bh && Math.min(bw, bh) > 0.6 * cote;
+    });
+    const quarts = new Set(cand.map(c => (c.cx > scan.w / 2 ? 1 : 0) + (c.cy > scan.h / 2 ? 2 : 0)));
+    return { coins: null, nb: quarts.size };
+  }
+
   /** Homographie : les 8 coefficients qui envoient 4 points « dst » sur 4 points « src ». */
   function homographie(dst, src) {
     const A = [], b = [];
@@ -183,10 +201,18 @@ const Moteur = (() => {
   // Grille 4 (depuis la 1.7) : les mêmes 63 cases, un peu plus petites (23,5 mm), PLUS une rangée
   // de 7 cases bonus en bas de chaque page, sous un bandeau d'explication.
   // La page dit elle-même quel gabarit elle utilise grâce aux barres de numéro (voir identifierPage).
+  // Grille 5 (depuis la 1.8) : 2 pages seulement (plus de page de phrases), 8 colonnes de cases
+  // de 22,5 mm, les caractères rangés par SECTION (majuscules, minuscules…), une rangée de
+  // 8 cases bonus en bas. La « feuille de reprise » (lettres à refaire) a les mêmes cases.
   const CASE4 = 23.5 * MM, BANDE4 = 8 * MM, NB_BONUS = COLS;
+  const CASE5 = 22.5 * MM, ENTETE5 = 26 * MM;
+  const gabarit = (num, C, cols, rows, y0, bande, bonus) =>
+    ({ num, C, cols, rows, n: cols * rows, x0: (PW - cols * C) / 2, y0, bande, bonus });
   const GABARITS = {
-    3: { num: 3, C: CASE, x0: (PW - COLS * CASE) / 2, y0: MARGE + HAUT_ENTETE, bande: 0, bonus: 0 },
-    4: { num: 4, C: CASE4, x0: (PW - COLS * CASE4) / 2, y0: MARGE + HAUT_ENTETE, bande: BANDE4, bonus: NB_BONUS },
+    3: gabarit(3, CASE, COLS, ROWS, MARGE + HAUT_ENTETE, 0, 0),
+    4: gabarit(4, CASE4, COLS, ROWS, MARGE + HAUT_ENTETE, BANDE4, COLS),
+    5: gabarit(5, CASE5, 8, 9, MARGE + ENTETE5, BANDE4, 8),
+    R: gabarit("R", CASE5, 8, 9, MARGE + ENTETE5, 0, 0),
   };
   /** Gabarit d'une page scannée : reconnu une seule fois puis mémorisé sur la page. */
   function geo(page) {
@@ -195,16 +221,47 @@ const Moteur = (() => {
     return GABARITS[page.gabarit];
   }
 
-  /** Coin haut-gauche (en points) de la case n° idx. Les cases 63 à 69 sont la rangée bonus
-      (grille 4) : elles sont décalées vers le bas de la hauteur du bandeau. */
+  /** Coin haut-gauche (en points) de la case n° idx. Les cases après les n cases de lettres
+      sont la rangée bonus : elles sont décalées vers le bas de la hauteur du bandeau. */
   function rectCase(idx, g = GABARITS[3]) {
     if (g && g.gris) g = geo(g);                    // on accepte aussi une page en paramètre
-    const col = idx % COLS, lig = Math.floor(idx / COLS);
-    return { x0: g.x0 + col * g.C, y0: g.y0 + lig * g.C + (lig >= ROWS ? g.bande : 0), C: g.C };
+    const col = idx % g.cols, lig = Math.floor(idx / g.cols);
+    return { x0: g.x0 + col * g.C, y0: g.y0 + lig * g.C + (lig >= g.rows ? g.bande : 0), C: g.C };
   }
+
+  // ---------- Quel caractère dans quelle case ? (la « disposition ») ----------
+  // Grilles 3 et 4 : les 126 caractères à la suite, 63 par page, dans l'ordre de CARS.
+  // Grille 5 : par sections. Chaque section commence sur une nouvelle ligne si la page a
+  // encore la place ; sinon elle suit la précédente et un trait épais les sépare.
+  const SECTIONS5 = [
+    [["Majuscules", "ABCDEFGHIJKLMNOPQRSTUVWXYZ"], ["Minuscules", "abcdefghijklmnopqrstuvwxyz"], ["Chiffres", "0123456789"]],
+    [["Minuscules accentuées", "éèêëàâäùûüôöîïçœæ"], ["Majuscules accentuées", "ÉÈÊËÀÂÄÙÛÜÔÖÎÏÇŒÆ"],
+     ["Signes", ".,;:!?'\"-_()[]«»&@€$%/+=*#<>°~"]],
+  ];
+  /** Place les sections d'une page dans cols × rows cases → { cars: [car|null], section: [n°|-1] }. */
+  function placer(sections, cols, total) {
+    const cars = Array(total).fill(null), section = Array(total).fill(-1);
+    let pos = 0;
+    sections.forEach(([, txt], k) => {
+      const t = [...txt], reste = sections.slice(k).reduce((s, [, x]) => s + [...x].length, 0);
+      const ligne = Math.ceil(pos / cols) * cols;           // début de la ligne suivante
+      if (k > 0 && ligne + reste <= total) pos = ligne;     // assez de place : on passe à la ligne
+      t.forEach(ch => { cars[pos] = ch; section[pos] = k; pos++; });
+    });
+    return { cars, section };
+  }
+  const DISPO5 = SECTIONS5.map(secs => placer(secs, 8, 72));
+  /** Disposition de la page n (0 ou 1) d'un gabarit ; pour la feuille de reprise, la liste de ses lettres. */
+  function disposition(g, n, lettres) {
+    if (g.num === 5) return DISPO5[n];
+    if (g.num === "R") return { cars: Array.from({ length: g.n }, (_, i) => (lettres || [])[i] ?? null), section: Array(g.n).fill(0) };
+    const cars = Array.from({ length: PAR_PAGE }, (_, i) => CARS[n * PAR_PAGE + i] ?? null);
+    return { cars, section: cars.map(() => 0) };
+  }
+
   /** Toutes les cases d'une page (lettres puis bonus), pour dessiner le quadrillage de contrôle. */
   function casesPage(page) {
-    const g = geo(page); return Array.from({ length: PAR_PAGE + g.bonus }, (_, i) => rectCase(i, g));
+    const g = geo(page); return Array.from({ length: g.n + g.bonus }, (_, i) => rectCase(i, g));
   }
 
   // On découpe la case 0,3 mm à l'intérieur de son cadre. (Avant : 1,2 mm, et les queues
@@ -351,6 +408,19 @@ const Moteur = (() => {
     const droite = PW - MARGE / 2 - REP - 3 * MM, haut = MARGE / 2 + (REP - MARQUE.h) / 2;
     return Array.from({ length: k }, (_, i) => ({ x: droite - i * MARQUE.pas - MARQUE.l, y: haut, w: MARQUE.l, h: MARQUE.h }));
   }
+  /** Marques en haut à GAUCHE (à droite du repère) : numéro d'une feuille de reprise (1 à 5). */
+  function marquesGauche(k) {
+    const gauche = MARGE / 2 + REP + 3 * MM, haut = MARGE / 2 + (REP - MARQUE.h) / 2;
+    return Array.from({ length: k }, (_, i) => ({ x: gauche + i * MARQUE.pas, y: haut, w: MARQUE.l, h: MARQUE.h }));
+  }
+  /** Compte les barres noires dans le rectangle qui contient les rectangles r. */
+  function compterBarres(page, r) {
+    const xs = r.flatMap(q => [q.x, q.x + q.w]), x0 = Math.min(...xs) - 1 * MM, x1 = Math.max(...xs) + 1 * MM;
+    const y0 = r[0].y - 1 * MM, y1 = r[0].y + r[0].h + 1 * MM;
+    const W = Math.round((x1 - x0) * PX), H = Math.round((y1 - y0) * PX), bin = new Uint8Array(W * H);
+    for (let v = 0; v < H; v++) for (let u = 0; u < W; u++) bin[v * W + u] = page.gris[(Math.round(y0 * PX) + v) * page.w + Math.round(x0 * PX) + u] < 110 ? 1 : 0;
+    return taches(bin, W, H).filter(t => t.aire > 0.35 * MARQUE.l * MARQUE.h * PX * PX).length;
+  }
 
   /** Assombrissement moyen d'un rectangle de la page redressée (0 = blanc, 255 = noir). */
   function noirceur(page, x, y, w, h) {
@@ -368,12 +438,12 @@ const Moteur = (() => {
     return { ...res, gabarit: res.gabarit || 3 };
   }
   // Nombre de barres → page : 1 et 2 = pages de lettres (grille 3), 3 = phrases,
-  // 4 = ancienne page de cases bonus, 5 et 6 = pages 1 et 2 de la grille 4 (avec rangée bonus).
+  // 4 = ancienne page de cases bonus, 5 et 6 = pages 1 et 2 de la grille 4,
+  // 7 et 8 = pages 1 et 2 de la grille 5, 9 = feuille de reprise (son numéro : barres à gauche).
   function identifierBrut(page) {
-    const r = marques(6), x0 = r[5].x - 1 * MM, x1 = r[0].x + r[0].w + 1 * MM, y0 = r[0].y - 1 * MM, y1 = r[0].y + r[0].h + 1 * MM;
-    const W = Math.round((x1 - x0) * PX), H = Math.round((y1 - y0) * PX), bin = new Uint8Array(W * H);
-    for (let v = 0; v < H; v++) for (let u = 0; u < W; u++) bin[v * W + u] = page.gris[(Math.round(y0 * PX) + v) * page.w + Math.round(x0 * PX) + u] < 110 ? 1 : 0;
-    const barres = taches(bin, W, H).filter(t => t.aire > 0.35 * MARQUE.l * MARQUE.h * PX * PX).length;
+    const barres = compterBarres(page, marques(9));
+    if (barres === 9) return { num: null, reprise: compterBarres(page, marquesGauche(5)) || 1, phrases: false, gabarit: "R" };
+    if (barres === 7 || barres === 8) return { num: barres - 6, phrases: false, gabarit: 5 };
     // trait vertical entre la 1re et la 2e colonne de cases, sur toute la hauteur de la grille
     const gx = (PW - COLS * CASE) / 2 + CASE, gy = MARGE + HAUT_ENTETE;
     const trait = noirceur(page, gx - 0.5, gy + 4, 1, ROWS * CASE - 8) - noirceur(page, gx + 3, gy + 4, 1, ROWS * CASE - 8);
@@ -822,6 +892,6 @@ const Moteur = (() => {
   }
 
   return { MM, PW, PH, MARGE, HAUT_ENTETE, COLS, ROWS, REP, CASE, LB, LX, LM, PX, PAR_PAGE, CARS, PHRASES, DEFAUT, CASE_PX,
-    enGris, redresser, masqueScan, masqueDessin, dessinerTraits, construire, mesurerEspacement, rectCase, glyphe, bezier,
-    marques, identifierPage, analyserCase, geo, casesPage, GABARITS, RETRAIT, NB_BONUS };
+    enGris, redresser, viser, masqueScan, masqueDessin, dessinerTraits, construire, mesurerEspacement, rectCase, glyphe, bezier,
+    marques, marquesGauche, identifierPage, analyserCase, geo, casesPage, GABARITS, RETRAIT, NB_BONUS, SECTIONS5, disposition };
 })();

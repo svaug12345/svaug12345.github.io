@@ -1,30 +1,44 @@
 /* =============================================================================
-   Paraphe — pages papier : import d'un PDF scanné, cases bonus, choix de version.
+   Paraphe — pages papier : import (photos, PDF, caméra), cases bonus, reprises,
+   choix de version.
    -----------------------------------------------------------------------------
-   Une lettre peut maintenant exister en PLUSIEURS versions :
-     - « grille » : sa case sur la page 1 ou 2 ;
-     - « bonus:k » : la case bonus n° k de la page 4, si on l'y a refaite ;
-     - « dessin »  : dessinée à l'écran.
-   police.bonus  = { clé de case bonus: caractère }   (ce que l'enfant a refait dans chaque case)
-   police.choix  = { caractère: id de la version préférée }
-   Par défaut : le dessin s'il existe, sinon la dernière case bonus, sinon la grille.
+   Une lettre peut exister en PLUSIEURS versions :
+     - « grille »       : sa case sur la page 1 ou 2 ;
+     - « bonus:clé »    : une case bonus où on l'a refaite (l'enfant dit laquelle) ;
+     - « reprise:k:j »  : la case j de la feuille de reprise n° k (déjà étiquetée) ;
+     - « dessin »       : dessinée à l'écran.
+   police.bonus    = { clé de case bonus: caractère }
+   police.choix    = { caractère: id de la version préférée }
+   police.feuilles = { k: [lettres] }   feuilles de reprise imprimées (k = 1 à 5)
+   police.aRefaire = [lettres]          liste en cours, pas encore imprimée
+   Par défaut : dessin > reprise > dernière case bonus > grille.
 
-   Les cases bonus existent à deux endroits :
-     - grille 4 (depuis la 1.7) : une rangée de 7 cases en bas des pages 1 et 2.
-       Clé « 0:k » ou « 1:k » (page 1 ou 2, case k de la rangée) ;
+   Où sont les cases bonus :
+     - grilles 4 et 5 : une rangée en bas des pages 1 et 2. Clé « 0:k » ou « 1:k » ;
      - grille 3 (1.6) : une page 4 entière de 63 cases. Clé « k » (simple numéro).
-   Une case BARRÉE (grande croix) ne compte plus : ni la case de la grille, ni une case bonus.
+   Une case BARRÉE (grande croix) ne compte plus, quelle qu'elle soit.
    ========================================================================== */
 "use strict";
 
-const NOMS_PAGES = ["Page 1 · lettres et chiffres", "Page 2 · accents et signes", "Page 3 · phrases", "Page 4 · cases bonus (ancienne grille)"];
+const NOMS_PAGES = ["Page 1 de la grille", "Page 2 de la grille", "Page de phrases (ancienne grille)", "Page de cases bonus (ancienne grille)"];
+
+/** La case d'un caractère sur les pages de grille enregistrées → { page, idx } ou null.
+    Chaque page sait quel gabarit elle a (3, 4 ou 5) et donc où est chaque caractère. */
+function caseGrille(c, ch) {
+  for (const n of [0, 1]) {
+    const page = c.pages[n]; if (!page) continue;
+    const idx = M.disposition(M.geo(page), n).cars.indexOf(ch);
+    if (idx >= 0) return { page, idx };
+  }
+  return null;
+}
 
 /** Toutes les cases bonus disponibles sur les pages enregistrées : [{ cle, page, idx, nom }]. */
 function casesBonus(c) {
   const res = [];
   for (const n of [0, 1]) {
-    const page = c.pages[n]; if (!page || !M.geo(page).bonus) continue;
-    for (let k = 0; k < M.NB_BONUS; k++) res.push({ cle: `${n}:${k}`, page, idx: M.PAR_PAGE + k, nom: `Case bonus ${k + 1} · page ${n + 1}` });
+    const page = c.pages[n], g = page && M.geo(page); if (!g || !g.bonus) continue;
+    for (let k = 0; k < g.bonus; k++) res.push({ cle: `${n}:${k}`, page, idx: g.n + k, nom: `Case bonus ${k + 1} · page ${n + 1}` });
   }
   if (c.pages[3]) for (let k = 0; k < M.PAR_PAGE; k++) res.push({ cle: String(k), page: c.pages[3], idx: k, nom: `Case bonus n° ${k + 1}` });
   return res;
@@ -33,20 +47,31 @@ function casesBonus(c) {
 function caseBonus(c, cle) {
   const [a, b] = String(cle).split(":");
   if (b !== undefined) {
-    const page = c.pages[+a];
-    return page && M.geo(page).bonus ? { page, idx: M.PAR_PAGE + +b, nom: `Case bonus ${+b + 1} · page ${+a + 1}` } : null;
+    const page = c.pages[+a], g = page && M.geo(page);
+    return g && g.bonus ? { page, idx: g.n + +b, nom: `Case bonus ${+b + 1} · page ${+a + 1}` } : null;
   }
   return c.pages[3] ? { page: c.pages[3], idx: +a, nom: `Case bonus n° ${+a + 1}` } : null;
 }
 
+/** Cases des feuilles de reprise scannées où se trouve ce caractère : [{ id, page, idx, nom }]. */
+function casesReprise(c, ch) {
+  const res = [];
+  for (const [k, lettres] of Object.entries(c.police.feuilles)) {
+    const page = c.reprises[k]; if (!page) continue;
+    lettres.forEach((x, j) => { if (x === ch) res.push({ id: `reprise:${k}:${j}`, page, idx: j, nom: `Feuille de reprise n° ${k}` }); });
+  }
+  return res;
+}
+
 /** Toutes les versions possibles d'un caractère (sans encore savoir si la case est remplie). */
 function versionsDe(c, p, ch) {
-  const f = c.police, v = [], i = M.CARS.indexOf(ch), page = c.pages[Math.floor(i / M.PAR_PAGE)];
-  if (page) v.push({ id: "grille", nom: "Grille", masque: () => M.masqueScan(page, i % M.PAR_PAGE, p) });
+  const f = c.police, v = [], cg = caseGrille(c, ch);
+  if (cg) v.push({ id: "grille", nom: "Grille", masque: () => M.masqueScan(cg.page, cg.idx, p) });
   for (const [k, x] of Object.entries(f.bonus)) {
     const cb = x === ch && caseBonus(c, k);
     if (cb) v.push({ id: "bonus:" + k, nom: cb.nom, masque: () => M.masqueScan(cb.page, cb.idx, p, true) });
   }
+  for (const r of casesReprise(c, ch)) v.push({ ...r, masque: () => M.masqueScan(r.page, r.idx, p) });
   if ((f.dessins[ch] || []).length) v.push({ id: "dessin", nom: "Dessin à l'écran", masque: () => M.masqueDessin(f.dessins[ch], p, ch) });
   return v;
 }
@@ -56,24 +81,23 @@ function lettresBarrees(c, p) {
   const res = [];
   for (const n of [0, 1]) {
     const page = c.pages[n]; if (!page) continue;
-    for (let k = 0; k < M.PAR_PAGE; k++) {
-      const ch = M.CARS[n * M.PAR_PAGE + k];
-      if (ch && M.analyserCase(page, k, p).barree) res.push(ch);
-    }
+    M.disposition(M.geo(page), n).cars.forEach((ch, k) => { if (ch && M.analyserCase(page, k, p).barree) res.push(ch); });
   }
   return res;
 }
 
-/** La version utilisée dans la police : celle choisie, sinon dessin > dernière case bonus > grille. */
+/** La version utilisée : celle choisie, sinon dessin > reprise > dernière case bonus > grille. */
 function versionChoisie(c, p, ch) {
   const v = versionsDe(c, p, ch); if (!v.length) return null;
-  return v.find(x => x.id === c.police.choix[ch]) || v.find(x => x.id === "dessin") || v.filter(x => x.id.startsWith("bonus")).pop() || v[0];
+  return v.find(x => x.id === c.police.choix[ch]) || v.find(x => x.id === "dessin")
+    || v.filter(x => x.id.startsWith("reprise")).pop() || v.filter(x => x.id.startsWith("bonus")).pop() || v[0];
 }
 
 /** Nombre de versions (rapide, sans calculer les masques) : pour le petit badge de la galerie. */
 function nbVersions(c, ch) {
-  const f = c.police, i = M.CARS.indexOf(ch);
-  return (c.pages[Math.floor(i / M.PAR_PAGE)] ? 1 : 0) + Object.entries(f.bonus).filter(([k, x]) => x === ch && caseBonus(c, k)).length + ((f.dessins[ch] || []).length ? 1 : 0);
+  const f = c.police;
+  return (caseGrille(c, ch) ? 1 : 0) + Object.entries(f.bonus).filter(([k, x]) => x === ch && caseBonus(c, k)).length
+    + casesReprise(c, ch).length + ((f.dessins[ch] || []).length ? 1 : 0);
 }
 
 /** Dessine un masque d'encre dans un canvas carré de la taille d'une case, posé sur la ligne de base. */
@@ -99,76 +123,139 @@ async function enregistrerPage(c, n, page) {
   c.pages[n] = page; c.police.pages[n] = await Stockage.pageVersBlob(page);
   await modifie(c, true);
 }
+/** Enregistre le scan de la feuille de reprise n° k. Chaque lettre refaite (case remplie,
+    non barrée) devient la version utilisée : c'est pour ça qu'on l'a refaite. */
+async function enregistrerReprise(c, k, page) {
+  const f = c.police;
+  c.reprises[k] = page; f.reprises[k] = await Stockage.pageVersBlob(page);
+  (f.feuilles[k] || []).forEach((ch, j) => {
+    if (M.masqueScan(page, j, f.reglages)) { f.choix[ch] = `reprise:${k}:${j}`; delete f.retouches[ch]; }
+  });
+  await modifie(c, true);
+}
 
 // ---------------------------------------------------------------------------
-// Importer un PDF scanné
+// Importer : des photos et/ou des PDF, une ou plusieurs pages, dans n'importe quel ordre.
+// Chaque page est redressée puis reconnue grâce à ses barres (page 1, page 2, reprise…).
+// Le scanner de la caméra (scanner.js) arrive ici aussi, avec ses pages déjà prises.
 // ---------------------------------------------------------------------------
-async function vueImportPDF(c) {
-  const f = c.police;
-  rendre({
-    titre: "Importer un PDF", retour: `#/p/${f.id}`,
-    contenu: `<div><h2 class="titre-page">Importer un PDF scanné</h2>
-        <p class="sous-titre">Un scanner donne une image plus nette qu'une photo. Les pages peuvent être dans n'importe quel ordre : l'appli les reconnaît.</p></div>
-      <p class="message" id="message" role="status"></p>
-      <div id="pages-pdf" class="pages-pdf"></div>
-      <input type="file" id="fichier-pdf" accept="application/pdf,.pdf" hidden>`,
-    pied: `<button class="btn principal" id="choisir-pdf">${icone("page", 20)} Choisir un PDF</button>`,
-  });
-  const msg = $("#message");
-  $("#choisir-pdf").onclick = () => $("#fichier-pdf").click();
-  $("#fichier-pdf").onchange = async e => {
-    const fichier = e.target.files[0]; e.target.value = ""; if (!fichier) return;
-    msg.className = "message"; msg.textContent = "Lecture du PDF…"; $("#pages-pdf").replaceChildren();
-    await new Promise(r => setTimeout(r, 30));
-    let lues;
-    try { lues = await LecteurPDF.lire(fichier); }
-    catch (err) { msg.className = "message erreur"; msg.textContent = "Ce PDF n'a pas pu être lu : " + err.message + "."; return; }
-    // Chaque page : redresser puis reconnaître (barres de numéro, ou indices pour les anciennes grilles)
-    const pages = [];
-    for (const [k, l] of lues.entries()) {
-      msg.textContent = `Analyse de la page ${k + 1} sur ${lues.length}…`; await new Promise(r => setTimeout(r, 10));
+let pagesEnAttente = null;     // pages capturées par la caméra, à traiter par vueImport
+
+/** Une page reconnue → où l'enregistrer : 0 ou 1 (grille), 3 (ancienne page bonus), « R » (reprise), -1 (ignorer). */
+function cibleDe(id) {
+  if (id.reprise) return "R";
+  if (id.phrases) return -1;                   // les phrases ne servent plus
+  if (id.num === 1 || id.num === 2) return id.num - 1;
+  if (id.num === 4) return 3;
+  return null;                                  // pas reconnue : à choisir
+}
+
+/** Fichiers choisis (images ou PDF) → pages redressées et reconnues. */
+async function analyserFichiers(fichiers, progres) {
+  const pages = [];
+  for (const fichier of fichiers) {
+    const pdf = fichier.type === "application/pdf" || /\.pdf$/i.test(fichier.name);
+    let sources;
+    try {
+      if (pdf) sources = await LecteurPDF.lire(fichier);
+      else { const bmp = await createImageBitmap(fichier); sources = [{ source: bmp, w: bmp.width, h: bmp.height }]; }
+    } catch (err) { pages.push({ erreur: `« ${fichier.name} » n'a pas pu être lu.` }); continue; }
+    for (const [k, l] of sources.entries()) {
+      progres(`Analyse de ${fichier.name}${sources.length > 1 ? `, page ${k + 1} sur ${sources.length}` : ""}…`);
+      await new Promise(r => setTimeout(r, 10));
       if (l.erreur) { pages.push({ erreur: l.erreur }); continue; }
       const page = M.redresser(M.enGris(l.source, l.w, l.h));
-      pages.push(page.erreur ? { erreur: page.erreur } : { page, id: M.identifierPage(page) });
+      pages.push(page.erreur ? { erreur: `${fichier.name}${sources.length > 1 ? ` (page ${k + 1})` : ""} : ${page.erreur}` } : { page, id: M.identifierPage(page) });
     }
-    // Attribution proposée : le numéro reconnu ; les pages non reconnues prennent les places restantes (1, 2, 4)
-    const prises = new Set(pages.filter(x => x.id && x.id.num).map(x => x.id.num - 1));
-    const libres = [0, 1, 3].filter(n => !prises.has(n));
-    for (const x of pages) if (x.page) x.cible = x.id.num ? x.id.num - 1 : (libres.shift() ?? -1);
+  }
+  return pages;
+}
+
+/** Enregistre les pages (cible déjà décidée) ; la dernière prise gagne en cas de doublon. */
+async function enregistrerTout(c, pages) {
+  let n = 0;
+  for (const x of pages) {
+    if (!x.page || x.cible === -1 || x.cible === null) continue;
+    if (x.cible === "R") await enregistrerReprise(c, x.id.reprise, x.page); else await enregistrerPage(c, x.cible, x.page);
+    n++;
+  }
+  return n;
+}
+
+/** Après l'enregistrement : vers l'écran des cases bonus s'il y en a à attribuer, sinon le projet. */
+function apresImport(c, n) {
+  const f = c.police;
+  toast(`${n} page${n > 1 ? "s" : ""} enregistrée${n > 1 ? "s" : ""}`);
+  const aFaire = casesBonus(c).some(b => !f.bonus[b.cle] && M.masqueScan(b.page, b.idx, f.reglages, true));
+  if (aFaire) aller(`#/p/${f.id}/bonus`, true);     // remplace l'écran d'import : « retour » ramène au projet
+  else revenir(`#/p/${f.id}`);
+}
+
+async function vueImport(c) {
+  const f = c.police;
+  rendre({
+    titre: "Importer", retour: `#/p/${f.id}`,
+    contenu: `<div><h2 class="titre-page">Photos ou PDF</h2>
+        <p class="sous-titre">Une ou plusieurs photos, un PDF d'une ou plusieurs pages, dans n'importe quel ordre : chaque feuille est reconnue toute seule.</p></div>
+      <p class="message" id="message" role="status"></p>
+      <div id="pages-pdf" class="pages-pdf"></div>
+      <input type="file" id="fichiers" accept="image/*,application/pdf,.pdf" multiple hidden>`,
+    pied: `<button class="btn principal" id="choisir">${icone("page", 20)} Choisir des fichiers</button>`,
+  });
+  const msg = $("#message");
+  $("#choisir").onclick = () => $("#fichiers").click();
+
+  const traiter = async pages => {
+    for (const x of pages) if (x.page) x.cible = cibleDe(x.id);
+    // Tout est reconnu ? On enregistre directement. Sinon on demande pour les pages inconnues.
+    const bonnes = pages.filter(x => x.page);
+    if (bonnes.length && bonnes.every(x => x.cible !== null) && pages.every(x => x.page)) {
+      return apresImport(c, await enregistrerTout(c, bonnes));
+    }
+    // pages non reconnues : on propose les places de grille encore libres
+    const prises = new Set(bonnes.map(x => x.cible)), libres = [0, 1].filter(n => !prises.has(n));
+    for (const x of bonnes) if (x.cible === null) x.cible = libres.shift() ?? -1;
     afficher(pages);
+  };
+  $("#fichiers").onchange = async e => {
+    const fichiers = [...e.target.files]; e.target.value = ""; if (!fichiers.length) return;
+    msg.className = "message"; msg.textContent = "Lecture…"; $("#pages-pdf").replaceChildren();
+    await new Promise(r => setTimeout(r, 30));
+    traiter(await analyserFichiers(fichiers, t => { msg.textContent = t; }));
   };
 
   function afficher(pages) {
     const zone = $("#pages-pdf"), bonnes = pages.filter(x => x.page).length;
     msg.className = "message " + (bonnes ? "ok" : "erreur");
-    msg.textContent = bonnes ? `${bonnes} page${bonnes > 1 ? "s" : ""} trouvée${bonnes > 1 ? "s" : ""}. Vérifie l'attribution de chaque page, puis enregistre.`
-      : "Aucune page de grille trouvée dans ce PDF.";
+    msg.textContent = bonnes ? `${bonnes} feuille${bonnes > 1 ? "s" : ""} trouvée${bonnes > 1 ? "s" : ""}. Vérifie celles qui n'ont pas été reconnues, puis enregistre.`
+      : "Aucune feuille de la grille trouvée : les 4 carrés noirs des coins doivent être visibles.";
     pages.forEach((x, k) => {
       const carte = document.createElement("div"); carte.className = "carte-page";
-      if (!x.page) { carte.innerHTML = `<p class="aide">Page ${k + 1} du PDF : ${esc(x.erreur)}</p>`; zone.append(carte); return; }
+      if (!x.page) { carte.innerHTML = `<p class="aide">${esc(x.erreur)}</p>`; zone.append(carte); return; }
+      const options = [[0, NOMS_PAGES[0]], [1, NOMS_PAGES[1]]];
+      if (x.id.reprise) options.push(["R", `Feuille de reprise n° ${x.id.reprise}`]);
+      if (c.pages[3] || x.id.num === 4) options.push([3, NOMS_PAGES[3]]);
+      options.push([-1, "Ignorer"]);
       carte.innerHTML = `<canvas class="page-scannee"></canvas>
-        <label class="champ-select">Page ${k + 1} du PDF, c'est :
-          <select>${NOMS_PAGES.map((nomP, n) => `<option value="${n}" ${n === x.cible ? "selected" : ""}>${nomP}</option>`).join("")}
-            <option value="-1" ${x.cible === -1 ? "selected" : ""}>Ignorer</option></select></label>`;
+        <label class="champ-select">Feuille ${k + 1}, c'est :
+          <select>${options.map(([v, t]) => `<option value="${v}" ${v === x.cible ? "selected" : ""}>${esc(t)}</option>`).join("")}</select></label>`;
       zone.append(carte);
       dessinerPage(carte.querySelector("canvas"), x.page, x.cible);
-      carte.querySelector("select").onchange = ev => { x.cible = +ev.target.value; dessinerPage(carte.querySelector("canvas"), x.page, x.cible); };
+      carte.querySelector("select").onchange = ev => { const v = ev.target.value; x.cible = v === "R" ? "R" : +v; dessinerPage(carte.querySelector("canvas"), x.page, x.cible); };
     });
     if (!bonnes) return;
-    $("#pied").innerHTML = `<div><button class="btn discret" id="autre-pdf">Autre PDF</button><button class="btn principal" id="garder">Enregistrer</button></div>`;
-    $("#autre-pdf").onclick = () => $("#fichier-pdf").click();
+    $("#pied").innerHTML = `<div><button class="btn discret" id="autres">Autres fichiers</button><button class="btn principal" id="garder">Enregistrer</button></div>`;
+    $("#autres").onclick = () => $("#fichiers").click();
     $("#garder").onclick = async () => {
-      const choisies = pages.filter(x => x.page && x.cible >= 0);
-      const doublon = choisies.find((x, k) => choisies.findIndex(y => y.cible === x.cible) !== k);
-      if (doublon) { toast(`Deux pages sont attribuées à « ${NOMS_PAGES[doublon.cible]} ».`); return; }
-      for (const x of choisies) await enregistrerPage(c, x.cible, x.page);
-      toast(`${choisies.length} page${choisies.length > 1 ? "s" : ""} enregistrée${choisies.length > 1 ? "s" : ""}`);
-      // Des cases bonus remplies et pas encore attribuées ? On va directement dire quelles lettres c'est.
-      const aFaire = casesBonus(c).some(b => !f.bonus[b.cle] && M.masqueScan(b.page, b.idx, f.reglages, true));
-      if (aFaire) aller(`#/p/${f.id}/bonus`, true);     // remplace l'écran d'import : « retour » ramène au projet
-      else revenir(`#/p/${f.id}`);
+      const choisies = pages.filter(x => x.page && x.cible !== -1);
+      const doublon = choisies.find((x, k) => x.cible !== "R" && choisies.findIndex(y => y.cible === x.cible) !== k);
+      if (doublon) { toast(`Deux feuilles sont attribuées à « ${NOMS_PAGES[doublon.cible]} ».`); return; }
+      apresImport(c, await enregistrerTout(c, choisies));
     };
   }
+
+  // Pages venant du scanner de la caméra
+  if (pagesEnAttente) { const p = pagesEnAttente; pagesEnAttente = null; traiter(p); }
 }
 
 // ---------------------------------------------------------------------------
@@ -266,4 +353,51 @@ async function vueVersions(c, i) {
     };
   });
   $("#nouvelle-version").onclick = () => aller(`#/p/${f.id}/dessin/${i}`);
+}
+
+// ---------------------------------------------------------------------------
+// Lettres à refaire sur papier : on compose une liste, on imprime une « feuille de reprise »
+// où chaque case porte déjà sa lettre. Au scan, l'appli reconnaît la feuille (9 barres à droite,
+// son numéro en barres à gauche) et range chaque lettre toute seule : rien à indiquer.
+// ---------------------------------------------------------------------------
+function vueReprise(c) {
+  const f = c.police, p = f.reglages, liste = f.aRefaire;
+  const groupes = caracteresParType();
+  rendre({
+    titre: "Lettres à refaire", retour: `#/p/${f.id}`,
+    contenu: `<div><h2 class="titre-page">Refaire des lettres sur papier</h2>
+        <p class="sous-titre">Choisis les lettres à refaire, imprime la feuille, écris, puis scanne-la : chaque lettre se range toute seule.</p></div>
+      <section><p class="etiquette">Sur la prochaine feuille (${liste.length})</p>
+        <div class="puces" id="puces">${liste.length ? liste.map((ch, k) => `<button class="puce" data-k="${k}" aria-label="Retirer ${esc(ch)}">${esc(ch)} <span aria-hidden="true">×</span></button>`).join("")
+          : `<p class="aide">Aucune lettre pour l'instant.</p>`}</div>
+        <label class="champ-select">Ajouter une lettre
+          <select id="ajout"><option value="">Choisir…</option>
+            ${groupes.map(g => `<optgroup label="${g.titre}">${g.cars.map(ch => `<option value="${esc(ch)}">${esc(libelle(ch))}</option>`).join("")}</optgroup>`).join("")}
+          </select></label>
+      </section>
+      ${Object.keys(f.feuilles).length ? `<section><p class="etiquette">Feuilles déjà imprimées</p><div class="liste">${Object.entries(f.feuilles).map(([k, l]) => `
+        <div class="ligne"><span class="pastille ${c.reprises[k] ? "ok" : ""}">${icone(c.reprises[k] ? "coche" : "page")}</span>
+          <span class="corps"><span class="titre">Feuille n° ${k}</span><span class="detail">${esc(l.join(" "))} · ${c.reprises[k] ? "scannée" : "à scanner"}</span></span></div>`).join("")}</div></section>` : ""}`,
+    pied: `<button class="btn principal" id="imprimer" ${liste.length ? "" : "disabled"}>${icone("imprimer", 20)} Imprimer la feuille</button>`,
+  });
+  document.querySelectorAll(".puce").forEach(b => b.onclick = () => { liste.splice(+b.dataset.k, 1); modifie(c); vueReprise(c); });
+  $("#ajout").onchange = e => {
+    const ch = e.target.value; if (!ch) return;
+    if (!liste.includes(ch) && liste.length < M.GABARITS.R.n) liste.push(ch);
+    modifie(c); vueReprise(c);
+  };
+  $("#imprimer").onclick = async () => {
+    // Numéro de feuille : de 1 à 5, en tournant. Réutiliser un numéro efface l'ancienne feuille
+    // (et ses versions) : il ne reste en jeu que les 5 dernières.
+    const k = (f.derniereFeuille || 0) % 5 + 1;
+    if (c.reprises[k]) {
+      for (const [ch, id] of Object.entries(f.choix)) if (id.startsWith(`reprise:${k}:`)) delete f.choix[ch];
+      delete c.reprises[k]; delete f.reprises[k];
+    }
+    f.feuilles[k] = liste.slice(); f.derniereFeuille = k; f.aRefaire = [];
+    await modifie(c, true);
+    await partagerOuTelecharger(Grille.reprise(f.nom, f.feuilles[k], k), `Lettres à refaire ${f.nom} n° ${k}.pdf`, "application/pdf",
+      "La feuille de reprise", "Imprime-la à 100 %, fais écrire les lettres, puis scanne-la avec les autres pages.");
+    vueReprise(c);
+  };
 }

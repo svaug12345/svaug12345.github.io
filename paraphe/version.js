@@ -22,5 +22,8 @@
      1.6.0  import de PDF scannés, grille v3 (numéros de page lisibles, page 4 de cases bonus), plusieurs versions par lettre et choix de la préférée
      1.7.0  queues des g, y, j plus coupées (découpe à 0,3 mm du cadre) ; grille v4 : 7 cases bonus en bas
             des pages 1 et 2 ; cases barrées reconnues ; lettre d'une case bonus choisie dans une liste
+     1.8.0  grille v5 sur 2 pages (sans phrases, rangée par sections, consignes claires, modèles gris
+            pour les signes) ; scanner caméra en continu ; import unique photos/PDF ; feuille de
+            reprise pour refaire des lettres ; partage de la police (PDF spécimen avec le .ttf joint)
    ========================================================================== */
-self.PLUME_VERSION = "1.7.0";   // (nom de variable gardé : l'appli s'appelait Plume)
+self.PLUME_VERSION = "1.8.0";   // (nom de variable gardé : l'appli s'appelait Plume)
