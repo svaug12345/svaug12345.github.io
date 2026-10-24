@@ -383,6 +383,13 @@ const Moteur = (() => {
     return false;
   }
 
+  /** Le petit carré imprimé dans le coin d'une case seconde chance (feuilles de la 1.9.0) est-il là ?
+      On compare le gris sur son bord du haut à celui juste en dessous. */
+  function carreDansLeCoin(page, idx) {
+    const { x0, y0 } = rectCase(idx, page);
+    return noirceur(page, x0 + 1.6 * MM, y0 + 1.1 * MM, 4.2 * MM, 0.25 * MM) - noirceur(page, x0 + 1.6 * MM, y0 + 2.5 * MM, 4.2 * MM, 0.25 * MM) > 25;
+  }
+
   /** Analyse d'une case scannée → { masque (ou null si vide ou barrée), barree }.
       Seuil, cadre, rature, étiquette effacée, poussières, épaisseur. */
   function analyserCase(page, idx, p, bonus = false) {
@@ -397,6 +404,9 @@ const Moteur = (() => {
     // La case lue est à l'échelle d'une case de grille 3 : on divise par le rapport des tailles.
     const g = geo(page);
     if (g.modele && !bonus) { lh = h; lw = Math.round(((g.modele + 0.6 * MM) * CASE / g.C - RETRAIT) * PX); }
+    // Cases seconde chance de la grille 6 : depuis la 1.9.1 elles n'ont plus de petit carré dans
+    // le coin, donc rien à effacer… sauf sur les feuilles imprimées avant (on regarde si le carré est là).
+    if (bonus && g.num === 6 && !carreDansLeCoin(page, idx)) lh = lw = 0;
     const barree = estBarree(m, w, h, { w: lw, h: lh });
     if (barree) return { masque: null, barree: true };
     for (let y = 0; y < lh && y < h; y++) for (let x = 0; x < lw && x < w; x++) m[y * w + x] = 0;

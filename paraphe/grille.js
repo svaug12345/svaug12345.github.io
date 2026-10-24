@@ -46,16 +46,31 @@ const Grille = (() => {
   }
 
   /** En-tête : titre, numéro de page, puis les consignes (petites lignes grises). */
-  function entete(o, titre, numero, total, consignes) {
+  /** Disque plein de centre (cx, cy) et de rayon r : 4 courbes de Bézier (k = 0,5523 : la
+      valeur classique pour qu'un quart de cercle en Bézier soit presque parfait). */
+  function disque(cx, cy, r) {
+    const k = 0.5523 * r;
+    return `${n2(cx + r)} ${n2(cy)} m ${n2(cx + r)} ${n2(cy + k)} ${n2(cx + k)} ${n2(cy + r)} ${n2(cx)} ${n2(cy + r)} c ` +
+      `${n2(cx - k)} ${n2(cy + r)} ${n2(cx - r)} ${n2(cy + k)} ${n2(cx - r)} ${n2(cy)} c ` +
+      `${n2(cx - r)} ${n2(cy - k)} ${n2(cx - k)} ${n2(cy - r)} ${n2(cx)} ${n2(cy - r)} c ` +
+      `${n2(cx + k)} ${n2(cy - r)} ${n2(cx + r)} ${n2(cy - k)} ${n2(cx + r)} ${n2(cy)} c f`;
+  }
+
+  /** En-tête : titre, GROS numéro de page dans un disque noir (on distingue les pages d'un coup
+      d'œil), ce qu'il y a sur la page, puis les consignes. */
+  function entete(o, titre, numero, total, consignes, sujet = "") {
     const haut = M.PH - M.MARGE, x = M.MARGE + 8 * MM;
     o.push("0 g", `BT /F2 14 Tf ${n2(x)} ${n2(haut - 5 * MM)} Td ${chaine(titre)} Tj ET`);
-    const p = `Page ${numero}/${total}`;
-    o.push(`BT /F1 9 Tf ${n2(M.PW - M.MARGE - 8 * MM - largeur(p, 9))} ${n2(haut - 5 * MM)} Td ${chaine(p)} Tj ET`);
+    const r = 4.2 * MM, cx = M.PW - M.MARGE - 8 * MM - r, cy = haut - 3.4 * MM;
+    o.push("0 g", disque(cx, cy, r), "1 g", `BT /F2 17 Tf ${n2(cx - 17 * 0.278)} ${n2(cy - 17 * 0.36)} Td ${chaine(String(numero))} Tj ET`);
+    const p = `Page ${numero} sur ${total}${sujet ? " · " + sujet : ""}`;
+    o.push("0 g", `BT /F2 9 Tf ${n2(cx - r - 2.5 * MM - largeur(p, 9) * 1.04)} ${n2(haut - 5 * MM)} Td ${chaine(p)} Tj ET`);
     consignes.forEach((l, i) => {
       // « **Titre :** suite » : le début en gras, pour qu'on repère vite de quoi parle la ligne
-      const [gras, reste] = l.includes("**") ? l.split("**").filter(Boolean) : ["", l];
+      // Les morceaux entre ** sont en gras : « normal **gras** normal **gras** … »
+      const morceaux = l.split("**").map((t, k) => t ? `/F${k % 2 ? 2 : 1} 7.6 Tf ${chaine(t)} Tj` : "").join(" ");
       const y = n2(haut - 10.5 * MM - i * 3.5 * MM);
-      o.push("0.15 g", `BT /F2 7.6 Tf ${n2(x)} ${y} Td ${chaine(gras)} Tj /F1 7.6 Tf ${chaine(reste)} Tj ET`);
+      o.push("0.15 g", `BT ${n2(x)} ${y} Td ${morceaux} ET`);
     });
   }
 
@@ -104,15 +119,20 @@ const Grille = (() => {
     const C = r.C, x = r.x0, y = M.PH - r.y0 - C;
     o.push("0.55 G 0.6 w", `${n2(x)} ${n2(y)} ${n2(C)} ${n2(C)} re S`);
     guides(o, x + 2, x + C - 2, y, C);
-    if (car === null) { o.push("0.55 G 0.6 w", `${n2(x + 1.2 * MM)} ${n2(y + C - 6.2 * MM)} ${n2(5 * MM)} ${n2(5 * MM)} re S`); return; }
+    if (car === null) return;                        // case seconde chance : vide (plus de petit carré)
     if (!modele) { o.push("0.3 g", `BT /F1 11 Tf ${n2(x + 1.3 * MM)} ${n2(y + C - 4.8 * MM)} Td ${chaine(car)} Tj ET`); return; }
-    // Modèle (grille 6) : le caractère en Helvetica, plein, gris moyen, à SA VRAIE HAUTEUR :
-    // posé sur la ligne de base, les majuscules touchent le 2e pointillé (hauteur des capitales
-    // d'Helvetica = 0,718 de la taille). Pour tenir dans la bande, on le rétrécit en largeur
-    // seulement (ordre « Tz » du PDF = échelle horizontale en %) : la hauteur reste juste.
-    const t = (M.LM - M.LB) * C / 0.718, l = largeurHelv(car) / 1000 * t;
-    const tz = Math.min(70, 100 * (modele - 1.2 * MM) / l), lz = l * tz / 100;
-    o.push("0.5 g", `BT /F1 ${n2(t)} Tf ${n2(tz)} Tz ${n2(x + (modele - lz) / 2)} ${n2(y + C * M.LB)} Td ${chaine(car)} Tj 100 Tz ET`);
+    // Modèle (grille 6) : le caractère en « écriture bâton » (baton.js), gris, tracé au feutre fin.
+    // Ses hauteurs sont en unités de lignes : 1 = 1er pointillé, 2 = 2e pointillé. Une unité vaut
+    // donc l'écart entre deux lignes de la case : il tombe pile sur les lignes. On ne le resserre
+    // qu'en largeur (sx) s'il est trop large pour sa bande.
+    const m = Baton.modele(car);
+    if (m) {
+      const u = (M.LX - M.LB) * C, sx = Math.min(1, (modele - 1.4 * MM) / (m.largeur * u));
+      const gauche = x + (modele - m.largeur * u * sx) / 2, base = y + C * M.LB;
+      o.push("0.45 G 1.2 w 1 J 1 j");              // bouts et angles arrondis, comme un feutre
+      for (const t of m.traits) o.push(t.map(([a, b], k) => `${n2(gauche + a * u * sx)} ${n2(base + b * u)} ${k ? "l" : "m"}`).join(" ") + " S");
+      o.push("0 J 0 j");
+    }
     // séparation pointillée entre le modèle et la place pour écrire
     o.push("0.7 G 0.5 w [1.5 1.5] 0 d", `${n2(x + modele)} ${n2(y + 2)} m ${n2(x + modele)} ${n2(y + C - 2)} l S`, "[] 0 d");
   }
@@ -140,14 +160,14 @@ const Grille = (() => {
     for (let p = 0; p < 2; p++) {
       // 10 barres = page 1, 11 barres = page 2 (grille 6)
       const o = [], dispo = M.disposition(G, p);
-      reperes(o); barresNumero(o, p + 10); entete(o, `La police de ${nom}`, p + 1, total, CONSIGNES[p]);
+      reperes(o); barresNumero(o, p + 10); entete(o, `La police de ${nom}`, p + 1, total, CONSIGNES[p], ["lettres et chiffres", "accents et signes"][p]);
       dispo.cars.forEach((car, i) => { if (car !== null) caseImprimee(o, M.rectCase(i, G), car, G.modele); });
       separateurs(o, G, dispo);
       // Bandeau entre la grille et les cases bonus : rassurer, et expliquer quoi faire
       const yB = M.PH - (G.y0 + G.rows * G.C), xB = G.x0;
       o.push("0 g", `BT /F2 9 Tf ${n2(xB)} ${n2(yB - 3.6 * MM)} Td ${chaine("Cases seconde chance · Une lettre ratée ? Pas de panique !")} Tj ET`);
-      o.push("0.25 g", `BT /F1 7.5 Tf ${n2(xB)} ${n2(yB - 6.8 * MM)} Td ${chaine("Barre la case ratée d'une grande croix, puis refais la lettre ici : écris-la d'abord en petit dans le carré du coin.")} Tj ET`);
-      o.push(`BT /F1 7.5 Tf ${n2(xB)} ${n2(yB - 9.8 * MM)} Td ${chaine("Plus tard aussi, sans réimprimer : remplis une case libre et scanne de nouveau cette page.")} Tj ET`);
+      o.push("0.25 g", `BT /F1 7.5 Tf ${n2(xB)} ${n2(yB - 6.8 * MM)} Td ${chaine("Barre la case ratée d'une grande croix, puis refais la lettre dans une case libre ci-dessous.")} Tj ET`);
+      o.push(`BT /F1 7.5 Tf ${n2(xB)} ${n2(yB - 9.8 * MM)} Td ${chaine("Plus tard aussi, sans réimprimer : l'appli te dit quelle case remplir (« Refaire une lettre »), puis scanne la page.")} Tj ET`);
       for (let k = 0; k < G.bonus; k++) caseImprimee(o, M.rectCase(G.n + k, G), null);
       res.push(page(o));
     }

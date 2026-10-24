@@ -27,5 +27,7 @@
             reprise pour refaire des lettres ; partage de la police (PDF spécimen avec le .ttf joint)
      1.9.0  grille v6 : modèle gris lisible au début de chaque case (plus de filigrane) ; « cases seconde
             chance » ; refaire une lettre sans réimprimer (case réservée) ; partie papier en 3 étapes
+     1.9.1  modèles en « écriture bâton » calés sur les lignes (Helvetica dépassait du 1er pointillé) ;
+            cases seconde chance sans petit carré ; gros numéro de page pour distinguer les pages 1 et 2
    ========================================================================== */
-self.PLUME_VERSION = "1.9.0";   // (nom de variable gardé : l'appli s'appelait Plume)
+self.PLUME_VERSION = "1.9.1";   // (nom de variable gardé : l'appli s'appelait Plume)

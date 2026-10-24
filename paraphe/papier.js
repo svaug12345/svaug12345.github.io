@@ -339,7 +339,7 @@ function vueBonus(c) {
   rendre({
     titre: "Seconde chance", retour: `#/p/${f.id}`,
     contenu: `<div><h2 class="titre-page">Quelle lettre dans chaque case ?</h2>
-        <p class="sous-titre">Regarde la petite lettre écrite dans le carré du coin et choisis-la dans la liste. Cette case devient la version utilisée ; tu pourras toujours revenir à celle de la grille.</p></div>
+        <p class="sous-titre">Pour chaque case remplie, choisis dans la liste la lettre qui y est écrite. Cette case devient la version utilisée ; tu pourras toujours revenir à celle de la grille.</p></div>
       ${barrees.length ? `<div class="encart"><span>Lettres barrées sur la grille : <strong>${barrees.map(esc).join(" ")}</strong>. Elles sont en tête de chaque liste.</span></div>` : ""}
       ${remplies.length ? `<div class="cases-bonus">${remplies.map(b => `<label class="case-bonus">
           <canvas data-cle="${b.cle}"></canvas><span class="nom-case">${esc(b.nom)}</span>
@@ -347,7 +347,7 @@ function vueBonus(c) {
         </label>`).join("")}</div>` : `<p class="aide">Aucune case seconde chance remplie pour l'instant.</p>`}`,
     pied: `<button class="btn principal" id="fini">Terminé</button>`,
   });
-  // aperçu de chaque case entière (avec le petit carré), pris directement sur la page scannée
+  // aperçu de chaque case entière, pris directement sur la page scannée
   document.querySelectorAll(".case-bonus canvas").forEach(cv => {
     const b = remplies.find(x => x.cle === cv.dataset.cle), { x0, y0, C } = M.rectCase(b.idx, b.page), T = Math.round(C * M.PX);
     cv.width = cv.height = T;
@@ -429,7 +429,7 @@ function vueRefaire(c, chDemande) {
       ${attente.length ? `<section><p class="etiquette">À écrire, puis scanner la page</p>${attente.map(x => `
         <div class="reservation"><span class="grand">${esc(x.ch)}</span>
           <div><p><strong>Page ${x.n + 1}</strong>, case seconde chance n° ${x.k + 1}</p>${rangee(x.n, x.k)}
-            <p class="aide">Écris aussi « ${esc(x.ch)} » en petit dans le carré du coin. Si besoin, barre l'ancienne case d'une croix.</p></div>
+            <p class="aide">Si besoin, barre l'ancienne case d'une grande croix.</p></div>
           <button class="btn discret petit annuler-resa" data-cle="${x.cle}" aria-label="Annuler">×</button></div>`).join("")}</section>` : ""}
       ${liste.length || Object.keys(f.feuilles).length ? `<section><p class="etiquette">Plus de case libre : une feuille à imprimer</p>
         <div class="puces">${liste.map((ch, k) => `<button class="puce" data-k="${k}" aria-label="Retirer ${esc(ch)}">${esc(ch)} <span aria-hidden="true">×</span></button>`).join("")}</div>
