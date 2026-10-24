@@ -20,5 +20,7 @@
      1.5.2  un peu plus d'espace après l'apostrophe (crénage limité à -45)
      1.5.3  apostrophe : plus aucun rapprochement après elle, et +30 de marge droite
      1.6.0  import de PDF scannés, grille v3 (numéros de page lisibles, page 4 de cases bonus), plusieurs versions par lettre et choix de la préférée
+     1.7.0  queues des g, y, j plus coupées (découpe à 0,3 mm du cadre) ; grille v4 : 7 cases bonus en bas
+            des pages 1 et 2 ; cases barrées reconnues ; lettre d'une case bonus choisie dans une liste
    ========================================================================== */
-self.PLUME_VERSION = "1.6.0";   // (nom de variable gardé : l'appli s'appelait Plume)
+self.PLUME_VERSION = "1.7.0";   // (nom de variable gardé : l'appli s'appelait Plume)

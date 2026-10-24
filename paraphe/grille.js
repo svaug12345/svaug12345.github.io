@@ -54,8 +54,7 @@ const Grille = (() => {
     consignes.forEach((l, i) => o.push(`BT /F1 8 Tf ${n2(x)} ${n2(haut - 11 * MM - i * 3.8 * MM)} Td ${chaine(l)} Tj ET`));
   }
 
-  function guides(o, x1, x2, y) {
-    const C = M.CASE;
+  function guides(o, x1, x2, y, C = M.CASE) {
     o.push("0.82 G 0.5 w", `${n2(x1)} ${n2(y + C * M.LB)} m ${n2(x2)} ${n2(y + C * M.LB)} l S`);
     o.push("[2 2] 0 d", `${n2(x1)} ${n2(y + C * M.LX)} m ${n2(x2)} ${n2(y + C * M.LX)} l S`,
       `${n2(x1)} ${n2(y + C * M.LM)} m ${n2(x2)} ${n2(y + C * M.LM)} l S`, "[] 0 d");
@@ -67,18 +66,31 @@ const Grille = (() => {
     "Les queues (g, j, p, q, y) descendent sous la ligne de base. Ne touche pas les bords de la case.",
   ];
 
-  /** Les 3 pages de la grille, sous forme de liste de contenus PDF. */
+  /** Une case : cadre, lignes guides, et soit l'étiquette du caractère, soit (case bonus)
+      le petit carré où l'on écrira quelle lettre on refait. r = coin haut-gauche en points
+      (origine en haut, comme dans moteur.js) : on retourne y pour le PDF. */
+  function caseImprimee(o, r, car) {
+    const C = r.C, x = r.x0, y = M.PH - r.y0 - C;
+    o.push("0.55 G 0.6 w", `${n2(x)} ${n2(y)} ${n2(C)} ${n2(C)} re S`);
+    guides(o, x + 2, x + C - 2, y, C);
+    if (car !== null) o.push("0.5 g", `BT /F1 8 Tf ${n2(x + 1.5 * MM)} ${n2(y + C - 3.8 * MM)} Td ${chaine(car)} Tj ET`);
+    else o.push("0.55 G 0.6 w", `${n2(x + 1.2 * MM)} ${n2(y + C - 6.2 * MM)} ${n2(5 * MM)} ${n2(5 * MM)} re S`);
+  }
+
+  /** Les 3 pages de la grille (2 pages de cases + 1 page de phrases), en contenus PDF.
+      Grille 4 : sous les 63 cases de chaque page, un bandeau d'explication et 7 cases bonus. */
   function contenus(nom) {
     const C = M.CASE, x0 = (M.PW - M.COLS * C) / 2, yHaut = M.PH - M.MARGE - M.HAUT_ENTETE;
-    const pagesGrille = Math.ceil(M.CARS.length / M.PAR_PAGE), total = pagesGrille + 2, res = [];
+    const G = M.GABARITS[4], pagesGrille = Math.ceil(M.CARS.length / M.PAR_PAGE), total = pagesGrille + 1, res = [];
     for (let p = 0; p < pagesGrille; p++) {
-      const o = []; reperes(o); barresNumero(o, p + 1); entete(o, `La police de ${nom}`, p + 1, total, CONSIGNES);
-      M.CARS.slice(p * M.PAR_PAGE, (p + 1) * M.PAR_PAGE).forEach((car, i) => {
-        const x = x0 + (i % M.COLS) * C, y = yHaut - (Math.floor(i / M.COLS) + 1) * C;
-        o.push("0.55 G 0.6 w", `${n2(x)} ${n2(y)} ${n2(C)} ${n2(C)} re S`);
-        guides(o, x + 2, x + C - 2, y);
-        o.push("0.5 g", `BT /F1 8 Tf ${n2(x + 1.5 * MM)} ${n2(y + C - 3.8 * MM)} Td ${chaine(car)} Tj ET`);
-      });
+      // 5 barres = page 1, 6 barres = page 2 (grille 4) : l'appli sait ainsi lire la rangée bonus
+      const o = []; reperes(o); barresNumero(o, p + 5); entete(o, `La police de ${nom}`, p + 1, total, CONSIGNES);
+      M.CARS.slice(p * M.PAR_PAGE, (p + 1) * M.PAR_PAGE).forEach((car, i) => caseImprimee(o, M.rectCase(i, G), car));
+      // Bandeau entre la grille et les cases bonus : rassurer, et expliquer quoi faire
+      const yB = M.PH - (G.y0 + M.ROWS * G.C), xB = G.x0;
+      o.push("0 g", `BT /F2 9 Tf ${n2(xB)} ${n2(yB - 3.6 * MM)} Td ${chaine("Cases bonus · Une lettre ratée ? Pas de panique !")} Tj ET`);
+      o.push("0.25 g", `BT /F1 7.5 Tf ${n2(xB)} ${n2(yB - 7 * MM)} Td ${chaine("Barre la case ratée d'une grande croix, puis refais la lettre ici : écris-la d'abord en petit dans le carré.")} Tj ET`);
+      for (let k = 0; k < G.bonus; k++) caseImprimee(o, M.rectCase(M.PAR_PAGE + k, G), null);
       res.push(page(o));
     }
     // Page 3 : phrases à recopier, pour mesurer l'espacement naturel
@@ -94,22 +106,8 @@ const Grille = (() => {
       guides(o, x0, x0 + M.COLS * C, y);
     });
     res.push(page(o));
-
-    // Page 4 : cases bonus, pour refaire les lettres ratées. Même grille que les pages 1 et 2,
-    // mais chaque case a un petit carré dans le coin : on y écrit QUELLE lettre on refait.
-    const b = []; reperes(b); barresNumero(b, 4);
-    entete(b, `La police de ${nom} · cases bonus`, 4, total, [
-      "Une lettre ratée ? Refais-la ici : écris-la d'abord en petit dans le carré du coin,",
-      "puis en grand dans la case, posée sur la ligne de base comme sur la grille.",
-      "Dans l'appli, tu pourras choisir la version que tu préfères.",
-    ]);
-    for (let i = 0; i < M.PAR_PAGE; i++) {
-      const x = x0 + (i % M.COLS) * C, y = yHaut - (Math.floor(i / M.COLS) + 1) * C;
-      b.push("0.55 G 0.6 w", `${n2(x)} ${n2(y)} ${n2(C)} ${n2(C)} re S`);
-      guides(b, x + 2, x + C - 2, y);
-      b.push("0.55 G 0.6 w", `${n2(x + 1.2 * MM)} ${n2(y + C - 6.2 * MM)} ${n2(5 * MM)} ${n2(5 * MM)} re S`);   // petit carré
-    }
-    res.push(page(b));
+    // (Jusqu'à la version 1.6, une page 4 entière de cases bonus suivait ; l'appli sait
+    // toujours la lire si on l'a déjà imprimée.)
     return res;
   }
 

@@ -268,7 +268,10 @@ body { overflow-x: clip; }
 .cases-bonus { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
 .case-bonus { display: grid; gap: 6px; justify-items: center; background: var(--carte); border: 1px solid var(--trait); border-radius: var(--rayon); padding: 8px; }
 .case-bonus canvas { width: 100%; height: auto; border-radius: 6px; }
-.case-bonus .champ-lettre { width: 56px; height: 44px; font-size: 1.3rem; }
+.cases-bonus { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+/* liste déroulante de la case bonus : toute la largeur de la tuile, assez haute pour le doigt */
+.case-bonus .champ-lettre { width: 100%; height: 44px; font-size: 1.05rem; text-align: left; padding: 0 8px; }
+.case-bonus .nom-case { font-size: .78rem; color: var(--doux); text-align: center; }
 .versions { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
 .version { display: grid; gap: 6px; justify-items: center; background: var(--carte); border: 2px solid var(--trait); border-radius: var(--rayon); padding: 10px; cursor: pointer; color: var(--texte); font: inherit; position: relative; }
 .version canvas { width: 100%; height: auto; }

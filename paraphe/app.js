@@ -196,11 +196,12 @@ async function vueProjet(c) {
         <p class="etiquette">Sur papier</p>
         <div class="liste">
           <button class="ligne" id="grille"><span class="pastille">${icone("imprimer")}</span>
-            <span class="corps"><span class="titre">Imprimer la grille</span><span class="detail">4 pages A4 · PDF</span></span>${icone("suivant", 18)}</button>
+            <span class="corps"><span class="titre">Imprimer la grille</span><span class="detail">3 pages A4 · PDF · cases bonus en bas des pages</span></span>${icone("suivant", 18)}</button>
           <button class="ligne" id="importer-pdf"><span class="pastille">${icone("page")}</span>
             <span class="corps"><span class="titre">Importer un PDF scanné</span><span class="detail">Plus net qu'une photo · pages dans n'importe quel ordre</span></span>${icone("suivant", 18)}</button>
-          ${[0, 1, 2, 3].map(lignePage).join("")}
-          ${f.pages[3] ? `<button class="ligne" id="attribuer"><span class="pastille ok">${icone("coche")}</span>
+          ${[0, 1, 2].map(lignePage).join("")}
+          ${f.pages[3] ? lignePage(3) : "" /* ancienne grille 1.6 : page 4 de cases bonus */}
+          ${casesBonus(c).length ? `<button class="ligne" id="attribuer"><span class="pastille ok">${icone("coche")}</span>
             <span class="corps"><span class="titre">Lettres des cases bonus</span><span class="detail">${Object.keys(f.bonus).length} case${Object.keys(f.bonus).length > 1 ? "s" : ""} attribuée${Object.keys(f.bonus).length > 1 ? "s" : ""}</span></span>${icone("suivant", 18)}</button>` : ""}
         </div>
       </section>
@@ -321,7 +322,8 @@ function dessinerPage(cv, page, n) {
   // quadrillage théorique : il doit tomber pile sur les cases imprimées
   const k = cv.width / M.PW, x0 = (M.PW - M.COLS * M.CASE) / 2, y0 = M.MARGE + M.HAUT_ENTETE;
   cx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim(); cx.lineWidth = 2; cx.globalAlpha = 0.75;
-  if (n !== 2) for (let r = 0; r < M.ROWS; r++) for (let col = 0; col < M.COLS; col++) cx.strokeRect((x0 + col * M.CASE) * k, (y0 + r * M.CASE) * k, M.CASE * k, M.CASE * k);
+  // cases de la page, selon son gabarit (grille 4 : avec la rangée bonus en bas)
+  if (n !== 2) for (const r of M.casesPage(page)) cx.strokeRect(r.x0 * k, r.y0 * k, r.C * k, r.C * k);
   else for (let r = 0; r < M.PHRASES.length; r++) { const y = (y0 + r * M.CASE + M.CASE * (1 - M.LB)) * k; cx.beginPath(); cx.moveTo(x0 * k, y); cx.lineTo((x0 + M.COLS * M.CASE) * k, y); cx.stroke(); }
 }
 
@@ -363,7 +365,8 @@ function vuePhoto(c, n) {
     await enregistrerPage(c, n, page);
     $("#rendu").hidden = false; dessinerPage($("#rendu"), page, n);
     msg.className = "message ok"; msg.textContent = "Page enregistrée. Vérifie que le quadrillage tombe pile sur les cases.";
-    if (n === 3) { msg.innerHTML += ` <button class="btn petit" id="vers-bonus">Indiquer les lettres</button>`; $("#vers-bonus").onclick = () => aller(`#/p/${f.id}/bonus`); }
+    // page avec des cases bonus (ancienne page 4, ou pages 1-2 de la grille 4) : on propose de les attribuer
+    if (n === 3 || M.geo(page).bonus) { msg.innerHTML += ` <button class="btn petit" id="vers-bonus">Indiquer les lettres des cases bonus</button>`; $("#vers-bonus").onclick = () => aller(`#/p/${f.id}/bonus`); }
     $("#prendre").innerHTML = `${icone("photo", 20)} Reprendre`;
   };
   $("#camera").onchange = traiter; $("#fichier").onchange = traiter;
@@ -412,7 +415,7 @@ function vueDessin(c, i) {
       const img = tmp.getContext("2d").createImageData(scan.w, scan.h);
       for (let k = 0; k < scan.m.length; k++) if (scan.m[k]) { img.data[4 * k + 3] = 60; }
       tmp.getContext("2d").putImageData(img, 0, 0);
-      const decal = 1.2 * M.MM * M.PX / M.CASE_PX * t, taille = scan.w / M.CASE_PX * t;
+      const decal = M.RETRAIT * M.PX / M.CASE_PX * t, taille = scan.w / M.CASE_PX * t;
       cx.drawImage(tmp, decal, decal, taille, taille);
     }
     cx.strokeStyle = couleur("--trait"); cx.lineWidth = Math.max(1, r);

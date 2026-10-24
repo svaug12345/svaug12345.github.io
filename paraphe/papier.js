@@ -5,22 +5,63 @@
      - « grille » : sa case sur la page 1 ou 2 ;
      - « bonus:k » : la case bonus n° k de la page 4, si on l'y a refaite ;
      - « dessin »  : dessinée à l'écran.
-   police.bonus  = { n° de case bonus: caractère }   (ce que l'enfant a refait dans chaque case)
+   police.bonus  = { clé de case bonus: caractère }   (ce que l'enfant a refait dans chaque case)
    police.choix  = { caractère: id de la version préférée }
    Par défaut : le dessin s'il existe, sinon la dernière case bonus, sinon la grille.
+
+   Les cases bonus existent à deux endroits :
+     - grille 4 (depuis la 1.7) : une rangée de 7 cases en bas des pages 1 et 2.
+       Clé « 0:k » ou « 1:k » (page 1 ou 2, case k de la rangée) ;
+     - grille 3 (1.6) : une page 4 entière de 63 cases. Clé « k » (simple numéro).
+   Une case BARRÉE (grande croix) ne compte plus : ni la case de la grille, ni une case bonus.
    ========================================================================== */
 "use strict";
 
-const NOMS_PAGES = ["Page 1 · lettres et chiffres", "Page 2 · accents et signes", "Page 3 · phrases", "Page 4 · cases bonus"];
+const NOMS_PAGES = ["Page 1 · lettres et chiffres", "Page 2 · accents et signes", "Page 3 · phrases", "Page 4 · cases bonus (ancienne grille)"];
+
+/** Toutes les cases bonus disponibles sur les pages enregistrées : [{ cle, page, idx, nom }]. */
+function casesBonus(c) {
+  const res = [];
+  for (const n of [0, 1]) {
+    const page = c.pages[n]; if (!page || !M.geo(page).bonus) continue;
+    for (let k = 0; k < M.NB_BONUS; k++) res.push({ cle: `${n}:${k}`, page, idx: M.PAR_PAGE + k, nom: `Case bonus ${k + 1} · page ${n + 1}` });
+  }
+  if (c.pages[3]) for (let k = 0; k < M.PAR_PAGE; k++) res.push({ cle: String(k), page: c.pages[3], idx: k, nom: `Case bonus n° ${k + 1}` });
+  return res;
+}
+/** Une clé de case bonus → { page, idx, nom } (ou null si la page n'est plus là). */
+function caseBonus(c, cle) {
+  const [a, b] = String(cle).split(":");
+  if (b !== undefined) {
+    const page = c.pages[+a];
+    return page && M.geo(page).bonus ? { page, idx: M.PAR_PAGE + +b, nom: `Case bonus ${+b + 1} · page ${+a + 1}` } : null;
+  }
+  return c.pages[3] ? { page: c.pages[3], idx: +a, nom: `Case bonus n° ${+a + 1}` } : null;
+}
 
 /** Toutes les versions possibles d'un caractère (sans encore savoir si la case est remplie). */
 function versionsDe(c, p, ch) {
   const f = c.police, v = [], i = M.CARS.indexOf(ch), page = c.pages[Math.floor(i / M.PAR_PAGE)];
   if (page) v.push({ id: "grille", nom: "Grille", masque: () => M.masqueScan(page, i % M.PAR_PAGE, p) });
-  if (c.pages[3]) for (const [k, x] of Object.entries(f.bonus)) if (x === ch)
-    v.push({ id: "bonus:" + k, nom: `Case bonus n° ${+k + 1}`, masque: () => M.masqueScan(c.pages[3], +k, p, true) });
+  for (const [k, x] of Object.entries(f.bonus)) {
+    const cb = x === ch && caseBonus(c, k);
+    if (cb) v.push({ id: "bonus:" + k, nom: cb.nom, masque: () => M.masqueScan(cb.page, cb.idx, p, true) });
+  }
   if ((f.dessins[ch] || []).length) v.push({ id: "dessin", nom: "Dessin à l'écran", masque: () => M.masqueDessin(f.dessins[ch], p, ch) });
   return v;
+}
+
+/** Caractères dont la case de la grille a été barrée, dans l'ordre de la grille. */
+function lettresBarrees(c, p) {
+  const res = [];
+  for (const n of [0, 1]) {
+    const page = c.pages[n]; if (!page) continue;
+    for (let k = 0; k < M.PAR_PAGE; k++) {
+      const ch = M.CARS[n * M.PAR_PAGE + k];
+      if (ch && M.analyserCase(page, k, p).barree) res.push(ch);
+    }
+  }
+  return res;
 }
 
 /** La version utilisée dans la police : celle choisie, sinon dessin > dernière case bonus > grille. */
@@ -32,7 +73,7 @@ function versionChoisie(c, p, ch) {
 /** Nombre de versions (rapide, sans calculer les masques) : pour le petit badge de la galerie. */
 function nbVersions(c, ch) {
   const f = c.police, i = M.CARS.indexOf(ch);
-  return (c.pages[Math.floor(i / M.PAR_PAGE)] ? 1 : 0) + (c.pages[3] ? Object.values(f.bonus).filter(x => x === ch).length : 0) + ((f.dessins[ch] || []).length ? 1 : 0);
+  return (c.pages[Math.floor(i / M.PAR_PAGE)] ? 1 : 0) + Object.entries(f.bonus).filter(([k, x]) => x === ch && caseBonus(c, k)).length + ((f.dessins[ch] || []).length ? 1 : 0);
 }
 
 /** Dessine un masque d'encre dans un canvas carré de la taille d'une case, posé sur la ligne de base. */
@@ -122,7 +163,10 @@ async function vueImportPDF(c) {
       if (doublon) { toast(`Deux pages sont attribuées à « ${NOMS_PAGES[doublon.cible]} ».`); return; }
       for (const x of choisies) await enregistrerPage(c, x.cible, x.page);
       toast(`${choisies.length} page${choisies.length > 1 ? "s" : ""} enregistrée${choisies.length > 1 ? "s" : ""}`);
-      revenir(`#/p/${f.id}`);
+      // Des cases bonus remplies et pas encore attribuées ? On va directement dire quelles lettres c'est.
+      const aFaire = casesBonus(c).some(b => !f.bonus[b.cle] && M.masqueScan(b.page, b.idx, f.reglages, true));
+      if (aFaire) aller(`#/p/${f.id}/bonus`, true);     // remplace l'écran d'import : « retour » ramène au projet
+      else revenir(`#/p/${f.id}`);
     };
   }
 }
@@ -130,39 +174,69 @@ async function vueImportPDF(c) {
 // ---------------------------------------------------------------------------
 // Cases bonus : dire quelle lettre a été refaite dans chaque case
 // ---------------------------------------------------------------------------
+// Noms lisibles des signes dans la liste (un « . » seul, dans un menu, ne se voit pas bien)
+const NOMS_SIGNES = { ".": "point", ",": "virgule", ";": "point-virgule", ":": "deux-points", "!": "point d'exclamation",
+  "?": "point d'interrogation", "'": "apostrophe", "\"": "guillemet droit", "-": "tiret", "_": "tiret bas", "(": "parenthèse ouvrante",
+  ")": "parenthèse fermante", "[": "crochet ouvrant", "]": "crochet fermant", "&": "et commercial", "@": "arobase", "€": "euro",
+  "$": "dollar", "%": "pour cent", "/": "barre oblique", "+": "plus", "=": "égal", "*": "astérisque", "#": "dièse", "<": "inférieur",
+  ">": "supérieur", "«": "guillemet ouvrant", "»": "guillemet fermant", "°": "degré", "~": "tilde" };
+const libelle = ch => NOMS_SIGNES[ch] ? `${ch}   ${NOMS_SIGNES[ch]}` : ch;
+
+/** Tous les caractères de la grille, rangés par type puis par ordre alphabétique,
+    pour la liste déroulante. localeCompare("fr") trie « à, â, ä » juste après « a ». */
+function caracteresParType() {
+  const types = ["Minuscule", "Majuscule", "Chiffre", "Minuscule accentuée", "Majuscule accentuée", "Signe"];
+  const titres = ["Minuscules", "Majuscules", "Chiffres", "Minuscules accentuées", "Majuscules accentuées", "Signes"];
+  return types.map((t, k) => ({
+    titre: titres[k],
+    cars: M.CARS.filter(ch => genre(ch) === t).sort((a, b) => t === "Signe" ? a.codePointAt(0) - b.codePointAt(0) : a.localeCompare(b, "fr")),
+  }));
+}
+
 function vueBonus(c) {
-  const f = c.police, p = f.reglages, page = c.pages[3];
-  if (!page) return aller(`#/p/${f.id}/photo/3`, true);
-  // seules les cases où il y a de l'écriture
-  const remplies = [...Array(M.PAR_PAGE).keys()].filter(k => M.masqueScan(page, k, p, true));
+  const f = c.police, p = f.reglages;
+  // Seules les cases bonus où il y a de l'écriture, et pas barrées (une case bonus ratée et
+  // barrée est simplement ignorée).
+  const remplies = casesBonus(c).filter(b => M.masqueScan(b.page, b.idx, p, true));
+  if (!casesBonus(c).length) return aller(`#/p/${f.id}`, true);
+  // Les lettres barrées sur la grille sont celles que l'enfant a refaites : elles sont proposées
+  // en tête de liste. (On ne les attribue pas d'office : l'ordre des cases bonus peut être différent.)
+  const barrees = lettresBarrees(c, p);
+  const groupes = caracteresParType();
+  const menu = cle => {
+    const v = f.bonus[cle] || "", opt = ch => `<option value="${esc(ch)}" ${ch === v ? "selected" : ""}>${esc(libelle(ch))}</option>`;
+    return `<select class="champ-lettre" data-cle="${cle}" aria-label="Lettre de cette case bonus">
+      <option value="" ${v ? "" : "selected"}>Choisir…</option>
+      ${barrees.length ? `<optgroup label="Barrées sur la grille">${barrees.map(opt).join("")}</optgroup>` : ""}
+      ${groupes.map(g => `<optgroup label="${g.titre}">${g.cars.map(opt).join("")}</optgroup>`).join("")}
+    </select>`;
+  };
   rendre({
     titre: "Cases bonus", retour: `#/p/${f.id}`,
     contenu: `<div><h2 class="titre-page">Quelle lettre dans chaque case ?</h2>
-        <p class="sous-titre">Regarde la petite lettre écrite dans le carré du coin et tape-la. La case bonus devient alors la version utilisée ; tu pourras toujours revenir à celle de la grille.</p></div>
-      ${remplies.length ? `<div class="cases-bonus">${remplies.map(k => `<label class="case-bonus">
-          <canvas data-k="${k}"></canvas>
-          <input class="champ-lettre" maxlength="2" data-k="${k}" value="${esc(f.bonus[k] || "")}" placeholder="?" aria-label="Lettre de la case bonus ${k + 1}">
-        </label>`).join("")}</div>` : `<p class="aide">Aucune case bonus remplie sur cette page.</p>`}`,
+        <p class="sous-titre">Regarde la petite lettre écrite dans le carré du coin et choisis-la dans la liste. La case bonus devient la version utilisée ; tu pourras toujours revenir à celle de la grille.</p></div>
+      ${barrees.length ? `<div class="encart"><span>Lettres barrées sur la grille : <strong>${barrees.map(esc).join(" ")}</strong>. Elles sont en tête de chaque liste.</span></div>` : ""}
+      ${remplies.length ? `<div class="cases-bonus">${remplies.map(b => `<label class="case-bonus">
+          <canvas data-cle="${b.cle}"></canvas><span class="nom-case">${esc(b.nom)}</span>
+          ${menu(b.cle)}
+        </label>`).join("")}</div>` : `<p class="aide">Aucune case bonus remplie pour l'instant.</p>`}`,
     pied: `<button class="btn principal" id="fini">Terminé</button>`,
   });
   // aperçu de chaque case entière (avec le petit carré), pris directement sur la page scannée
   document.querySelectorAll(".case-bonus canvas").forEach(cv => {
-    const { x0, y0 } = M.rectCase(+cv.dataset.k), T = Math.round(M.CASE * M.PX);
+    const b = remplies.find(x => x.cle === cv.dataset.cle), { x0, y0, C } = M.rectCase(b.idx, b.page), T = Math.round(C * M.PX);
     cv.width = cv.height = T;
-    const im = cv.getContext("2d").createImageData(T, T);
+    const im = cv.getContext("2d").createImageData(T, T), page = b.page;
     for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {
       const v = page.gris[(Math.round(y0 * M.PX) + y) * page.w + Math.round(x0 * M.PX) + x], k = 4 * (y * T + x);
       im.data[k] = im.data[k + 1] = im.data[k + 2] = v; im.data[k + 3] = 255;
     }
     cv.getContext("2d").putImageData(im, 0, 0);
   });
-  document.querySelectorAll(".case-bonus input").forEach(inp => inp.oninput = () => {
-    const k = inp.dataset.k, v = [...inp.value.trim()].pop() || "";      // on garde le dernier caractère tapé
-    inp.value = v;
-    if (v && !M.CARS.includes(v)) { toast(`« ${v} » ne fait pas partie de la grille.`); inp.value = ""; delete f.bonus[k]; modifie(c); return; }
-    const avant = f.bonus[k];
-    if (v) { f.bonus[k] = v; f.choix[v] = "bonus:" + k; delete f.retouches[v]; } else delete f.bonus[k];
-    if (avant && avant !== v && f.choix[avant] === "bonus:" + k) delete f.choix[avant];
+  document.querySelectorAll(".case-bonus select").forEach(sel => sel.onchange = () => {
+    const cle = sel.dataset.cle, v = sel.value, avant = f.bonus[cle];
+    if (v) { f.bonus[cle] = v; f.choix[v] = "bonus:" + cle; delete f.retouches[v]; } else delete f.bonus[cle];
+    if (avant && avant !== v && f.choix[avant] === "bonus:" + cle) delete f.choix[avant];
     modifie(c);
   });
   $("#fini").onclick = () => revenir(`#/p/${f.id}`);

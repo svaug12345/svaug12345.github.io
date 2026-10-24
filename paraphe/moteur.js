@@ -178,21 +178,58 @@ const Moteur = (() => {
 
   // =================== 2. Cases et masques d'encre ===================
 
-  function rectCase(idx) {
-    const col = idx % COLS, lig = Math.floor(idx / COLS);
-    return { x0: (PW - COLS * CASE) / 2 + col * CASE, y0: MARGE + HAUT_ENTETE + lig * CASE };
+  // ---------- Deux « gabarits » de grille ----------
+  // Grille 3 (jusqu'à la 1.6) : 9 rangées de cases de 25,7 mm ; les cases bonus étaient sur une page 4.
+  // Grille 4 (depuis la 1.7) : les mêmes 63 cases, un peu plus petites (23,5 mm), PLUS une rangée
+  // de 7 cases bonus en bas de chaque page, sous un bandeau d'explication.
+  // La page dit elle-même quel gabarit elle utilise grâce aux barres de numéro (voir identifierPage).
+  const CASE4 = 23.5 * MM, BANDE4 = 8 * MM, NB_BONUS = COLS;
+  const GABARITS = {
+    3: { num: 3, C: CASE, x0: (PW - COLS * CASE) / 2, y0: MARGE + HAUT_ENTETE, bande: 0, bonus: 0 },
+    4: { num: 4, C: CASE4, x0: (PW - COLS * CASE4) / 2, y0: MARGE + HAUT_ENTETE, bande: BANDE4, bonus: NB_BONUS },
+  };
+  /** Gabarit d'une page scannée : reconnu une seule fois puis mémorisé sur la page. */
+  function geo(page) {
+    if (!page) return GABARITS[3];
+    if (!page.gabarit) page.gabarit = identifierPage(page).gabarit;
+    return GABARITS[page.gabarit];
   }
 
+  /** Coin haut-gauche (en points) de la case n° idx. Les cases 63 à 69 sont la rangée bonus
+      (grille 4) : elles sont décalées vers le bas de la hauteur du bandeau. */
+  function rectCase(idx, g = GABARITS[3]) {
+    if (g && g.gris) g = geo(g);                    // on accepte aussi une page en paramètre
+    const col = idx % COLS, lig = Math.floor(idx / COLS);
+    return { x0: g.x0 + col * g.C, y0: g.y0 + lig * g.C + (lig >= ROWS ? g.bande : 0), C: g.C };
+  }
+  /** Toutes les cases d'une page (lettres puis bonus), pour dessiner le quadrillage de contrôle. */
+  function casesPage(page) {
+    const g = geo(page); return Array.from({ length: PAR_PAGE + g.bonus }, (_, i) => rectCase(i, g));
+  }
+
+  // On découpe la case 0,3 mm à l'intérieur de son cadre. (Avant : 1,2 mm, et les queues
+  // des g, y, j qui descendaient près du bord étaient coupées.) Le cadre imprimé qui pourrait
+  // encore apparaître est effacé ensuite par effacerCadre().
+  const RETRAIT = 0.3 * MM;
   const cacheCases = new WeakMap();
-  /** Case d'une page, floutée (gaussien 5×5) ; mise en cache car indépendante des réglages. */
+  /** Case d'une page, floutée (gaussien 5×5) ; mise en cache car indépendante des réglages.
+      Le résultat est toujours à l'échelle d'une case de grille 3 : une case plus petite
+      (grille 4) est agrandie à la lecture, si bien que tout le reste du calcul est identique. */
   function caseFloue(page, idx) {
     let c = cacheCases.get(page); if (!c) { c = new Map(); cacheCases.set(page, c); }
     if (c.has(idx)) return c.get(idx);
-    const { x0, y0 } = rectCase(idx), r = 1.2 * MM;
-    const x1 = Math.floor((x0 + r) * PX), y1 = Math.floor((y0 + r) * PX);
-    const w = Math.floor((x0 + CASE - r) * PX) - x1, h = Math.floor((y0 + CASE - r) * PX) - y1;
+    const geom = geo(page), { x0, y0 } = rectCase(idx, geom), f = geom.C / CASE, r = RETRAIT;
+    const sx = Math.floor((x0 + r * f) * PX), sy = Math.floor((y0 + r * f) * PX);   // 1er pixel lu sur la page
+    const w = Math.floor((CASE - 2 * r) * PX), h = w;
     const g = new Float32Array(w * h), tmp = new Float32Array(w * h), k = [1, 4, 6, 4, 1];
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) g[y * w + x] = page.gris[(y1 + y) * page.w + x1 + x];
+    // Lecture avec interpolation bilinéaire : le pixel (x, y) de la case vient du point
+    // (sx + x·f, sy + y·f) de la page. Avec f = 1 (grille 3) ce sont des pixels entiers, copiés tels quels.
+    const lire = (u, v) => {
+      const u0 = Math.floor(u), v0 = Math.floor(v), fu = u - u0, fv = v - v0, q = v0 * page.w + u0, G = page.gris;
+      if (u0 < 0 || v0 < 0 || u0 >= page.w - 1 || v0 >= page.h - 1) return 255;
+      return (G[q] * (1 - fu) + G[q + 1] * fu) * (1 - fv) + (G[q + page.w] * (1 - fu) + G[q + page.w + 1] * fu) * fv;
+    };
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) g[y * w + x] = lire(sx + x * f, sy + y * f);
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
       let s = 0, n = 0; for (let t = -2; t <= 2; t++) { const xx = x + t; if (xx >= 0 && xx < w) { s += k[t + 2] * g[y * w + xx]; n += k[t + 2]; } }
       tmp[y * w + x] = s / n;
@@ -201,7 +238,8 @@ const Moteur = (() => {
       let s = 0, n = 0; for (let t = -2; t <= 2; t++) { const yy = y + t; if (yy >= 0 && yy < h) { s += k[t + 2] * tmp[yy * w + x]; n += k[t + 2]; } }
       g[y * w + x] = s / n;
     }
-    const res = { flou: g, w, h, base: (y0 + CASE * (1 - LB)) * PX - y1 };
+    // ligne de base : sa position sur la page, ramenée à l'échelle de la case lue
+    const res = { flou: g, w, h, base: ((y0 + geom.C * (1 - LB)) * PX - sy) / f };
     c.set(idx, res); return res;
   }
 
@@ -219,18 +257,89 @@ const Moteur = (() => {
     return o;
   }
 
-  /** Masque d'encre d'une case scannée : seuil, étiquette effacée, poussières, épaisseur. */
-  function masqueScan(page, idx, p, bonus = false) {
+  /** Efface le cadre imprimé de la case s'il est entré dans la découpe (feuille un peu décalée).
+      1. Une rangée (ou colonne) près du bord encrée sur plus de 40 % de sa longueur, c'est le
+         cadre : on efface ses pixels, SAUF là où il y a aussi de l'encre un peu au-dessus ou
+         au-dessous (une queue de « g » qui traverse le cadre doit rester entière).
+      2. Toute tache entièrement collée contre un bord (dans les 1,5 mm) est un reste de cadre. */
+  function effacerCadre(m, w, h) {
+    const bande = Math.round(2.5 * MM * PX), d = Math.round(0.9 * MM * PX), o = m.slice();   // o : copie intacte
+    const encre = (x, y) => x >= 0 && y >= 0 && x < w && y < h && o[y * w + x];
+    for (let y = 0; y < h; y++) {                                   // rangées du haut et du bas
+      if (y >= bande && y < h - bande) continue;
+      let n = 0; for (let x = 0; x < w; x++) n += o[y * w + x];
+      if (n > 0.4 * w) for (let x = 0; x < w; x++) if (!encre(x, y - d) && !encre(x, y + d)) m[y * w + x] = 0;
+    }
+    for (let x = 0; x < w; x++) {                                   // colonnes de gauche et de droite
+      if (x >= bande && x < w - bande) continue;
+      let n = 0; for (let y = 0; y < h; y++) n += o[y * w + x];
+      if (n > 0.4 * h) for (let y = 0; y < h; y++) if (!encre(x - d, y) && !encre(x + d, y)) m[y * w + x] = 0;
+    }
+    const b = Math.round(1.5 * MM * PX);
+    for (const t of taches(m, w, h, true))
+      if (t.x1 < b || t.y1 < b || t.x0 > w - 1 - b || t.y0 > h - 1 - b) for (const q of t.pix) m[q] = 0;
+  }
+
+  /** Une case barrée d'une grande croix (ou d'un grand trait en diagonale) ?
+      On essaie des droites qui traversent la case d'un coin à l'autre (avec un peu de jeu sur
+      les extrémités, car à main levée on ne vise pas pile le coin) et on regarde quelle part de
+      chaque droite passe sur de l'encre. Une lettre, même un X, ne couvre jamais plus de 65 %
+      d'une diagonale de la case (elle tient entre les lignes guides) ; un trait de rature, si.
+      zone = rectangle du coin haut-gauche à ignorer (l'étiquette, effacée ensuite). */
+  function estBarree(m, w, h, zone) {
+    // Image intégrale : permet de savoir en une opération s'il y a de l'encre dans un carré.
+    const W = w + 1, I = new Int32Array(W * (h + 1));
+    for (let y = 0; y < h; y++) { let s = 0; for (let x = 0; x < w; x++) { s += m[y * w + x]; I[(y + 1) * W + x + 1] = I[y * W + x + 1] + s; } }
+    const tol = Math.round(1.2 * MM * PX);
+    const proche = (x, y) => {                       // de l'encre à moins de 1,2 mm de (x, y) ?
+      const a = Math.max(0, Math.round(x) - tol), b = Math.max(0, Math.round(y) - tol);
+      const c = Math.min(w, Math.round(x) + tol + 1), d = Math.min(h, Math.round(y) + tol + 1);
+      return c > a && d > b && I[d * W + c] - I[b * W + c] - I[d * W + a] + I[b * W + a] > 0;
+    };
+    // Décalage des extrémités, en fraction de case : positif = glissé le long du bord du haut
+    // (ou du bas), négatif = le long du bord vertical. On reste proche de la vraie diagonale
+    // (± 3 mm environ) : une droite trop penchée suivrait le jambage d'une lettre.
+    const decalages = [-0.12, -0.06, 0, 0.06, 0.12], N = 40;
+    const bout = (d, haut, gauche) => {                // extrémité près d'un coin, décalée de d
+      const x = gauche ? 0 : w, y = haut ? 0 : h, sx = gauche ? 1 : -1, sy = haut ? 1 : -1;
+      return d >= 0 ? [x + sx * d * w, y] : [x, y - sy * d * h];
+    };
+    for (const diag of [0, 1]) for (const da of decalages) for (const db of decalages) {
+      // diagonale 0 : du coin haut-gauche au coin bas-droit ; 1 : du haut-droit au bas-gauche.
+      const [xa, ya] = bout(da, true, diag === 0), [xb, yb] = bout(db, false, diag === 1);
+      const vus = [];
+      for (let k = 0; k < N; k++) {
+        const t = 0.04 + 0.92 * k / (N - 1), x = xa + (xb - xa) * t, y = ya + (yb - ya) * t;
+        if (x < zone.w && y < zone.h) continue;        // dans l'étiquette : on ne compte pas
+        vus.push(proche(x, y));
+      }
+      // Le trait doit couvrir presque toute la droite, ET ses deux bouts (le premier et le
+      // dernier quart des points vus) : pas seulement le milieu, là où sont les lettres.
+      const n = vus.length, q = Math.floor(n / 4), somme = a => a.reduce((s, v) => s + v, 0);
+      if (n > 20 && somme(vus) >= 0.8 * n && somme(vus.slice(0, q)) >= 0.6 * q && somme(vus.slice(n - q)) >= 0.6 * q) return true;
+    }
+    return false;
+  }
+
+  /** Analyse d'une case scannée → { masque (ou null si vide ou barrée), barree }.
+      Seuil, cadre, rature, étiquette effacée, poussières, épaisseur. */
+  function analyserCase(page, idx, p, bonus = false) {
     const c = caseFloue(page, idx), { w, h } = c; let m = new Uint8Array(w * h);
     for (let i = 0; i < m.length; i++) m[i] = c.flou[i] < p.seuil ? 1 : 0;
-    // Coin haut-gauche effacé : l'étiquette imprimée (grille) ou, sur la page bonus,
+    effacerCadre(m, w, h);
+    // Coin haut-gauche effacé : l'étiquette imprimée (grille) ou, sur une case bonus,
     // le petit carré où l'enfant a écrit quelle lettre il refait (zone un peu plus grande).
-    const lh = Math.round((bonus ? 6.2 : 5) * MM * PX), lw = Math.round((bonus ? 6.2 : 6) * MM * PX);
+    // Mesures depuis le coin de la case, puis converties en pixels de la découpe.
+    const lh = Math.round(((bonus ? 7.4 : 6.2) * MM - RETRAIT) * PX), lw = Math.round(((bonus ? 7.4 : 7.2) * MM - RETRAIT) * PX);
+    const barree = estBarree(m, w, h, { w: lw, h: lh });
+    if (barree) return { masque: null, barree: true };
     for (let y = 0; y < lh && y < h; y++) for (let x = 0; x < lw && x < w; x++) m[y * w + x] = 0;
     for (const t of taches(m, w, h, true)) if (t.aire <= p.poussieres) for (const q of t.pix) m[q] = 0;
     for (let k = 0; k < Math.abs(p.graisse); k++) m = morpho(m, w, h, p.graisse > 0);
-    return m.some(v => v) ? { m, w, h, base: c.base } : null;
+    return { masque: m.some(v => v) ? { m, w, h, base: c.base } : null, barree: false };
   }
+  /** Masque d'encre d'une case (null si elle est vide ou barrée). */
+  function masqueScan(page, idx, p, bonus = false) { return analyserCase(page, idx, p, bonus).masque; }
 
   // ---------- Reconnaître quelle page de la grille on a scannée ----------
   // Depuis la version 3 de la grille, chaque page porte en haut à droite, à gauche du carré
@@ -255,7 +364,13 @@ const Moteur = (() => {
       2. sinon (anciennes grilles) : pas de traits verticaux de cases = page de phrases ;
          une dernière ligne de cases sans bordure = ancienne page 2 (elle était incomplète). */
   function identifierPage(page) {
-    const r = marques(4), x0 = r[3].x - 1 * MM, x1 = r[0].x + r[0].w + 1 * MM, y0 = r[0].y - 1 * MM, y1 = r[0].y + r[0].h + 1 * MM;
+    const res = identifierBrut(page);
+    return { ...res, gabarit: res.gabarit || 3 };
+  }
+  // Nombre de barres → page : 1 et 2 = pages de lettres (grille 3), 3 = phrases,
+  // 4 = ancienne page de cases bonus, 5 et 6 = pages 1 et 2 de la grille 4 (avec rangée bonus).
+  function identifierBrut(page) {
+    const r = marques(6), x0 = r[5].x - 1 * MM, x1 = r[0].x + r[0].w + 1 * MM, y0 = r[0].y - 1 * MM, y1 = r[0].y + r[0].h + 1 * MM;
     const W = Math.round((x1 - x0) * PX), H = Math.round((y1 - y0) * PX), bin = new Uint8Array(W * H);
     for (let v = 0; v < H; v++) for (let u = 0; u < W; u++) bin[v * W + u] = page.gris[(Math.round(y0 * PX) + v) * page.w + Math.round(x0 * PX) + u] < 110 ? 1 : 0;
     const barres = taches(bin, W, H).filter(t => t.aire > 0.35 * MARQUE.l * MARQUE.h * PX * PX).length;
@@ -263,10 +378,11 @@ const Moteur = (() => {
     const gx = (PW - COLS * CASE) / 2 + CASE, gy = MARGE + HAUT_ENTETE;
     const trait = noirceur(page, gx - 0.5, gy + 4, 1, ROWS * CASE - 8) - noirceur(page, gx + 3, gy + 4, 1, ROWS * CASE - 8);
     const phrases = trait < 25;
+    if (barres === 5 || barres === 6) return { num: barres - 4, phrases: false, gabarit: 4 };
     if (barres >= 1 && barres <= 4) return { num: barres, phrases: barres === 3 };
     if (phrases) return { num: 3, phrases: true };
     // ancienne grille : la dernière case (n° 62) a-t-elle une bordure en bas ?
-    const { x0: cx, y0: cy } = rectCase(PAR_PAGE - 1);
+    const { x0: cx, y0: cy } = rectCase(PAR_PAGE - 1, GABARITS[3]);
     const bord = noirceur(page, cx + 4, cy + CASE - 0.6, CASE - 8, 1.2) - noirceur(page, cx + 4, cy + CASE - 4, CASE - 8, 1.2);
     return { num: bord < 20 ? 2 : null, phrases: false };
   }
@@ -707,5 +823,5 @@ const Moteur = (() => {
 
   return { MM, PW, PH, MARGE, HAUT_ENTETE, COLS, ROWS, REP, CASE, LB, LX, LM, PX, PAR_PAGE, CARS, PHRASES, DEFAUT, CASE_PX,
     enGris, redresser, masqueScan, masqueDessin, dessinerTraits, construire, mesurerEspacement, rectCase, glyphe, bezier,
-    marques, identifierPage };
+    marques, identifierPage, analyserCase, geo, casesPage, GABARITS, RETRAIT, NB_BONUS };
 })();
