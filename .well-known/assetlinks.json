@@ -20,7 +20,8 @@
       "namespace": "android_app",
       "package_name": "io.github.svaug12345.paraphe",
       "sha256_cert_fingerprints": [
-        "16:C5:AA:63:40:08:6D:60:A7:C0:FD:4A:19:37:86:0B:4C:4E:3A:BC:3C:7C:F6:05:86:E9:96:6F:4C:07:B3:0A"
+        "16:C5:AA:63:40:08:6D:60:A7:C0:FD:4A:19:37:86:0B:4C:4E:3A:BC:3C:7C:F6:05:86:E9:96:6F:4C:07:B3:0A",
+        "D8:0F:92:1A:AD:27:57:72:15:4B:9A:AD:56:BD:8C:99:7A:11:59:D4:18:CA:A9:E2:BA:82:80:AF:10:5B:E7:5B"
       ]
     }
   }
