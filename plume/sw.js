@@ -6,7 +6,7 @@
    ========================================================================== */
 importScripts("version.js");                      // définit self.PLUME_VERSION
 const VERSION = "plume-" + self.PLUME_VERSION;   // nom du cache : change à chaque version
-const FICHIERS = ["./", "index.html", "version.js", "style.css", "moteur.js", "grille.js", "stockage.js", "exemples.js", "app.js",
+const FICHIERS = ["./", "index.html", "version.js", "style.css", "moteur.js", "grille.js", "stockage.js", "exemples.js", "retouche.js", "app.js",
   "manifest.webmanifest", "icones/icone.svg", "icones/geste.svg", "icones/icone-192.png", "icones/icone-512.png",
   "icones/icone-masquable-512.png"];
 // Polices Google (Manrope, JetBrains Mono) : gardées en cache dès la première visite pour le hors ligne

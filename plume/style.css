@@ -234,3 +234,26 @@ body { overflow-x: clip; }
 /* Caractère pas encore fait mais remplacé (majuscule par sa minuscule, sans accent…) */
 .case.secours { border-style: dashed; }
 .case.secours span { color: var(--doux); opacity: .55; }
+
+/* ---------- Aperçu touchable ---------- */
+.texte-essai.lecture { overflow-y: auto; white-space: normal; user-select: none; }
+.texte-essai .l { cursor: pointer; border-radius: 4px; }
+.texte-essai .l:active, .texte-essai .l:hover { background: var(--accent-doux); color: var(--accent); }
+.ligne-etat { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.btn.petit { min-height: 36px; padding: 0 12px; font-size: 0.72rem; }
+.feuille-lettre .lettre-choisie { display: flex; align-items: center; gap: 16px; }
+.feuille-lettre .lettre-choisie > span { font-size: 64px; line-height: 1; color: var(--encre); min-width: 56px; text-align: center; }
+.feuille-lettre h2 { margin: 0; }
+
+/* ---------- Éditeur de retouche ---------- */
+.consigne-retouche { width: 100%; }
+.editeur { width: 100%; height: min(44vh, 420px); border: 1px solid var(--trait); border-radius: var(--rayon); background: var(--carte); touch-action: none; overflow: hidden; }
+.editeur canvas { width: 100%; height: 100%; display: block; }
+/* une seule ligne d'outils : petites cases pour les icônes, plus larges pour les mots */
+.outils-retouche { display: grid; grid-template-columns: 48px 1.4fr 48px 1.2fr 44px 44px; gap: 6px; width: 100%; }
+.outils-retouche .btn { min-width: 0; padding: 0 6px; font-size: 0.72rem; letter-spacing: 0.06em; }
+.outils-retouche .btn[aria-pressed="true"] { background: var(--accent-doux); border-color: var(--accent); color: var(--accent); }
+.voisins { display: inline-flex; align-items: center; gap: 6px; }
+.champ-lettre { width: 40px; height: 36px; text-align: center; border: 1px solid var(--trait); border-radius: 6px; background: var(--carte); font-size: 1.05rem; }
+.bandeau { width: 100%; height: 84px; display: block; }
+.bandeau-retouche { padding: 10px 14px; gap: 2px; }

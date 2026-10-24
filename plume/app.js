@@ -94,6 +94,7 @@ async function ouvrirPolice(id) {
   if (courant && courant.police.id === id) return courant;
   const police = await Stockage.lire(id); if (!police) return null;
   police.reglages = { ...M.DEFAUT, ...police.reglages };    // complète avec les réglages ajoutés depuis
+  police.retouches = police.retouches || {};                  // lettres retouchées à la main (vecteurs)
   const pages = await Promise.all(police.pages.map(b => b ? Stockage.blobVersPage(b) : null));
   courant = { police, pages, version: 1, res: null, face: null };
   return courant;
@@ -120,7 +121,7 @@ let numeroFace = 0;
 async function calculer(c) {
   if (c.res && c.resVersion === c.version) return c.res;
   const v = c.version, p = c.police.reglages;
-  const res = M.construire(source(c, p), p, c.police.nom);
+  const res = M.construire(source(c, p), p, c.police.nom, c.police.retouches);
   const famille = "Plume" + (++numeroFace), face = new FontFace(famille, res.ttf.slice().buffer);
   await face.load(); document.fonts.add(face);
   if (c.face) document.fonts.delete(c.face);
@@ -437,6 +438,7 @@ function vueDessin(c, i) {
 
   function enregistrer() {
     if (traits.length) f.dessins[ch] = traits.map(t => ({ stylet: t.stylet, points: t.points })); else delete f.dessins[ch];
+    delete f.retouches[ch];        // nouveau dessin : l'ancienne retouche ne lui correspond plus
     modifie(c);
     clearTimeout(minuteurApercu); minuteurApercu = setTimeout(majApercu, 350);
   }
@@ -498,8 +500,11 @@ function vueApercu(c) {
   rendre({
     titre: "Aperçu", retour: `#/p/${f.id}`,
     contenu: `<section class="apercu-fixe">
-        <textarea class="texte-essai" id="essai" spellcheck="false" aria-label="Texte d'essai">${esc(texteEssai)}</textarea>
-        <p class="aide" id="etat" role="status">Calcul de la police…</p>
+        <div class="texte-essai lecture" id="lecture" aria-label="Texte d'essai : touche une lettre pour la retoucher"></div>
+        <textarea class="texte-essai" id="essai" spellcheck="false" aria-label="Texte d'essai" hidden>${esc(texteEssai)}</textarea>
+        <div class="ligne-etat"><p class="aide" id="etat" role="status">Calcul de la police…</p>
+          <button class="btn discret petit" id="modifier-texte">${icone("stylo", 16)} Texte</button></div>
+        <p class="aide" id="astuce">Touche une lettre pour la redessiner ou la retoucher.</p>
       </section>
       ${mesure ? `<div class="encart"><span>Espacement mesuré sur tes phrases : ${mesure.approche} entre les lettres, ${mesure.espace} entre les mots.</span>
         <div><button class="btn" id="mesure">Utiliser ces valeurs</button></div></div>` : ""}
@@ -527,10 +532,22 @@ function vueApercu(c) {
       </section>`,
     pied: `<button class="btn principal" id="exporter">${icone("telecharger", 20)} Exporter la police</button>`,
   });
-  const essai = $("#essai");
+  const essai = $("#essai"), lecture = $("#lecture");
+  // Mode lecture : chaque caractère est un <span> qu'on peut toucher. Mode texte : on modifie la phrase.
+  const remplirLecture = () => {
+    lecture.innerHTML = texteEssai.split("\n").map(l => [...l].map(x => x === " " ? " " : `<span class="l">${esc(x)}</span>`).join("")).join("<br>");
+  };
+  remplirLecture();
+  lecture.onclick = e => { const l = e.target.closest(".l"); if (l) choisirLettre(c, l.textContent); };
+  $("#modifier-texte").onclick = () => {
+    const edition = essai.hidden;                       // on bascule d'un mode à l'autre
+    essai.hidden = !edition; lecture.hidden = edition; $("#astuce").hidden = edition;
+    $("#modifier-texte").innerHTML = edition ? `${icone("coche", 16)} OK` : `${icone("stylo", 16)} Texte`;
+    if (edition) essai.focus(); else remplirLecture();
+  };
   essai.oninput = () => { texteEssai = essai.value; };
-  essai.style.fontSize = tailleEssai + "px";
-  $("#taille").oninput = e => { tailleEssai = +e.target.value; essai.style.fontSize = tailleEssai + "px"; $("#o-taille").textContent = tailleEssai; };
+  essai.style.fontSize = lecture.style.fontSize = tailleEssai + "px";
+  $("#taille").oninput = e => { tailleEssai = +e.target.value; essai.style.fontSize = lecture.style.fontSize = tailleEssai + "px"; $("#o-taille").textContent = tailleEssai; };
 
   let minuteur = null;
   const recalculer = () => {
@@ -539,7 +556,7 @@ function vueApercu(c) {
     minuteur = setTimeout(async () => {
       const t0 = performance.now(), res = await calculer(c);
       if (!document.body.contains(essai)) return;
-      essai.style.fontFamily = `'${res.famille}', var(--ui)`;
+      essai.style.fontFamily = lecture.style.fontFamily = `'${res.famille}', var(--ui)`;
       const rempl = res.remplaces.length, manque = res.manquants.length - rempl;
       $("#etat").textContent = `${M.CARS.length - res.manquants.length} caractères faits`
         + (rempl ? ` · ${rempl} remplacé${rempl > 1 ? "s" : ""}` : "") + (manque ? ` · ${manque} manquant${manque > 1 ? "s" : ""}` : "")
@@ -564,6 +581,29 @@ function vueApercu(c) {
   recalculer();
 }
 
+/** Une lettre touchée dans l'aperçu : la redessiner, la retoucher, ou annuler sa retouche. */
+async function choisirLettre(c, ch) {
+  const i = M.CARS.indexOf(ch); if (i < 0) { toast(`« ${ch} » ne fait pas partie de la grille.`); return; }
+  const f = c.police, res = await calculer(c);
+  const remplace = res.remplaces.includes(ch), manque = res.manquants.includes(ch) && !remplace;
+  const etat = manque ? "Pas encore fait" : remplace ? "Remplacé provisoirement (pas encore fait)"
+    : f.retouches[ch] ? "Retouché à la main" : (f.dessins[ch] || []).length ? "Dessiné à l'écran" : "Vient de la photo";
+  const d = document.createElement("dialog");
+  d.innerHTML = `<form method="dialog" class="feuille-lettre">
+      <div class="lettre-choisie"><span style="font-family:'${res.famille}', var(--ui)">${esc(ch)}</span><div><h2>« ${esc(ch)} »</h2><p class="aide">${etat}</p></div></div>
+      ${!manque && !remplace ? `<button class="btn plein principal" value="retoucher">${icone("stylo", 18)} Retoucher les points</button>` : ""}
+      <button class="btn plein ${manque || remplace ? "principal" : ""}" value="dessiner">${manque || remplace ? "Dessiner" : "Redessiner"}</button>
+      ${f.retouches[ch] ? `<button class="btn plein danger" value="annuler">Annuler la retouche</button>` : ""}
+      <button class="btn plein discret" value="">Fermer</button></form>`;
+  document.body.append(d); d.showModal();
+  d.addEventListener("close", () => {
+    const v = d.returnValue; d.remove();
+    if (v === "retoucher") aller(`#/p/${f.id}/retouche/${i}`);
+    if (v === "dessiner") aller(`#/p/${f.id}/dessin/${i}`);
+    if (v === "annuler") { delete f.retouches[ch]; modifie(c); toast("Retouche annulée"); vueApercu(c); }
+  });
+}
+
 // ---------- Routeur ----------
 async function routeur() {
   const morceaux = (location.hash.slice(1) || "/").split("/").filter(Boolean);
@@ -576,6 +616,7 @@ async function routeur() {
     if (ecran === "photo" && +n >= 0 && +n <= 2) return vuePhoto(c, +n);
     if (ecran === "dessin" && +n >= 0 && +n < M.CARS.length) return vueDessin(c, +n);
     if (ecran === "apercu") return vueApercu(c);
+    if (ecran === "retouche" && +n >= 0 && +n < M.CARS.length) return Retouche.vue(c, +n);
   }
   aller("#/", true);
 }

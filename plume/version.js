@@ -14,5 +14,6 @@
      1.2.0  minuscules d'abord, aperçu en direct pendant le dessin, reprise
      1.3.0  harmonisation des dessins, caractères de secours, aperçu fixe
      1.3.1  numéro de version centralisé et affiché
+     1.4.0  aperçu touchable, retouche vectorielle des lettres (points et poignées), bandeau entre deux lettres
    ========================================================================== */
-self.PLUME_VERSION = "1.3.1";
+self.PLUME_VERSION = "1.4.0";

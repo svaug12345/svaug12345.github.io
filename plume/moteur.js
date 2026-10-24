@@ -547,10 +547,41 @@ const Moteur = (() => {
     return fic;
   }
 
+  // =================== Lettres retouchées à la main ===================
+  // Une retouche est un contour vectoriel : des points d'ancrage {x, y} avec deux poignées
+  // {ix, iy} (côté entrant) et {ox, oy} (côté sortant), reliés par des courbes de Bézier cubiques.
+  // Coordonnées en unités de police : y depuis la ligne de base, x depuis le bord gauche de l'encre.
+
+  /** Point d'une courbe de Bézier cubique entre deux ancres a et b, pour t entre 0 et 1. */
+  function bezier(a, b, t) {
+    const u = 1 - t, A = u * u * u, B = 3 * u * u * t, C = 3 * u * t * t, D = t * t * t;
+    return [A * a.x + B * a.ox + C * b.ix + D * b.x, A * a.y + B * a.oy + C * b.iy + D * b.y];
+  }
+
+  /** Retouche → glyphe TrueType : chaque courbe est découpée en petits segments droits (points
+      « sur la courbe »), assez serrés pour paraître parfaitement lisses. */
+  function glypheRetouche(r, p) {
+    const cs = r.contours.filter(c => c.length >= 2).map(c => {
+      const pts = [];
+      for (let i = 0; i < c.length; i++) for (let k = 0; k < 12; k++) pts.push(bezier(c[i], c[(i + 1) % c.length], k / 12));
+      return pts;
+    });
+    let minX = Infinity, maxX = -Infinity;
+    for (const c of cs) for (const [x] of c) { minX = Math.min(minX, x); maxX = Math.max(maxX, x); }
+    if (minX === Infinity) return null;
+    const dx = p.approche - minX;                 // la marge « espace entre les lettres » reste réglable
+    const contours = cs.map(c => {
+      const q = c.map(([x, y]) => [Math.round(x + dx), Math.round(y), 1]);
+      return q.filter((v, i) => i === 0 || v[0] !== q[i - 1][0] || v[1] !== q[i - 1][1]);
+    }).filter(c => c.length >= 3);
+    return contours.length ? { contours, avance: Math.round(maxX - minX + 2 * p.approche) } : null;
+  }
+
   // =================== Construction de la police ===================
 
-  /** source(ch) renvoie le masque d'un caractère (dessin prioritaire sur le scan) ou null. */
-  function construire(source, p, famille) {
+  /** source(ch) renvoie le masque d'un caractère (dessin prioritaire sur le scan) ou null.
+      retouches : { caractère: retouche vectorielle } qui remplacent le tracé automatique. */
+  function construire(source, p, famille, retouches = {}) {
     // .notdef (caractère inconnu) : un rectangle creux, comme dans toutes les polices.
     // Il garantit aussi que la table des contours n'est jamais vide (sinon police refusée).
     const notdef = { contours: [[[50, 0, 1], [50, 700, 1], [450, 700, 1], [450, 0, 1]],
@@ -562,7 +593,7 @@ const Moteur = (() => {
       for (const c of codes) { cmap.set(c.codePointAt(0), g.id); parCar.set(c, g); }
     };
     for (const ch of CARS) {
-      const s = source(ch), g = s && glyphe(s, p);
+      const s = source(ch), r = s && retouches[ch], g = r ? glypheRetouche(r, p) : s && glyphe(s, p);
       if (!g) { manquants.push(ch); continue; }
       masques.set(ch, s);
       const alias = { "'": ["’", "‘", "′"], '"': ["“", "”", "„"], "-": ["‐", "‑", "−"] }[ch] || [];
@@ -597,7 +628,10 @@ const Moteur = (() => {
       }
     }
     const kern = p.crenage ? crenage(parCar, p) : [];
-    return { ttf: ecrireTTF(liste, cmap, kern, famille || "MaPolice"), manquants, remplaces, nbGlyphes: liste.length - 2, nbPaires: kern.length };
+    // dessins de chaque caractère (unités de police), pour l'éditeur de retouche et son aperçu
+    const glyphes = {};
+    for (const [ch, g] of parCar) glyphes[ch] = { contours: g.contours, avance: g.avance, retouche: !!(retouches[ch] && !remplaces.includes(ch)) };
+    return { ttf: ecrireTTF(liste, cmap, kern, famille || "MaPolice"), manquants, remplaces, glyphes, nbGlyphes: liste.length - 2, nbPaires: kern.length };
   }
 
   /** Page 3 : écarts naturels entre lettres et entre mots (projection de l'encre sur l'axe x). */
@@ -623,5 +657,5 @@ const Moteur = (() => {
   }
 
   return { MM, PW, PH, MARGE, HAUT_ENTETE, COLS, ROWS, REP, CASE, LB, LX, LM, PX, PAR_PAGE, CARS, PHRASES, DEFAUT, CASE_PX,
-    enGris, redresser, masqueScan, masqueDessin, dessinerTraits, construire, mesurerEspacement, rectCase };
+    enGris, redresser, masqueScan, masqueDessin, dessinerTraits, construire, mesurerEspacement, rectCase, glyphe, bezier };
 })();
