@@ -8,7 +8,7 @@
      #/p/ID/scanner        scanner les feuilles à la caméra, à la suite
      #/p/ID/import         importer des photos ou des PDF
      #/p/ID/photo/N        voir la page enregistrée N (0 ou 1 ; 2 et 3 : anciennes grilles)
-     #/p/ID/reprise        lettres à refaire sur papier (feuille de reprise)
+     #/p/ID/refaire[/I]    refaire une lettre : case seconde chance réservée, ou feuille de reprise
      #/p/ID/dessin/I       dessiner le caractère n° I
      #/p/ID/apercu         réglages, aperçu et export
    ========================================================================== */
@@ -186,6 +186,7 @@ async function vueAccueil() {
 
 async function vueProjet(c) {
   const f = c.police, nbDessins = Object.keys(f.dessins).length;
+  const attente = casesEnAttente(c), nbAttribuees = Object.keys(f.bonus).length - attente.length;
   const lignePage = n => {
     const ok = !!f.pages[n], nom = NOMS_PAGES[n];
     const detail = ok ? "Enregistrée · touche pour la voir" : "Pas encore scannée";
@@ -201,10 +202,15 @@ async function vueProjet(c) {
         <div class="jauge"><div id="jauge" style="width:0%"></div></div>
       </section>
       <section>
-        <p class="etiquette">Sur papier</p>
+        <p class="etiquette etape"><span>1</span> Imprimer</p>
         <div class="liste">
           <button class="ligne" id="grille"><span class="pastille">${icone("imprimer")}</span>
             <span class="corps"><span class="titre">Imprimer la grille</span><span class="detail">2 pages A4 · PDF</span></span>${icone("suivant", 18)}</button>
+        </div>
+      </section>
+      <section>
+        <p class="etiquette etape"><span>2</span> Scanner ou importer</p>
+        <div class="liste">
           <button class="ligne" id="scanner"><span class="pastille">${icone("photo")}</span>
             <span class="corps"><span class="titre">Scanner les feuilles</span><span class="detail">Avec la caméra, les pages à la suite</span></span>${icone("suivant", 18)}</button>
           <button class="ligne" id="importer"><span class="pastille">${icone("page")}</span>
@@ -212,11 +218,17 @@ async function vueProjet(c) {
           ${[0, 1].map(lignePage).join("")}
           ${f.pages[2] ? lignePage(2) : "" /* anciennes grilles : page de phrases */}
           ${f.pages[3] ? lignePage(3) : "" /* ancienne grille 1.6 : page de cases bonus */}
-          ${casesBonus(c).length ? `<button class="ligne" id="attribuer"><span class="pastille ok">${icone("coche")}</span>
-            <span class="corps"><span class="titre">Lettres des cases bonus</span><span class="detail">${Object.keys(f.bonus).length} case${Object.keys(f.bonus).length > 1 ? "s" : ""} attribuée${Object.keys(f.bonus).length > 1 ? "s" : ""}</span></span>${icone("suivant", 18)}</button>` : ""}
-          <button class="ligne" id="reprise"><span class="pastille ${f.aRefaire.length ? "ok" : ""}">${icone("annuler")}</span>
-            <span class="corps"><span class="titre">Refaire des lettres sur papier</span><span class="detail">${f.aRefaire.length ? `${f.aRefaire.length} lettre${f.aRefaire.length > 1 ? "s" : ""} à imprimer : ${esc(f.aRefaire.join(" "))}` : "Une feuille avec seulement les lettres à refaire"}</span></span>${icone("suivant", 18)}</button>
         </div>
+      </section>
+      <section>
+        <p class="etiquette etape"><span>3</span> Cases seconde chance</p>
+        <div class="liste">
+          <button class="ligne" id="refaire"><span class="pastille">${icone("annuler")}</span>
+            <span class="corps"><span class="titre">Refaire une lettre</span><span class="detail">${attente.length ? `À écrire puis scanner : ${esc(attente.map(x => x.ch).join(" "))}` : "Sur la feuille déjà imprimée, sans réimprimer"}</span></span>${icone("suivant", 18)}</button>
+          ${casesBonus(c).length ? `<button class="ligne" id="attribuer"><span class="pastille ${nbAttribuees ? "ok" : ""}">${icone("coche")}</span>
+            <span class="corps"><span class="titre">Lettres des cases seconde chance</span><span class="detail">${nbAttribuees} case${nbAttribuees > 1 ? "s" : ""} attribuée${nbAttribuees > 1 ? "s" : ""}</span></span>${icone("suivant", 18)}</button>` : ""}
+        </div>
+        <p class="aide">Une lettre ratée ? Barre-la d'une grande croix et refais-la dans une case seconde chance, en bas de la même page, même des jours plus tard. Puis scanne la page de nouveau.</p>
       </section>
       <section>
         <p class="etiquette">Sur l'écran</p>
@@ -244,7 +256,7 @@ async function vueProjet(c) {
   document.querySelectorAll(".galerie .case").forEach(b => b.onclick = () => choisirLettre(c, M.CARS[b.dataset.i]));
   $("#scanner").onclick = () => aller(`#/p/${f.id}/scanner`);
   $("#importer").onclick = () => aller(`#/p/${f.id}/import`);
-  $("#reprise").onclick = () => aller(`#/p/${f.id}/reprise`);
+  $("#refaire").onclick = () => aller(`#/p/${f.id}/refaire`);
   if ($("#attribuer")) $("#attribuer").onclick = () => aller(`#/p/${f.id}/bonus`);
   $("#apercu").onclick = () => aller(`#/p/${f.id}/apercu`);
   $("#options").onclick = () => optionsPolice(c);
@@ -638,7 +650,7 @@ async function choisirLettre(c, ch) {
       ${!manque && !remplace ? `<button class="btn plein principal" value="retoucher">${icone("stylo", 18)} Retoucher les points</button>` : ""}
       ${nbVersions(c, ch) > 1 ? `<button class="btn plein" value="versions">Choisir la version (${nbVersions(c, ch)})</button>` : ""}
       <button class="btn plein ${manque || remplace ? "principal" : ""}" value="dessiner">${manque || remplace ? "Dessiner" : "Redessiner"} à l'écran</button>
-      <button class="btn plein" value="papier">${f.aRefaire.includes(ch) ? "Déjà sur la feuille à refaire" : "Refaire sur papier"}</button>
+      <button class="btn plein" value="papier">Refaire sur papier</button>
       ${f.retouches[ch] ? `<button class="btn plein danger" value="annuler">Annuler la retouche</button>` : ""}
       <button class="btn plein discret" value="">Fermer</button></form>`;
   document.body.append(d); d.showModal();
@@ -647,11 +659,7 @@ async function choisirLettre(c, ch) {
     if (v === "retoucher") aller(`#/p/${f.id}/retouche/${i}`);
     if (v === "dessiner") aller(`#/p/${f.id}/dessin/${i}`);
     if (v === "versions") aller(`#/p/${f.id}/versions/${i}`);
-    if (v === "papier") {
-      // on l'ajoute à la prochaine feuille de reprise, et on y va (pour en ajouter d'autres ou imprimer)
-      if (!f.aRefaire.includes(ch)) { f.aRefaire.push(ch); modifie(c); }
-      aller(`#/p/${f.id}/reprise`);
-    }
+    if (v === "papier") aller(`#/p/${f.id}/refaire/${i}`);     // on lui réserve une case seconde chance
     if (v === "annuler") { delete f.retouches[ch]; modifie(c); toast("Retouche annulée"); routeur(); }
   });
 }
@@ -668,7 +676,7 @@ async function routeur() {
     if (ecran === "photo" && +n >= 0 && +n <= 3) return vuePhoto(c, +n);
     if (ecran === "pdf" || ecran === "import") return vueImport(c);
     if (ecran === "scanner") return vueScanner(c);
-    if (ecran === "reprise") return vueReprise(c);
+    if (ecran === "refaire" || ecran === "reprise") return vueRefaire(c, n === undefined ? null : M.CARS[+n]);
     if (ecran === "bonus") return vueBonus(c);
     if (ecran === "versions" && +n >= 0 && +n < M.CARS.length) return vueVersions(c, +n);
     if (ecran === "dessin" && +n >= 0 && +n < M.CARS.length) return vueDessin(c, +n);

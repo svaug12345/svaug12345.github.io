@@ -213,6 +213,11 @@ const Moteur = (() => {
     4: gabarit(4, CASE4, COLS, ROWS, MARGE + HAUT_ENTETE, BANDE4, COLS),
     5: gabarit(5, CASE5, 8, 9, MARGE + ENTETE5, BANDE4, 8),
     R: gabarit("R", CASE5, 8, 9, MARGE + ENTETE5, 0, 0),
+    // Grille 6 (1.9) : comme la 5, mais chaque case commence par un MODÈLE gris du caractère,
+    // à sa vraie hauteur sur les lignes, dans une bande de 7 mm à gauche (on écrit à sa droite).
+    // Le bandeau « seconde chance » a une ligne de plus (11 mm).
+    6: { ...gabarit(6, CASE5, 8, 9, MARGE + ENTETE5, 11 * MM, 8), modele: 7 * MM },
+    R6: { ...gabarit("R6", CASE5, 8, 9, MARGE + ENTETE5, 0, 0), modele: 7 * MM },
   };
   /** Gabarit d'une page scannée : reconnu une seule fois puis mémorisé sur la page. */
   function geo(page) {
@@ -253,8 +258,8 @@ const Moteur = (() => {
   const DISPO5 = SECTIONS5.map(secs => placer(secs, 8, 72));
   /** Disposition de la page n (0 ou 1) d'un gabarit ; pour la feuille de reprise, la liste de ses lettres. */
   function disposition(g, n, lettres) {
-    if (g.num === 5) return DISPO5[n];
-    if (g.num === "R") return { cars: Array.from({ length: g.n }, (_, i) => (lettres || [])[i] ?? null), section: Array(g.n).fill(0) };
+    if (g.num === 5 || g.num === 6) return DISPO5[n];
+    if (g.num === "R" || g.num === "R6") return { cars: Array.from({ length: g.n }, (_, i) => (lettres || [])[i] ?? null), section: Array(g.n).fill(0) };
     const cars = Array.from({ length: PAR_PAGE }, (_, i) => CARS[n * PAR_PAGE + i] ?? null);
     return { cars, section: cars.map(() => 0) };
   }
@@ -387,7 +392,11 @@ const Moteur = (() => {
     // Coin haut-gauche effacé : l'étiquette imprimée (grille) ou, sur une case bonus,
     // le petit carré où l'enfant a écrit quelle lettre il refait (zone un peu plus grande).
     // Mesures depuis le coin de la case, puis converties en pixels de la découpe.
-    const lh = Math.round(((bonus ? 7.4 : 6.2) * MM - RETRAIT) * PX), lw = Math.round(((bonus ? 7.4 : 7.2) * MM - RETRAIT) * PX);
+    let lh = Math.round(((bonus ? 7.4 : 6.2) * MM - RETRAIT) * PX), lw = Math.round(((bonus ? 7.4 : 7.2) * MM - RETRAIT) * PX);
+    // Grille 6 : toute la bande du modèle, à gauche, sur toute la hauteur (+ 0,6 mm de marge).
+    // La case lue est à l'échelle d'une case de grille 3 : on divise par le rapport des tailles.
+    const g = geo(page);
+    if (g.modele && !bonus) { lh = h; lw = Math.round(((g.modele + 0.6 * MM) * CASE / g.C - RETRAIT) * PX); }
     const barree = estBarree(m, w, h, { w: lw, h: lh });
     if (barree) return { masque: null, barree: true };
     for (let y = 0; y < lh && y < h; y++) for (let x = 0; x < lw && x < w; x++) m[y * w + x] = 0;
@@ -439,10 +448,12 @@ const Moteur = (() => {
   }
   // Nombre de barres → page : 1 et 2 = pages de lettres (grille 3), 3 = phrases,
   // 4 = ancienne page de cases bonus, 5 et 6 = pages 1 et 2 de la grille 4,
-  // 7 et 8 = pages 1 et 2 de la grille 5, 9 = feuille de reprise (son numéro : barres à gauche).
+  // 7 et 8 = pages 1 et 2 de la grille 5, 9 = feuille de reprise (son numéro : barres à gauche),
+  // 10 et 11 = pages 1 et 2 de la grille 6, 12 = feuille de reprise avec modèles.
   function identifierBrut(page) {
-    const barres = compterBarres(page, marques(9));
-    if (barres === 9) return { num: null, reprise: compterBarres(page, marquesGauche(5)) || 1, phrases: false, gabarit: "R" };
+    const barres = compterBarres(page, marques(12));
+    if (barres === 9 || barres === 12) return { num: null, reprise: compterBarres(page, marquesGauche(5)) || 1, phrases: false, gabarit: barres === 9 ? "R" : "R6" };
+    if (barres === 10 || barres === 11) return { num: barres - 9, phrases: false, gabarit: 6 };
     if (barres === 7 || barres === 8) return { num: barres - 6, phrases: false, gabarit: 5 };
     // trait vertical entre la 1re et la 2e colonne de cases, sur toute la hauteur de la grille
     const gx = (PW - COLS * CASE) / 2 + CASE, gy = MARGE + HAUT_ENTETE;

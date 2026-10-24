@@ -38,9 +38,9 @@ function casesBonus(c) {
   const res = [];
   for (const n of [0, 1]) {
     const page = c.pages[n], g = page && M.geo(page); if (!g || !g.bonus) continue;
-    for (let k = 0; k < g.bonus; k++) res.push({ cle: `${n}:${k}`, page, idx: g.n + k, nom: `Case bonus ${k + 1} · page ${n + 1}` });
+    for (let k = 0; k < g.bonus; k++) res.push({ cle: `${n}:${k}`, page, idx: g.n + k, nom: `Seconde chance ${k + 1} · page ${n + 1}` });
   }
-  if (c.pages[3]) for (let k = 0; k < M.PAR_PAGE; k++) res.push({ cle: String(k), page: c.pages[3], idx: k, nom: `Case bonus n° ${k + 1}` });
+  if (c.pages[3]) for (let k = 0; k < M.PAR_PAGE; k++) res.push({ cle: String(k), page: c.pages[3], idx: k, nom: `Seconde chance n° ${k + 1}` });
   return res;
 }
 /** Une clé de case bonus → { page, idx, nom } (ou null si la page n'est plus là). */
@@ -48,9 +48,40 @@ function caseBonus(c, cle) {
   const [a, b] = String(cle).split(":");
   if (b !== undefined) {
     const page = c.pages[+a], g = page && M.geo(page);
-    return g && g.bonus ? { page, idx: g.n + +b, nom: `Case bonus ${+b + 1} · page ${+a + 1}` } : null;
+    return g && g.bonus ? { page, idx: g.n + +b, nom: `Seconde chance ${+b + 1} · page ${+a + 1}` } : null;
   }
-  return c.pages[3] ? { page: c.pages[3], idx: +a, nom: `Case bonus n° ${+a + 1}` } : null;
+  return c.pages[3] ? { page: c.pages[3], idx: +a, nom: `Seconde chance n° ${+a + 1}` } : null;
+}
+
+/** Cases seconde chance réservées pour une lettre mais pas encore remplies (ou page pas encore
+    rescannée) : [{ cle, ch, n, k }]. */
+function casesEnAttente(c) {
+  const f = c.police, res = [];
+  for (const [cle, ch] of Object.entries(f.bonus)) {
+    const [a, b] = cle.split(":"); if (b === undefined) continue;          // ancienne page 4 : pas de réservation
+    const cb = caseBonus(c, cle);
+    if (!cb || !M.masqueScan(cb.page, cb.idx, f.reglages, true)) res.push({ cle, ch, n: +a, k: +b });
+  }
+  return res;
+}
+
+/** Gabarit d'une page : celui de la page scannée, sinon celui de la grille qu'on imprime aujourd'hui. */
+const gabaritPage = (c, n) => c.pages[n] ? M.geo(c.pages[n]) : M.GABARITS[6];
+
+/** Une case seconde chance libre pour refaire ch : non attribuée et vide sur le dernier scan.
+    De préférence sur la page où se trouve déjà ch (on rescanne une seule page). → { cle, n, k } ou null */
+function caseLibre(c, ch) {
+  const f = c.police;
+  const surLaPage = n => M.disposition(gabaritPage(c, n), n).cars.includes(ch) ? 1 : 0;
+  for (const n of [0, 1].sort((a, b) => surLaPage(b) - surLaPage(a))) {
+    const g = gabaritPage(c, n); if (!g.bonus) continue;                   // anciennes grilles : pas de rangée
+    for (let k = 0; k < g.bonus; k++) {
+      const cle = `${n}:${k}`; if (f.bonus[cle]) continue;
+      if (c.pages[n] && M.masqueScan(c.pages[n], g.n + k, f.reglages, true)) continue;   // déjà écrite
+      return { cle, n, k };
+    }
+  }
+  return null;
 }
 
 /** Cases des feuilles de reprise scannées où se trouve ce caractère : [{ id, page, idx, nom }]. */
@@ -120,7 +151,14 @@ function dessinerMasque(cv, s) {
 
 /** Enregistre une page redressée à l'emplacement n (0 à 3). */
 async function enregistrerPage(c, n, page) {
-  c.pages[n] = page; c.police.pages[n] = await Stockage.pageVersBlob(page);
+  const f = c.police;
+  c.pages[n] = page; f.pages[n] = await Stockage.pageVersBlob(page);
+  // Une case seconde chance réservée (ou déjà attribuée) vient d'être remplie et c'est la version
+  // choisie : l'ancienne retouche à la main ne la concerne pas, on l'enlève.
+  for (const [cle, ch] of Object.entries(f.bonus)) {
+    const cb = cle.startsWith(n + ":") && caseBonus(c, cle);
+    if (cb && f.choix[ch] === "bonus:" + cle && M.masqueScan(cb.page, cb.idx, f.reglages, true)) delete f.retouches[ch];
+  }
   await modifie(c, true);
 }
 /** Enregistre le scan de la feuille de reprise n° k. Chaque lettre refaite (case remplie,
@@ -292,21 +330,21 @@ function vueBonus(c) {
   const groupes = caracteresParType();
   const menu = cle => {
     const v = f.bonus[cle] || "", opt = ch => `<option value="${esc(ch)}" ${ch === v ? "selected" : ""}>${esc(libelle(ch))}</option>`;
-    return `<select class="champ-lettre" data-cle="${cle}" aria-label="Lettre de cette case bonus">
+    return `<select class="champ-lettre" data-cle="${cle}" aria-label="Lettre de cette case seconde chance">
       <option value="" ${v ? "" : "selected"}>Choisir…</option>
       ${barrees.length ? `<optgroup label="Barrées sur la grille">${barrees.map(opt).join("")}</optgroup>` : ""}
       ${groupes.map(g => `<optgroup label="${g.titre}">${g.cars.map(opt).join("")}</optgroup>`).join("")}
     </select>`;
   };
   rendre({
-    titre: "Cases bonus", retour: `#/p/${f.id}`,
+    titre: "Seconde chance", retour: `#/p/${f.id}`,
     contenu: `<div><h2 class="titre-page">Quelle lettre dans chaque case ?</h2>
-        <p class="sous-titre">Regarde la petite lettre écrite dans le carré du coin et choisis-la dans la liste. La case bonus devient la version utilisée ; tu pourras toujours revenir à celle de la grille.</p></div>
+        <p class="sous-titre">Regarde la petite lettre écrite dans le carré du coin et choisis-la dans la liste. Cette case devient la version utilisée ; tu pourras toujours revenir à celle de la grille.</p></div>
       ${barrees.length ? `<div class="encart"><span>Lettres barrées sur la grille : <strong>${barrees.map(esc).join(" ")}</strong>. Elles sont en tête de chaque liste.</span></div>` : ""}
       ${remplies.length ? `<div class="cases-bonus">${remplies.map(b => `<label class="case-bonus">
           <canvas data-cle="${b.cle}"></canvas><span class="nom-case">${esc(b.nom)}</span>
           ${menu(b.cle)}
-        </label>`).join("")}</div>` : `<p class="aide">Aucune case bonus remplie pour l'instant.</p>`}`,
+        </label>`).join("")}</div>` : `<p class="aide">Aucune case seconde chance remplie pour l'instant.</p>`}`,
     pied: `<button class="btn principal" id="fini">Terminé</button>`,
   });
   // aperçu de chaque case entière (avec le petit carré), pris directement sur la page scannée
@@ -356,39 +394,59 @@ async function vueVersions(c, i) {
 }
 
 // ---------------------------------------------------------------------------
-// Lettres à refaire sur papier : on compose une liste, on imprime une « feuille de reprise »
-// où chaque case porte déjà sa lettre. Au scan, l'appli reconnaît la feuille (9 barres à droite,
-// son numéro en barres à gauche) et range chaque lettre toute seule : rien à indiquer.
+// Refaire une lettre sur papier.
+// 1. Sans réimprimer : on réserve une case seconde chance libre (en bas de la page 1 ou 2 déjà
+//    imprimée) pour cette lettre. L'enfant l'y écrit, on rescanne la page : la lettre est déjà
+//    attribuée, elle devient la version utilisée.
+// 2. S'il n'y a plus de case libre (ou une ancienne grille sans rangée) : une « feuille de reprise »
+//    à imprimer, où chaque case porte déjà sa lettre (9 ou 12 barres à droite, son numéro à gauche).
 // ---------------------------------------------------------------------------
-function vueReprise(c) {
-  const f = c.police, p = f.reglages, liste = f.aRefaire;
-  const groupes = caracteresParType();
-  rendre({
-    titre: "Lettres à refaire", retour: `#/p/${f.id}`,
-    contenu: `<div><h2 class="titre-page">Refaire des lettres sur papier</h2>
-        <p class="sous-titre">Choisis les lettres à refaire, imprime la feuille, écris, puis scanne-la : chaque lettre se range toute seule.</p></div>
-      <section><p class="etiquette">Sur la prochaine feuille (${liste.length})</p>
-        <div class="puces" id="puces">${liste.length ? liste.map((ch, k) => `<button class="puce" data-k="${k}" aria-label="Retirer ${esc(ch)}">${esc(ch)} <span aria-hidden="true">×</span></button>`).join("")
-          : `<p class="aide">Aucune lettre pour l'instant.</p>`}</div>
-        <label class="champ-select">Ajouter une lettre
-          <select id="ajout"><option value="">Choisir…</option>
-            ${groupes.map(g => `<optgroup label="${g.titre}">${g.cars.map(ch => `<option value="${esc(ch)}">${esc(libelle(ch))}</option>`).join("")}</optgroup>`).join("")}
-          </select></label>
-      </section>
-      ${Object.keys(f.feuilles).length ? `<section><p class="etiquette">Feuilles déjà imprimées</p><div class="liste">${Object.entries(f.feuilles).map(([k, l]) => `
-        <div class="ligne"><span class="pastille ${c.reprises[k] ? "ok" : ""}">${icone(c.reprises[k] ? "coche" : "page")}</span>
-          <span class="corps"><span class="titre">Feuille n° ${k}</span><span class="detail">${esc(l.join(" "))} · ${c.reprises[k] ? "scannée" : "à scanner"}</span></span></div>`).join("")}</div></section>` : ""}`,
-    pied: `<button class="btn principal" id="imprimer" ${liste.length ? "" : "disabled"}>${icone("imprimer", 20)} Imprimer la feuille</button>`,
-  });
-  document.querySelectorAll(".puce").forEach(b => b.onclick = () => { liste.splice(+b.dataset.k, 1); modifie(c); vueReprise(c); });
-  $("#ajout").onchange = e => {
-    const ch = e.target.value; if (!ch) return;
-    if (!liste.includes(ch) && liste.length < M.GABARITS.R.n) liste.push(ch);
-    modifie(c); vueReprise(c);
+function vueRefaire(c, chDemande) {
+  const f = c.police, groupes = caracteresParType();
+  /** Réserve une case pour ch ; sinon l'ajoute à la feuille de reprise. */
+  const reserver = ch => {
+    if (casesEnAttente(c).some(x => x.ch === ch)) return;                  // déjà réservée
+    const libre = caseLibre(c, ch);
+    if (libre) { f.bonus[libre.cle] = ch; f.choix[ch] = "bonus:" + libre.cle; }
+    else if (!f.aRefaire.includes(ch)) { f.aRefaire.push(ch); toast("Plus de case seconde chance libre : ajoutée à une feuille à imprimer"); }
+    modifie(c);
   };
-  $("#imprimer").onclick = async () => {
-    // Numéro de feuille : de 1 à 5, en tournant. Réutiliser un numéro efface l'ancienne feuille
-    // (et ses versions) : il ne reste en jeu que les 5 dernières.
+  if (chDemande) { reserver(chDemande); return aller(`#/p/${f.id}/refaire`, true); }
+
+  const attente = casesEnAttente(c), liste = f.aRefaire;
+  const rangee = (n, k) => {
+    const g = gabaritPage(c, n), prises = new Set(Object.keys(f.bonus));
+    return `<span class="rangee" aria-hidden="true">${Array.from({ length: g.bonus }, (_, j) => `<i class="${j === k ? "ici" : prises.has(`${n}:${j}`) ? "prise" : ""}"></i>`).join("")}</span>`;
+  };
+  rendre({
+    titre: "Refaire une lettre", retour: `#/p/${f.id}`,
+    contenu: `<div><h2 class="titre-page">Sans réimprimer</h2>
+        <p class="sous-titre">En bas des pages 1 et 2, il y a des cases seconde chance. Choisis la lettre : l'appli te dit dans quelle case l'écrire. Ensuite, scanne la page de nouveau.</p></div>
+      <label class="champ-select">Lettre à refaire
+        <select id="ajout"><option value="">Choisir…</option>
+          ${groupes.map(g => `<optgroup label="${g.titre}">${g.cars.map(ch => `<option value="${esc(ch)}">${esc(libelle(ch))}</option>`).join("")}</optgroup>`).join("")}
+        </select></label>
+      ${attente.length ? `<section><p class="etiquette">À écrire, puis scanner la page</p>${attente.map(x => `
+        <div class="reservation"><span class="grand">${esc(x.ch)}</span>
+          <div><p><strong>Page ${x.n + 1}</strong>, case seconde chance n° ${x.k + 1}</p>${rangee(x.n, x.k)}
+            <p class="aide">Écris aussi « ${esc(x.ch)} » en petit dans le carré du coin. Si besoin, barre l'ancienne case d'une croix.</p></div>
+          <button class="btn discret petit annuler-resa" data-cle="${x.cle}" aria-label="Annuler">×</button></div>`).join("")}</section>` : ""}
+      ${liste.length || Object.keys(f.feuilles).length ? `<section><p class="etiquette">Plus de case libre : une feuille à imprimer</p>
+        <div class="puces">${liste.map((ch, k) => `<button class="puce" data-k="${k}" aria-label="Retirer ${esc(ch)}">${esc(ch)} <span aria-hidden="true">×</span></button>`).join("")}</div>
+        ${liste.length ? `<button class="btn" id="imprimer">${icone("imprimer", 18)} Imprimer la feuille (${liste.length})</button>` : ""}
+        ${Object.entries(f.feuilles).map(([k, l]) => `<p class="aide">Feuille n° ${k} : ${esc(l.join(" "))} · ${c.reprises[k] ? "scannée" : "à scanner"}</p>`).join("")}</section>` : ""}`,
+    pied: `<button class="btn principal" id="vers-scanner" ${attente.length || liste.length ? "" : "disabled"}>${icone("photo", 20)} Scanner la page</button>`,
+  });
+  $("#ajout").onchange = e => { if (e.target.value) { reserver(e.target.value); vueRefaire(c); } };
+  document.querySelectorAll(".annuler-resa").forEach(b => b.onclick = () => {
+    const cle = b.dataset.cle, ch = f.bonus[cle];
+    delete f.bonus[cle]; if (f.choix[ch] === "bonus:" + cle) delete f.choix[ch];
+    modifie(c); vueRefaire(c);
+  });
+  document.querySelectorAll(".puce").forEach(b => b.onclick = () => { liste.splice(+b.dataset.k, 1); modifie(c); vueRefaire(c); });
+  $("#vers-scanner").onclick = () => aller(`#/p/${f.id}/scanner`);
+  if ($("#imprimer")) $("#imprimer").onclick = async () => {
+    // Numéro de feuille : de 1 à 5, en tournant. Réutiliser un numéro efface l'ancienne feuille.
     const k = (f.derniereFeuille || 0) % 5 + 1;
     if (c.reprises[k]) {
       for (const [ch, id] of Object.entries(f.choix)) if (id.startsWith(`reprise:${k}:`)) delete f.choix[ch];
@@ -397,7 +455,7 @@ function vueReprise(c) {
     f.feuilles[k] = liste.slice(); f.derniereFeuille = k; f.aRefaire = [];
     await modifie(c, true);
     await partagerOuTelecharger(Grille.reprise(f.nom, f.feuilles[k], k), `Lettres à refaire ${f.nom} n° ${k}.pdf`, "application/pdf",
-      "La feuille de reprise", "Imprime-la à 100 %, fais écrire les lettres, puis scanne-la avec les autres pages.");
-    vueReprise(c);
+      "La feuille à imprimer", "Imprime-la à 100 %, fais écrire les lettres, puis scanne-la.");
+    vueRefaire(c);
   };
 }

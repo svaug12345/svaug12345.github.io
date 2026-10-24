@@ -25,5 +25,7 @@
      1.8.0  grille v5 sur 2 pages (sans phrases, rangée par sections, consignes claires, modèles gris
             pour les signes) ; scanner caméra en continu ; import unique photos/PDF ; feuille de
             reprise pour refaire des lettres ; partage de la police (PDF spécimen avec le .ttf joint)
+     1.9.0  grille v6 : modèle gris lisible au début de chaque case (plus de filigrane) ; « cases seconde
+            chance » ; refaire une lettre sans réimprimer (case réservée) ; partie papier en 3 étapes
    ========================================================================== */
-self.PLUME_VERSION = "1.8.0";   // (nom de variable gardé : l'appli s'appelait Plume)
+self.PLUME_VERSION = "1.9.0";   // (nom de variable gardé : l'appli s'appelait Plume)

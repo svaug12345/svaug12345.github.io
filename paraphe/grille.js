@@ -67,43 +67,54 @@ const Grille = (() => {
 
   // Consignes : où va quoi par rapport aux 3 lignes. Page 1 et page 2 n'ont pas les mêmes caractères.
   const LIGNES = "**Les lignes : **trait plein = ligne de base, toutes les lettres sont posées dessus ; 1er pointillé = haut des minuscules ; 2e = haut des majuscules.";
+  const MODELE = "**Le modèle gris **au début de chaque case montre la hauteur et la place : écris ton caractère à sa droite, pareil.";
   const CONSIGNES = [
     [
-      "**Feutre noir, **trait assez épais, une lettre par case, sans toucher les bords de la case.",
-      LIGNES,
-      "**Jusqu'au 2e pointillé : **les majuscules, les chiffres et les grandes minuscules b, d, f, h, k, l (t un peu moins haut).",
+      "**Feutre noir, **trait assez épais, un caractère par case, sans toucher les bords de la case.",
+      MODELE, LIGNES,
       "**Sous la ligne de base : **seulement les queues de g, j, p, q, y (et du f si tu l'écris ainsi).",
     ],
     [
       "**Feutre noir, **trait assez épais, un caractère par case, sans toucher les bords de la case.",
-      LIGNES,
-      "**Accents : **au-dessus de la lettre, sous le 2e pointillé pour une minuscule, au-dessus pour une majuscule. Cédille sous la ligne.",
-      "**Signes : **écris-les par-dessus le modèle gris clair, à la même place et à la même taille (le point sur la ligne de base…).",
+      MODELE, LIGNES,
+      "**Accents **au-dessus de la lettre, **cédille **sous la ligne de base, **signes **à la même place que le modèle.",
     ],
   ];
 
-  // Largeur des signes en Helvetica (millièmes de la taille) : pour centrer le modèle gris.
+  // Largeurs Helvetica (millièmes de la taille du texte), pour centrer et serrer le modèle.
+  // Une lettre accentuée a la largeur de sa lettre de base.
   const LARG = { ".": 278, ",": 278, ";": 278, ":": 278, "!": 278, "?": 556, "'": 191, "\"": 355, "-": 333, "_": 556, "(": 333,
     ")": 333, "[": 278, "]": 278, "«": 556, "»": 556, "&": 667, "@": 1015, "€": 556, "$": 556, "%": 889, "/": 278, "+": 584,
-    "=": 584, "*": 389, "#": 556, "<": 584, ">": 584, "°": 400, "~": 584 };
+    "=": 584, "*": 389, "#": 556, "<": 584, ">": 584, "°": 400, "~": 584, "æ": 889, "œ": 944, "Æ": 1000, "Œ": 1000 };
+  const MAJ = { A: 667, B: 667, C: 722, D: 722, E: 667, F: 611, G: 778, H: 722, I: 278, J: 500, K: 667, L: 556, M: 833, N: 722, O: 778,
+    P: 667, Q: 778, R: 722, S: 667, T: 611, U: 722, V: 667, W: 944, X: 667, Y: 667, Z: 611 };
+  const MIN = { a: 556, b: 556, c: 500, d: 556, e: 556, f: 278, g: 556, h: 556, i: 222, j: 222, k: 500, l: 222, m: 833, n: 556, o: 556,
+    p: 556, q: 556, r: 333, s: 500, t: 278, u: 556, v: 500, w: 722, x: 500, y: 500, z: 500 };
+  function largeurHelv(ch) {
+    if (LARG[ch]) return LARG[ch];
+    const base = ch.normalize("NFD")[0];                 // « Ä » → « A »
+    return MAJ[base] || MIN[base] || 556;                // chiffres : 556
+  }
 
   /** Une case : cadre, lignes guides, et soit l'étiquette du caractère, soit (car === null,
       case bonus) le petit carré où l'on écrira quelle lettre on refait.
       r = coin haut-gauche en points (origine en haut, comme dans moteur.js) : on retourne y pour le PDF.
       L'étiquette est en 11 pt (lisible, accents compris) : elle est dans le coin que l'appli efface. */
-  function caseImprimee(o, r, car, modele = false) {
+  function caseImprimee(o, r, car, modele = 0) {
     const C = r.C, x = r.x0, y = M.PH - r.y0 - C;
     o.push("0.55 G 0.6 w", `${n2(x)} ${n2(y)} ${n2(C)} ${n2(C)} re S`);
     guides(o, x + 2, x + C - 2, y, C);
     if (car === null) { o.push("0.55 G 0.6 w", `${n2(x + 1.2 * MM)} ${n2(y + C - 6.2 * MM)} ${n2(5 * MM)} ${n2(5 * MM)} re S`); return; }
-    o.push("0.3 g", `BT /F1 11 Tf ${n2(x + 1.3 * MM)} ${n2(y + C - 4.8 * MM)} Td ${chaine(car)} Tj ET`);
-    if (modele) {
-      // Modèle à recopier : le signe en Helvetica, seulement le contour (mode 1 Tr), gris clair et fin.
-      // Trop clair pour être pris pour de l'encre au scan ; il montre la place et la taille.
-      // Taille : la hauteur des majuscules d'Helvetica (0,718) = de la ligne de base au 2e pointillé.
-      const t = (M.LM - M.LB) * C / 0.718, l = (LARG[car] || 500) / 1000 * t;
-      o.push("0.68 G 0.35 w 1 Tr", `BT /F1 ${n2(t)} Tf ${n2(x + (C - l) / 2)} ${n2(y + C * M.LB)} Td ${chaine(car)} Tj ET`, "0 Tr");
-    }
+    if (!modele) { o.push("0.3 g", `BT /F1 11 Tf ${n2(x + 1.3 * MM)} ${n2(y + C - 4.8 * MM)} Td ${chaine(car)} Tj ET`); return; }
+    // Modèle (grille 6) : le caractère en Helvetica, plein, gris moyen, à SA VRAIE HAUTEUR :
+    // posé sur la ligne de base, les majuscules touchent le 2e pointillé (hauteur des capitales
+    // d'Helvetica = 0,718 de la taille). Pour tenir dans la bande, on le rétrécit en largeur
+    // seulement (ordre « Tz » du PDF = échelle horizontale en %) : la hauteur reste juste.
+    const t = (M.LM - M.LB) * C / 0.718, l = largeurHelv(car) / 1000 * t;
+    const tz = Math.min(70, 100 * (modele - 1.2 * MM) / l), lz = l * tz / 100;
+    o.push("0.5 g", `BT /F1 ${n2(t)} Tf ${n2(tz)} Tz ${n2(x + (modele - lz) / 2)} ${n2(y + C * M.LB)} Td ${chaine(car)} Tj 100 Tz ET`);
+    // séparation pointillée entre le modèle et la place pour écrire
+    o.push("0.7 G 0.5 w [1.5 1.5] 0 d", `${n2(x + modele)} ${n2(y + 2)} m ${n2(x + modele)} ${n2(y + C - 2)} l S`, "[] 0 d");
   }
 
   /** Traits épais entre deux sections voisines (et autour des cases vides) : quand une
@@ -125,17 +136,18 @@ const Grille = (() => {
   /** Les 2 pages de la grille 5, en contenus PDF : les caractères par sections, puis
       un bandeau d'explication et une rangée de cases bonus en bas de chaque page. */
   function contenus(nom) {
-    const G = M.GABARITS[5], total = 2, res = [];
+    const G = M.GABARITS[6], total = 2, res = [];
     for (let p = 0; p < 2; p++) {
-      // 7 barres = page 1, 8 barres = page 2 (grille 5)
+      // 10 barres = page 1, 11 barres = page 2 (grille 6)
       const o = [], dispo = M.disposition(G, p);
-      reperes(o); barresNumero(o, p + 7); entete(o, `La police de ${nom}`, p + 1, total, CONSIGNES[p]);
-      dispo.cars.forEach((car, i) => { if (car !== null) caseImprimee(o, M.rectCase(i, G), car, dispo.section[i] === 2 && p === 1); });
+      reperes(o); barresNumero(o, p + 10); entete(o, `La police de ${nom}`, p + 1, total, CONSIGNES[p]);
+      dispo.cars.forEach((car, i) => { if (car !== null) caseImprimee(o, M.rectCase(i, G), car, G.modele); });
       separateurs(o, G, dispo);
       // Bandeau entre la grille et les cases bonus : rassurer, et expliquer quoi faire
       const yB = M.PH - (G.y0 + G.rows * G.C), xB = G.x0;
-      o.push("0 g", `BT /F2 9 Tf ${n2(xB)} ${n2(yB - 3.6 * MM)} Td ${chaine("Cases bonus · Une lettre ratée ? Pas de panique !")} Tj ET`);
-      o.push("0.25 g", `BT /F1 7.5 Tf ${n2(xB)} ${n2(yB - 7 * MM)} Td ${chaine("Barre la case ratée d'une grande croix, puis refais la lettre ici : écris-la d'abord en petit dans le carré.")} Tj ET`);
+      o.push("0 g", `BT /F2 9 Tf ${n2(xB)} ${n2(yB - 3.6 * MM)} Td ${chaine("Cases seconde chance · Une lettre ratée ? Pas de panique !")} Tj ET`);
+      o.push("0.25 g", `BT /F1 7.5 Tf ${n2(xB)} ${n2(yB - 6.8 * MM)} Td ${chaine("Barre la case ratée d'une grande croix, puis refais la lettre ici : écris-la d'abord en petit dans le carré du coin.")} Tj ET`);
+      o.push(`BT /F1 7.5 Tf ${n2(xB)} ${n2(yB - 9.8 * MM)} Td ${chaine("Plus tard aussi, sans réimprimer : remplis une case libre et scanne de nouveau cette page.")} Tj ET`);
       for (let k = 0; k < G.bonus; k++) caseImprimee(o, M.rectCase(G.n + k, G), null);
       res.push(page(o));
     }
@@ -147,16 +159,14 @@ const Grille = (() => {
   /** Feuille de reprise n° k : les lettres à refaire, déjà étiquetées. L'appli reconnaît la feuille
       (9 barres à droite, k barres à gauche) et sait quelle lettre est dans chaque case. */
   function contenuReprise(nom, lettres, k) {
-    const G = M.GABARITS.R, o = [], dispo = M.disposition(G, 0, lettres);
-    reperes(o); barresNumero(o, 9);
+    const G = M.GABARITS.R6, o = [], dispo = M.disposition(G, 0, lettres);
+    reperes(o); barresNumero(o, 12);
     o.push("0 g"); for (const r of M.marquesGauche(k)) o.push(`${n2(r.x)} ${n2(M.PH - r.y - r.h)} ${n2(r.w)} ${n2(r.h)} re f`);
-    const signes = lettres.some(ch => LARG[ch]);
     entete(o, `La police de ${nom} · lettres à refaire n° ${k}`, 1, 1, [
-      "**Feutre noir, **trait assez épais, un caractère par case, sans toucher les bords de la case.", LIGNES,
-      "**Sous la ligne de base : **seulement les queues de g, j, p, q, y (et f), les cédilles et le bas de la virgule.",
-      signes ? "**Signes : **écris-les par-dessus le modèle gris clair, à la même place et à la même taille." : "**Raté ? **Barre la case d'une grande croix : elle sera ignorée.",
+      "**Feutre noir, **trait assez épais, un caractère par case, sans toucher les bords de la case.", MODELE, LIGNES,
+      "**Raté ? **Barre la case d'une grande croix : elle sera ignorée.",
     ]);
-    dispo.cars.forEach((car, i) => { if (car !== null) caseImprimee(o, M.rectCase(i, G), car, !!LARG[car]); });
+    dispo.cars.forEach((car, i) => { if (car !== null) caseImprimee(o, M.rectCase(i, G), car, G.modele); });
     return [page(o)];
   }
 

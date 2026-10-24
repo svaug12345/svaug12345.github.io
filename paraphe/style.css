@@ -299,3 +299,19 @@ body { overflow-x: clip; }
 .puce { min-width: 48px; height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--trait); background: var(--carte);
   font: 600 1.25rem var(--ui); color: var(--texte); display: inline-flex; align-items: center; gap: 8px; }
 .puce span { font-size: .9rem; color: var(--doux); }
+
+/* ---------- Étapes de la partie « papier » : 1, 2, 3 dans une pastille ---------- */
+.etiquette.etape { display: flex; align-items: center; gap: 8px; }
+.etiquette.etape span { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--accent); color: var(--sur-accent); font: 700 .72rem var(--mono); letter-spacing: 0; }
+
+/* ---------- Refaire une lettre : case réservée ---------- */
+.reservation { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 12px; align-items: center;
+  background: var(--carte); border: 1px solid var(--trait); border-radius: var(--rayon); padding: 12px; }
+.reservation .grand { font: 600 2.2rem/1 var(--ui); text-align: center; color: var(--texte); }
+.reservation p { margin: 0; }
+/* la rangée de cases seconde chance, en miniature, avec la case à remplir en couleur */
+.rangee { display: flex; gap: 3px; margin: 6px 0; }
+.rangee i { width: 18px; height: 18px; border: 1px solid var(--trait); border-radius: 3px; }
+.rangee i.ici { background: var(--accent); border-color: var(--accent); }
+.rangee i.prise { background: var(--accent-doux); }
