@@ -215,3 +215,22 @@ dialog form { display: grid; gap: 16px; }
 .essai-texte p { margin: 0; }
 .essai-texte .nouvelle { color: var(--accent); }
 .essai-texte .aide { font-size: 0.9rem; color: var(--doux); }
+
+/* ---------- Correctifs et ajouts ---------- */
+/* Un élément de grille ne rétrécit pas sous sa largeur « naturelle » (min-width: auto). Pour une
+   zone de texte en 34 px, cette largeur dépasse l'écran et élargissait toute la page : on l'autorise à rétrécir. */
+main > *, section > *, .texte-essai { min-width: 0; max-width: 100%; }
+/* « clip » coupe ce qui dépasse sans transformer body en zone de défilement (sinon « sticky » et le défilement de la page cassent) */
+body { overflow-x: clip; }
+
+/* Aperçu qui reste en haut de l'écran pendant qu'on fait défiler les réglages */
+.apercu-fixe {
+  position: sticky; top: calc(env(safe-area-inset-top, 0px) + 56px); z-index: 4;
+  background: var(--fond); padding-bottom: 12px; gap: 6px;
+  box-shadow: 0 10px 12px -12px rgba(6, 32, 34, 0.25);
+}
+.apercu-fixe .texte-essai { min-height: 0; height: min(30vh, 240px); resize: none; }
+
+/* Caractère pas encore fait mais remplacé (majuscule par sa minuscule, sans accent…) */
+.case.secours { border-style: dashed; }
+.case.secours span { color: var(--doux); opacity: .55; }

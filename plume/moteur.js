@@ -29,7 +29,7 @@ const Moteur = (() => {
   const KERN_CARS = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789éèêëàâäùûüôöîïçœæÉÈÊÀÂÙÔÎÇŒÛËÏÜÄÖÆ.,;:!?'\"-()«»"];
 
   const DEFAUT = { seuil: 110, graisse: 0, poussieres: 25, lissage: 2.6, pas: 3, approche: 12, espace: 300,
-    stylo: 7, crenage: true, force: 0.75, cible: 30, maxi: 200 };
+    stylo: 7, normaliser: 80, secours: true, crenage: true, force: 0.75, cible: 30, maxi: 200 };
 
   // =================== 1. Photo → page redressée ===================
 
@@ -230,10 +230,50 @@ const Moteur = (() => {
   /** Taille de la case virtuelle de dessin = une case du papier, à la même résolution. */
   const CASE_PX = Math.round(CASE * PX);
 
+  // ---------- Harmonisation des lettres dessinées ----------
+  // Au doigt, on écrit rarement deux lettres à la même taille. Pour chaque caractère on connaît
+  // la zone qu'il DOIT occuper entre les lignes guides (fractions de la case, mesurées depuis le bas) :
+  //   « a » : de la ligne de base à la ligne des minuscules ; « b » : jusqu'à la ligne des majuscules ;
+  //   « g » : de sous la ligne de base jusqu'aux minuscules, etc.
+  // On agrandit ou réduit le dessin (sans le déformer) pour qu'il remplisse cette zone.
+  const JAMBE = LB - 0.17, ACCENT = 0.13;
+  function zoneCible(ch) {
+    if ("acemnorsuvwxzœæ".includes(ch)) return [LB, LX];
+    if ("bdhkl".includes(ch)) return [LB, LM];
+    if (ch === "t") return [LB, LX + 0.6 * (LM - LX)];
+    if (ch === "i") return [LB, LX + ACCENT];
+    if ("gpqy".includes(ch)) return [JAMBE, LX];
+    if (ch === "j") return [JAMBE, LX + ACCENT];
+    if ("éèêëàâäùûüôöîï".includes(ch)) return [LB, LX + ACCENT];
+    if (ch === "ç") return [LB - 0.07, LX];
+    if (/[A-PR-Z0-9]/.test(ch) || "ŒÆ".includes(ch)) return [LB, LM];
+    if ("ÉÈÊÀÂÙÛÔÎÏËÜÄÖ".includes(ch)) return [LB, LM + ACCENT];
+    if (ch === "Ç") return [LB - 0.07, LM];
+    return null;   // f, Q et les signes : trop variables d'une écriture à l'autre, on n'y touche pas
+  }
+
+  /** force 0..1 : 0 = dessin tel quel, 1 = taille et position exactes de la zone cible. */
+  function harmoniser(traits, ch, force) {
+    const cible = force > 0 && zoneCible(ch); if (!cible) return traits;
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    for (const t of traits) for (const q of t.points) { x0 = Math.min(x0, q.x); x1 = Math.max(x1, q.x); y0 = Math.min(y0, q.y); y1 = Math.max(y1, q.y); }
+    const bas = 1 - y1, haut = 1 - y0;                       // y de l'écran → hauteur depuis le bas
+    if (haut - bas < 0.02) return traits;                     // un point seul : rien à mesurer
+    const s = Math.min(2.5, Math.max(0.4, (cible[1] - cible[0]) / (haut - bas)));   // échelle, bornée
+    const cx = (x0 + x1) / 2;
+    const deplacer = q => {
+      const ny = 1 - (cible[0] + (1 - q.y - bas) * s);       // le bas de l'encre va sur le bas de la zone
+      const nx = cx + (q.x - cx) * s;
+      return { ...q, x: q.x + force * (nx - q.x), y: q.y + force * (ny - q.y) };   // mélange avec l'original
+    };
+    return traits.map(t => ({ ...t, points: t.points.map(deplacer) }));
+  }
+
   /** Traits dessinés (coordonnées 0..1 dans la case, avec pression) → masque d'encre.
       On trace dans un canvas caché puis on garde les pixels assez opaques. */
-  function masqueDessin(traits, p) {
+  function masqueDessin(traits, p, ch) {
     if (!traits || !traits.length) return null;
+    traits = harmoniser(traits, ch, (p.normaliser ?? 0) / 100);
     const n = CASE_PX, cv = document.createElement("canvas"); cv.width = cv.height = n;
     const cx = cv.getContext("2d", { willReadFrequently: true });
     dessinerTraits(cx, traits, n, p.stylo, "#000");
@@ -534,8 +574,30 @@ const Moteur = (() => {
       const g = glyphe(etirer(masques.get("-"), f), p); if (g) ajouter(g, [code], true);
     }
     if (masques.has(".")) { const t = troisPoints(masques.get(".")), g = t && glyphe(t, p); if (g) ajouter(g, ["…"], true); }
+    // ---------- Caractères de secours ----------
+    // Une majuscule pas encore faite prend le dessin de sa minuscule ; une lettre accentuée prend
+    // celui de la lettre sans accent ; œ æ Œ Æ sont assemblés à partir des deux lettres.
+    // Ces caractères pointent vers le MÊME dessin (même numéro de glyphe dans la table cmap).
+    const remplaces = [];
+    if (p.secours !== false) {
+      const sansAccent = x => x.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const LIGATURES = { "œ": "oe", "æ": "ae", "Œ": "OE", "Æ": "AE" };
+      for (const ch of CARS) {                 // ordre de CARS : A–Z passent avant les majuscules accentuées
+        if (parCar.has(ch)) continue;
+        if (LIGATURES[ch]) {
+          const [a, b] = [...LIGATURES[ch]].map(x => parCar.get(x) || parCar.get(x.toLowerCase()));
+          if (!a || !b) continue;
+          const dx = a.avance - 2 * p.approche;            // la 2e lettre colle à la 1re
+          ajouter({ contours: [...a.contours, ...b.contours.map(c => c.map(q => [q[0] + dx, q[1]]))], avance: dx + b.avance }, [ch]);
+          remplaces.push(ch); continue;
+        }
+        const candidats = [ch.toLowerCase(), sansAccent(ch), sansAccent(ch.toLowerCase())].filter(x => x !== ch && x.length === 1);
+        const g = candidats.map(x => parCar.get(x)).find(Boolean);
+        if (g) { cmap.set(ch.codePointAt(0), g.id); parCar.set(ch, g); remplaces.push(ch); }
+      }
+    }
     const kern = p.crenage ? crenage(parCar, p) : [];
-    return { ttf: ecrireTTF(liste, cmap, kern, famille || "MaPolice"), manquants, nbGlyphes: liste.length - 2, nbPaires: kern.length };
+    return { ttf: ecrireTTF(liste, cmap, kern, famille || "MaPolice"), manquants, remplaces, nbGlyphes: liste.length - 2, nbPaires: kern.length };
   }
 
   /** Page 3 : écarts naturels entre lettres et entre mots (projection de l'encre sur l'axe x). */

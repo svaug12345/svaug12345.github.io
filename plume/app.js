@@ -93,6 +93,7 @@ let courant = null;   // { police, pages: [page décodée|null ×3], version, re
 async function ouvrirPolice(id) {
   if (courant && courant.police.id === id) return courant;
   const police = await Stockage.lire(id); if (!police) return null;
+  police.reglages = { ...M.DEFAUT, ...police.reglages };    // complète avec les réglages ajoutés depuis
   const pages = await Promise.all(police.pages.map(b => b ? Stockage.blobVersPage(b) : null));
   courant = { police, pages, version: 1, res: null, face: null };
   return courant;
@@ -108,7 +109,7 @@ function modifie(c, immediat = false) {
 /** Pour chaque caractère : le dessin s'il existe, sinon la case de la photo. */
 function source(c, p) {
   return ch => {
-    const t = c.police.dessins[ch]; if (t && t.length) return M.masqueDessin(t, p);
+    const t = c.police.dessins[ch]; if (t && t.length) return M.masqueDessin(t, p, ch);
     const i = M.CARS.indexOf(ch), page = c.pages[Math.floor(i / M.PAR_PAGE)];
     return page ? M.masqueScan(page, i % M.PAR_PAGE, p) : null;
   };
@@ -239,8 +240,14 @@ async function vueProjet(c) {
   $("#dessiner-detail").textContent = suivant
     ? `Prochain : « ${suivant} » · ${Exemples.groupeDe(suivant).nom.toLowerCase()}`
     : "Tous les caractères sont faits";
+  const secours = new Set(res.remplaces);
   document.querySelectorAll(".galerie .case").forEach(b => {
     const ch = M.CARS[b.dataset.i];
+    if (secours.has(ch)) {               // pas encore fait, mais remplacé : on le montre en pâle
+      b.classList.add("secours"); b.title = "Pas encore fait : remplacé provisoirement";
+      b.innerHTML = `<small>${esc(ch)}</small><span style="font-family:'${res.famille}'">${esc(ch)}</span>`;
+      return;
+    }
     if (manque.has(ch)) return;
     b.classList.remove("vide");
     b.innerHTML = `<small>${esc(ch)}</small><span style="font-family:'${res.famille}'">${esc(ch)}</span>${(f.dessins[ch] || []).length ? '<span class="point" title="Dessiné à l\'écran"></span>' : ""}`;
@@ -467,6 +474,7 @@ const REGLAGES = {
   espace: ["Espace entre les mots", 100, 600, 10, v => v, ""],
   graisse: ["Épaisseur du trait (photos)", -2, 3, 1, v => (v > 0 ? "+" : "") + v, "Amincit ou épaissit le feutre."],
   stylo: ["Épaisseur du stylo (dessins)", 2, 16, 0.5, v => v, ""],
+  normaliser: ["Harmoniser les lettres dessinées", 0, 100, 5, v => v + " %", "Remet chaque lettre à la bonne taille entre les lignes : utile quand on écrit au doigt."],
   lissage: ["Lissage des contours", 0.5, 6, 0.1, v => (+v).toFixed(1), "Plus fort : bords plus doux, mais les petites boucles peuvent se fermer."],
   seuil: ["Seuil d'encre", 50, 200, 1, v => v, "Plus haut : garde les traits pâles. Trop haut : les lignes grises reviennent."],
   poussieres: ["Poussières ignorées", 0, 300, 5, v => v + " px²", "Taches effacées sous cette surface. Attention aux points des i."],
@@ -475,7 +483,7 @@ const REGLAGES = {
   cible: ["Écart minimal entre deux lettres", 0, 100, 2, v => v, ""],
   maxi: ["Rapprochement maximal", 20, 300, 10, v => v, "La ponctuation est limitée à la moitié."],
 };
-let texteEssai = null;
+let texteEssai = null, tailleEssai = 34;
 
 function vueApercu(c) {
   const f = c.police, p = f.reglages;
@@ -489,18 +497,21 @@ function vueApercu(c) {
   const mesure = c.pages[2] ? M.mesurerEspacement(c.pages[2], p) : null;
   rendre({
     titre: "Aperçu", retour: `#/p/${f.id}`,
-    contenu: `<section>
+    contenu: `<section class="apercu-fixe">
         <textarea class="texte-essai" id="essai" spellcheck="false" aria-label="Texte d'essai">${esc(texteEssai)}</textarea>
-        <div class="reglage"><label for="taille">Taille du texte</label><output id="o-taille">34</output>
-          <input id="taille" type="range" min="16" max="90" value="34"></div>
         <p class="aide" id="etat" role="status">Calcul de la police…</p>
       </section>
       ${mesure ? `<div class="encart"><span>Espacement mesuré sur tes phrases : ${mesure.approche} entre les lettres, ${mesure.espace} entre les mots.</span>
         <div><button class="btn" id="mesure">Utiliser ces valeurs</button></div></div>` : ""}
       <section>
         <p class="etiquette">Réglages</p>
+        <div class="reglage"><label for="taille">Taille du texte d'essai</label><output id="o-taille">${tailleEssai}</output>
+          <input id="taille" type="range" min="16" max="90" value="${tailleEssai}"></div>
+        ${aDessins ? curseur("normaliser") : ""}
         ${curseur("approche")}${curseur("espace")}
         ${aPhotos ? curseur("graisse") : ""}${aDessins ? curseur("stylo") : ""}${curseur("lissage")}
+        <label class="bascule" for="r-secours"><span>Remplacer les caractères manquants<br><span class="aide">Une majuscule pas encore faite prend sa minuscule, une lettre accentuée prend la lettre sans accent.</span></span>
+          <input type="checkbox" id="r-secours" ${p.secours !== false ? "checked" : ""}></label>
         <label class="bascule" for="r-crenage"><span>Crénage automatique<br><span class="aide">Rapproche les paires comme To, Fa, Le.</span></span>
           <input type="checkbox" id="r-crenage" ${p.crenage ? "checked" : ""}></label>
         <details><summary>Réglages avancés</summary><div>
@@ -518,7 +529,8 @@ function vueApercu(c) {
   });
   const essai = $("#essai");
   essai.oninput = () => { texteEssai = essai.value; };
-  $("#taille").oninput = e => { essai.style.fontSize = e.target.value + "px"; $("#o-taille").textContent = e.target.value; };
+  essai.style.fontSize = tailleEssai + "px";
+  $("#taille").oninput = e => { tailleEssai = +e.target.value; essai.style.fontSize = tailleEssai + "px"; $("#o-taille").textContent = tailleEssai; };
 
   let minuteur = null;
   const recalculer = () => {
@@ -528,9 +540,10 @@ function vueApercu(c) {
       const t0 = performance.now(), res = await calculer(c);
       if (!document.body.contains(essai)) return;
       essai.style.fontFamily = `'${res.famille}', var(--ui)`;
-      const manque = res.manquants.length;
-      $("#etat").textContent = `${res.nbGlyphes} caractères · ${res.nbPaires} paires de crénage · ${Math.round(res.ttf.length / 1024)} Ko`
-        + (manque ? ` · ${manque} manquant${manque > 1 ? "s" : ""}` : "");
+      const rempl = res.remplaces.length, manque = res.manquants.length - rempl;
+      $("#etat").textContent = `${M.CARS.length - res.manquants.length} caractères faits`
+        + (rempl ? ` · ${rempl} remplacé${rempl > 1 ? "s" : ""}` : "") + (manque ? ` · ${manque} manquant${manque > 1 ? "s" : ""}` : "")
+        + ` · ${Math.round(res.ttf.length / 1024)} Ko`;
       void t0;
     }, 220);
   };
@@ -539,6 +552,7 @@ function vueApercu(c) {
     el.oninput = () => { p[id] = parseFloat(el.value); $("#o-" + id).textContent = REGLAGES[id][4](p[id]); modifie(c); recalculer(); };
   });
   $("#r-crenage").onchange = e => { p.crenage = e.target.checked; modifie(c); recalculer(); };
+  $("#r-secours").onchange = e => { p.secours = e.target.checked; modifie(c); recalculer(); };
   $("#defaut").onclick = () => { Object.assign(p, M.DEFAUT); modifie(c); vueApercu(c); };
   if (mesure) $("#mesure").onclick = () => { p.approche = mesure.approche; p.espace = mesure.espace; modifie(c); vueApercu(c); toast("Espacement mis à jour"); };
   $("#exporter").onclick = async () => {
