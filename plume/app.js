@@ -149,11 +149,15 @@ async function vueAccueil() {
       <span class="corps"><span class="titre">${esc(f.nom)}</span><span class="detail">${detail}</span></span>${icone("suivant", 18)}</a>`;
   };
   rendre({
-    titre: "Plume",
-    contenu: `<div><h2 class="titre-page">Ton écriture devient une police.</h2>
-      <p class="sous-titre">Imprime la grille et photographie-la, ou dessine chaque lettre au doigt ou au stylet. Tout reste sur ton téléphone.</p></div>
+    titre: "",
+    // Accueil façon charte SV : grand titre « display », une phrase, puis le contenu ;
+    // la marque reste discrète, en bas, dans les crédits (le geste seul, couleur ink-muted).
+    contenu: `<div><h2 class="marque-titre">Plume</h2>
+      <p class="sous-titre">Ton écriture devient une police. Imprime la grille et photographie-la, ou dessine chaque lettre au doigt ou au stylet.</p></div>
       ${polices.length ? `<section><p class="etiquette">Mes polices</p><div class="liste">${polices.map(ligne).join("")}</div></section>`
-        : `<div class="vide-accueil"><span class="exemple">Aa Bb Cc</span><p>Aucune police pour l'instant.</p></div>`}`,
+        : `<div class="vide-accueil"><strong>Aucune police pour l'instant.</strong><span>Crée la première : il suffit de lui donner un nom.</span></div>`}
+      <footer class="credits"><span class="geste" role="img" aria-label="SV"></span>
+        <span class="version">v1.0</span><span>·</span><a href="confidentialite.html">Confidentialité</a></footer>`,
     pied: `<button class="btn principal" id="nouvelle">${icone("plus", 20)} Nouvelle police</button>`,
   });
   // les liens <a href="#/p/…"> passent par aller() pour numéroter l'historique
@@ -299,7 +303,7 @@ function vuePhoto(c, n) {
       <ul class="conseils"><li>Feuille bien à plat, en pleine lumière, sans ombre du téléphone.</li>
         <li>Les 4 carrés noirs doivent être visibles, la feuille peut être un peu de travers.</li>
         <li>Remplis bien l'écran avec la feuille.</li></ul>
-      <p class="message" id="message" role="status">${existe ? "Page enregistrée. Le quadrillage bleu doit tomber sur les cases." : ""}</p>
+      <p class="message" id="message" role="status">${existe ? "Page enregistrée. Le quadrillage doit tomber pile sur les cases." : ""}</p>
       <canvas class="page-scannee" id="rendu" ${existe ? "" : "hidden"}></canvas>
       <input type="file" id="camera" accept="image/*" capture="environment" hidden>
       <input type="file" id="fichier" accept="image/*" hidden>`,
@@ -319,7 +323,7 @@ function vuePhoto(c, n) {
     if (page.erreur) { msg.className = "message erreur"; msg.textContent = page.erreur + " Reprends la photo en suivant les conseils."; return; }
     c.pages[n] = page; f.pages[n] = await Stockage.pageVersBlob(page); modifie(c, true);
     $("#rendu").hidden = false; dessinerPage($("#rendu"), page, n);
-    msg.className = "message ok"; msg.textContent = "Page enregistrée. Vérifie que le quadrillage bleu tombe sur les cases.";
+    msg.className = "message ok"; msg.textContent = "Page enregistrée. Vérifie que le quadrillage tombe pile sur les cases.";
     $("#prendre").innerHTML = `${icone("photo", 20)} Reprendre`;
   };
   $("#camera").onchange = traiter; $("#fichier").onchange = traiter;
@@ -525,6 +529,16 @@ async function routeur() {
 // Démarrage : historique numéroté, puis premier affichage
 if (!history.state) history.replaceState({ n: 0 }, "", location.href);
 routeur();
+
+// Écran de lancement : le geste se dessine (~0,9 s), puis s'efface en fondu.
+// On attend aussi les polices (Manrope) pour éviter un saut de texte à l'apparition.
+(() => {
+  const l = document.getElementById("lancement"); if (!l) return;
+  const court = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const attente = new Promise(r => setTimeout(r, court ? 300 : 1000));
+  const polices = Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]);
+  Promise.all([attente, polices]).then(() => { l.classList.add("fini"); setTimeout(() => l.remove(), 400); });
+})();
 
 // Hors ligne : le « service worker » garde une copie de l'appli sur le téléphone
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js");

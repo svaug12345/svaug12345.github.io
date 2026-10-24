@@ -4,9 +4,12 @@
    suite, et on la met à jour en arrière-plan quand le réseau est là.
    Pour publier une nouvelle version : changer VERSION ci-dessous.
    ========================================================================== */
-const VERSION = "plume-v1";
+const VERSION = "plume-v2";
 const FICHIERS = ["./", "index.html", "style.css", "moteur.js", "grille.js", "stockage.js", "app.js",
-  "manifest.webmanifest", "icones/icone-192.png", "icones/icone-512.png", "icones/icone-masquable-512.png"];
+  "manifest.webmanifest", "icones/icone.svg", "icones/geste.svg", "icones/icone-192.png", "icones/icone-512.png",
+  "icones/icone-masquable-512.png"];
+// Polices Google (Manrope, JetBrains Mono) : gardées en cache dès la première visite pour le hors ligne
+const POLICES = ["https://fonts.googleapis.com", "https://fonts.gstatic.com"];
 
 // Installation : on télécharge tous les fichiers de l'appli
 self.addEventListener("install", e => {
@@ -21,7 +24,8 @@ self.addEventListener("activate", e => {
 
 // Chaque requête : copie locale si elle existe, mise à jour silencieuse en parallèle
 self.addEventListener("fetch", e => {
-  if (e.request.method !== "GET" || new URL(e.request.url).origin !== location.origin) return;
+  const origine = new URL(e.request.url).origin;
+  if (e.request.method !== "GET" || (origine !== location.origin && !POLICES.includes(origine))) return;
   e.respondWith(caches.open(VERSION).then(async cache => {
     const local = await cache.match(e.request, { ignoreSearch: true });
     const reseau = fetch(e.request).then(r => { if (r.ok) cache.put(e.request, r.clone()); return r; }).catch(() => local);

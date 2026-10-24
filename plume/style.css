@@ -4,26 +4,30 @@
    des zones tactiles d'au moins 48 px.
    ========================================================================== */
 :root {
-  --fond: #ffffff;
-  --surface: #f5f6f8;
-  --trait: #e4e7ec;
-  --texte: #12151b;
-  --doux: #667085;
-  --accent: #1f4fd6;
-  --sur-accent: #ffffff;
-  --accent-doux: #eaf0ff;
-  --encre: #13204a;
-  --ok: #15803d;
-  --danger: #c0362c;
-  --rayon: 14px;
-  --ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Couleurs de la charte SV (thème clair). Neutres teintés vert-bleu, jamais de gris pur. */
+  --fond: #f6f9f9;           /* surface : fond de page */
+  --carte: #ffffff;          /* surface-raised : cartes, listes, fenêtres */
+  --trait: #d6e2e3;          /* line : filets de 1 px */
+  --texte: #102a2e;          /* ink */
+  --doux: #4d6468;           /* ink-muted */
+  --accent: #0f7c7b;         /* teal : couleur de marque, boutons principaux */
+  --sur-accent: #ffffff;     /* on-teal */
+  --accent-doux: #d4ecea;    /* teal-soft : zones mises en avant */
+  --accent-profond: #0b4f55; /* teal-deep */
+  --vif: #20b2a6;            /* accent turquoise : décoratif uniquement, jamais du texte sur fond clair */
+  --encre: #102a2e;          /* couleur de l'écriture dessinée et des aperçus */
+  --ok: #0f7c7b;
+  --danger: #b23a34;
+  --rayon: 12px;             /* radius-md */
+  --ui: Manrope, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --fond: #0e1014; --surface: #171a20; --trait: #262a33; --texte: #eef0f4; --doux: #9aa2b1;
-    --accent: #7c9cff; --sur-accent: #0e1014; --accent-doux: #1b2440; --encre: #dfe6ff;
-    --ok: #4ade80; --danger: #f08a7e; color-scheme: dark;
+    --fond: #0e1a1c; --carte: #152427; --trait: #26393c; --texte: #e6f1f1; --doux: #9db3b5;
+    --accent: #3cc2b8; --sur-accent: #062022; --accent-doux: #1c4245; --accent-profond: #1d6b6e; --vif: #5fe0d2;
+    --encre: #e6f1f1; --ok: #3cc2b8; --danger: #f0857f; color-scheme: dark;
   }
 }
 
@@ -45,7 +49,7 @@ svg { display: block; flex: none; }
 }
 .barre h1 { font-size: 1.15rem; font-weight: 600; margin: 0 0 0 4px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .icone { width: 48px; height: 48px; border: 0; background: none; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--texte); }
-.icone:hover { background: var(--surface); }
+.icone:hover { background: var(--accent-doux); }
 .icone:disabled { opacity: 0.35; cursor: default; background: none; }
 
 /* ---------- Contenu ---------- */
@@ -54,21 +58,22 @@ main {
   padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px));
   padding-block: 8px calc(110px + env(safe-area-inset-bottom, 0px));
 }
-.titre-page { font-size: 1.9rem; font-weight: 650; letter-spacing: -0.02em; margin: 12px 0 0; line-height: 1.15; text-wrap: balance; }
+.titre-page { font-size: 2rem; font-weight: 700; letter-spacing: -0.01em; margin: 12px 0 0; line-height: 1.15; text-wrap: balance; }
 .sous-titre { color: var(--doux); margin: 6px 0 0; }
 section { display: grid; gap: 12px; min-width: 0; }
-.etiquette { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--doux); margin: 0; }
+.etiquette { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--doux); margin: 0; }
 .aide { font-size: 0.88rem; color: var(--doux); margin: 0; }
 
 /* ---------- Boutons ---------- */
 .btn {
-  min-height: 48px; padding: 0 18px; border-radius: 12px; border: 1px solid var(--trait); background: var(--fond);
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; font-weight: 550; font-size: 0.95rem;
+  min-height: 48px; padding: 0 18px; border-radius: var(--rayon); border: 1px solid var(--trait); background: var(--carte);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
+  font-weight: 700; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase;
   text-decoration: none; color: var(--texte);
 }
 .btn:active { transform: scale(0.98); }
 .btn.principal { background: var(--accent); border-color: var(--accent); color: var(--sur-accent); }
-.btn.discret { border-color: transparent; background: var(--surface); }
+.btn.discret { border-color: var(--trait); background: var(--carte); }
 .btn.danger { color: var(--danger); }
 .btn.plein { width: 100%; }
 .btn:disabled { opacity: 0.45; cursor: default; transform: none; }
@@ -89,43 +94,43 @@ section { display: grid; gap: 12px; min-width: 0; }
 /* ---------- Listes ---------- */
 .liste { display: grid; border: 1px solid var(--trait); border-radius: var(--rayon); overflow: hidden; }
 .ligne {
-  display: flex; align-items: center; gap: 14px; padding: 14px 16px; min-height: 64px; background: var(--fond);
+  display: flex; align-items: center; gap: 14px; padding: 14px 16px; min-height: 64px; background: var(--carte);
   border: 0; border-top: 1px solid var(--trait); text-align: left; width: 100%; cursor: pointer; color: inherit; text-decoration: none;
 }
 .ligne:first-child { border-top: 0; }
 .ligne .corps { flex: 1; min-width: 0; display: grid; gap: 2px; }
-.ligne .titre { font-weight: 550; }
+.ligne .titre { font-weight: 700; }
 .ligne .detail { font-size: 0.85rem; color: var(--doux); }
 .ligne .detail.ok { color: var(--ok); }
-.pastille { width: 40px; height: 40px; border-radius: 12px; background: var(--surface); display: grid; place-items: center; color: var(--doux); flex: none; }
+.pastille { width: 40px; height: 40px; border-radius: 10px; background: var(--fond); display: grid; place-items: center; color: var(--doux); flex: none; }
 .pastille.ok { background: var(--accent-doux); color: var(--accent); }
 .apercu-nom { font-size: 1.7rem; line-height: 1.1; color: var(--encre); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* ---------- Progression ---------- */
 .progression { display: grid; gap: 8px; }
-.jauge { height: 6px; background: var(--surface); border-radius: 3px; overflow: hidden; }
+.jauge { height: 6px; background: var(--accent-doux); border-radius: 3px; overflow: hidden; }
 .jauge > div { height: 100%; background: var(--accent); border-radius: 3px; transition: width .3s; }
-.chiffres { display: flex; justify-content: space-between; font-size: 0.88rem; color: var(--doux); font-variant-numeric: tabular-nums; }
+.chiffres { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--doux); font-family: var(--mono); }
 
 /* ---------- Galerie des caractères ---------- */
 .galerie { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 6px; }
 .case {
-  aspect-ratio: 1; border: 1px solid var(--trait); border-radius: 10px; background: var(--fond); position: relative;
+  aspect-ratio: 1; border: 1px solid var(--trait); border-radius: 10px; background: var(--carte); position: relative;
   display: grid; place-items: center; font-size: 28px; color: var(--encre); cursor: pointer; padding: 0; overflow: hidden;
 }
 .case small { position: absolute; top: 3px; left: 5px; font: 600 10px var(--ui); color: var(--doux); }
 .case.vide { border-style: dashed; color: var(--trait); font-family: var(--ui); font-size: 18px; }
-.case .point { position: absolute; bottom: 4px; right: 5px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+.case .point { position: absolute; bottom: 4px; right: 5px; width: 6px; height: 6px; border-radius: 50%; background: var(--vif); }
 
 /* ---------- Écran de dessin ---------- */
 .atelier { display: grid; gap: 16px; justify-items: center; }
 .consigne { display: flex; align-items: baseline; gap: 12px; width: 100%; }
-.consigne .grand { font-size: 2.6rem; font-weight: 650; line-height: 1; }
+.consigne .grand { font-size: 2.6rem; font-weight: 800; line-height: 1; }
 .consigne .aide { flex: 1; }
 .feuille {
   position: relative; width: min(100%, 62vh); aspect-ratio: 1; border-radius: var(--rayon);
-  background: var(--fond); border: 1px solid var(--trait); touch-action: none; user-select: none; overflow: hidden;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+  background: var(--carte); border: 1px solid var(--trait); touch-action: none; user-select: none; overflow: hidden;
+  box-shadow: 0 1px 2px rgba(16, 42, 46, 0.06);
 }
 .feuille canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .outils { display: flex; gap: 8px; width: 100%; justify-content: center; }
@@ -134,25 +139,25 @@ section { display: grid; gap: 12px; min-width: 0; }
 /* ---------- Réglages ---------- */
 .reglage { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; }
 .reglage label { font-size: 0.95rem; }
-.reglage output { font-size: 0.85rem; color: var(--doux); font-variant-numeric: tabular-nums; }
+.reglage output { font-size: 0.8rem; color: var(--doux); font-family: var(--mono); }
 .reglage input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: var(--accent); margin: 4px 0; height: 28px; }
 .reglage .aide { grid-column: 1 / -1; font-size: 0.8rem; }
 .bascule { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; }
 .bascule input { width: 44px; height: 24px; accent-color: var(--accent); }
 details { border-top: 1px solid var(--trait); padding-top: 12px; }
-details summary { cursor: pointer; font-weight: 550; min-height: 40px; display: flex; align-items: center; list-style: none; }
+details summary { cursor: pointer; font-weight: 700; min-height: 40px; display: flex; align-items: center; list-style: none; }
 details summary::-webkit-details-marker { display: none; }
 details summary::after { content: "+"; margin-left: auto; font-size: 1.3rem; color: var(--doux); }
 details[open] summary::after { content: "−"; }
 details > div { display: grid; gap: 18px; padding-top: 10px; }
 .texte-essai {
   width: 100%; min-height: 200px; resize: vertical; border: 1px solid var(--trait); border-radius: var(--rayon);
-  padding: 14px 16px; background: var(--fond); color: var(--encre); font-size: 34px; line-height: 1.35; font-kerning: normal;
+  padding: 14px 16px; background: var(--carte); color: var(--encre); font-size: 34px; line-height: 1.35; font-kerning: normal;
 }
 .encart { background: var(--accent-doux); border-radius: 12px; padding: 14px 16px; display: grid; gap: 10px; font-size: 0.92rem; }
 
 /* ---------- Photo d'une page ---------- */
-.page-scannee { width: 100%; border: 1px solid var(--trait); border-radius: var(--rayon); background: var(--surface); }
+.page-scannee { width: 100%; border: 1px solid var(--trait); border-radius: var(--rayon); background: var(--carte); }
 .message { font-size: 0.92rem; }
 .message.ok { color: var(--ok); }
 .message.erreur { color: var(--danger); }
@@ -160,19 +165,40 @@ details > div { display: grid; gap: 18px; padding-top: 10px; }
 
 /* ---------- Fenêtres (renommer, supprimer…) ---------- */
 dialog {
-  border: 0; border-radius: 20px; padding: 24px; width: min(92vw, 420px); background: var(--fond); color: var(--texte);
+  border: 0; border-radius: 16px; padding: 24px; width: min(92vw, 420px); background: var(--carte); color: var(--texte);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
 }
-dialog::backdrop { background: rgba(10, 12, 16, 0.45); }
-dialog h2 { margin: 0 0 8px; font-size: 1.2rem; }
+dialog::backdrop { background: rgba(6, 32, 34, 0.5); }
+dialog h2 { margin: 0 0 8px; font-size: 1.375rem; font-weight: 700; }
 dialog form { display: grid; gap: 16px; }
-.champ { width: 100%; min-height: 48px; border: 1px solid var(--trait); border-radius: 12px; padding: 0 14px; background: var(--fond); font-size: 1rem; }
+.champ { width: 100%; min-height: 48px; border: 1px solid var(--trait); border-radius: 6px; padding: 0 14px; background: var(--carte); font-size: 1rem; }
 .toast {
   position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 20;
   background: var(--texte); color: var(--fond); padding: 12px 18px; border-radius: 12px; font-size: 0.92rem; max-width: 90vw;
 }
-.vide-accueil { text-align: center; padding: 40px 12px; display: grid; gap: 10px; justify-items: center; color: var(--doux); }
-.vide-accueil .exemple { font-size: 2.4rem; color: var(--encre); font-family: Georgia, serif; font-style: italic; }
+.vide-accueil { padding: 28px 20px; display: grid; gap: 6px; justify-items: start; color: var(--doux);
+  background: var(--carte); border: 1px dashed var(--trait); border-radius: var(--rayon); }
+.vide-accueil strong { color: var(--texte); }
+
+/* ---------- Accueil ---------- */
+.marque-titre { font-size: 3rem; line-height: 1.08; font-weight: 800; letter-spacing: -0.02em; margin: 20px 0 0; }
+.marque-titre + .sous-titre { font-size: 1.05rem; max-width: 32ch; }
+.credits { display: flex; align-items: center; gap: 12px; color: var(--doux); font-size: 0.8rem; padding-top: 8px; }
+.credits a { color: var(--doux); }
+.credits .version { font-family: var(--mono); }
+
+/* Le geste SV en « masque » : le SVG sert de pochoir et prend la couleur du texte (currentColor).
+   Ainsi un seul fichier sert en ink, ink-muted, teal ou blanc. */
+.geste { display: inline-block; flex: none; width: 32px; height: 32px; background: currentColor;
+  -webkit-mask: url(icones/geste.svg) center / contain no-repeat; mask: url(icones/geste.svg) center / contain no-repeat; }
+
+/* ---------- Écran de lancement : le geste SV se dessine de gauche à droite ---------- */
+.lancement { position: fixed; inset: 0; z-index: 50; background: var(--fond); display: grid; place-items: center; transition: opacity .35s ease; color: var(--texte); }
+.lancement .cadre { width: 112px; height: 112px; overflow: hidden; animation: dessiner .8s cubic-bezier(.6, 0, .3, 1) .1s both; }
+.lancement .geste { width: 112px; height: 112px; }
+.lancement.fini { opacity: 0; pointer-events: none; }
+@keyframes dessiner { from { width: 0; } to { width: 112px; } }
+
 .chargement { color: var(--doux); font-size: 0.9rem; }
 
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } .btn:active { transform: none; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } .btn:active { transform: none; } .lancement .cadre { animation: none; } }
