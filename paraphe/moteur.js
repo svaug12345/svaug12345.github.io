@@ -28,6 +28,9 @@ const Moteur = (() => {
   const PONCTU = new Set([..."., ;:!?'\"-()«»’…".replace(" ", "")]);
   const KERN_CARS = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789éèêëàâäùûüôöîïçœæÉÈÊÀÂÙÔÎÇŒÛËÏÜÄÖÆ.,;:!?'\"-()«»"];
 
+  // Marge ajoutée à droite de l'apostrophe (unités de police) : « l'été » ne doit pas paraître collé.
+  const ESPACE_APRES_APOSTROPHE = 30;
+
   const DEFAUT = { seuil: 110, graisse: 0, poussieres: 25, lissage: 2.6, pas: 3, approche: 12, espace: 300,
     stylo: 7, normaliser: 80, secours: true, crenage: true, force: 0.75, cible: 30, maxi: 200 };
 
@@ -418,13 +421,13 @@ const Moteur = (() => {
     const prof = new Map(uniques.map(g => [g, profils(g)])), paires = [];
     const apostrophe = parCar.get("'");          // même dessin pour ' et ’
     for (const a of uniques) for (const b of uniques) {
+      // Après une apostrophe (l'été, m'appelle) : JAMAIS de rapprochement. Comme elle est en
+      // hauteur, la lettre suivante glissait dessous et l'apostrophe touchait l'accent du « é ».
+      if (a === apostrophe) continue;
       const pa = prof.get(a), pb = prof.get(b); let mini = Infinity;
       for (let k = 0; k < NB; k++) { const e = pa.libreDroite[k] + pb.gauche[k]; if (!isNaN(e) && e < mini) mini = e; }
       if (mini === Infinity) continue;
-      let lim = (a.ponctu || b.ponctu) ? p.maxi / 2 : p.maxi;
-      // Après une apostrophe (l'été, m'appelle), on rapproche moins : comme elle est en
-      // hauteur, la lettre suivante glissait dessous et le mot paraissait collé.
-      if (a === apostrophe) lim = Math.min(lim, 45);
+      const lim = (a.ponctu || b.ponctu) ? p.maxi / 2 : p.maxi;
       const v = Math.max(-Math.round(p.force * (mini - p.cible)), -lim);
       if (v <= -10) paires.push([a.id, b.id, v]);
     }
@@ -600,6 +603,7 @@ const Moteur = (() => {
       const s = source(ch), r = s && retouches[ch], g = r ? glypheRetouche(r, p) : s && glyphe(s, p);
       if (!g) { manquants.push(ch); continue; }
       masques.set(ch, s);
+      if (ch === "'") g.avance += ESPACE_APRES_APOSTROPHE;   // un peu d'air après l'apostrophe
       const alias = { "'": ["’", "‘", "′"], '"': ["“", "”", "„"], "-": ["‐", "‑", "−"] }[ch] || [];
       ajouter(g, [ch, ...alias], PONCTU.has(ch));
     }
