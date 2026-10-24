@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1014" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Plume transforme ton écriture en police de caractères : imprime la grille et photographie-la, ou dessine chaque lettre sur l'écran.">
+<title>Plume</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icones/icone-192.png">
+<link rel="apple-touch-icon" href="icones/icone-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Trois zones remplies par app.js selon l'écran affiché -->
+  <header class="barre" id="barre"></header>
+  <main id="contenu"><p class="chargement">Chargement…</p></main>
+  <div class="pied" id="pied" hidden></div>
+
+  <script src="moteur.js"></script>
+  <script src="grille.js"></script>
+  <script src="stockage.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
