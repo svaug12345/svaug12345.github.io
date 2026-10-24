@@ -17,5 +17,6 @@
      1.4.0  aperçu touchable, retouche vectorielle des lettres (points et poignées), bandeau entre deux lettres
      1.5.0  l'appli s'appelle désormais Paraphe (adresse /paraphe/, l'ancienne /plume/ redirige)
      1.5.1  outils de retouche sur une seule ligne sur les petits écrans (360 px)
+     1.5.2  un peu plus d'espace après l'apostrophe (crénage limité à -45)
    ========================================================================== */
-self.PLUME_VERSION = "1.5.1";   // (nom de variable gardé : l'appli s'appelait Plume)
+self.PLUME_VERSION = "1.5.2";   // (nom de variable gardé : l'appli s'appelait Plume)

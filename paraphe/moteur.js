@@ -416,11 +416,15 @@ const Moteur = (() => {
   function crenage(parCar, p) {
     const uniques = [...new Set(KERN_CARS.map(ch => parCar.get(ch)).filter(Boolean))];
     const prof = new Map(uniques.map(g => [g, profils(g)])), paires = [];
+    const apostrophe = parCar.get("'");          // même dessin pour ' et ’
     for (const a of uniques) for (const b of uniques) {
       const pa = prof.get(a), pb = prof.get(b); let mini = Infinity;
       for (let k = 0; k < NB; k++) { const e = pa.libreDroite[k] + pb.gauche[k]; if (!isNaN(e) && e < mini) mini = e; }
       if (mini === Infinity) continue;
-      const lim = (a.ponctu || b.ponctu) ? p.maxi / 2 : p.maxi;
+      let lim = (a.ponctu || b.ponctu) ? p.maxi / 2 : p.maxi;
+      // Après une apostrophe (l'été, m'appelle), on rapproche moins : comme elle est en
+      // hauteur, la lettre suivante glissait dessous et le mot paraissait collé.
+      if (a === apostrophe) lim = Math.min(lim, 45);
       const v = Math.max(-Math.round(p.force * (mini - p.cible)), -lim);
       if (v <= -10) paires.push([a.id, b.id, v]);
     }
