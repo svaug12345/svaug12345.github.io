@@ -19,5 +19,6 @@
      1.5.1  outils de retouche sur une seule ligne sur les petits écrans (360 px)
      1.5.2  un peu plus d'espace après l'apostrophe (crénage limité à -45)
      1.5.3  apostrophe : plus aucun rapprochement après elle, et +30 de marge droite
+     1.6.0  import de PDF scannés, grille v3 (numéros de page lisibles, page 4 de cases bonus), plusieurs versions par lettre et choix de la préférée
    ========================================================================== */
-self.PLUME_VERSION = "1.5.3";   // (nom de variable gardé : l'appli s'appelait Plume)
+self.PLUME_VERSION = "1.6.0";   // (nom de variable gardé : l'appli s'appelait Plume)

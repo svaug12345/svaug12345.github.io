@@ -220,14 +220,55 @@ const Moteur = (() => {
   }
 
   /** Masque d'encre d'une case scannée : seuil, étiquette effacée, poussières, épaisseur. */
-  function masqueScan(page, idx, p) {
+  function masqueScan(page, idx, p, bonus = false) {
     const c = caseFloue(page, idx), { w, h } = c; let m = new Uint8Array(w * h);
     for (let i = 0; i < m.length; i++) m[i] = c.flou[i] < p.seuil ? 1 : 0;
-    const lh = Math.round(5 * MM * PX), lw = Math.round(6 * MM * PX);      // étiquette imprimée
+    // Coin haut-gauche effacé : l'étiquette imprimée (grille) ou, sur la page bonus,
+    // le petit carré où l'enfant a écrit quelle lettre il refait (zone un peu plus grande).
+    const lh = Math.round((bonus ? 6.2 : 5) * MM * PX), lw = Math.round((bonus ? 6.2 : 6) * MM * PX);
     for (let y = 0; y < lh && y < h; y++) for (let x = 0; x < lw && x < w; x++) m[y * w + x] = 0;
     for (const t of taches(m, w, h, true)) if (t.aire <= p.poussieres) for (const q of t.pix) m[q] = 0;
     for (let k = 0; k < Math.abs(p.graisse); k++) m = morpho(m, w, h, p.graisse > 0);
     return m.some(v => v) ? { m, w, h, base: c.base } : null;
+  }
+
+  // ---------- Reconnaître quelle page de la grille on a scannée ----------
+  // Depuis la version 3 de la grille, chaque page porte en haut à droite, à gauche du carré
+  // repère, de 1 à 4 petites barres noires : leur nombre = numéro de la page.
+  // (Des barres et pas des carrés : elles ne peuvent pas être confondues avec les repères.)
+  const MARQUE = { l: 1.6 * MM, h: 4 * MM, pas: 3.6 * MM };
+  /** Rectangles des marques de la page k, en points, origine en HAUT à gauche. */
+  function marques(k) {
+    const droite = PW - MARGE / 2 - REP - 3 * MM, haut = MARGE / 2 + (REP - MARQUE.h) / 2;
+    return Array.from({ length: k }, (_, i) => ({ x: droite - i * MARQUE.pas - MARQUE.l, y: haut, w: MARQUE.l, h: MARQUE.h }));
+  }
+
+  /** Assombrissement moyen d'un rectangle de la page redressée (0 = blanc, 255 = noir). */
+  function noirceur(page, x, y, w, h) {
+    let s = 0, n = 0;
+    for (let v = Math.floor(y * PX); v < (y + h) * PX; v++) for (let u = Math.floor(x * PX); u < (x + w) * PX; u++) { s += 255 - page.gris[v * page.w + u]; n++; }
+    return n ? s / n : 0;
+  }
+
+  /** Page redressée → { num: 1 à 4 ou null, phrases: vrai si c'est la page de phrases }.
+      1. on compte les barres de numéro (grilles récentes) ;
+      2. sinon (anciennes grilles) : pas de traits verticaux de cases = page de phrases ;
+         une dernière ligne de cases sans bordure = ancienne page 2 (elle était incomplète). */
+  function identifierPage(page) {
+    const r = marques(4), x0 = r[3].x - 1 * MM, x1 = r[0].x + r[0].w + 1 * MM, y0 = r[0].y - 1 * MM, y1 = r[0].y + r[0].h + 1 * MM;
+    const W = Math.round((x1 - x0) * PX), H = Math.round((y1 - y0) * PX), bin = new Uint8Array(W * H);
+    for (let v = 0; v < H; v++) for (let u = 0; u < W; u++) bin[v * W + u] = page.gris[(Math.round(y0 * PX) + v) * page.w + Math.round(x0 * PX) + u] < 110 ? 1 : 0;
+    const barres = taches(bin, W, H).filter(t => t.aire > 0.35 * MARQUE.l * MARQUE.h * PX * PX).length;
+    // trait vertical entre la 1re et la 2e colonne de cases, sur toute la hauteur de la grille
+    const gx = (PW - COLS * CASE) / 2 + CASE, gy = MARGE + HAUT_ENTETE;
+    const trait = noirceur(page, gx - 0.5, gy + 4, 1, ROWS * CASE - 8) - noirceur(page, gx + 3, gy + 4, 1, ROWS * CASE - 8);
+    const phrases = trait < 25;
+    if (barres >= 1 && barres <= 4) return { num: barres, phrases: barres === 3 };
+    if (phrases) return { num: 3, phrases: true };
+    // ancienne grille : la dernière case (n° 62) a-t-elle une bordure en bas ?
+    const { x0: cx, y0: cy } = rectCase(PAR_PAGE - 1);
+    const bord = noirceur(page, cx + 4, cy + CASE - 0.6, CASE - 8, 1.2) - noirceur(page, cx + 4, cy + CASE - 4, CASE - 8, 1.2);
+    return { num: bord < 20 ? 2 : null, phrases: false };
   }
 
   /** Taille de la case virtuelle de dessin = une case du papier, à la même résolution. */
@@ -665,5 +706,6 @@ const Moteur = (() => {
   }
 
   return { MM, PW, PH, MARGE, HAUT_ENTETE, COLS, ROWS, REP, CASE, LB, LX, LM, PX, PAR_PAGE, CARS, PHRASES, DEFAUT, CASE_PX,
-    enGris, redresser, masqueScan, masqueDessin, dessinerTraits, construire, mesurerEspacement, rectCase, glyphe, bezier };
+    enGris, redresser, masqueScan, masqueDessin, dessinerTraits, construire, mesurerEspacement, rectCase, glyphe, bezier,
+    marques, identifierPage };
 })();

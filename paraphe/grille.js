@@ -39,6 +39,12 @@ const Grille = (() => {
       o.push(`${n2(x)} ${n2(y)} ${n2(t)} ${n2(t)} re f`);
   }
 
+  /** Numéro de page lisible par l'appli : k petites barres noires près du repère en haut à droite. */
+  function barresNumero(o, k) {
+    o.push("0 g");
+    for (const r of M.marques(k)) o.push(`${n2(r.x)} ${n2(M.PH - r.y - r.h)} ${n2(r.w)} ${n2(r.h)} re f`);   // y retourné : le PDF part du bas
+  }
+
   function entete(o, titre, numero, total, consignes) {
     const haut = M.PH - M.MARGE, x = M.MARGE + 8 * MM;
     o.push("0 g", `BT /F2 14 Tf ${n2(x)} ${n2(haut - 5 * MM)} Td ${chaine(titre)} Tj ET`);
@@ -64,9 +70,9 @@ const Grille = (() => {
   /** Les 3 pages de la grille, sous forme de liste de contenus PDF. */
   function contenus(nom) {
     const C = M.CASE, x0 = (M.PW - M.COLS * C) / 2, yHaut = M.PH - M.MARGE - M.HAUT_ENTETE;
-    const pagesGrille = Math.ceil(M.CARS.length / M.PAR_PAGE), total = pagesGrille + 1, res = [];
+    const pagesGrille = Math.ceil(M.CARS.length / M.PAR_PAGE), total = pagesGrille + 2, res = [];
     for (let p = 0; p < pagesGrille; p++) {
-      const o = []; reperes(o); entete(o, `La police de ${nom}`, p + 1, total, CONSIGNES);
+      const o = []; reperes(o); barresNumero(o, p + 1); entete(o, `La police de ${nom}`, p + 1, total, CONSIGNES);
       M.CARS.slice(p * M.PAR_PAGE, (p + 1) * M.PAR_PAGE).forEach((car, i) => {
         const x = x0 + (i % M.COLS) * C, y = yHaut - (Math.floor(i / M.COLS) + 1) * C;
         o.push("0.55 G 0.6 w", `${n2(x)} ${n2(y)} ${n2(C)} ${n2(C)} re S`);
@@ -76,8 +82,8 @@ const Grille = (() => {
       res.push(page(o));
     }
     // Page 3 : phrases à recopier, pour mesurer l'espacement naturel
-    const o = []; reperes(o);
-    entete(o, `La police de ${nom}`, total, total, [
+    const o = []; reperes(o); barresNumero(o, 3);
+    entete(o, `La police de ${nom}`, 3, total, [
       "Recopie chaque phrase sur sa ligne, en écrivant normalement, comme dans ton cahier.",
       "Même taille que dans les cases : minuscules jusqu'au 1er pointillé, majuscules jusqu'au 2e.",
       "Ces phrases servent à régler l'espace entre tes lettres et entre tes mots.",
@@ -88,6 +94,22 @@ const Grille = (() => {
       guides(o, x0, x0 + M.COLS * C, y);
     });
     res.push(page(o));
+
+    // Page 4 : cases bonus, pour refaire les lettres ratées. Même grille que les pages 1 et 2,
+    // mais chaque case a un petit carré dans le coin : on y écrit QUELLE lettre on refait.
+    const b = []; reperes(b); barresNumero(b, 4);
+    entete(b, `La police de ${nom} · cases bonus`, 4, total, [
+      "Une lettre ratée ? Refais-la ici : écris-la d'abord en petit dans le carré du coin,",
+      "puis en grand dans la case, posée sur la ligne de base comme sur la grille.",
+      "Dans l'appli, tu pourras choisir la version que tu préfères.",
+    ]);
+    for (let i = 0; i < M.PAR_PAGE; i++) {
+      const x = x0 + (i % M.COLS) * C, y = yHaut - (Math.floor(i / M.COLS) + 1) * C;
+      b.push("0.55 G 0.6 w", `${n2(x)} ${n2(y)} ${n2(C)} ${n2(C)} re S`);
+      guides(b, x + 2, x + C - 2, y);
+      b.push("0.55 G 0.6 w", `${n2(x + 1.2 * MM)} ${n2(y + C - 6.2 * MM)} ${n2(5 * MM)} ${n2(5 * MM)} re S`);   // petit carré
+    }
+    res.push(page(b));
     return res;
   }
 

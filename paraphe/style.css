@@ -257,3 +257,22 @@ body { overflow-x: clip; }
 .champ-lettre { width: 40px; height: 36px; text-align: center; border: 1px solid var(--trait); border-radius: 6px; background: var(--carte); font-size: 1.05rem; }
 .bandeau { width: 100%; height: 84px; display: block; }
 .bandeau-retouche { padding: 10px 14px; gap: 2px; }
+
+/* ---------- Import PDF, cases bonus, versions (1.6) ---------- */
+.pages-pdf { display: grid; gap: 14px; }
+/* miniature de la page à gauche, choix de la page à droite : tout tient sur l'écran */
+.carte-page { display: grid; grid-template-columns: 38% minmax(0, 1fr); align-items: center; gap: 12px; background: var(--carte); border: 1px solid var(--trait); border-radius: var(--rayon); padding: 12px; }
+.carte-page > .aide { grid-column: 1 / -1; }
+.champ-select { display: grid; gap: 8px; font-size: 0.9rem; }
+.champ-select select { font: inherit; width: 100%; min-height: 44px; border: 1px solid var(--trait); border-radius: 8px; background: var(--carte); color: var(--texte); padding: 0 10px; }
+.cases-bonus { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+.case-bonus { display: grid; gap: 6px; justify-items: center; background: var(--carte); border: 1px solid var(--trait); border-radius: var(--rayon); padding: 8px; }
+.case-bonus canvas { width: 100%; height: auto; border-radius: 6px; }
+.case-bonus .champ-lettre { width: 56px; height: 44px; font-size: 1.3rem; }
+.versions { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+.version { display: grid; gap: 6px; justify-items: center; background: var(--carte); border: 2px solid var(--trait); border-radius: var(--rayon); padding: 10px; cursor: pointer; color: var(--texte); font: inherit; position: relative; }
+.version canvas { width: 100%; height: auto; }
+.version.choisie { border-color: var(--accent); background: var(--accent-doux); }
+.version .badge { position: absolute; top: 8px; right: 8px; background: var(--accent); color: var(--sur-accent); font-size: 0.68rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; }
+.case .nb-versions { position: absolute; top: 3px; right: 4px; font: 700 10px var(--mono); color: var(--accent); }
+.message .btn.petit { margin-left: 6px; }

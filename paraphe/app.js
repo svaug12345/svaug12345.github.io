@@ -95,6 +95,9 @@ async function ouvrirPolice(id) {
   const police = await Stockage.lire(id); if (!police) return null;
   police.reglages = { ...M.DEFAUT, ...police.reglages };    // complète avec les réglages ajoutés depuis
   police.retouches = police.retouches || {};                  // lettres retouchées à la main (vecteurs)
+  police.bonus = police.bonus || {};                          // case bonus n° k → caractère refait
+  police.choix = police.choix || {};                          // caractère → version préférée
+  while (police.pages.length < 4) police.pages.push(null);    // page 4 (cases bonus) ajoutée en 1.6
   const pages = await Promise.all(police.pages.map(b => b ? Stockage.blobVersPage(b) : null));
   courant = { police, pages, version: 1, res: null, face: null };
   return courant;
@@ -107,12 +110,14 @@ function modifie(c, immediat = false) {
   if (immediat) return f(); minuteurSauvegarde = setTimeout(f, 400);
 }
 
-/** Pour chaque caractère : le dessin s'il existe, sinon la case de la photo. */
+/** Pour chaque caractère : la version choisie (voir papier.js) ; si sa case est vide,
+    on essaie les autres versions. */
 function source(c, p) {
   return ch => {
-    const t = c.police.dessins[ch]; if (t && t.length) return M.masqueDessin(t, p, ch);
-    const i = M.CARS.indexOf(ch), page = c.pages[Math.floor(i / M.PAR_PAGE)];
-    return page ? M.masqueScan(page, i % M.PAR_PAGE, p) : null;
+    const choisie = versionChoisie(c, p, ch); if (!choisie) return null;
+    const m = choisie.masque(); if (m) return m;
+    for (const v of versionsDe(c, p, ch)) { const mm = v !== choisie && v.masque(); if (mm) return mm; }
+    return null;
   };
 }
 
@@ -174,8 +179,8 @@ async function vueAccueil() {
 async function vueProjet(c) {
   const f = c.police, nbDessins = Object.keys(f.dessins).length;
   const lignePage = n => {
-    const ok = !!f.pages[n], nom = ["Page 1 · lettres et chiffres", "Page 2 · accents et signes", "Page 3 · phrases"][n];
-    const detail = ok ? "Photographiée" : n === 2 ? "Facultative : règle l'espacement" : "À photographier";
+    const ok = !!f.pages[n], nom = NOMS_PAGES[n];
+    const detail = ok ? "Enregistrée" : n === 2 ? "Facultative : règle l'espacement" : n === 3 ? "Facultative : pour refaire des lettres" : "À photographier";
     return `<button class="ligne" data-page="${n}"><span class="pastille ${ok ? "ok" : ""}">${icone(ok ? "coche" : "photo")}</span>
       <span class="corps"><span class="titre">${nom}</span><span class="detail ${ok ? "ok" : ""}">${detail}</span></span>${icone("suivant", 18)}</button>`;
   };
@@ -191,8 +196,12 @@ async function vueProjet(c) {
         <p class="etiquette">Sur papier</p>
         <div class="liste">
           <button class="ligne" id="grille"><span class="pastille">${icone("imprimer")}</span>
-            <span class="corps"><span class="titre">Imprimer la grille</span><span class="detail">3 pages A4 · PDF</span></span>${icone("suivant", 18)}</button>
-          ${[0, 1, 2].map(lignePage).join("")}
+            <span class="corps"><span class="titre">Imprimer la grille</span><span class="detail">4 pages A4 · PDF</span></span>${icone("suivant", 18)}</button>
+          <button class="ligne" id="importer-pdf"><span class="pastille">${icone("page")}</span>
+            <span class="corps"><span class="titre">Importer un PDF scanné</span><span class="detail">Plus net qu'une photo · pages dans n'importe quel ordre</span></span>${icone("suivant", 18)}</button>
+          ${[0, 1, 2, 3].map(lignePage).join("")}
+          ${f.pages[3] ? `<button class="ligne" id="attribuer"><span class="pastille ok">${icone("coche")}</span>
+            <span class="corps"><span class="titre">Lettres des cases bonus</span><span class="detail">${Object.keys(f.bonus).length} case${Object.keys(f.bonus).length > 1 ? "s" : ""} attribuée${Object.keys(f.bonus).length > 1 ? "s" : ""}</span></span>${icone("suivant", 18)}</button>` : ""}
         </div>
       </section>
       <section>
@@ -218,7 +227,9 @@ async function vueProjet(c) {
     const ch = Exemples.ORDRE.find(x => !(f.dessins[x] || []).length && (!manque || manque.has(x))) || Exemples.ORDRE[0];
     aller(`#/p/${f.id}/dessin/${M.CARS.indexOf(ch)}`);
   };
-  document.querySelectorAll(".galerie .case").forEach(b => b.onclick = () => aller(`#/p/${f.id}/dessin/${b.dataset.i}`));
+  document.querySelectorAll(".galerie .case").forEach(b => b.onclick = () => choisirLettre(c, M.CARS[b.dataset.i]));
+  $("#importer-pdf").onclick = () => aller(`#/p/${f.id}/pdf`);
+  if ($("#attribuer")) $("#attribuer").onclick = () => aller(`#/p/${f.id}/bonus`);
   $("#apercu").onclick = () => aller(`#/p/${f.id}/apercu`);
   $("#options").onclick = () => optionsPolice(c);
 
@@ -251,7 +262,8 @@ async function vueProjet(c) {
     }
     if (manque.has(ch)) return;
     b.classList.remove("vide");
-    b.innerHTML = `<small>${esc(ch)}</small><span style="font-family:'${res.famille}'">${esc(ch)}</span>${(f.dessins[ch] || []).length ? '<span class="point" title="Dessiné à l\'écran"></span>' : ""}`;
+    const nv = nbVersions(c, ch);
+    b.innerHTML = `<small>${esc(ch)}</small><span style="font-family:'${res.famille}'">${esc(ch)}</span>${(f.dessins[ch] || []).length ? '<span class="point" title="Dessiné à l\'écran"></span>' : ""}${nv > 1 ? `<span class="nb-versions" title="${nv} versions">${nv}</span>` : ""}`;
   });
 }
 
@@ -309,15 +321,14 @@ function dessinerPage(cv, page, n) {
   // quadrillage théorique : il doit tomber pile sur les cases imprimées
   const k = cv.width / M.PW, x0 = (M.PW - M.COLS * M.CASE) / 2, y0 = M.MARGE + M.HAUT_ENTETE;
   cx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim(); cx.lineWidth = 2; cx.globalAlpha = 0.75;
-  if (n < 2) for (let r = 0; r < M.ROWS; r++) for (let col = 0; col < M.COLS; col++) cx.strokeRect((x0 + col * M.CASE) * k, (y0 + r * M.CASE) * k, M.CASE * k, M.CASE * k);
+  if (n !== 2) for (let r = 0; r < M.ROWS; r++) for (let col = 0; col < M.COLS; col++) cx.strokeRect((x0 + col * M.CASE) * k, (y0 + r * M.CASE) * k, M.CASE * k, M.CASE * k);
   else for (let r = 0; r < M.PHRASES.length; r++) { const y = (y0 + r * M.CASE + M.CASE * (1 - M.LB)) * k; cx.beginPath(); cx.moveTo(x0 * k, y); cx.lineTo((x0 + M.COLS * M.CASE) * k, y); cx.stroke(); }
 }
 
 function vuePhoto(c, n) {
   const f = c.police, existe = c.pages[n];
-  const noms = ["Page 1 · lettres et chiffres", "Page 2 · accents et signes", "Page 3 · phrases"];
   rendre({
-    titre: noms[n], retour: `#/p/${f.id}`,
+    titre: NOMS_PAGES[n], retour: `#/p/${f.id}`,
     contenu: `<div><h2 class="titre-page">Photographie la page ${n + 1}</h2>
         <p class="sous-titre">L'appli retrouve les 4 carrés noirs des coins et redresse la feuille toute seule.</p></div>
       <ul class="conseils"><li>Feuille bien à plat, en pleine lumière, sans ombre du téléphone.</li>
@@ -341,9 +352,18 @@ function vuePhoto(c, n) {
     try { const bmp = await createImageBitmap(fichier); page = M.redresser(M.enGris(bmp, bmp.width, bmp.height)); }
     catch (err) { page = { erreur: "Cette image n'a pas pu être lue." }; }
     if (page.erreur) { msg.className = "message erreur"; msg.textContent = page.erreur + " Reprends la photo en suivant les conseils."; return; }
-    c.pages[n] = page; f.pages[n] = await Stockage.pageVersBlob(page); modifie(c, true);
+    // Grilles récentes : les barres du coin disent quelle page c'est. Si ce n'est pas la bonne, on le signale.
+    const id = M.identifierPage(page);
+    if (id.num && id.num - 1 !== n) {
+      msg.className = "message erreur";
+      msg.innerHTML = `Cette photo ressemble à la <strong>${esc(NOMS_PAGES[id.num - 1])}</strong>. <button class="btn petit" id="ailleurs">L'enregistrer comme page ${id.num}</button>`;
+      $("#ailleurs").onclick = async () => { await enregistrerPage(c, id.num - 1, page); toast(`Enregistrée comme page ${id.num}`); revenir(`#/p/${f.id}`); };
+      return;
+    }
+    await enregistrerPage(c, n, page);
     $("#rendu").hidden = false; dessinerPage($("#rendu"), page, n);
     msg.className = "message ok"; msg.textContent = "Page enregistrée. Vérifie que le quadrillage tombe pile sur les cases.";
+    if (n === 3) { msg.innerHTML += ` <button class="btn petit" id="vers-bonus">Indiquer les lettres</button>`; $("#vers-bonus").onclick = () => aller(`#/p/${f.id}/bonus`); }
     $("#prendre").innerHTML = `${icone("photo", 20)} Reprendre`;
   };
   $("#camera").onchange = traiter; $("#fichier").onchange = traiter;
@@ -439,6 +459,7 @@ function vueDessin(c, i) {
   function enregistrer() {
     if (traits.length) f.dessins[ch] = traits.map(t => ({ stylet: t.stylet, points: t.points })); else delete f.dessins[ch];
     delete f.retouches[ch];        // nouveau dessin : l'ancienne retouche ne lui correspond plus
+    if (traits.length) f.choix[ch] = "dessin"; else if (f.choix[ch] === "dessin") delete f.choix[ch];
     modifie(c);
     clearTimeout(minuteurApercu); minuteurApercu = setTimeout(majApercu, 350);
   }
@@ -592,6 +613,7 @@ async function choisirLettre(c, ch) {
   d.innerHTML = `<form method="dialog" class="feuille-lettre">
       <div class="lettre-choisie"><span style="font-family:'${res.famille}', var(--ui)">${esc(ch)}</span><div><h2>« ${esc(ch)} »</h2><p class="aide">${etat}</p></div></div>
       ${!manque && !remplace ? `<button class="btn plein principal" value="retoucher">${icone("stylo", 18)} Retoucher les points</button>` : ""}
+      ${nbVersions(c, ch) > 1 ? `<button class="btn plein" value="versions">Choisir la version (${nbVersions(c, ch)})</button>` : ""}
       <button class="btn plein ${manque || remplace ? "principal" : ""}" value="dessiner">${manque || remplace ? "Dessiner" : "Redessiner"}</button>
       ${f.retouches[ch] ? `<button class="btn plein danger" value="annuler">Annuler la retouche</button>` : ""}
       <button class="btn plein discret" value="">Fermer</button></form>`;
@@ -600,7 +622,8 @@ async function choisirLettre(c, ch) {
     const v = d.returnValue; d.remove();
     if (v === "retoucher") aller(`#/p/${f.id}/retouche/${i}`);
     if (v === "dessiner") aller(`#/p/${f.id}/dessin/${i}`);
-    if (v === "annuler") { delete f.retouches[ch]; modifie(c); toast("Retouche annulée"); vueApercu(c); }
+    if (v === "versions") aller(`#/p/${f.id}/versions/${i}`);
+    if (v === "annuler") { delete f.retouches[ch]; modifie(c); toast("Retouche annulée"); routeur(); }
   });
 }
 
@@ -613,7 +636,10 @@ async function routeur() {
     if (!c) return aller("#/", true);
     const [, , ecran, n] = morceaux;
     if (!ecran) return vueProjet(c);
-    if (ecran === "photo" && +n >= 0 && +n <= 2) return vuePhoto(c, +n);
+    if (ecran === "photo" && +n >= 0 && +n <= 3) return vuePhoto(c, +n);
+    if (ecran === "pdf") return vueImportPDF(c);
+    if (ecran === "bonus") return vueBonus(c);
+    if (ecran === "versions" && +n >= 0 && +n < M.CARS.length) return vueVersions(c, +n);
     if (ecran === "dessin" && +n >= 0 && +n < M.CARS.length) return vueDessin(c, +n);
     if (ecran === "apercu") return vueApercu(c);
     if (ecran === "retouche" && +n >= 0 && +n < M.CARS.length) return Retouche.vue(c, +n);

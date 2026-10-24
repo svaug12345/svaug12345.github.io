@@ -2,7 +2,8 @@
    Paraphe — stockage local (IndexedDB), rien ne quitte le téléphone.
    -----------------------------------------------------------------------------
    Une « police » est un objet :
-     { id, nom, cree, modifie, reglages, dessins: { "A": [traits…] }, pages: [Blob|null ×3] }
+     { id, nom, cree, modifie, reglages, dessins: { "A": [traits…] }, pages: [Blob|null ×4],
+       bonus: { n° case bonus: "a" }, choix: { "a": "grille" | "bonus:k" | "dessin" }, retouches: {…} }
    - les dessins sont des listes de traits (points 0..1 + pression), très légers ;
    - les pages photographiées sont gardées DÉJÀ redressées, en JPEG gris (~300 Ko).
    IndexedDB sait stocker des objets et des Blob directement, contrairement à
@@ -43,7 +44,7 @@ const Stockage = (() => {
 
   function nouvelle(nom) {
     const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    return { id, nom, cree: Date.now(), modifie: Date.now(), reglages: { ...Moteur.DEFAUT }, dessins: {}, pages: [null, null, null] };
+    return { id, nom, cree: Date.now(), modifie: Date.now(), reglages: { ...Moteur.DEFAUT }, dessins: {}, pages: [null, null, null, null], bonus: {}, choix: {}, retouches: {} };
   }
 
   /** Page redressée (niveaux de gris) → JPEG compact pour le stockage. */
