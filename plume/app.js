@@ -197,24 +197,26 @@ async function vueProjet(c) {
         <p class="etiquette">Sur l'écran</p>
         <div class="liste">
           <button class="ligne" id="dessiner"><span class="pastille ${nbDessins ? "ok" : ""}">${icone("stylo")}</span>
-            <span class="corps"><span class="titre">Dessiner les lettres</span>
-            <span class="detail">Au doigt ou au stylet${nbDessins ? ` · ${nbDessins} dessinée${nbDessins > 1 ? "s" : ""}` : ""}</span></span>${icone("suivant", 18)}</button>
+            <span class="corps"><span class="titre" id="dessiner-titre">${nbDessins ? "Continuer à dessiner" : "Dessiner les lettres"}</span>
+            <span class="detail" id="dessiner-detail">Au doigt ou au stylet · on commence par les minuscules</span></span>${icone("suivant", 18)}</button>
         </div>
-        <p class="aide">Un caractère dessiné remplace celui de la photo. Tu peux mélanger les deux.</p>
+        <p class="aide">Tout est enregistré à chaque trait : fais quelques lettres, reviens plus tard. Les minuscules suffisent déjà pour essayer la police.</p>
       </section>
-      <section>
-        <p class="etiquette">Caractères</p>
-        <div class="galerie" id="galerie">${M.CARS.map((ch, i) => `<button class="case vide" data-i="${i}" aria-label="${esc(ch)}"><small>${esc(ch)}</small></button>`).join("")}</div>
-      </section>`,
+      ${Exemples.GROUPES.map(g => `<section class="groupe">
+        <div class="titre-groupe"><p class="etiquette">${g.nom}</p><span class="compte-groupe" data-groupe="${g.nom}"></span></div>
+        <div class="galerie">${g.cars.map(ch => `<button class="case vide" data-i="${M.CARS.indexOf(ch)}" aria-label="${esc(ch)}"><small>${esc(ch)}</small></button>`).join("")}</div>
+      </section>`).join("")}`,
     pied: `<button class="btn principal" id="apercu">Aperçu et export</button>`,
   });
   $("#grille").onclick = () => grilleAImprimer(f.nom);
   document.querySelectorAll("[data-page]").forEach(b => b.onclick = () => aller(`#/p/${f.id}/photo/${b.dataset.page}`));
+  // Reprendre : premier caractère encore manquant, dans l'ordre de dessin (minuscules d'abord)
   $("#dessiner").onclick = () => {
-    const premier = M.CARS.findIndex(ch => !(f.dessins[ch] || []).length && (!c.res || c.res.manquants.includes(ch)));
-    aller(`#/p/${f.id}/dessin/${Math.max(0, premier)}`);
+    const manque = c.res ? new Set(c.res.manquants) : null;
+    const ch = Exemples.ORDRE.find(x => !(f.dessins[x] || []).length && (!manque || manque.has(x))) || Exemples.ORDRE[0];
+    aller(`#/p/${f.id}/dessin/${M.CARS.indexOf(ch)}`);
   };
-  document.querySelectorAll("#galerie .case").forEach(b => b.onclick = () => aller(`#/p/${f.id}/dessin/${b.dataset.i}`));
+  document.querySelectorAll(".galerie .case").forEach(b => b.onclick = () => aller(`#/p/${f.id}/dessin/${b.dataset.i}`));
   $("#apercu").onclick = () => aller(`#/p/${f.id}/apercu`);
   $("#options").onclick = () => optionsPolice(c);
 
@@ -222,12 +224,22 @@ async function vueProjet(c) {
   let res;
   try { res = await calculer(c); }
   catch (e) { $("#compte").textContent = "La police n'a pas pu être calculée : " + e.message; return; }
-  if (!document.body.contains($("#galerie"))) return;       // l'utilisateur a changé d'écran entre-temps
+  if (!document.body.contains($("#dessiner"))) return;      // l'utilisateur a changé d'écran entre-temps
   const manque = new Set(res.manquants), nb = M.CARS.length - manque.size;
   $("#compte").textContent = `${nb} caractère${nb > 1 ? "s" : ""} sur ${M.CARS.length}`;
   $("#pourcent").textContent = Math.round(100 * nb / M.CARS.length) + " %";
   $("#jauge").style.width = (100 * nb / M.CARS.length) + "%";
-  document.querySelectorAll("#galerie .case").forEach(b => {
+  // progression par groupe, et texte du bouton « Dessiner »
+  for (const g of Exemples.GROUPES) {
+    const faits = g.cars.filter(ch => !manque.has(ch)).length;
+    const el = document.querySelector(`[data-groupe="${g.nom}"]`);
+    el.textContent = `${faits}/${g.cars.length}`; el.classList.toggle("complet", faits === g.cars.length);
+  }
+  const suivant = Exemples.ORDRE.find(ch => manque.has(ch));
+  $("#dessiner-detail").textContent = suivant
+    ? `Prochain : « ${suivant} » · ${Exemples.groupeDe(suivant).nom.toLowerCase()}`
+    : "Tous les caractères sont faits";
+  document.querySelectorAll(".galerie .case").forEach(b => {
     const ch = M.CARS[b.dataset.i];
     if (manque.has(ch)) return;
     b.classList.remove("vide");
@@ -333,8 +345,12 @@ function vuePhoto(c, n) {
 function vueDessin(c, i) {
   const f = c.police, ch = M.CARS[i], g = genre(ch), p = f.reglages;
   let traits = (f.dessins[ch] || []).map(t => ({ ...t, points: t.points.slice() }));
+  // Position dans l'ordre de dessin (minuscules, majuscules, chiffres, accents, signes)
+  const pos = Exemples.ORDRE.indexOf(ch), groupe = Exemples.groupeDe(ch);
+  const dernier = pos === Exemples.ORDRE.length - 1;
+  const vers = q => aller(`#/p/${f.id}/dessin/${M.CARS.indexOf(Exemples.ORDRE[q])}`, true);
   rendre({
-    titre: `${i + 1} / ${M.CARS.length}`, retour: `#/p/${f.id}`,
+    titre: `${groupe.nom} · <span class="mono">${groupe.cars.indexOf(ch) + 1}/${groupe.cars.length}</span>`, retour: `#/p/${f.id}`,
     contenu: `<div class="atelier">
         <div class="consigne"><span class="grand">${esc(ch)}</span><p class="aide"><strong>${g}</strong><br>${CONSEIL[g]}</p></div>
         <div class="feuille" id="feuille"><canvas id="fond"></canvas><canvas id="encre"></canvas></div>
@@ -343,9 +359,13 @@ function vueDessin(c, i) {
           <button class="btn discret" id="effacer">${icone("effacer", 20)} Effacer</button>
         </div>
         <p class="aide" id="info"></p>
+        <section class="essai-direct" aria-live="polite">
+          <p class="etiquette">Ce que ça donne</p>
+          <div class="essai-texte" id="essai-direct"></div>
+        </section>
       </div>`,
-    pied: `<button class="btn discret" id="prec" ${i === 0 ? "disabled" : ""} aria-label="Caractère précédent">${icone("retour", 20)}</button>
-      <button class="btn principal" id="suiv">${i === M.CARS.length - 1 ? "Terminer" : "Suivant"}</button>`,
+    pied: `<button class="btn discret" id="prec" ${pos === 0 ? "disabled" : ""} aria-label="Caractère précédent">${icone("retour", 20)}</button>
+      <button class="btn principal" id="suiv">${dernier ? "Terminer" : "Suivant"}</button>`,
   });
   const feuille = $("#feuille"), fond = $("#fond"), encre = $("#encre");
   const couleur = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -411,14 +431,34 @@ function vueDessin(c, i) {
   function enregistrer() {
     if (traits.length) f.dessins[ch] = traits.map(t => ({ stylet: t.stylet, points: t.points })); else delete f.dessins[ch];
     modifie(c);
+    clearTimeout(minuteurApercu); minuteurApercu = setTimeout(majApercu, 350);
   }
+
+  // ---- Aperçu en direct : mots et phrases écrits SEULEMENT avec les caractères déjà faits,
+  //      la lettre en cours ressort en couleur. La police est recalculée après chaque trait.
+  let minuteurApercu = null;
+  async function majApercu() {
+    const zone = $("#essai-direct"); if (!zone) return;
+    let res; try { res = await calculer(c); } catch (e) { return; }
+    if (!document.body.contains(zone)) return;                 // on a changé d'écran entre-temps
+    const manque = new Set(res.manquants);
+    if (manque.has(ch)) { zone.innerHTML = `<p class="aide">Dessine « ${esc(ch)} » pour le voir apparaître dans des mots.</p>`; return; }
+    const dispo = new Set(M.CARS.filter(x => !manque.has(x)));
+    const ex = Exemples.pour(dispo, ch);
+    // chaque occurrence de la lettre en cours est entourée d'un <span class="nouvelle">
+    const marquer = t => [...t].map(x => x === ch ? `<span class="nouvelle">${esc(x)}</span>` : esc(x)).join("");
+    zone.style.fontFamily = `'${res.famille}', var(--ui)`;
+    zone.innerHTML = (ex.phrase ? `<p class="phrase">${marquer(ex.phrase)}</p>` : "") + `<p class="mots">${marquer(ex.mots)}</p>`;
+  }
+
   $("#annuler").onclick = () => { traits.pop(); enregistrer(); dimensionner(); };
   $("#effacer").onclick = () => { traits = []; enregistrer(); dimensionner(); };
-  $("#prec").onclick = () => aller(`#/p/${f.id}/dessin/${i - 1}`, true);
-  $("#suiv").onclick = () => i === M.CARS.length - 1 ? revenir(`#/p/${f.id}`) : aller(`#/p/${f.id}/dessin/${i + 1}`, true);
+  $("#prec").onclick = () => vers(pos - 1);
+  $("#suiv").onclick = () => dernier ? revenir(`#/p/${f.id}`) : vers(pos + 1);
+  majApercu();
 
   const obs = new ResizeObserver(dimensionner); obs.observe(feuille);
-  nettoyage = () => { obs.disconnect(); if (enCours) enregistrer(); };
+  nettoyage = () => { obs.disconnect(); clearTimeout(minuteurApercu); if (enCours) enregistrer(); };
 }
 
 // ---------- Aperçu, réglages, export ----------

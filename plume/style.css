@@ -128,7 +128,7 @@ section { display: grid; gap: 12px; min-width: 0; }
 .consigne .grand { font-size: 2.6rem; font-weight: 800; line-height: 1; }
 .consigne .aide { flex: 1; }
 .feuille {
-  position: relative; width: min(100%, 62vh); aspect-ratio: 1; border-radius: var(--rayon);
+  position: relative; width: min(100%, 46vh); aspect-ratio: 1; border-radius: var(--rayon);
   background: var(--carte); border: 1px solid var(--trait); touch-action: none; user-select: none; overflow: hidden;
   box-shadow: 0 1px 2px rgba(16, 42, 46, 0.06);
 }
@@ -202,3 +202,16 @@ dialog form { display: grid; gap: 16px; }
 .chargement { color: var(--doux); font-size: 0.9rem; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } .btn:active { transform: none; } .lancement .cadre { animation: none; } }
+
+/* ---------- Groupes de caractères et aperçu en direct ---------- */
+.mono { font-family: var(--mono); font-weight: 500; font-size: 0.95em; }
+.titre-groupe { display: flex; align-items: baseline; justify-content: space-between; }
+.compte-groupe { font-family: var(--mono); font-size: 0.8rem; color: var(--doux); }
+.compte-groupe.complet { color: var(--accent); }
+.essai-direct { width: 100%; background: var(--carte); border: 1px solid var(--trait); border-radius: var(--rayon); padding: 14px 16px; gap: 6px; }
+/* Les lettres déjà faites en encre adoucie (mélange encre + fond), la lettre en cours en sarcelle franche.
+   On mélange les couleurs plutôt que de jouer sur l'opacité : l'opacité d'un parent ternirait aussi la lettre en couleur. */
+.essai-texte { font-size: 30px; line-height: 1.35; color: color-mix(in srgb, var(--encre) 45%, var(--carte)); font-kerning: normal; overflow-wrap: anywhere; }
+.essai-texte p { margin: 0; }
+.essai-texte .nouvelle { color: var(--accent); }
+.essai-texte .aide { font-size: 0.9rem; color: var(--doux); }
