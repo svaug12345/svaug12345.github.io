@@ -5,6 +5,7 @@ Site GitHub Pages de svaug12345 : héberge des applis web (PWA), publiées aussi
 - `QR/` — Lecteur QR code (dépôt séparé svaug12345/QR, servi sous /QR/)
 - `paraphe/` — Paraphe, appli pour créer sa police manuscrite (s'appelait Plume ; `plume/` ne fait plus que rediriger)
 - `atelier-polices/` — Atelier de polices (page autonome)
+- `agent-double/` — page de politique de confidentialité du jeu Android Agent Double (code : dépôt svaug12345/undercover)
 - `.well-known/assetlinks.json` — empreintes de signature Android (une entrée par appli)
 
 ## Règles
