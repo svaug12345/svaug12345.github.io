@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr — Page d'accueil des projets (marque SV)
-  Version 1.0.3
+  Version 1.1.0
   ------------------------------------------------------------
   Historique :
    • v1.0.0 : première page d'accueil
@@ -10,6 +10,7 @@
    • v1.0.2 : vrai logo SV (le geste), couleurs + police
               de la charte SV, formulation sans "je/mes"
    • v1.0.3 : activation du lien "Paraphe" (dossier paraphe/)
+   • v1.1.0 : serrure d'accès + log des visites (via gate.js), sur la page d'accueil
 
   À déposer dans le dépôt GitHub : svaug12345.github.io
   → c'est le fichier "index.html" à la racine.
@@ -29,6 +30,13 @@
   <meta charset="UTF-8">
   <!-- Rend la page adaptée aux écrans de téléphone (indispensable) -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Serrure de curiosité + log des visites (code et explications dans gate.js).
+       Placé tout en haut pour s'exécuter avant l'affichage de la page.
+       ⚠️ Uniquement sur cette page d'accueil : on ne met PAS gate.js dans les
+       applis (QR/, paraphe/, …) pour ne pas gêner les PWA du Play Store. -->
+  <script src="/gate.js"></script>
+
   <title>baiji — projets</title>
   <meta name="description" content="Les applications et les jeux faits maison, réunis sous la marque SV.">
 
@@ -244,7 +252,7 @@
 
     <!-- ===================== PIED DE PAGE ===================== -->
     <footer>
-      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.0.3</p>
+      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.1.0</p>
     </footer>
 
   </div>
