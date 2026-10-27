@@ -1,10 +1,347 @@
-<!doctype html>
+<!DOCTYPE html>
+<!--
+  ============================================================
+  baiji.fr — Page d'accueil des projets (marque SV)
+  Version 1.0.3
+  ------------------------------------------------------------
+  Historique :
+   • v1.0.0 : première page d'accueil
+   • v1.0.1 : activation du lien "Mes Révisions"
+   • v1.0.2 : vrai logo SV (le geste), couleurs + police
+              de la charte SV, formulation sans "je/mes"
+   • v1.0.3 : activation du lien "Paraphe" (dossier paraphe/)
+
+  À déposer dans le dépôt GitHub : svaug12345.github.io
+  → c'est le fichier "index.html" à la racine.
+  (Le favicon "favicon.svg" est déposé à côté, à la racine.)
+
+  COMMENT MODIFIER LES LIENS (le plus important) :
+  Tout en bas, dans la partie <script>, il y a une liste
+  nommée "PROJETS". Pour activer un lien, on remplace
+  url: null  par l'adresse, par exemple  url: "revisions/".
+  Tant que url vaut null, la carte affiche un badge "Bientôt"
+  et n'est pas cliquable (pas de lien cassé).
+  Pour AJOUTER un projet : copier un bloc { ... } et l'adapter.
+  ============================================================
+-->
 <html lang="fr">
 <head>
-<meta charset="utf-8">
-<!-- Racine du site : redirige simplement vers l'appli Lecteur QR code -->
-<meta http-equiv="refresh" content="0; url=/QR/">
-<title>svaug12345</title>
+  <meta charset="UTF-8">
+  <!-- Rend la page adaptée aux écrans de téléphone (indispensable) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>baiji — projets</title>
+  <meta name="description" content="Les applications et les jeux faits maison, réunis sous la marque SV.">
+
+  <!-- Favicon : l'icône d'appli SV (tuile turquoise + geste blanc) -->
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+
+  <!--
+    Police de la charte SV : Manrope, chargée depuis Google Fonts.
+    preconnect = ouvre la connexion plus tôt pour un chargement rapide.
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /*
+      ---- COULEURS DE LA CHARTE SV ----
+      Reprises telles quelles de la charte "SV" (jetons de couleur).
+      On les définit une seule fois ici ; partout ailleurs on écrit
+      var(--nom). Pour tout changer, il suffit de modifier ces lignes.
+      Thème clair par défaut.
+    */
+    :root {
+      --surface:        #f6f9f9;  /* fond de page */
+      --surface-raised: #ffffff;  /* fond des cartes */
+      --line:           #d6e2e3;  /* filets et bordures 1px */
+      --ink:            #102a2e;  /* texte principal + logo */
+      --ink-muted:      #4d6468;  /* texte secondaire, crédits */
+      --teal:           #0f7c7b;  /* couleur de marque */
+      --on-teal:        #ffffff;  /* texte/icône sur fond teal */
+      --teal-deep:      #0b4f55;  /* variante foncée */
+      --teal-soft:      #d4ecea;  /* teinte de relief, badges */
+      --accent:         #20b2a6;  /* turquoise vif, touches déco */
+    }
+
+    /*
+      ---- MODE SOMBRE AUTOMATIQUE ----
+      Si l'appareil est réglé en thème sombre, on bascule sur les
+      valeurs "Sombre" de la charte. Rien d'autre à changer.
+    */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --surface:        #0e1a1c;
+        --surface-raised: #152427;
+        --line:           #26393c;
+        --ink:            #e6f1f1;
+        --ink-muted:      #9db3b5;
+        --teal:           #3cc2b8;
+        --on-teal:        #062022;
+        --teal-deep:      #1d6b6e;
+        --teal-soft:      #1c4245;
+        --accent:         #5fe0d2;
+      }
+    }
+
+    /* Remise à zéro de base + réglages globaux */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      /* Manrope (charte SV), avec repli système si elle ne charge pas */
+      font-family: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--surface);
+      color: var(--ink);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      padding: 0 16px; /* marge d'écran sur mobile (jeton space-4 de la charte) */
+    }
+
+    /* Conteneur central : limite la largeur et centre le contenu */
+    .page {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 56px 0 72px;
+    }
+
+    /* ---- EN-TÊTE ---- */
+    header { text-align: center; margin-bottom: 48px; }
+
+    /* Le logo SV "le geste". Il hérite de la couleur du texte ;
+       on lui donne la couleur de marque (teal) via "color". */
+    .logo {
+      width: 76px;
+      height: 76px;
+      margin: 0 auto 20px;
+      display: block;
+      color: var(--teal);
+    }
+    .logo svg { width: 100%; height: 100%; display: block; }
+
+    h1 {
+      font-size: 2rem;        /* ~ style h1 de la charte */
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    /* Le ".fr" en couleur de marque, plus discret */
+    h1 .ext { color: var(--teal); font-weight: 700; }
+
+    .tagline {
+      color: var(--ink-muted);
+      margin-top: 8px;
+      font-size: 1rem;
+    }
+
+    /* ---- TITRE DE SECTION (Applications / Jeux) ---- */
+    .section-titre {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;   /* style "label" de la charte */
+      color: var(--teal);
+      font-weight: 700;
+      margin: 40px 4px 16px;
+    }
+
+    /* ---- GRILLE DE CARTES ----
+       Les cartes se rangent en colonnes qui s'adaptent : au moins
+       240px chacune ; plusieurs côte à côte s'il y a la place,
+       sinon l'une sous l'autre (parfait sur téléphone). */
+    .grille {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
+    }
+
+    /* ---- UNE CARTE PROJET ---- */
+    .carte {
+      background: var(--surface-raised);
+      border: 1px solid var(--line);
+      border-radius: 12px;      /* jeton radius-md de la charte */
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;    /* enlève le soulignement des liens */
+      color: inherit;           /* garde la couleur de texte normale */
+      transition: transform .15s ease, border-color .15s ease;
+    }
+    /* Au survol/toucher, une carte cliquable "monte" légèrement */
+    .carte.cliquable:hover {
+      transform: translateY(-3px);
+      border-color: var(--teal);
+    }
+
+    /* La pastille à gauche : tuile turquoise avec l'initiale,
+       dans l'esprit de l'icône d'appli SV. */
+    .pastille {
+      flex: 0 0 44px;   /* largeur fixe, ne se déforme pas */
+      height: 44px;
+      border-radius: 10px;
+      background: var(--teal);
+      color: var(--on-teal);
+      font-weight: 800;
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .carte-texte { min-width: 0; } /* évite que le texte déborde */
+    .carte-nom  { font-weight: 700; font-size: 1.02rem; }
+    .carte-desc { color: var(--ink-muted); font-size: 0.86rem; margin-top: 2px; }
+
+    /* Le petit badge "Bientôt" pour les projets sans lien encore */
+    .badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ink-muted);
+      background: var(--teal-soft);
+      border-radius: 999px;
+      padding: 3px 9px;
+      margin-top: 6px;
+    }
+
+    /* ---- PIED DE PAGE ---- */
+    footer {
+      text-align: center;
+      color: var(--ink-muted);
+      font-size: 0.8rem;
+      margin-top: 56px;
+    }
+    footer .marque { color: var(--teal); font-weight: 700; }
+  </style>
 </head>
-<body><a href="/QR/">Lecteur QR code</a></body>
+
+<body>
+  <div class="page">
+
+    <!-- ===================== EN-TÊTE ===================== -->
+    <header>
+      <!--
+        Logo SV officiel « le geste » (S abstrait au pinceau),
+        repris de la charte graphique SV. Dessiné en SVG, à une
+        seule encre (fill="currentColor"), il prend donc la
+        couleur définie par .logo { color: ... } ci-dessus.
+      -->
+      <div class="logo" aria-label="Logo SV">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path fill="currentColor" d="M6.78 46.08L7.79 45.75L8.80 45.40L9.83 45.06L10.87 44.70L11.91 44.34L12.96 43.97L14.02 43.61L15.08 43.23L16.15 42.85L17.23 42.47L18.31 42.09L19.40 41.70L20.49 41.32L21.59 40.93L22.69 40.54L23.80 40.15L24.91 39.76L26.02 39.38L27.13 38.99L28.25 38.61L29.36 38.23L30.48 37.85L31.60 37.47L32.72 37.10L33.84 36.73L34.96 36.37L36.08 36.01L37.20 35.66L38.32 35.31L39.43 34.97L40.55 34.64L41.65 34.32L42.76 34.00L43.86 33.70L44.96 33.40L46.06 33.11L47.15 32.83L48.23 32.57L49.31 32.31L50.38 32.07L51.45 31.84L52.51 31.62L53.56 31.41L54.61 31.22L55.64 31.04L56.67 30.87L57.69 30.72L58.71 30.59A1.80 1.80 0 0 0 58.29 27.01L57.24 27.12L56.17 27.24L55.09 27.38L54.01 27.53L52.91 27.70L51.82 27.88L50.71 28.07L49.60 28.28L48.49 28.50L47.37 28.73L46.24 28.97L45.11 29.23L43.98 29.49L42.85 29.76L41.71 30.04L40.57 30.33L39.42 30.63L38.28 30.94L37.13 31.25L35.99 31.57L34.84 31.89L33.69 32.22L32.55 32.56L31.40 32.90L30.26 33.25L29.12 33.59L27.97 33.95L26.84 34.30L25.70 34.65L24.57 35.01L23.44 35.37L22.31 35.73L21.19 36.09L20.08 36.45L18.97 36.80L17.86 37.16L16.77 37.51L15.68 37.86L14.59 38.21L13.51 38.55L12.45 38.89L11.39 39.23L10.33 39.56L9.29 39.89L8.26 40.20L7.24 40.52L6.23 40.82L5.22 41.12A2.60 2.60 0 0 0 6.78 46.08ZM59.78 27.68L59.55 27.43L59.28 27.16L59.00 26.91L58.70 26.67L58.40 26.43L58.08 26.21L57.76 26.00L57.42 25.80L57.08 25.61L56.73 25.43L56.37 25.25L56.00 25.08L55.62 24.93L55.24 24.77L54.85 24.63L54.45 24.49L54.05 24.36L53.63 24.24L53.22 24.12L52.80 24.01L52.37 23.91L51.93 23.81L51.50 23.72L51.05 23.63L50.61 23.55L50.16 23.48L49.70 23.41L49.25 23.34L48.79 23.28L48.32 23.23L47.86 23.18L47.39 23.14L46.92 23.10L46.45 23.07L45.98 23.04L45.51 23.02L45.04 23.00L44.56 22.98L44.09 22.97L43.62 22.97L43.15 22.97L42.68 22.98L42.22 22.99L41.75 23.00L41.29 23.02L40.83 23.04L40.38 23.07L39.93 23.10A1.30 1.30 0 0 0 40.07 25.70L40.50 25.68L40.93 25.67L41.36 25.67L41.80 25.67L42.24 25.67L42.68 25.68L43.12 25.69L43.56 25.70L44.01 25.72L44.45 25.75L44.89 25.78L45.34 25.81L45.78 25.85L46.22 25.89L46.66 25.94L47.09 25.99L47.52 26.04L47.95 26.11L48.38 26.17L48.80 26.24L49.22 26.32L49.64 26.40L50.04 26.48L50.45 26.57L50.84 26.66L51.23 26.76L51.61 26.86L51.99 26.97L52.35 27.08L52.71 27.20L53.06 27.32L53.40 27.45L53.73 27.58L54.05 27.71L54.36 27.85L54.66 27.99L54.94 28.14L55.22 28.28L55.48 28.44L55.72 28.59L55.96 28.75L56.18 28.91L56.38 29.07L56.58 29.23L56.75 29.40L56.91 29.56L57.06 29.72L57.22 29.92A1.70 1.70 0 0 0 59.78 27.68ZM40.56 25.46L40.92 25.26L41.28 25.07L41.63 24.88L41.99 24.69L42.35 24.52L42.70 24.35L43.06 24.18L43.41 24.02L43.77 23.87L44.12 23.72L44.48 23.58L44.83 23.44L45.19 23.31L45.54 23.18L45.89 23.06L46.25 22.94L46.60 22.83L46.95 22.72L47.30 22.62L47.65 22.52L48.00 22.43L48.35 22.34L48.69 22.26L49.04 22.18L49.39 22.11L49.73 22.04L50.07 21.98L50.42 21.92L50.76 21.87L51.10 21.82L51.43 21.77L51.77 21.73L52.11 21.70L52.44 21.67L52.77 21.64L53.10 21.62L53.43 21.60L53.76 21.58L54.08 21.57L54.41 21.56L54.73 21.56L55.05 21.56L55.37 21.57L55.68 21.57L55.99 21.59L56.31 21.60L56.62 21.62L56.93 21.65A0.65 0.65 0 0 0 57.07 20.35L56.76 20.31L56.43 20.26L56.11 20.22L55.78 20.19L55.45 20.15L55.11 20.12L54.78 20.10L54.44 20.08L54.09 20.06L53.75 20.05L53.40 20.04L53.05 20.04L52.70 20.04L52.35 20.05L51.99 20.06L51.64 20.07L51.28 20.09L50.92 20.12L50.55 20.15L50.19 20.18L49.82 20.22L49.45 20.26L49.08 20.31L48.71 20.37L48.34 20.42L47.96 20.49L47.58 20.56L47.20 20.63L46.83 20.71L46.44 20.80L46.06 20.89L45.68 20.99L45.29 21.09L44.91 21.20L44.52 21.31L44.14 21.43L43.75 21.56L43.36 21.69L42.97 21.83L42.58 21.97L42.19 22.12L41.79 22.27L41.40 22.44L41.01 22.60L40.62 22.78L40.22 22.96L39.83 23.15L39.44 23.34A1.20 1.20 0 0 0 40.56 25.46Z"></path>
+        </svg>
+      </div>
+
+      <h1>baiji<span class="ext">.fr</span></h1>
+      <p class="tagline">Des applis et des jeux, faits maison</p>
+    </header>
+
+    <!--
+      Les sections (Applications, Jeux) sont générées
+      automatiquement par le script à partir de la liste PROJETS.
+    -->
+    <main id="contenu"></main>
+
+    <!-- ===================== PIED DE PAGE ===================== -->
+    <footer>
+      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.0.3</p>
+    </footer>
+
+  </div>
+
+  <script>
+    /*
+      ============================================================
+      LISTE DES PROJETS
+      ------------------------------------------------------------
+      Seul endroit à modifier au quotidien.
+      Chaque projet est un objet { ... } avec :
+        - nom  : le titre affiché
+        - desc : une phrase courte de description
+        - url  : l'adresse du projet
+                 • "QR/"  → ouvre baiji.fr/QR/ (chemin relatif)
+                 • "https://..." → lien externe (Play Store, etc.)
+                 • null   → pas encore de lien : affiche "Bientôt"
+        - cat  : la catégorie ("Applications" ou "Jeux")
+      ============================================================
+    */
+    const PROJETS = [
+      {
+        nom:  "Lecteur QR",
+        desc: "Scanner de QR codes, caméra et galerie",
+        url:  "QR/",                     // ✅ en ligne : baiji.fr/QR/
+        cat:  "Applications"
+      },
+      {
+        nom:  "Paraphe",
+        desc: "Crée une police à partir d'une écriture",
+        url:  "paraphe/",                // ✅ en ligne : baiji.fr/paraphe/
+        cat:  "Applications"
+      },
+      {
+        nom:  "Mes Révisions",
+        desc: "Réviser les leçons en s'amusant",
+        url:  "svaug12345-revisions/",   // ✅ en ligne : baiji.fr/svaug12345-revisions/
+        cat:  "Applications"
+      },
+      {
+        nom:  "Undercover",
+        desc: "Jeu de mots et d'imposteur entre amis",
+        url:  null,                      // ⬅️ lien à compléter
+        cat:  "Jeux"
+      },
+      {
+        nom:  "Unknown Waters",
+        desc: "Casse-brique, ambiance graphique épurée",
+        url:  null,                      // ⬅️ lien à compléter
+        cat:  "Jeux"
+      }
+    ];
+
+    // ---- Construction de la page à partir de la liste ci-dessus ----
+
+    // 1) Zone où injecter le contenu
+    const contenu = document.getElementById("contenu");
+
+    // 2) Catégories présentes, sans doublon, dans l'ordre d'apparition
+    const categories = [...new Set(PROJETS.map(p => p.cat))];
+
+    // 3) Pour chaque catégorie : un titre, puis la grille de cartes
+    categories.forEach(cat => {
+      const titre = document.createElement("h2");
+      titre.className = "section-titre";
+      titre.textContent = cat;
+      contenu.appendChild(titre);
+
+      const grille = document.createElement("div");
+      grille.className = "grille";
+
+      PROJETS.filter(p => p.cat === cat).forEach(projet => {
+        // Carte = lien <a> si une url existe, sinon <div> non cliquable
+        const aUnLien = projet.url !== null;
+        const carte = document.createElement(aUnLien ? "a" : "div");
+        carte.className = "carte" + (aUnLien ? " cliquable" : "");
+        if (aUnLien) carte.href = projet.url;
+
+        // Initiale (1re lettre du nom, en majuscule) pour la pastille
+        const initiale = projet.nom.trim().charAt(0).toUpperCase();
+
+        // Contenu de la carte ; sans lien → badge "Bientôt" à la place de la description
+        carte.innerHTML = `
+          <div class="pastille">${initiale}</div>
+          <div class="carte-texte">
+            <div class="carte-nom">${projet.nom}</div>
+            ${ aUnLien
+                ? `<div class="carte-desc">${projet.desc}</div>`
+                : `<span class="badge">Bientôt</span>` }
+          </div>
+        `;
+
+        grille.appendChild(carte);
+      });
+
+      contenu.appendChild(grille);
+    });
+  </script>
+</body>
 </html>
