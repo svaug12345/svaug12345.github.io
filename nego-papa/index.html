@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Page « Négo avec Papa » — l'entraînement à la négociation de Tom, Gaby et Nanon
-  Version 1.1.0 – 31/10/2026
+  Version 1.2.0 – 31/10/2026
   En ligne : https://baiji.fr/nego-papa/
 
   Historique :
@@ -9,6 +9,9 @@
              papa coriace + coach ; boutons « Temps mort coach » et « Débrief »)
    • 1.1.0 : la vraie photo de Papa dans le gros bouton rond (papa.jpg),
              les ondes pulsent autour de son visage quand il parle
+   • 1.2.0 : les surnoms dans l'en-tête (Bidou · Gabou · Nanoune) ;
+             fiche de préparation : rappel que les basiques (chambre, devoirs)
+             ne sont pas des contreparties, nouvel exemple d'échange
 
   Comment ça marche ?
   - Avant l'appel : une petite « fiche de préparation » (ce que je veux,
@@ -189,7 +192,7 @@
 <body>
   <main>
     <header>
-      <p class="surtitre">Tom · Gaby · Nanon</p>
+      <p class="surtitre">Bidou · Gabou · Nanoune</p>
       <h1>Négo avec <span>Papa</span></h1>
       <p class="chapo">Entraîne-toi ici avant la vraie négo. Attention : ce papa-là ne lâche rien facilement.</p>
     </header>
@@ -199,8 +202,9 @@
       <summary>Prépare ta négo (conseillé)</summary>
       <label for="veux">Ce que je veux exactement (quoi, combien, quand ?)</label>
       <input id="veux" placeholder="ex. 30 min d'écran en plus le samedi">
-      <label for="echange">Ce que je propose en échange</label>
-      <input id="echange" placeholder="ex. je range ma chambre avant">
+      <!-- Les basiques ne comptent pas : l'agent les refuse comme contrepartie -->
+      <label for="echange">Ce que je propose EN PLUS en échange (ranger sa chambre ou faire ses devoirs, c'est le minimum : ça ne compte pas !)</label>
+      <input id="echange" placeholder="ex. je vide le lave-vaisselle toute la semaine">
       <label for="planb">Mon plan B si c'est non</label>
       <input id="planb" placeholder="ex. 15 min seulement">
     </details>
@@ -230,7 +234,8 @@
       <p><b>1.</b> Dis ton prénom et ce que tu veux négocier. Papa fait comme si c'était pour de vrai.</p>
       <p><b>2.</b> Tu bloques ? Dis <b>« temps mort coach »</b> (ou appuie sur le bouton) : il te donne un conseil.</p>
       <p><b>3.</b> Quand tu as fini, dis <b>« fin de la négo »</b> : il te fait le débrief pour la vraie.</p>
-      <p><b>4.</b> Ce que ce papa-là accepte ne compte pas pour de vrai. Il faudra convaincre le vrai !</p>
+      <p><b>4.</b> Ranger ta chambre ou faire tes devoirs, ce n'est pas une monnaie d'échange : c'est le minimum. Trouve un vrai « en plus ».</p>
+      <p><b>5.</b> Ce que ce papa-là accepte ne compte pas pour de vrai. Il faudra convaincre le vrai !</p>
     </section>
   </main>
 
