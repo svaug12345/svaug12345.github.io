@@ -1,0 +1,376 @@
+<!doctype html>
+<!--
+  Page « Négo avec Papa » — l'entraînement à la négociation de Tom, Gaby et Nanon
+  Version 1.1.0 – 31/10/2026
+  En ligne : https://baiji.fr/nego-papa/
+
+  Historique :
+   • 1.0.0 : première version (agent vocal ElevenLabs avec la voix de Seb :
+             papa coriace + coach ; boutons « Temps mort coach » et « Débrief »)
+   • 1.1.0 : la vraie photo de Papa dans le gros bouton rond (papa.jpg),
+             les ondes pulsent autour de son visage quand il parle
+
+  Comment ça marche ?
+  - Avant l'appel : une petite « fiche de préparation » (ce que je veux,
+    ce que je propose en échange, mon plan B). Elle sert juste à réfléchir :
+    rien n'est envoyé, c'est l'enfant qui le dit à voix haute pendant la négo.
+  - Le gros bouton lance la conversation vocale avec l'agent
+    « Négo avec Papa – Entraînement » (SDK officiel @elevenlabs/client,
+    comme PochPoch et SOS Amitié).
+  - Pendant la négo, 2 boutons envoient un message TEXTE à l'agent
+    (sendUserMessage) : c'est exactement comme si l'enfant avait dit la phrase.
+       « Temps mort coach » → l'agent sort du rôle de papa et donne un conseil
+       « Fin de la négo »   → l'agent fait le débrief complet
+  - 3 états de page, posés en classe CSS sur <body> : (rien) / connexion / en-ligne.
+-->
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Négo avec Papa</title>
+  <!-- « noindex » : invisible sur Google, accessible seulement avec le lien -->
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0f7c7b">
+  <!-- Manrope = police de la charte SV ; JetBrains Mono pour le chrono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+
+  <style>
+    /* ---------- Couleurs (charte SV + un jaune « ring » pour le côté jeu) ---------- */
+    :root {
+      --fond:   #eef4f3;   /* neutre vert-bleu très clair */
+      --carte:  #ffffff;
+      --encre:  #12302f;   /* texte */
+      --doux:   #5b7473;   /* texte secondaire */
+      --sv:     #0f7c7b;   /* teal SV : le côté « papa » */
+      --sv-2:   #0a5857;   /* teal foncé (ombre du bouton) */
+      --jaune:  #f4b63f;   /* le côté « coach » (sifflet !) */
+      --rouge:  #c62f3a;   /* raccrocher / erreur */
+      --bord:   #d5e3e1;
+    }
+    /* Mode sombre automatique si le téléphone est en thème sombre */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --fond:  #0f1c1c;
+        --carte: #172828;
+        --encre: #e6f0ef;
+        --doux:  #9db4b2;
+        --bord:  #2a4140;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      background: var(--fond);
+      color: var(--encre);
+      font-family: Manrope, system-ui, sans-serif;
+      min-height: 100dvh;
+    }
+    main {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 28px 16px 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 22px;
+      text-align: center;
+    }
+
+    /* ---------- En-tête ---------- */
+    .surtitre {
+      font-size: 12px; font-weight: 800; letter-spacing: .22em;
+      text-transform: uppercase; color: var(--sv); margin: 0 0 6px;
+    }
+    h1 { font-size: clamp(34px, 9vw, 50px); line-height: 1.05; margin: 0; font-weight: 800; }
+    h1 span { color: var(--sv); }
+    .chapo { color: var(--doux); font-size: 16px; margin: 10px auto 0; max-width: 32ch; }
+
+    /* ---------- Fiche de préparation (repliable) ---------- */
+    details {
+      width: 100%;
+      background: var(--carte);
+      border: 1px solid var(--bord);
+      border-radius: 16px;
+      padding: 14px 16px;
+      text-align: left;
+    }
+    summary {
+      cursor: pointer; font-weight: 800; font-size: 15px; list-style: none;
+    }
+    summary::-webkit-details-marker { display: none; }   /* on cache la flèche par défaut… */
+    summary::before { content: "📝 "; }                   /* …et on met la nôtre */
+    details[open] summary { margin-bottom: 10px; }
+    label { display: block; font-size: 13px; font-weight: 600; color: var(--doux); margin: 10px 0 4px; }
+    input {
+      width: 100%; padding: 10px 12px; font: 16px Manrope, sans-serif; /* 16px : évite le zoom auto sur iPhone */
+      border: 1px solid var(--bord); border-radius: 10px;
+      background: var(--fond); color: var(--encre);
+    }
+    input:focus { outline: 2px solid var(--sv); border-color: transparent; }
+
+    /* ---------- Le gros bouton (comme SOS Amitié) ---------- */
+    .zone-bouton { position: relative; margin-bottom: 10px; width: 190px; height: 190px; display: grid; place-items: center; }
+    .bulle {
+      position: absolute; inset: 0; border-radius: 50%;
+      background: var(--sv); opacity: 0; pointer-events: none;
+      transition: transform .12s ease-out, opacity .2s;
+    }
+    body.en-ligne .bulle { opacity: .15; }
+
+    /* Le bouton = la photo de Papa dans un cadre rond (couleur du cadre = état) */
+    #bouton {
+      position: relative; width: 170px; height: 170px; border-radius: 50%;
+      border: 6px solid var(--sv); padding: 0;
+      cursor: pointer;
+      /* La photo remplit le rond ; « cover » = elle est recadrée sans être déformée */
+      background: var(--sv) url("papa.jpg") center / cover no-repeat;
+      box-shadow: 0 8px 0 var(--sv-2), 0 14px 30px rgba(0,0,0,.18);
+      transition: transform .1s, box-shadow .1s, border-color .25s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #bouton:active { transform: translateY(6px); box-shadow: 0 2px 0 var(--sv-2); }
+    #bouton:focus-visible { outline: 3px solid var(--jaune); outline-offset: 6px; }
+    body.connexion #bouton { animation: tremble 1.1s ease-in-out infinite; cursor: progress; }
+    body.en-ligne #bouton, body.erreur #bouton {
+      border-color: var(--rouge); box-shadow: 0 8px 0 #8f1f28, 0 14px 30px rgba(0,0,0,.18);
+    }
+    /* L'étiquette « Négocier » : une pastille posée à cheval sur le bas de la photo */
+    #libelle {
+      position: absolute; left: 50%; bottom: -14px; transform: translateX(-50%);
+      white-space: nowrap; padding: 8px 16px; border-radius: 999px;
+      background: var(--sv); color: #fff;
+      font: 800 13px Manrope, sans-serif; letter-spacing: .14em; text-transform: uppercase;
+      box-shadow: 0 3px 8px rgba(0,0,0,.2);
+      transition: background .25s;
+    }
+    body.en-ligne #libelle, body.erreur #libelle { background: var(--rouge); }
+
+    /* ---------- Infos pendant l'appel ---------- */
+    #infos { min-height: 3.2em; color: var(--doux); font-size: 15px; }
+    #chrono {
+      display: block; font: 600 22px "JetBrains Mono", monospace;
+      color: var(--encre); visibility: hidden;
+    }
+    body.en-ligne #chrono { visibility: visible; }
+
+    /* ---------- Les 2 boutons de coach (visibles seulement pendant la négo) ---------- */
+    .actions { display: none; gap: 10px; width: 100%; }
+    body.en-ligne .actions { display: flex; }
+    .actions button {
+      flex: 1; padding: 14px 10px; border-radius: 12px; cursor: pointer;
+      font: 800 12px Manrope, sans-serif; letter-spacing: .12em; text-transform: uppercase;
+      border: 2px solid var(--jaune); background: transparent; color: var(--encre);
+    }
+    .actions button.plein { background: var(--jaune); color: #2b1d00; }
+    .actions button:active { transform: translateY(2px); }
+
+    /* ---------- Les règles du jeu ---------- */
+    .regles {
+      width: 100%; background: var(--carte); border: 1px solid var(--bord);
+      border-radius: 16px; padding: 6px 16px; text-align: left; font-size: 15px;
+    }
+    .regles p { margin: 10px 0; }
+    .regles b { color: var(--sv); }
+
+    @keyframes tremble {
+      0%, 40%, 100% { transform: rotate(0); }
+      5%, 15%, 25%  { transform: rotate(-6deg); }
+      10%, 20%, 30% { transform: rotate(6deg); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      body.connexion #bouton { animation: none; }
+      .bulle { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="surtitre">Tom · Gaby · Nanon</p>
+      <h1>Négo avec <span>Papa</span></h1>
+      <p class="chapo">Entraîne-toi ici avant la vraie négo. Attention : ce papa-là ne lâche rien facilement.</p>
+    </header>
+
+    <!-- Fiche de préparation : rien n'est envoyé, c'est un pense-bête -->
+    <details>
+      <summary>Prépare ta négo (conseillé)</summary>
+      <label for="veux">Ce que je veux exactement (quoi, combien, quand ?)</label>
+      <input id="veux" placeholder="ex. 30 min d'écran en plus le samedi">
+      <label for="echange">Ce que je propose en échange</label>
+      <input id="echange" placeholder="ex. je range ma chambre avant">
+      <label for="planb">Mon plan B si c'est non</label>
+      <input id="planb" placeholder="ex. 15 min seulement">
+    </details>
+
+    <div class="zone-bouton">
+      <span class="bulle" aria-hidden="true"></span>
+      <span class="bulle" aria-hidden="true"></span>
+      <span class="bulle" aria-hidden="true"></span>
+      <!-- Le bouton, c'est Papa en photo (fichier papa.jpg à côté de cette page) -->
+      <button id="bouton" type="button" aria-label="Négocier avec Papa">
+        <span id="libelle">Négocier</span>
+      </button>
+    </div>
+
+    <div id="infos" aria-live="polite">
+      <span id="chrono">00:00</span>
+      <span id="parole">Appuie, dis ton prénom, et lance-toi.</span>
+    </div>
+
+    <!-- Boutons de coach : ils envoient la phrase magique à l'agent -->
+    <div class="actions">
+      <button id="tempsMort" type="button">⏸ Temps mort coach</button>
+      <button id="debrief" type="button" class="plein">🏁 Fin + débrief</button>
+    </div>
+
+    <section class="regles">
+      <p><b>1.</b> Dis ton prénom et ce que tu veux négocier. Papa fait comme si c'était pour de vrai.</p>
+      <p><b>2.</b> Tu bloques ? Dis <b>« temps mort coach »</b> (ou appuie sur le bouton) : il te donne un conseil.</p>
+      <p><b>3.</b> Quand tu as fini, dis <b>« fin de la négo »</b> : il te fait le débrief pour la vraie.</p>
+      <p><b>4.</b> Ce que ce papa-là accepte ne compte pas pour de vrai. Il faudra convaincre le vrai !</p>
+    </section>
+  </main>
+
+  <script type="module">
+    /* ============================================================
+       1. RÉGLAGES
+       ============================================================ */
+    const AGENT_ID = "agent_7001m69bdj3rfspacbxbex3r6d5r";   // « Négo avec Papa – Entraînement » sur ElevenLabs
+
+    // Tous les textes affichés, regroupés ici pour les changer facilement
+    const TEXTES = {
+      repos:      "Négocier",
+      connexion:  "Papa arrive…",
+      raccrocher: "Arrêter",
+      erreur:     "Pas de réseau",
+      sousTitre:  "Appuie, dis ton prénom, et lance-toi.",
+      papaParle:  "Papa parle… (tu peux le couper)",
+      aToi:       "À toi ! Argumente.",
+      micro:      "Il faut autoriser le micro, sinon Papa ne t'entend pas.",
+    };
+
+    // Les « phrases magiques » que le prompt de l'agent reconnaît
+    const PHRASE_TEMPS_MORT = "Temps mort coach";
+    const PHRASE_DEBRIEF    = "Fin de la négo";
+
+    const bouton  = document.getElementById("bouton");
+    const libelle = document.getElementById("libelle");
+    const chrono  = document.getElementById("chrono");
+    const parole  = document.getElementById("parole");
+    const bulles  = [...document.querySelectorAll(".bulle")];
+
+    /* ============================================================
+       2. LES ÉTATS DE LA PAGE (une classe sur <body>, le CSS fait le reste)
+       ============================================================ */
+    function etat(nom) { document.body.className = nom || ""; }
+
+    let debutAppel = 0, minuterie = null;
+    function lancerChrono() {
+      debutAppel = Date.now();
+      chrono.textContent = "00:00";
+      minuterie = setInterval(() => {
+        const s = Math.floor((Date.now() - debutAppel) / 1000);
+        // padStart(2, "0") ajoute un zéro devant : 7 → "07"
+        chrono.textContent =
+          String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+      }, 1000);
+    }
+
+    /* ============================================================
+       3. LA NÉGO AVEC LE PAPA VIRTUEL
+       ============================================================ */
+    let conversation = null;   // la session en cours (null = pas de négo)
+    let boucle = null;         // boucle d'animation des bulles
+    let lisse  = 0;            // volume lissé, pour des bulles fluides
+
+    function repos() {
+      cancelAnimationFrame(boucle);
+      clearInterval(minuterie);
+      conversation = null;
+      bulles.forEach(b => b.style.transform = "scale(1)");
+      etat("");
+      libelle.textContent = TEXTES.repos;
+      parole.textContent  = TEXTES.sousTitre;
+    }
+
+    function erreur(e, message) {
+      console.error("Négo avec Papa :", e);
+      cancelAnimationFrame(boucle);
+      clearInterval(minuterie);
+      conversation = null;
+      etat("erreur");
+      libelle.textContent = TEXTES.erreur;
+      if (message) parole.textContent = message;
+      setTimeout(repos, 3500);
+    }
+
+    // 60 fois par seconde : les bulles suivent la voix de Papa
+    function animer() {
+      if (!conversation) return;
+      const v = Math.min(1, conversation.getOutputVolume() * 2.5);   // volume 0→1, un peu amplifié
+      lisse = lisse * 0.75 + v * 0.25;                                // moyenne glissante = mouvement doux
+      bulles.forEach((b, i) => b.style.transform = `scale(${1 + lisse * (0.18 + i * 0.16)})`);
+      boucle = requestAnimationFrame(animer);
+    }
+
+    bouton.addEventListener("click", async () => {
+      if (conversation) { await conversation.endSession(); return; }  // clic pendant la négo → on arrête
+      if (document.body.classList.contains("connexion")) return;       // anti double-clic
+
+      etat("connexion");
+      libelle.textContent = TEXTES.connexion;
+
+      try {
+        // 1) Accès au micro (le navigateur demande l'autorisation)
+        try {
+          await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (e) {
+          return erreur(e, TEXTES.micro);
+        }
+
+        // 2) Le SDK ElevenLabs n'est chargé qu'au premier clic (page plus légère).
+        //    Même version figée que SOS Amitié et PochPoch.
+        const { Conversation } = await import(
+          "https://cdn.jsdelivr.net/npm/@elevenlabs/client@1.32.1/+esm"
+        );
+
+        // 3) Ouverture de la conversation
+        conversation = await Conversation.startSession({
+          agentId: AGENT_ID,
+          onConnect: () => {
+            etat("en-ligne");
+            libelle.textContent = TEXTES.raccrocher;
+            parole.textContent  = TEXTES.papaParle;
+            lancerChrono();
+            animer();
+          },
+          // mode = "speaking" (Papa parle) ou "listening" (il t'écoute)
+          onModeChange: ({ mode }) => {
+            parole.textContent = mode === "speaking" ? TEXTES.papaParle : TEXTES.aToi;
+          },
+          onDisconnect: repos,
+          onError: (e) => erreur(e),
+        });
+      } catch (e) {
+        erreur(e);
+      }
+    });
+
+    /* ============================================================
+       4. LES BOUTONS DE COACH
+       sendUserMessage() envoie du texte à l'agent, comme si l'enfant
+       l'avait dit à voix haute. Le prompt de l'agent réagit à ces phrases.
+       ============================================================ */
+    function envoyer(phrase) {
+      if (!conversation) return;
+      try { conversation.sendUserMessage(phrase); }
+      catch (e) { console.error("Envoi impossible :", e); }
+    }
+    document.getElementById("tempsMort").addEventListener("click", () => envoyer(PHRASE_TEMPS_MORT));
+    document.getElementById("debrief").addEventListener("click",   () => envoyer(PHRASE_DEBRIEF));
+  </script>
+</body>
+</html>
