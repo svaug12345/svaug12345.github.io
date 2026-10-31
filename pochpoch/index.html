@@ -1,16 +1,18 @@
 <!doctype html>
 <!--
   Page « PochPoch assistant » — le cost killer vocal
-  Version 1.0.0 – 31/10/2026
+  Version 1.1.0 – 31/10/2026
   En ligne : https://baiji.fr/pochpoch/
 
   Historique :
    • 1.0.0 : première version (fond Matrix, un seul bouton, agent vocal ElevenLabs)
+   • 1.1.0 : pendant l'appel, le bouton devient « Raccrocher » (rouge) pour couper clairement
 
   Comment ça marche ?
   - Le fond est une « pluie de caractères » façon Matrix, dessinée dans un <canvas>.
   - Un seul bouton : « Demander l'autorisation ».
       1er clic  → le navigateur demande le micro, puis on appelle PochPoch.
+      Pendant l'appel, le même bouton affiche « Raccrocher » (en rouge).
       2e clic   → on raccroche (PochPoch peut aussi raccrocher tout seul).
   - Pendant l'appel, la pluie s'accélère et s'éclaire quand PochPoch parle
     (on lit le volume de sa voix 60 fois par seconde).
@@ -96,10 +98,17 @@
     /* Pendant la connexion : le bouton « respire » */
     #bouton.connexion { animation: respire 1.2s ease-in-out infinite; }
 
-    /* Pendant l'appel : bordure allumée en permanence */
+    /* Pendant l'appel : le bouton devient « Raccrocher », en rouge,
+       comme le bouton rouge d'un téléphone : on comprend tout de suite. */
     #bouton.en-ligne {
-      border-color: var(--vert);
-      box-shadow: 0 0 24px rgba(51, 255, 102, 0.35);
+      color: var(--rouge);
+      border-color: var(--rouge);
+      text-shadow: 0 0 8px rgba(255, 51, 68, 0.6);
+      box-shadow: 0 0 24px rgba(255, 51, 68, 0.3);
+    }
+    #bouton.en-ligne:hover,
+    #bouton.en-ligne:focus-visible {
+      box-shadow: 0 0 30px rgba(255, 51, 68, 0.5);
     }
 
     /* En cas d'erreur (micro refusé…) : tout passe en rouge */
@@ -133,7 +142,8 @@
        1. RÉGLAGES
        ============================================================ */
     const AGENT_ID = "agent_7701m68m6rc2fkra55wnegc6bd80";   // l'agent PochPoch sur ElevenLabs
-    const TEXTE    = "Demander l'autorisation";
+    const TEXTE    = "Demander l'autorisation";   // texte au repos
+    const TEXTE_RACCROCHER = "Raccrocher";       // texte pendant l'appel
 
     // Caractères qui tombent : katakana (le côté Matrix), chiffres… et symboles d'argent,
     // puisque PochPoch ne pense qu'à ça.
@@ -263,7 +273,9 @@
         conversation = await Conversation.startSession({
           agentId: AGENT_ID,
           onConnect: () => {
+            // L'appel est établi : le bouton se transforme en « Raccrocher »
             bouton.className = "en-ligne";
+            bouton.textContent = TEXTE_RACCROCHER;
             suivreVolume();
           },
           onDisconnect: repos,            // PochPoch a raccroché (ou nous)
