@@ -6,6 +6,7 @@ Site GitHub Pages de svaug12345 : héberge des applis web (PWA), publiées aussi
 - `paraphe/` — Paraphe, appli pour créer sa police manuscrite (s'appelait Plume ; `plume/` ne fait plus que rediriger)
 - `atelier-polices/` — Atelier de polices (page autonome)
 - `agent-double/` — page de politique de confidentialité du jeu Android Agent Double (code : dépôt svaug12345/undercover)
+- `assistant-fournisseurs/` — page d'aide fournisseurs Carrefour (SAP Business Network) avec agent vocal ElevenLabs ; version dans le commentaire d'en-tête de `index.html` ; volontairement absente de la page d'accueil et en « noindex »
 - `.well-known/assetlinks.json` — empreintes de signature Android (une entrée par appli)
 
 ## Règles
