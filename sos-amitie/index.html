@@ -1,0 +1,374 @@
+<!doctype html>
+<!--
+  Page « SOS Amitié Baiji » — la ligne d'écoute perso de Charles
+  Version 1.0.0 – 31/10/2026
+  En ligne : https://baiji.fr/sos-amitie/
+
+  Historique :
+   • 1.0.0 : première version (agent vocal ElevenLabs avec la voix clonée de Seb,
+             ton humour + écoute ; page chaleureuse façon standard téléphonique)
+
+  Comment ça marche ?
+  - Au repos : un gros bouton rond « Appeler Seb » (comme une touche de vieux téléphone),
+    au-dessus une enseigne « SOS Amitié Baiji » et une phrase d'accroche qui change
+    à chaque visite (tableau ACCROCHES, plus bas).
+  - Au clic, 3 états se succèdent (une classe CSS sur <body>) :
+      1. connexion → « Ça sonne… » + le bouton vibre comme un téléphone.
+                      Le navigateur demande le micro.
+      2. en-ligne  → le bouton devient « Raccrocher » (rouge), un chrono tourne,
+                      des « bulles » pulsent au rythme de la voix de Seb,
+                      et on affiche qui a la parole.
+      3. repos     → après raccrochage, tout revient comme au départ.
+  - On utilise le SDK officiel « @elevenlabs/client » (comme PochPoch) plutôt
+    que la bulle toute faite d'ElevenLabs : la page reste épurée.
+  - Rien à voir avec l'association SOS Amitié : c'est dit en bas de page,
+    avec son vrai numéro, au cas où.
+-->
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SOS Amitié Baiji</title>
+  <!-- « noindex » : invisible sur Google, accessible seulement avec le lien -->
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#f6efe3">
+  <!-- Fraunces = titre rétro chaleureux ; Manrope = texte (police de la charte SV) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;1,9..144,500&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ---------- Couleurs (une seule source de vérité) ---------- */
+    :root {
+      --fond:    #f6efe3;   /* papier crème */
+      --encre:   #2a2320;   /* brun très foncé pour le texte */
+      --doux:    #7a6c62;   /* texte secondaire */
+      --corail:  #e8604c;   /* couleur du bouton d'appel */
+      --corail-2:#c94a37;   /* corail plus foncé (ombre du bouton) */
+      --sv:      #0f7c7b;   /* le teal de la marque SV, en clin d'œil */
+      --rouge:   #c62f3a;   /* raccrocher / erreur */
+    }
+    /* Mode sombre automatique si le téléphone est en thème sombre */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --fond:  #1d1916;
+        --encre: #f3eadf;
+        --doux:  #b3a598;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      background: var(--fond);
+      color: var(--encre);
+      font-family: Manrope, system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      min-height: 100dvh;           /* hauteur réelle sur mobile (barre d'adresse comprise) */
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      padding: 32px 16px;
+      text-align: center;
+    }
+
+    /* ---------- L'enseigne ---------- */
+    .surtitre {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--sv);
+      margin: 0 0 8px;
+    }
+    h1 {
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 600;
+      font-size: clamp(36px, 9vw, 58px);
+      line-height: 1;
+      margin: 0;
+    }
+    h1 em { color: var(--corail); font-weight: 500; }
+    #accroche {
+      font-size: 17px;
+      color: var(--doux);
+      max-width: 30ch;
+      margin: 14px auto 0;
+      min-height: 2.6em;            /* évite que la page « saute » quand le texte change */
+    }
+
+    /* ---------- Le bouton d'appel (le cœur de la page) ---------- */
+    .zone-bouton {
+      position: relative;
+      width: 190px;
+      height: 190px;
+      display: grid;
+      place-items: center;
+    }
+    /* Les « bulles » derrière le bouton : 3 cercles qui pulsent avec la voix */
+    .bulle {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: var(--corail);
+      opacity: 0;
+      transform: scale(1);
+      transition: transform .12s ease-out, opacity .2s;
+      pointer-events: none;          /* les clics traversent jusqu'au bouton */
+    }
+    body.en-ligne .bulle { opacity: .14; }
+
+    #bouton {
+      position: relative;            /* au-dessus des bulles */
+      width: 170px;
+      height: 170px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      background: var(--corail);
+      color: #fff;
+      font: 700 15px/1.25 Manrope, sans-serif;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      box-shadow: 0 8px 0 var(--corail-2), 0 14px 30px rgba(0,0,0,.18);
+      transition: transform .1s, box-shadow .1s, background .25s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* Effet « touche qu'on enfonce » */
+    #bouton:active { transform: translateY(6px); box-shadow: 0 2px 0 var(--corail-2), 0 6px 14px rgba(0,0,0,.18); }
+    #bouton:focus-visible { outline: 3px solid var(--sv); outline-offset: 6px; }
+    #bouton svg { width: 44px; height: 44px; }
+
+    /* Pendant la sonnerie, le bouton vibre comme un vieux téléphone */
+    body.connexion #bouton { animation: sonnerie 1.1s ease-in-out infinite; cursor: progress; }
+
+    /* Pendant l'appel : bouton rouge « Raccrocher », combiné tourné vers le bas */
+    body.en-ligne #bouton { background: var(--rouge); box-shadow: 0 8px 0 #8f1f28, 0 14px 30px rgba(0,0,0,.18); }
+    body.en-ligne #bouton svg { transform: rotate(135deg); }
+    body.erreur  #bouton { background: var(--rouge); box-shadow: 0 8px 0 #8f1f28; }
+
+    /* ---------- Infos pendant l'appel ---------- */
+    #infos {
+      min-height: 3.2em;
+      font-size: 15px;
+      color: var(--doux);
+    }
+    #chrono {
+      display: block;
+      font-variant-numeric: tabular-nums;   /* chiffres de même largeur : le chrono ne tremble pas */
+      font-weight: 700;
+      font-size: 22px;
+      color: var(--encre);
+      visibility: hidden;
+    }
+    body.en-ligne #chrono { visibility: visible; }
+
+    footer {
+      padding: 16px 16px 22px;
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: var(--doux);
+      text-align: center;
+    }
+    footer a { color: inherit; }
+
+    @keyframes sonnerie {
+      0%, 40%, 100% { transform: rotate(0); }
+      5%, 15%, 25%  { transform: rotate(-7deg); }
+      10%, 20%, 30% { transform: rotate(7deg); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      body.connexion #bouton { animation: none; }
+      .bulle { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="surtitre">Ligne perso de Charles · 24h/24</p>
+      <h1>SOS Amitié <em>Baiji</em></h1>
+      <p id="accroche"></p>
+    </header>
+
+    <div class="zone-bouton">
+      <!-- 3 bulles qui grossissent quand Seb parle -->
+      <span class="bulle" aria-hidden="true"></span>
+      <span class="bulle" aria-hidden="true"></span>
+      <span class="bulle" aria-hidden="true"></span>
+
+      <button id="bouton" type="button">
+        <!-- Icône de combiné téléphonique (dessinée en SVG, aucune image à charger) -->
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M6.6 10.8a15.2 15.2 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1L6.6 10.8z"/>
+        </svg>
+        <span id="libelle">Appeler Seb</span>
+      </button>
+    </div>
+
+    <!-- aria-live : les lecteurs d'écran annoncent les changements -->
+    <div id="infos" aria-live="polite">
+      <span id="chrono">00:00</span>
+      <span id="parole">Il décroche toujours. Même quand il ne devrait pas.</span>
+    </div>
+  </main>
+
+  <footer>
+    Seb virtuel : une IA avec la voix de Seb, pour rire entre amis.<br>
+    Rien à voir avec l'association SOS Amitié. Si ça ne va vraiment pas :
+    <a href="tel:3114">3114</a> ou SOS Amitié au <a href="tel:+33972394050">09 72 39 40 50</a>.
+  </footer>
+
+  <script type="module">
+    /* ============================================================
+       1. RÉGLAGES
+       ============================================================ */
+    const AGENT_ID = "agent_4701m693hggjfn6vafe551btpaq1";   // l'agent « SOS Amitié Baiji – Charles »
+
+    // Tous les textes affichés, regroupés ici pour les changer facilement
+    const TEXTES = {
+      repos:      "Appeler Seb",
+      connexion:  "Ça sonne…",
+      raccrocher: "Raccrocher",
+      erreur:     "Pas de réseau",
+      sousTitre:  "Il décroche toujours. Même quand il ne devrait pas.",
+      sebParle:   "Seb parle… (tu peux le couper, il a l'habitude)",
+      aToi:       "À toi, Charles, vas-y raconte",
+      micro:      "Il faut autoriser le micro, sinon Seb parle tout seul (comme d'hab).",
+    };
+
+    // Une accroche tirée au hasard à chaque visite
+    const ACCROCHES = [
+      "Léonie, Valentine, Magali… et toi au milieu. Viens vider ton sac.",
+      "Pose ta manette et ton livre. Enfin, au moins un des deux.",
+      "Écoute garantie, vannes offertes.",
+      "Le seul service d'écoute qui se moque un peu de toi. Avec amour.",
+      "Trois femmes à la maison, une pile de livres, des jeux en retard : on en parle ?",
+    ];
+
+    const bouton  = document.getElementById("bouton");
+    const libelle = document.getElementById("libelle");
+    const chrono  = document.getElementById("chrono");
+    const parole  = document.getElementById("parole");
+    const bulles  = [...document.querySelectorAll(".bulle")];
+
+    document.getElementById("accroche").textContent =
+      ACCROCHES[Math.floor(Math.random() * ACCROCHES.length)];
+
+    /* ============================================================
+       2. LES ÉTATS DE LA PAGE
+       On met une classe sur <body> : le CSS fait le reste.
+       ============================================================ */
+    function etat(nom) { document.body.className = nom || ""; }
+
+    // Chrono de l'appel (mm:ss)
+    let debutAppel = 0, minuterie = null;
+    function lancerChrono() {
+      debutAppel = Date.now();
+      chrono.textContent = "00:00";
+      minuterie = setInterval(() => {
+        const s = Math.floor((Date.now() - debutAppel) / 1000);
+        // padStart(2, "0") ajoute un zéro devant : 7 → "07"
+        chrono.textContent =
+          String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+      }, 1000);
+    }
+
+    /* ============================================================
+       3. L'APPEL AVEC LE SEB VIRTUEL
+       ============================================================ */
+    let conversation = null;   // la session en cours (null = pas d'appel)
+    let boucle = null;         // boucle d'animation des bulles
+    let lisse  = 0;            // volume lissé, pour des bulles fluides
+
+    function repos() {
+      cancelAnimationFrame(boucle);
+      clearInterval(minuterie);
+      conversation = null;
+      bulles.forEach(b => b.style.transform = "scale(1)");
+      etat("");
+      libelle.textContent = TEXTES.repos;
+      parole.textContent  = TEXTES.sousTitre;
+    }
+
+    function erreur(e, message) {
+      console.error("SOS Amitié Baiji :", e);
+      cancelAnimationFrame(boucle);
+      clearInterval(minuterie);
+      conversation = null;
+      etat("erreur");
+      libelle.textContent = TEXTES.erreur;
+      if (message) parole.textContent = message;
+      setTimeout(repos, 3500);
+    }
+
+    // 60 fois par seconde pendant l'appel : les bulles suivent la voix de Seb
+    function animer() {
+      if (!conversation) return;
+      // getOutputVolume() = voix de Seb, entre 0 et 1 (on l'amplifie un peu)
+      const v = Math.min(1, conversation.getOutputVolume() * 2.5);
+      lisse = lisse * 0.75 + v * 0.25;   // moyenne glissante = mouvement doux
+      // Chaque bulle grossit un peu plus que la précédente : effet d'ondes
+      bulles.forEach((b, i) => b.style.transform = `scale(${1 + lisse * (0.18 + i * 0.16)})`);
+      boucle = requestAnimationFrame(animer);
+    }
+
+    bouton.addEventListener("click", async () => {
+      // Clic pendant l'appel → on raccroche
+      if (conversation) { await conversation.endSession(); return; }
+      if (document.body.classList.contains("connexion")) return;   // anti double-clic
+
+      etat("connexion");
+      libelle.textContent = TEXTES.connexion;
+
+      try {
+        // 1) Accès au micro (le navigateur demande l'autorisation)
+        try {
+          await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (e) {
+          return erreur(e, TEXTES.micro);
+        }
+
+        // 2) Le SDK ElevenLabs n'est chargé qu'au premier appel (page plus légère).
+        //    Version figée, la même que PochPoch, pour qu'une mise à jour ne casse rien.
+        const { Conversation } = await import(
+          "https://cdn.jsdelivr.net/npm/@elevenlabs/client@1.32.1/+esm"
+        );
+
+        // 3) Ouverture de la conversation
+        conversation = await Conversation.startSession({
+          agentId: AGENT_ID,
+          onConnect: () => {
+            etat("en-ligne");
+            libelle.textContent = TEXTES.raccrocher;
+            parole.textContent  = TEXTES.sebParle;   // il commence par son message d'accueil
+            lancerChrono();
+            animer();
+          },
+          // mode = "speaking" (Seb parle) ou "listening" (il t'écoute)
+          onModeChange: ({ mode }) => {
+            parole.textContent = mode === "speaking" ? TEXTES.sebParle : TEXTES.aToi;
+          },
+          onDisconnect: repos,
+          onError: (e) => erreur(e),
+        });
+      } catch (e) {
+        erreur(e);
+      }
+    });
+  </script>
+</body>
+</html>
