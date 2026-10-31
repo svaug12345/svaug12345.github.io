@@ -7,6 +7,7 @@ Site GitHub Pages de svaug12345 : héberge des applis web (PWA), publiées aussi
 - `atelier-polices/` — Atelier de polices (page autonome)
 - `agent-double/` — page de politique de confidentialité du jeu Android Agent Double (code : dépôt svaug12345/undercover)
 - `assistant-fournisseurs/` — page d'aide fournisseurs Carrefour (SAP Business Network) avec agent vocal ElevenLabs ; version dans le commentaire d'en-tête de `index.html` ; volontairement absente de la page d'accueil et en « noindex »
+- `pochpoch/` — « PochPoch assistant », cost killer vocal (agent ElevenLabs via SDK @elevenlabs/client) ; page sombre façon Matrix, un seul bouton ; version dans le commentaire d'en-tête de `index.html` ; absente de la page d'accueil et en « noindex »
 - `.well-known/assetlinks.json` — empreintes de signature Android (une entrée par appli)
 
 ## Règles

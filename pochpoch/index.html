@@ -1,0 +1,280 @@
+<!doctype html>
+<!--
+  Page « PochPoch assistant » — le cost killer vocal
+  Version 1.0.0 – 31/10/2026
+  En ligne : https://baiji.fr/pochpoch/
+
+  Historique :
+   • 1.0.0 : première version (fond Matrix, un seul bouton, agent vocal ElevenLabs)
+
+  Comment ça marche ?
+  - Le fond est une « pluie de caractères » façon Matrix, dessinée dans un <canvas>.
+  - Un seul bouton : « Demander l'autorisation ».
+      1er clic  → le navigateur demande le micro, puis on appelle PochPoch.
+      2e clic   → on raccroche (PochPoch peut aussi raccrocher tout seul).
+  - Pendant l'appel, la pluie s'accélère et s'éclaire quand PochPoch parle
+    (on lit le volume de sa voix 60 fois par seconde).
+  - On utilise le SDK officiel « @elevenlabs/client » plutôt que la bulle
+    toute faite : ça permet de garder une page totalement épurée.
+-->
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <!-- Indispensable pour un bon affichage sur téléphone -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PochPoch</title>
+  <!-- « noindex » : la page n'apparaîtra pas sur Google (accessible seulement avec le lien) -->
+  <meta name="robots" content="noindex, nofollow">
+  <!-- Couleur de la barre du navigateur sur Android -->
+  <meta name="theme-color" content="#000000">
+  <!-- Police monospace « terminal » -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* ---------- Couleurs (une seule source de vérité) ---------- */
+    :root {
+      --fond:   #000000;   /* noir total */
+      --vert:   #33ff66;   /* vert phosphore façon Matrix */
+      --vert-2: #0d3b1a;   /* vert très sombre, pour les bordures au repos */
+      --rouge:  #ff3344;   /* utilisé seulement en cas d'erreur */
+    }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--fond);
+      overflow: hidden;              /* pas de barre de défilement */
+    }
+
+    /* Le canvas de la pluie occupe tout l'écran, derrière le bouton */
+    #pluie {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Conteneur qui centre le bouton au milieu de l'écran */
+    main {
+      position: relative;            /* au-dessus du canvas */
+      height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 0 16px;
+    }
+
+    /* ---------- Le bouton unique ---------- */
+    #bouton {
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: clamp(15px, 2.4vw, 19px);
+      letter-spacing: 0.18em;
+      color: var(--vert);
+      background: rgba(0, 0, 0, 0.82);   /* légèrement opaque pour lire par-dessus la pluie */
+      border: 1px solid var(--vert-2);
+      padding: 18px 30px;
+      cursor: pointer;
+      text-shadow: 0 0 8px rgba(51, 255, 102, 0.55);
+      transition: border-color .25s, box-shadow .25s, color .25s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* Le petit curseur clignotant après le texte, comme dans un terminal */
+    #bouton::after {
+      content: "_";
+      margin-left: 2px;
+      animation: clignote 1s steps(1) infinite;
+    }
+    #bouton:hover,
+    #bouton:focus-visible {
+      outline: none;
+      border-color: var(--vert);
+      box-shadow: 0 0 18px rgba(51, 255, 102, 0.25);
+    }
+
+    /* Pendant la connexion : le bouton « respire » */
+    #bouton.connexion { animation: respire 1.2s ease-in-out infinite; }
+
+    /* Pendant l'appel : bordure allumée en permanence */
+    #bouton.en-ligne {
+      border-color: var(--vert);
+      box-shadow: 0 0 24px rgba(51, 255, 102, 0.35);
+    }
+
+    /* En cas d'erreur (micro refusé…) : tout passe en rouge */
+    #bouton.erreur {
+      color: var(--rouge);
+      border-color: var(--rouge);
+      text-shadow: 0 0 8px rgba(255, 51, 68, 0.6);
+    }
+
+    @keyframes clignote { 50% { opacity: 0; } }
+    @keyframes respire  { 50% { opacity: .45; } }
+
+    /* Accessibilité : si l'utilisateur a demandé moins d'animations, on les coupe */
+    @media (prefers-reduced-motion: reduce) {
+      #bouton::after, #bouton.connexion { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <!-- La pluie Matrix -->
+  <canvas id="pluie" aria-hidden="true"></canvas>
+
+  <main>
+    <!-- La seule chose affichée sur la page -->
+    <button id="bouton" type="button">Demander l'autorisation</button>
+  </main>
+
+  <!-- type="module" : permet d'utiliser « import » pour charger le SDK depuis un CDN -->
+  <script type="module">
+    /* ============================================================
+       1. RÉGLAGES
+       ============================================================ */
+    const AGENT_ID = "agent_7701m68m6rc2fkra55wnegc6bd80";   // l'agent PochPoch sur ElevenLabs
+    const TEXTE    = "Demander l'autorisation";
+
+    // Caractères qui tombent : katakana (le côté Matrix), chiffres… et symboles d'argent,
+    // puisque PochPoch ne pense qu'à ça.
+    const GLYPHES = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホ0123456789€$£%-";
+
+    const bouton = document.getElementById("bouton");
+    const canvas = document.getElementById("pluie");
+    const ctx    = canvas.getContext("2d");
+
+    /* ============================================================
+       2. LA PLUIE MATRIX
+       Principe : l'écran est découpé en colonnes. Chaque colonne a
+       une « goutte » (sa position verticale). À chaque image, on
+       dessine un caractère au niveau de la goutte puis on la descend.
+       On ne vide pas l'écran : on le recouvre d'un noir presque
+       transparent, ce qui laisse une traînée qui s'estompe.
+       ============================================================ */
+    const TAILLE = 16;          // taille d'un caractère en pixels
+    let gouttes  = [];          // position (en lignes) de la goutte de chaque colonne
+    let intensite = 0;          // 0 = calme, 1 = PochPoch parle fort
+
+    function redimensionner() {
+      // On adapte le canvas à la taille réelle de l'écran (écrans haute définition compris)
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width  = innerWidth  * ratio;
+      canvas.height = innerHeight * ratio;
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      // Une goutte par colonne, placée au hasard au-dessus de l'écran pour un départ étalé
+      const colonnes = Math.ceil(innerWidth / TAILLE);
+      gouttes = Array.from({ length: colonnes }, () => -Math.random() * 60);
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, innerWidth, innerHeight);
+    }
+    addEventListener("resize", redimensionner);
+    redimensionner();
+
+    // Respecte le réglage « réduire les animations » du système
+    const calme = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    let derniere = 0;
+    function dessiner(t) {
+      requestAnimationFrame(dessiner);
+
+      // Cadence : ~14 images/s au repos, jusqu'à ~40 quand PochPoch s'énerve
+      const intervalle = 70 - intensite * 45;
+      if (t - derniere < intervalle) return;
+      derniere = t;
+
+      // Voile noir semi-transparent = effet de traînée
+      ctx.fillStyle = "rgba(0, 0, 0, 0.08)";
+      ctx.fillRect(0, 0, innerWidth, innerHeight);
+
+      ctx.font = `${TAILLE}px "JetBrains Mono", monospace`;
+
+      for (let i = 0; i < gouttes.length; i++) {
+        const y = gouttes[i] * TAILLE;
+        const lettre = GLYPHES[Math.floor(Math.random() * GLYPHES.length)];
+
+        // Tête de goutte plus claire ; luminosité générale qui monte avec la voix
+        const lum = 0.35 + intensite * 0.65;
+        ctx.fillStyle = Math.random() < 0.06
+          ? `rgba(200, 255, 210, ${lum})`      // quelques têtes presque blanches
+          : `rgba(51, 255, 102, ${lum * 0.8})`;
+        ctx.fillText(lettre, i * TAILLE, y);
+
+        // Arrivée en bas : la goutte repart en haut (avec un peu de hasard)
+        if (y > innerHeight && Math.random() > 0.975) gouttes[i] = 0;
+        gouttes[i]++;
+      }
+    }
+    if (!calme) requestAnimationFrame(dessiner);
+
+    /* ============================================================
+       3. L'APPEL VOCAL AVEC POCHPOCH
+       ============================================================ */
+    let conversation = null;    // la session en cours (null = pas d'appel)
+    let suiviVolume  = null;    // boucle qui lit le volume de la voix
+
+    // Remet le bouton dans son état de départ
+    function repos() {
+      bouton.className = "";
+      bouton.textContent = TEXTE;
+      intensite = 0;
+      cancelAnimationFrame(suiviVolume);
+      conversation = null;
+    }
+
+    // Affiche brièvement une erreur, puis revient au repos
+    function erreur(message) {
+      console.error("PochPoch :", message);
+      bouton.className = "erreur";
+      bouton.textContent = "Accès refusé";
+      setTimeout(repos, 2500);
+    }
+
+    // Lit le volume de PochPoch en continu pour animer la pluie
+    function suivreVolume() {
+      if (!conversation) return;
+      // getOutputVolume() renvoie une valeur entre 0 et 1.
+      // On lisse (moyenne glissante) pour éviter un effet stroboscope.
+      const v = Math.min(1, conversation.getOutputVolume() * 2.5);
+      intensite = intensite * 0.8 + v * 0.2;
+      suiviVolume = requestAnimationFrame(suivreVolume);
+    }
+
+    bouton.addEventListener("click", async () => {
+      // --- 2e clic pendant l'appel : on raccroche ---
+      if (conversation) {
+        await conversation.endSession();
+        return;   // onDisconnect se charge de remettre le bouton au repos
+      }
+      if (bouton.classList.contains("connexion")) return;   // évite les doubles clics
+
+      bouton.className = "connexion";
+
+      try {
+        // 1) Le navigateur demande l'accès au micro (obligatoire pour parler)
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        // 2) On charge le SDK ElevenLabs seulement maintenant (page plus légère au départ).
+        //    Version figée (1.32.1) pour éviter qu'une mise à jour casse la page.
+        const { Conversation } = await import(
+          "https://cdn.jsdelivr.net/npm/@elevenlabs/client@1.32.1/+esm"
+        );
+
+        // 3) On ouvre la conversation avec l'agent
+        conversation = await Conversation.startSession({
+          agentId: AGENT_ID,
+          onConnect: () => {
+            bouton.className = "en-ligne";
+            suivreVolume();
+          },
+          onDisconnect: repos,            // PochPoch a raccroché (ou nous)
+          onError: (e) => erreur(e),
+        });
+      } catch (e) {
+        // Micro refusé, pas de réseau, agent indisponible…
+        conversation = null;
+        erreur(e);
+      }
+    });
+  </script>
+</body>
+</html>
