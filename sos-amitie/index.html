@@ -1,16 +1,18 @@
 <!doctype html>
 <!--
-  Page « SOS Amitié Baiji » — la ligne d'écoute perso de Charles
-  Version 1.0.0 – 31/10/2026
+  Page « SOS Amitié » — la ligne d'écoute perso de Charles
+  Version 1.1.0 – 31/10/2026
   En ligne : https://baiji.fr/sos-amitie/
 
   Historique :
    • 1.0.0 : première version (agent vocal ElevenLabs avec la voix clonée de Seb,
              ton humour + écoute ; page chaleureuse façon standard téléphonique)
+   • 1.1.0 : plus de mention « Baiji » (ce n'est que le nom du site) ;
+             suppression du pied de page
 
   Comment ça marche ?
   - Au repos : un gros bouton rond « Appeler Seb » (comme une touche de vieux téléphone),
-    au-dessus une enseigne « SOS Amitié Baiji » et une phrase d'accroche qui change
+    au-dessus une enseigne « SOS Amitié » et une phrase d'accroche qui change
     à chaque visite (tableau ACCROCHES, plus bas).
   - Au clic, 3 états se succèdent (une classe CSS sur <body>) :
       1. connexion → « Ça sonne… » + le bouton vibre comme un téléphone.
@@ -21,14 +23,14 @@
       3. repos     → après raccrochage, tout revient comme au départ.
   - On utilise le SDK officiel « @elevenlabs/client » (comme PochPoch) plutôt
     que la bulle toute faite d'ElevenLabs : la page reste épurée.
-  - Rien à voir avec l'association SOS Amitié : c'est dit en bas de page,
-    avec son vrai numéro, au cas où.
+  - Garde-fou : c'est l'agent lui-même (consignes dans ElevenLabs) qui donne
+    les vrais numéros d'aide si Charles va vraiment mal.
 -->
 <html lang="fr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SOS Amitié Baiji</title>
+  <title>SOS Amitié</title>
   <!-- « noindex » : invisible sur Google, accessible seulement avec le lien -->
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#f6efe3">
@@ -176,14 +178,6 @@
     }
     body.en-ligne #chrono { visibility: visible; }
 
-    footer {
-      padding: 16px 16px 22px;
-      font-size: 12.5px;
-      line-height: 1.5;
-      color: var(--doux);
-      text-align: center;
-    }
-    footer a { color: inherit; }
 
     @keyframes sonnerie {
       0%, 40%, 100% { transform: rotate(0); }
@@ -200,7 +194,7 @@
   <main>
     <header>
       <p class="surtitre">Ligne perso de Charles · 24h/24</p>
-      <h1>SOS Amitié <em>Baiji</em></h1>
+      <h1>SOS <em>Amitié</em></h1>
       <p id="accroche"></p>
     </header>
 
@@ -226,17 +220,12 @@
     </div>
   </main>
 
-  <footer>
-    Seb virtuel : une IA avec la voix de Seb, pour rire entre amis.<br>
-    Rien à voir avec l'association SOS Amitié. Si ça ne va vraiment pas :
-    <a href="tel:3114">3114</a> ou SOS Amitié au <a href="tel:+33972394050">09 72 39 40 50</a>.
-  </footer>
 
   <script type="module">
     /* ============================================================
        1. RÉGLAGES
        ============================================================ */
-    const AGENT_ID = "agent_4701m693hggjfn6vafe551btpaq1";   // l'agent « SOS Amitié Baiji – Charles »
+    const AGENT_ID = "agent_4701m693hggjfn6vafe551btpaq1";   // l'agent « SOS Amitié – Charles » sur ElevenLabs
 
     // Tous les textes affichés, regroupés ici pour les changer facilement
     const TEXTES = {
@@ -305,7 +294,7 @@
     }
 
     function erreur(e, message) {
-      console.error("SOS Amitié Baiji :", e);
+      console.error("SOS Amitié :", e);
       cancelAnimationFrame(boucle);
       clearInterval(minuterie);
       conversation = null;
