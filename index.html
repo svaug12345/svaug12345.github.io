@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr — Page d'accueil des projets (marque SV)
-  Version 1.1.0
+  Version 1.2.0
   ------------------------------------------------------------
   Historique :
    • v1.0.0 : première page d'accueil
@@ -11,6 +11,7 @@
               de la charte SV, formulation sans "je/mes"
    • v1.0.3 : activation du lien "Paraphe" (dossier paraphe/)
    • v1.1.0 : serrure d'accès + log des visites (via gate.js), sur la page d'accueil
+   • v1.2.0 : nouvelle section « Agents vocaux » (PochPoch, Assistant fournisseurs)
 
   À déposer dans le dépôt GitHub : svaug12345.github.io
   → c'est le fichier "index.html" à la racine.
@@ -252,7 +253,7 @@
 
     <!-- ===================== PIED DE PAGE ===================== -->
     <footer>
-      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.1.0</p>
+      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.2.0</p>
     </footer>
 
   </div>
@@ -303,6 +304,20 @@
         desc: "Casse-brique, ambiance graphique épurée",
         url:  null,                      // ⬅️ lien à compléter
         cat:  "Jeux"
+      },
+      // Nouvelle catégorie : il suffit d'écrire un nouveau nom dans « cat »,
+      // le script crée tout seul la section correspondante.
+      {
+        nom:  "PochPoch",
+        desc: "Le cost killer vocal qui refuse vos dépenses",
+        url:  "pochpoch/",               // ✅ en ligne : baiji.fr/pochpoch/
+        cat:  "Agents vocaux"
+      },
+      {
+        nom:  "Assistant fournisseurs",
+        desc: "Aide vocale pour rejoindre Carrefour sur SAP Business Network",
+        url:  "assistant-fournisseurs/", // ✅ en ligne : baiji.fr/assistant-fournisseurs/
+        cat:  "Agents vocaux"
       }
     ];
 
