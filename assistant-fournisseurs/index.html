@@ -1,17 +1,17 @@
 <!doctype html>
 <!--
   Page « Assistant fournisseurs Carrefour – SAP Business Network »
-  Version 1.0.1 – 31/10/2026
+  Version 1.1.0 – 31/10/2026
   En ligne : https://baiji.fr/assistant-fournisseurs/
 
   Historique :
    • 1.0.0 : première version (étapes, bon à savoir, agent vocal, FR/EN)
    • 1.0.1 : mise en ligne sur baiji.fr + « noindex » (page non référencée par Google)
+   • 1.1.0 : page en français uniquement (bouton English, traductions et script de bascule retirés)
 
   À quoi sert cette page ?
   - Elle explique en 4 étapes comment rejoindre Carrefour sur SAP Business Network.
   - Elle intègre l'agent vocal ElevenLabs (bulle en bas à droite) pour répondre aux questions.
-  - Elle est bilingue FR / EN avec un bouton de bascule (aucun rechargement de page).
 
   Comment l'héberger ?
   - Un seul fichier, aucune dépendance à installer : déposez-le tel quel sur
@@ -59,19 +59,8 @@
     }
     .conteneur { max-width: 760px; margin: 0 auto; }
 
-    .barre {
-      display: flex; justify-content: space-between; align-items: center; gap: 12px;
-    }
     .marque { font-weight: 800; letter-spacing: .5px; font-size: 1.1rem; }
     .marque span { color: #fff; border-bottom: 3px solid var(--rouge); padding-bottom: 2px; }
-
-    /* Bouton de changement de langue */
-    .langue {
-      background: rgba(255,255,255,.15); color: #fff;
-      border: 1px solid rgba(255,255,255,.4); border-radius: 999px;
-      padding: 6px 14px; font-weight: 600; cursor: pointer; font-size: .9rem;
-    }
-    .langue:hover { background: rgba(255,255,255,.25); }
 
     h1 { font-size: clamp(1.5rem, 5vw, 2.1rem); margin: 28px 0 8px; line-height: 1.2; }
     .sous-titre { margin: 0; opacity: .9; }
@@ -126,16 +115,9 @@
 
   <header>
     <div class="conteneur">
-      <div class="barre">
-        <div class="marque"><span>Carrefour</span></div>
-        <!-- Le texte de ce bouton est mis à jour par le script en bas de page -->
-        <button class="langue" id="btn-langue" type="button">English</button>
-      </div>
-      <h1 data-fr="Rejoindre Carrefour sur SAP Business Network"
-          data-en="Join Carrefour on SAP Business Network">Rejoindre Carrefour sur SAP Business Network</h1>
-      <p class="sous-titre"
-         data-fr="Anciennement Ariba Network. Un assistant vocal vous guide pas à pas."
-         data-en="Formerly Ariba Network. A voice assistant guides you step by step.">Anciennement Ariba Network. Un assistant vocal vous guide pas à pas.</p>
+      <div class="marque"><span>Carrefour</span></div>
+      <h1>Rejoindre Carrefour sur SAP Business Network</h1>
+      <p class="sous-titre">Anciennement Ariba Network. Un assistant vocal vous guide pas à pas.</p>
     </div>
   </header>
 
@@ -151,55 +133,49 @@
           </svg>
         </div>
         <div>
-          <h2 data-fr="Une question ? Parlez à l'assistant"
-              data-en="A question? Talk to the assistant">Une question ? Parlez à l'assistant</h2>
-          <p data-fr="Cliquez sur la bulle en bas à droite de l'écran, autorisez le micro, puis posez votre question à voix haute, en français ou en anglais."
-             data-en="Click the bubble at the bottom right of the screen, allow the microphone, then ask your question out loud, in French or English.">Cliquez sur la bulle en bas à droite de l'écran, autorisez le micro, puis posez votre question à voix haute, en français ou en anglais.</p>
+          <h2>Une question ? Parlez à l'assistant</h2>
+          <p>Cliquez sur la bulle en bas à droite de l'écran, autorisez le micro, puis posez votre question à voix haute.</p>
         </div>
       </section>
 
       <!-- Les étapes du process -->
       <section class="carte">
-        <h2 class="section" data-fr="Les étapes" data-en="The steps">Les étapes</h2>
+        <h2 class="section">Les étapes</h2>
         <ol class="etapes">
           <li>
-            <strong data-fr="Repérez l'e-mail d'invitation" data-en="Find the invitation email">Repérez l'e-mail d'invitation</strong>
-            <span data-fr="Il vient de SAP Business Network. Pensez à vérifier vos courriers indésirables."
-                  data-en="It comes from SAP Business Network. Check your spam folder.">Il vient de SAP Business Network. Pensez à vérifier vos courriers indésirables.</span>
+            <strong>Repérez l'e-mail d'invitation</strong>
+            <span>Il vient de SAP Business Network. Pensez à vérifier vos courriers indésirables.</span>
           </li>
           <li>
-            <strong data-fr="Acceptez la relation commerciale" data-en="Accept the trading relationship">Acceptez la relation commerciale</strong>
-            <span data-fr="Cliquez sur le lien de l'e-mail pour accepter la demande de Carrefour."
-                  data-en="Click the link in the email to accept Carrefour's request.">Cliquez sur le lien de l'e-mail pour accepter la demande de Carrefour.</span>
+            <strong>Acceptez la relation commerciale</strong>
+            <span>Cliquez sur le lien de l'e-mail pour accepter la demande de Carrefour.</span>
           </li>
           <li>
-            <strong data-fr="Créez votre compte ou connectez-vous" data-en="Register or log in">Créez votre compte ou connectez-vous</strong>
-            <span data-fr="Si votre entreprise a déjà un compte, connectez-vous avec : ne créez pas de doublon."
-                  data-en="If your company already has an account, log in with it: do not create a duplicate.">Si votre entreprise a déjà un compte, connectez-vous avec : ne créez pas de doublon.</span>
+            <strong>Créez votre compte ou connectez-vous</strong>
+            <span>Si votre entreprise a déjà un compte, connectez-vous avec : ne créez pas de doublon.</span>
           </li>
           <li>
-            <strong data-fr="Complétez votre profil" data-en="Complete your profile">Complétez votre profil</strong>
-            <span data-fr="Une fois la relation active, les commandes Carrefour apparaissent dans votre compte."
-                  data-en="Once the relationship is active, Carrefour orders appear in your account.">Une fois la relation active, les commandes Carrefour apparaissent dans votre compte.</span>
+            <strong>Complétez votre profil</strong>
+            <span>Une fois la relation active, les commandes Carrefour apparaissent dans votre compte.</span>
           </li>
         </ol>
       </section>
 
       <!-- Points qui reviennent souvent -->
       <section class="carte">
-        <h2 class="section" data-fr="Bon à savoir" data-en="Good to know">Bon à savoir</h2>
+        <h2 class="section">Bon à savoir</h2>
         <div class="astuces">
           <div class="astuce">
-            <strong data-fr="Le compte Standard est gratuit" data-en="The Standard account is free">Le compte Standard est gratuit</strong>
-            <span data-fr="Il suffit pour travailler avec Carrefour." data-en="It is all you need to work with Carrefour.">Il suffit pour travailler avec Carrefour.</span>
+            <strong>Le compte Standard est gratuit</strong>
+            <span>Il suffit pour travailler avec Carrefour.</span>
           </div>
           <div class="astuce">
-            <strong data-fr="Invitation introuvable ?" data-en="Can't find the invitation?">Invitation introuvable ?</strong>
-            <span data-fr="Demandez à votre acheteur Carrefour de la renvoyer." data-en="Ask your Carrefour buyer to resend it.">Demandez à votre acheteur Carrefour de la renvoyer.</span>
+            <strong>Invitation introuvable ?</strong>
+            <span>Demandez à votre acheteur Carrefour de la renvoyer.</span>
           </div>
           <div class="astuce">
-            <strong data-fr="Jamais de mot de passe à l'oral" data-en="Never say a password out loud">Jamais de mot de passe à l'oral</strong>
-            <span data-fr="L'assistant ne vous le demandera jamais." data-en="The assistant will never ask for it.">L'assistant ne vous le demandera jamais.</span>
+            <strong>Jamais de mot de passe à l'oral</strong>
+            <span>L'assistant ne vous le demandera jamais.</span>
           </div>
         </div>
       </section>
@@ -207,8 +183,7 @@
     </div>
   </main>
 
-  <footer data-fr="Carrefour – Achats non marchands · Assistant automatique, ne remplace pas votre acheteur"
-          data-en="Carrefour – Non-trade procurement · Automated assistant, does not replace your buyer">Carrefour – Achats non marchands · Assistant automatique, ne remplace pas votre acheteur</footer>
+  <footer>Carrefour – Achats non marchands · Assistant automatique, ne remplace pas votre acheteur</footer>
 
   <!--
     ===== Agent vocal ElevenLabs =====
@@ -218,37 +193,5 @@
   -->
   <elevenlabs-convai agent-id="agent_5001m682hzn4e77rpyj4a2s51aef"></elevenlabs-convai>
   <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
-
-  <script>
-    // ===== Bascule de langue FR / EN =====
-    // Principe : chaque texte traduisible porte deux attributs, data-fr et data-en.
-    // Au clic, on recopie le bon attribut dans le contenu de l'élément.
-
-    // 1. Langue de départ : celle du navigateur (anglais si elle ne commence pas par "fr")
-    let langue = (navigator.language || 'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en';
-
-    function appliquerLangue() {
-      // Remplace le texte de chaque élément traduisible
-      document.querySelectorAll('[data-fr]').forEach(el => {
-        el.textContent = el.dataset[langue];
-      });
-      // Met à jour la langue de la page (utile aux lecteurs d'écran)
-      document.documentElement.lang = langue;
-      // Le bouton propose toujours l'autre langue
-      document.getElementById('btn-langue').textContent = langue === 'fr' ? 'English' : 'Français';
-      // Demande à l'agent vocal de démarrer dans la même langue
-      document.querySelector('elevenlabs-convai')
-        ?.setAttribute('override-language', langue);
-    }
-
-    // 2. Au clic sur le bouton : on inverse la langue puis on réaffiche
-    document.getElementById('btn-langue').addEventListener('click', () => {
-      langue = langue === 'fr' ? 'en' : 'fr';
-      appliquerLangue();
-    });
-
-    // 3. Premier affichage
-    appliquerLangue();
-  </script>
 </body>
 </html>
