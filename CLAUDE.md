@@ -4,6 +4,7 @@ Site GitHub Pages de svaug12345 : héberge des applis web (PWA), publiées aussi
 
 - `QR/` — Lecteur QR code (dépôt séparé svaug12345/QR, servi sous /QR/)
 - `paraphe/` — Paraphe, appli pour créer sa police manuscrite (s'appelait Plume ; `plume/` ne fait plus que rediriger)
+- `pressoir/` — « Pressoir vidéo » : compression vidéo 100 % locale (WebCodecs + mp4-muxer), lecture du MP4 maison (boîte moov) ; version dans le commentaire d'en-tête ; liée depuis l'accueil (« Applications »)
 - `atelier-polices/` — Atelier de polices (page autonome)
 - `agent-double/` — page de politique de confidentialité du jeu Android Agent Double (code : dépôt svaug12345/undercover)
 - `assistant-fournisseurs/` — page d'aide fournisseurs Carrefour (SAP Business Network) avec agent vocal ElevenLabs ; version dans le commentaire d'en-tête de `index.html` ; liée depuis la page d’accueil (section « Agents vocaux »), mais toujours en « noindex »

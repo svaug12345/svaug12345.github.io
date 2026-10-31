@@ -1,0 +1,799 @@
+<!doctype html>
+<!--
+  ============================================================
+  baiji.fr/pressoir/ — Pressoir vidéo
+  Version 1.0.1
+  ------------------------------------------------------------
+  Compresse une vidéo (ex. 4K de l'appareil photo) directement
+  dans le navigateur, avec l'encodeur matériel du téléphone
+  (API WebCodecs). Aucun envoi sur internet.
+  Historique :
+   • v1.0.0 : première version (artifact Claude)
+   • v1.0.1 : version autonome pour baiji.fr (téléchargement direct)
+  ============================================================
+-->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pressoir vidéo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Mise en page : une colonne étroite, pensée pour le téléphone, en trois temps (fichier → réglage → résultat). */
+:root {
+  --bg: #eef2ef;        /* fond vert-gris très clair */
+  --surface: #ffffff;   /* cartes */
+  --ink: #14211d;       /* texte principal */
+  --muted: #5b6b65;     /* texte secondaire */
+  --line: #d3ddd8;      /* filets et bordures */
+  --accent: #d1501a;    /* orange « signal » : action principale, progression */
+  --accent-ink: #ffffff;
+  --ok: #1f7a4d;
+  --bad: #b3261e;
+  --display: "Bricolage Grotesque", "Arial Narrow", system-ui, sans-serif;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "Roboto Mono", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1513; --surface: #17211e; --ink: #e6eeea; --muted: #93a59e;
+    --line: #2a3833; --accent: #ff7a3d; --accent-ink: #1a0d06; --ok: #5fd39a; --bad: #ff8a80;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1513; --surface: #17211e; --ink: #e6eeea; --muted: #93a59e;
+  --line: #2a3833; --accent: #ff7a3d; --accent-ink: #1a0d06; --ok: #5fd39a; --bad: #ff8a80;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 var(--body); }
+.wrap {
+  max-width: 560px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 40px;
+  display: flex; flex-direction: column; gap: 18px;
+}
+header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+h1 { font: 800 2rem/1 var(--display); letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+h1 span { color: var(--accent); }
+.version { font: 600 0.75rem var(--mono); color: var(--muted); border: 1px solid var(--line); border-radius: 99px; padding: 2px 10px; }
+.lede { margin: 0; color: var(--muted); max-width: 60ch; }
+
+section { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+h2 { margin: 0; font: 600 0.75rem var(--body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+
+/* Zone de choix du fichier */
+.pick { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 22px 12px; border: 2px dashed var(--line); border-radius: 12px; cursor: pointer; text-align: center; }
+.pick:hover, .pick:focus-within { border-color: var(--accent); }
+.pick strong { font: 600 1.1rem var(--display); }
+.pick small { color: var(--muted); }
+.pick input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+
+/* Fiche technique du fichier choisi */
+dl.specs { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; font-size: 0.92rem; }
+dl.specs dt { color: var(--muted); }
+dl.specs dd { margin: 0; font-family: var(--mono); font-size: 0.85rem; font-variant-numeric: tabular-nums; min-width: 0; overflow-wrap: anywhere; }
+
+/* Préréglages */
+.presets { display: flex; flex-direction: column; gap: 8px; }
+.preset { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
+.preset:has(input:checked) { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.preset input { accent-color: var(--accent); width: 18px; height: 18px; margin: 0; }
+.preset b { display: block; font-weight: 600; }
+.preset .sub { color: var(--muted); font-size: 0.85rem; }
+.preset .est { font: 600 0.85rem var(--mono); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+
+button { font: 600 1rem var(--body); border-radius: 10px; padding: 14px 16px; border: 0; cursor: pointer; }
+button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.primary { background: var(--accent); color: var(--accent-ink); }
+.primary:disabled { opacity: 0.45; cursor: not-allowed; }
+.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+.row > button { flex: 1 1 140px; }
+
+/* Progression */
+.bar { height: 14px; background: var(--bg); border-radius: 99px; overflow: hidden; border: 1px solid var(--line); }
+.bar i { display: block; height: 100%; width: 0%; background: var(--accent); transition: width .2s linear; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-variant-numeric: tabular-nums; }
+.stats div { display: flex; flex-direction: column; min-width: 0; }
+.stats span { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.stats b { font: 600 1.05rem var(--mono); }
+.big { font: 800 2.6rem/1 var(--display); font-variant-numeric: tabular-nums; }
+
+.result-sizes { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; font-family: var(--mono); }
+.result-sizes .arrow { color: var(--muted); }
+.gain { color: var(--ok); font-weight: 600; }
+video { width: 100%; border-radius: 10px; background: #000; max-height: 50vh; }
+
+.msg { margin: 0; font-size: 0.92rem; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); }
+.msg.err { border-color: var(--bad); color: var(--bad); }
+.note { color: var(--muted); font-size: 0.85rem; margin: 0; }
+@media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header>
+    <h1>Pressoir <span>vidéo</span></h1>
+    <span class="version" id="version">v1.0.1</span>
+  </header>
+  <p class="lede">Compresse une vidéo directement dans ton téléphone, avec son encodeur matériel. Rien n'est envoyé sur internet, et il n'y a pas de pub.</p>
+
+  <p class="msg err" id="unsupported" hidden>Ce navigateur ne gère pas WebCodecs. Ouvre la page dans Chrome (Android ou ordinateur).</p>
+
+  <!-- 1. Choix du fichier -->
+  <section>
+    <h2>1 · Vidéo</h2>
+    <label class="pick" id="pick">
+      <strong id="pickTitle">Choisir une vidéo</strong>
+      <small id="pickSub">MP4 ou MOV, par exemple C0051.MP4 de l'appareil photo</small>
+      <input type="file" id="file" accept="video/mp4,video/quicktime,.mp4,.mov,.m4v">
+    </label>
+    <dl class="specs" id="specs" hidden></dl>
+  </section>
+
+  <!-- 2. Réglage -->
+  <section>
+    <h2>2 · Réglage</h2>
+    <div class="presets" id="presets"></div>
+    <p class="note" id="estNote">Tailles estimées pour 1 minute de vidéo.</p>
+    <div class="row">
+      <button class="primary" id="go" disabled>Compresser</button>
+    </div>
+  </section>
+
+  <!-- 3. Progression et résultat -->
+  <section id="work" hidden>
+    <h2 id="workTitle">3 · Compression</h2>
+    <div class="big" id="pct">0 %</div>
+    <div class="bar"><i id="barFill"></i></div>
+    <div class="stats">
+      <div><span>Images</span><b id="stFrames">0 / 0</b></div>
+      <div><span>Vitesse</span><b id="stSpeed">–</b></div>
+      <div><span>Reste</span><b id="stEta">–</b></div>
+    </div>
+    <p class="note" id="phase">Préparation…</p>
+    <div class="row"><button class="ghost" id="cancel">Annuler</button></div>
+  </section>
+
+  <section id="done" hidden>
+    <h2>3 · Résultat</h2>
+    <div class="result-sizes"><span id="rBefore"></span><span class="arrow">→</span><b id="rAfter"></b><span class="gain" id="rGain"></span></div>
+    <video id="preview" controls playsinline hidden></video>
+    <div class="row">
+      <button class="primary" id="save">Enregistrer la vidéo</button>
+      <button class="ghost" id="again">Autre vidéo</button>
+    </div>
+    <p class="note" id="saveNote"></p>
+  </section>
+
+  <p class="msg err" id="error" hidden></p>
+</div>
+
+<!-- mp4-muxer : assemble les images encodées dans un fichier .mp4 (global Mp4Muxer) -->
+<script src="https://cdn.jsdelivr.net/npm/mp4-muxer@5.1.3/build/mp4-muxer.js"></script>
+<script>
+/* ==========================================================================
+   Pressoir vidéo — compression vidéo 100 % locale avec WebCodecs
+   --------------------------------------------------------------------------
+   Principe, en 4 étapes :
+   1. On lit la « table des matières » du MP4 (la boîte « moov ») pour savoir
+      où se trouve chaque image et chaque morceau de son dans le fichier.
+   2. On donne les images compressées au décodeur matériel du téléphone
+      (VideoDecoder), qui les transforme en images brutes.
+   3. On réduit chaque image (4K → 1080p) sur un canvas, puis on la donne à
+      l'encodeur matériel (VideoEncoder) en H.264 avec un débit plus bas.
+   4. mp4-muxer range tout dans un nouveau fichier MP4.
+   On ne charge jamais les 487 Mo d'un coup : on lit le fichier par fenêtres.
+   ========================================================================== */
+
+const APP_VERSION = "1.0.1";
+document.getElementById("version").textContent = "v" + APP_VERSION;
+
+// ---- Préréglages : hauteur cible (côté court) et débit vidéo en bits/s ----
+const PRESETS = [
+  { id: "montage", name: "Pour le montage", sub: "1080p · 12 Mb/s · qualité quasi intacte", short: 1080, vbr: 12e6 },
+  { id: "partage", name: "Pour partager",   sub: "1080p · 6 Mb/s · WhatsApp, mail, NAS",  short: 1080, vbr: 6e6 },
+  { id: "leger",   name: "Léger",           sub: "720p · 3 Mb/s · le plus petit",         short: 720,  vbr: 3e6 },
+];
+const AUDIO_BITRATE = 192000; // 192 kb/s en AAC : très bon pour la voix et la musique
+
+const $ = (id) => document.getElementById(id);
+let state = { file: null, info: null, cancelled: false, output: null };
+
+// ---------- Petits utilitaires d'affichage ----------
+function fmtSize(bytes) {
+  if (bytes >= 1e9) return (bytes / 1e9).toFixed(2).replace(".", ",") + " Go";
+  if (bytes >= 1e6) return Math.round(bytes / 1e6) + " Mo";
+  return Math.round(bytes / 1e3) + " ko";
+}
+function fmtTime(sec) {
+  if (!isFinite(sec)) return "–";
+  sec = Math.round(sec);
+  const m = Math.floor(sec / 60), s = sec % 60;
+  return m ? `${m} min ${String(s).padStart(2, "0")}` : `${s} s`;
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const even = (n) => Math.max(2, Math.round(n / 2) * 2); // H.264 exige des dimensions paires
+
+// ---------- Affichage des préréglages avec la taille estimée ----------
+function renderPresets() {
+  const dur = state.info ? state.info.duration : 60; // sans fichier : estimation pour 1 min
+  $("presets").innerHTML = PRESETS.map((p, i) => {
+    const bytes = ((p.vbr + AUDIO_BITRATE) * dur) / 8;
+    return `<label class="preset">
+      <input type="radio" name="preset" id="preset-${p.id}" value="${p.id}" ${i === 0 ? "checked" : ""}>
+      <span><b>${p.name}</b><span class="sub">${p.sub}</span></span>
+      <span class="est">≈ ${fmtSize(bytes)}</span>
+    </label>`;
+  }).join("");
+  $("estNote").textContent = state.info
+    ? `Tailles estimées pour ta vidéo (${fmtTime(dur)}). Original : ${fmtSize(state.file.size)}.`
+    : "Tailles estimées pour 1 minute de vidéo.";
+}
+renderPresets();
+
+if (!("VideoEncoder" in window) || !("VideoDecoder" in window)) $("unsupported").hidden = false;
+
+/* ==========================================================================
+   1. LECTURE DU CONTENEUR MP4
+   Un MP4 est une suite de « boîtes » : [taille sur 4 octets][type sur 4 lettres][contenu].
+   Certaines boîtes en contiennent d'autres (moov > trak > mdia > minf > stbl).
+   ========================================================================== */
+
+// Lit 4 octets comme un texte (le type d'une boîte, ex. "moov")
+function fourcc(dv, o) {
+  return String.fromCharCode(dv.getUint8(o), dv.getUint8(o + 1), dv.getUint8(o + 2), dv.getUint8(o + 3));
+}
+
+// Parcourt les boîtes situées entre start et end dans un DataView
+function* boxes(dv, start, end) {
+  let p = start;
+  while (p + 8 <= end) {
+    let size = dv.getUint32(p), hdr = 8;
+    const type = fourcc(dv, p + 4);
+    if (size === 1) { size = Number(dv.getBigUint64(p + 8)); hdr = 16; } // taille sur 64 bits
+    else if (size === 0) size = end - p;                                  // « jusqu'à la fin »
+    if (size < hdr || p + size > end) break;
+    yield { type, start: p, data: p + hdr, end: p + size };
+    p += size;
+  }
+}
+
+// Descend un chemin de boîtes, ex. ["mdia","minf","stbl"]
+function find(dv, box, path) {
+  let cur = box;
+  for (const t of path) {
+    let f = null;
+    for (const b of boxes(dv, cur.data, cur.end)) if (b.type === t) { f = b; break; }
+    if (!f) return null;
+    cur = f;
+  }
+  return cur;
+}
+
+// Cherche une boîte en profondeur (utile pour esds, parfois rangée dans une boîte "wave")
+function findDeep(dv, start, end, type) {
+  for (const b of boxes(dv, start, end)) {
+    if (b.type === type) return b;
+    if (b.type === "wave") { const r = findDeep(dv, b.data, b.end, type); if (r) return r; }
+  }
+  return null;
+}
+
+// Trouve la boîte moov dans le fichier sans tout charger : on saute de boîte en boîte.
+// Sur les appareils photo, elle est souvent à la FIN du fichier, après les données (mdat).
+async function readMoov(file) {
+  let pos = 0;
+  while (pos < file.size) {
+    const h = new DataView(await file.slice(pos, pos + 16).arrayBuffer());
+    if (h.byteLength < 8) break;
+    let size = h.getUint32(0);
+    const type = fourcc(h, 4);
+    if (size === 1) size = Number(h.getBigUint64(8));
+    else if (size === 0) size = file.size - pos;
+    if (size < 8) break;
+    if (type === "moov") return new DataView(await file.slice(pos, pos + size).arrayBuffer());
+    pos += size;
+  }
+  throw new Error("Ce fichier n'est pas un MP4/MOV lisible (table « moov » introuvable).");
+}
+
+// Codec string WebCodecs à partir de la boîte avcC (H.264) : "avc1.PPCCLL"
+function avcCodec(d) {
+  const h = (x) => x.toString(16).padStart(2, "0");
+  return `avc1.${h(d[1])}${h(d[2])}${h(d[3])}`;
+}
+// Codec string pour H.265/HEVC (format défini par la norme ISO 14496-15)
+function hevcCodec(prefix, d) {
+  const space = d[1] >> 6, tier = (d[1] >> 5) & 1, idc = d[1] & 31;
+  let compat = ((d[2] << 24) | (d[3] << 16) | (d[4] << 8) | d[5]) >>> 0, rev = 0;
+  for (let i = 0; i < 32; i++) { rev = ((rev << 1) | (compat & 1)) >>> 0; compat >>>= 1; } // bits inversés
+  const cons = [d[6], d[7], d[8], d[9], d[10], d[11]];
+  while (cons.length && cons[cons.length - 1] === 0) cons.pop();
+  let s = `${prefix}.${["", "A", "B", "C"][space]}${idc}.${rev.toString(16)}.${tier ? "H" : "L"}${d[12]}`;
+  if (cons.length) s += "." + cons.map((x) => x.toString(16)).join(".");
+  return s;
+}
+
+// Lit la boîte esds (config AAC) : renvoie la « DecoderSpecificInfo » + le codec string
+function parseEsds(dv, box) {
+  let p = box.data + 4; // on saute version + flags
+  const desc = () => {
+    const tag = dv.getUint8(p++); let len = 0, b;
+    do { b = dv.getUint8(p++); len = (len << 7) | (b & 0x7f); } while (b & 0x80);
+    return { tag, len };
+  };
+  let d = desc(); if (d.tag !== 3) return null;               // ES_Descriptor
+  p += 2; const fl = dv.getUint8(p++);
+  if (fl & 0x80) p += 2; if (fl & 0x40) p += dv.getUint8(p) + 1; if (fl & 0x20) p += 2;
+  d = desc(); if (d.tag !== 4) return null;                   // DecoderConfigDescriptor
+  const oti = dv.getUint8(p); p += 13;
+  d = desc(); if (d.tag !== 5) return null;                   // DecoderSpecificInfo
+  const dsi = new Uint8Array(dv.buffer.slice(dv.byteOffset + p, dv.byteOffset + p + d.len));
+  return { dsi, codec: `mp4a.${oti.toString(16)}.${dsi[0] >> 3}` };
+}
+
+// Lit les tables d'échantillons (où est chaque image, sa taille, son horodatage)
+function readTables(dv, stbl) {
+  const t = {};
+  const b = (name) => find(dv, stbl, [name]);
+  const u32 = (o) => dv.getUint32(o);
+  // stts : durées (« N échantillons de durée D »)
+  let x = b("stts"); t.stts = [];
+  for (let i = 0, n = u32(x.data + 4); i < n; i++) t.stts.push([u32(x.data + 8 + i * 8), u32(x.data + 12 + i * 8)]);
+  // ctts : décalage d'affichage (images B), facultatif
+  x = b("ctts"); t.ctts = null;
+  if (x) { t.ctts = []; for (let i = 0, n = u32(x.data + 4); i < n; i++) t.ctts.push([u32(x.data + 8 + i * 8), dv.getInt32(x.data + 12 + i * 8)]); }
+  // stss : liste des images clés ; absente = toutes les images sont des clés
+  x = b("stss"); t.sync = null;
+  if (x) { t.sync = new Set(); for (let i = 0, n = u32(x.data + 4); i < n; i++) t.sync.add(u32(x.data + 8 + i * 4)); }
+  // stsz : taille de chaque échantillon
+  x = b("stsz"); t.constSize = u32(x.data + 4); t.count = u32(x.data + 8);
+  t.sizes = t.constSize ? null : new Uint32Array(dv.buffer.slice(dv.byteOffset + x.data + 12, dv.byteOffset + x.data + 12 + t.count * 4)).map((v) => ((v & 0xff) << 24 | (v & 0xff00) << 8 | (v >> 8) & 0xff00 | v >>> 24) >>> 0);
+  // stsc : combien d'échantillons par « chunk » (bloc contigu dans le fichier)
+  x = b("stsc"); t.stsc = [];
+  for (let i = 0, n = u32(x.data + 4); i < n; i++) t.stsc.push([u32(x.data + 8 + i * 12), u32(x.data + 12 + i * 12)]);
+  // stco / co64 : position de chaque chunk dans le fichier
+  x = b("stco"); t.chunks = [];
+  if (x) for (let i = 0, n = u32(x.data + 4); i < n; i++) t.chunks.push(u32(x.data + 8 + i * 4));
+  else { x = b("co64"); for (let i = 0, n = u32(x.data + 4); i < n; i++) t.chunks.push(Number(dv.getBigUint64(x.data + 8 + i * 8))); }
+  return t;
+}
+
+// Parcourt les chunks en appelant cb(numéroChunk, position, nbEchantillons)
+function eachChunk(t, cb) {
+  let e = 0;
+  for (let c = 1; c <= t.chunks.length; c++) {
+    while (e + 1 < t.stsc.length && t.stsc[e + 1][0] <= c) e++;
+    cb(c, t.chunks[c - 1], t.stsc[e][1]);
+  }
+}
+
+// Construit la liste des échantillons {offset, size, dts, cts, dur, sync}
+function buildSamples(t) {
+  const out = [];
+  eachChunk(t, (c, off, spc) => {
+    for (let k = 0; k < spc && out.length < t.count; k++) {
+      const size = t.sizes ? t.sizes[out.length] : t.constSize;
+      out.push({ offset: off, size }); off += size;
+    }
+  });
+  let i = 0, dts = 0;
+  for (const [n, d] of t.stts) for (let k = 0; k < n && i < out.length; k++, i++) { out[i].dts = dts; out[i].dur = d; dts += d; }
+  i = 0;
+  if (t.ctts) for (const [n, o] of t.ctts) for (let k = 0; k < n && i < out.length; k++, i++) out[i].cts = out[i].dts + o;
+  out.forEach((s, j) => { if (s.cts === undefined) s.cts = s.dts; s.sync = t.sync ? t.sync.has(j + 1) : true; });
+  return out;
+}
+
+// Analyse complète : pistes vidéo et audio
+async function probe(file) {
+  const dv = await readMoov(file);
+  const moov = { data: 8, end: dv.byteLength };
+  const info = { video: null, audio: null };
+
+  for (const trak of boxes(dv, moov.data, moov.end)) {
+    if (trak.type !== "trak") continue;
+    const mdia = find(dv, trak, ["mdia"]);
+    const hdlr = find(dv, mdia, ["hdlr"]);
+    const handler = fourcc(dv, hdlr.data + 8);
+    const mdhd = find(dv, mdia, ["mdhd"]);
+    const v = dv.getUint8(mdhd.data);
+    const timescale = dv.getUint32(mdhd.data + 4 + (v ? 16 : 8));
+    const mdur = v ? Number(dv.getBigUint64(mdhd.data + 20)) : dv.getUint32(mdhd.data + 12);
+    const stbl = find(dv, mdia, ["minf", "stbl"]);
+    const stsd = find(dv, stbl, ["stsd"]);
+    const entry = boxes(dv, stsd.data + 8, stsd.end).next().value;
+    const e = entry.data;
+
+    if (handler === "vide" && !info.video) {
+      // Rotation (vidéos de téléphone filmées en portrait) : lue dans la matrice de tkhd
+      const tkhd = find(dv, trak, ["tkhd"]);
+      const tv = dv.getUint8(tkhd.data);
+      const m = tkhd.data + 4 + (tv ? 32 : 20) + 16;
+      const a = dv.getInt32(m), bb = dv.getInt32(m + 4);
+      let rotation = 0;
+      if (a === 0 && bb === 0x10000) rotation = 90;
+      else if (a === -0x10000) rotation = 180;
+      else if (a === 0 && bb === -0x10000) rotation = 270;
+
+      const cfgBox = findDeep(dv, e + 78, entry.end, "avcC") || findDeep(dv, e + 78, entry.end, "hvcC");
+      if (!cfgBox) throw new Error(`Codec vidéo « ${entry.type} » non géré (H.264 ou H.265 attendu).`);
+      const description = new Uint8Array(dv.buffer.slice(cfgBox.start + 8, cfgBox.end));
+      const codec = cfgBox.type === "avcC" ? avcCodec(description) : hevcCodec(entry.type, description);
+      const tables = readTables(dv, stbl);
+      info.video = {
+        codec, description, rotation, timescale,
+        width: dv.getUint16(e + 24), height: dv.getUint16(e + 26),
+        samples: buildSamples(tables), duration: mdur / timescale,
+      };
+      info.video.fps = info.video.samples.length / info.video.duration;
+    }
+
+    if (handler === "soun" && !info.audio) {
+      // En-tête audio : version 0, 1 (QuickTime) ou 2 (QuickTime étendu)
+      const ver = dv.getUint16(e + 8);
+      let channels = dv.getUint16(e + 16), bits = dv.getUint16(e + 18);
+      let rate = dv.getUint32(e + 24) >>> 16, flags = 0, child = e + 28;
+      if (ver === 1) child += 16;
+      if (ver === 2) {
+        rate = dv.getFloat64(e + 32); channels = dv.getUint32(e + 40);
+        bits = dv.getUint32(e + 48); flags = dv.getUint32(e + 52); child = e + 64;
+      }
+      const tables = readTables(dv, stbl);
+      const a = { type: entry.type, channels, rate: Math.round(rate), bits, timescale, tables, duration: mdur / timescale };
+
+      if (entry.type === "mp4a") {
+        const esds = findDeep(dv, child, entry.end, "esds");
+        const cfg = esds && parseEsds(dv, esds);
+        if (cfg && cfg.codec.startsWith("mp4a.40")) { a.kind = "aac"; a.codec = cfg.codec; a.dsi = cfg.dsi; a.samples = buildSamples(tables); }
+      } else {
+        // PCM non compressé (cas des appareils Sony en XAVC S) : on note le format des nombres
+        const pcm = { twos: { le: false }, sowt: { le: true }, in24: { le: false, bits: 24 }, in32: { le: false, bits: 32 },
+                      lpcm: { le: !(flags & 2), float: !!(flags & 1) }, ipcm: { le: false } }[entry.type];
+        if (pcm) {
+          if (entry.type === "ipcm") {
+            const pc = findDeep(dv, child, entry.end, "pcmC");
+            if (pc) { pcm.le = !!(dv.getUint8(pc.data + 4) & 1); pcm.bits = dv.getUint8(pc.data + 5); }
+          }
+          a.kind = "pcm"; a.le = pcm.le; a.float = !!pcm.float; a.bits = pcm.bits || bits || 16;
+        }
+      }
+      info.audio = a;
+    }
+  }
+  if (!info.video) throw new Error("Aucune piste vidéo trouvée dans ce fichier.");
+  info.duration = info.video.duration;
+  return info;
+}
+
+/* ==========================================================================
+   Lecture par fenêtres : on lit des blocs de 8 Mo et on sert les
+   échantillons qui tombent dedans. Bien plus rapide qu'une lecture par image.
+   ========================================================================== */
+function windowReader(file) {
+  let wStart = 0, wEnd = 0, wBuf = null;
+  return async (offset, size) => {
+    if (!wBuf || offset < wStart || offset + size > wEnd) {
+      wStart = offset; wEnd = Math.min(file.size, offset + Math.max(size, 8 * 1024 * 1024));
+      wBuf = new Uint8Array(await file.slice(wStart, wEnd).arrayBuffer());
+    }
+    return wBuf.subarray(offset - wStart, offset - wStart + size);
+  };
+}
+
+/* ==========================================================================
+   2. CHOIX DU FICHIER
+   ========================================================================== */
+$("file").addEventListener("change", async (ev) => {
+  const file = ev.target.files[0];
+  if (!file) return;
+  hideError();
+  $("done").hidden = true;
+  state.file = file; state.info = null; $("go").disabled = true;
+  $("pickTitle").textContent = file.name;
+  $("pickSub").textContent = fmtSize(file.size) + " · analyse…";
+  try {
+    const info = await probe(file);
+    state.info = info;
+    const v = info.video, a = info.audio;
+    const audioTxt = !a ? "aucune piste son"
+      : a.kind === "aac" ? `AAC · ${a.rate} Hz · ${a.channels} canaux (recopié tel quel)`
+      : a.kind === "pcm" ? `PCM ${a.bits} bits · ${a.rate} Hz · ${a.channels} canaux (→ AAC)`
+      : `${a.type} (non géré, la vidéo sortira sans son)`;
+    $("specs").innerHTML = `
+      <dt>Image</dt><dd>${v.width} × ${v.height}${v.rotation ? ` · rotation ${v.rotation}°` : ""}</dd>
+      <dt>Cadence</dt><dd>${v.fps.toFixed(2).replace(".", ",")} images/s</dd>
+      <dt>Durée</dt><dd>${fmtTime(info.duration)}</dd>
+      <dt>Codec</dt><dd>${v.codec}</dd>
+      <dt>Son</dt><dd>${audioTxt}</dd>`;
+    $("specs").hidden = false;
+    $("pickSub").textContent = fmtSize(file.size) + " · touche pour changer";
+    renderPresets();
+    $("go").disabled = false;
+  } catch (err) {
+    $("pickSub").textContent = fmtSize(file.size);
+    showError(err.message || String(err));
+  }
+});
+
+/* ==========================================================================
+   3. COMPRESSION
+   ========================================================================== */
+$("go").addEventListener("click", () => run().catch((err) => {
+  releaseWakeLock();
+  $("work").hidden = true; $("go").disabled = false;
+  if (err && err.message === "cancelled") return;
+  showError(friendly(err));
+}));
+$("cancel").addEventListener("click", () => { state.cancelled = true; });
+
+let wakeLock = null;
+async function keepAwake() { try { wakeLock = await navigator.wakeLock.request("screen"); } catch { /* refusé : pas grave */ } }
+function releaseWakeLock() { try { wakeLock && wakeLock.release(); } catch {} wakeLock = null; }
+
+async function run() {
+  const { file, info } = state;
+  const preset = PRESETS.find((p) => p.id === document.querySelector('input[name="preset"]:checked').value);
+  const v = info.video;
+  state.cancelled = false;
+  hideError(); $("done").hidden = true; $("work").hidden = false; $("go").disabled = true;
+  setProgress(0, 0, v.samples.length, null, null);
+  keepAwake();
+
+  // ---- Taille de sortie : on réduit le côté court à la hauteur du préréglage ----
+  const scale = Math.min(1, preset.short / Math.min(v.width, v.height));
+  const outW = even(v.width * scale), outH = even(v.height * scale);
+
+  // ---- Décodeur : vérifie que le téléphone sait lire ce format ----
+  let decCfg = { codec: v.codec, codedWidth: v.width, codedHeight: v.height, description: v.description, hardwareAcceleration: "prefer-hardware" };
+  if (!(await VideoDecoder.isConfigSupported(decCfg)).supported) {
+    delete decCfg.hardwareAcceleration;
+    if (!(await VideoDecoder.isConfigSupported(decCfg)).supported)
+      throw new Error(`Ton téléphone ne sait pas décoder ce format vidéo (${v.codec}). Les vidéos 4:2:2 10 bits (XAVC HS) posent souvent ce problème : filme en 4:2:0 8 bits pour éviter ça.`);
+  }
+
+  // ---- Encodeur : H.264, en essayant plusieurs profils du meilleur au plus simple ----
+  let encCfg = null;
+  for (const codec of ["avc1.640033", "avc1.640028", "avc1.4d0028", "avc1.42e01f"]) {
+    for (const hw of ["prefer-hardware", "no-preference"]) {
+      const c = { codec, width: outW, height: outH, bitrate: preset.vbr, framerate: v.fps, hardwareAcceleration: hw,
+                  bitrateMode: "variable", latencyMode: "quality", avc: { format: "avc" } };
+      if ((await VideoEncoder.isConfigSupported(c)).supported) { encCfg = c; break; }
+    }
+    if (encCfg) break;
+  }
+  if (!encCfg) throw new Error("Aucun encodeur H.264 disponible sur cet appareil.");
+
+  // ---- Son : AAC recopié tel quel, ou PCM réencodé (AAC si possible, sinon Opus) ----
+  const a = info.audio;
+  let audioPlan = null;
+  if (a && a.kind === "aac") audioPlan = { mode: "copy", muxCodec: "aac" };
+  if (a && a.kind === "pcm" && "AudioEncoder" in window) {
+    for (const [codec, muxCodec] of [["mp4a.40.2", "aac"], ["opus", "opus"]]) {
+      const c = { codec, sampleRate: a.rate, numberOfChannels: a.channels, bitrate: AUDIO_BITRATE };
+      try { if ((await AudioEncoder.isConfigSupported(c)).supported) { audioPlan = { mode: "encode", muxCodec, cfg: c }; break; } } catch {}
+    }
+  }
+
+  // ---- Muxer : construit le MP4 en mémoire, avec la table moov au début (« fast start ») ----
+  const target = new Mp4Muxer.ArrayBufferTarget();
+  const muxer = new Mp4Muxer.Muxer({
+    target,
+    video: { codec: "avc", width: outW, height: outH, rotation: v.rotation },
+    audio: audioPlan ? { codec: audioPlan.muxCodec, numberOfChannels: a.channels, sampleRate: a.rate } : undefined,
+    fastStart: "in-memory",
+    firstTimestampBehavior: "offset", // recale le début à 0 si la première image n'est pas à 0
+  });
+
+  const read = windowReader(file);
+
+  // ===== Son d'abord (rapide) =====
+  if (audioPlan) {
+    $("phase").textContent = "Traitement du son…";
+    if (audioPlan.mode === "copy") await copyAac(a, read, muxer);
+    else await encodePcm(a, read, muxer, audioPlan.cfg);
+  }
+
+  // ===== Puis la vidéo =====
+  $("phase").textContent = `Vidéo : ${v.width}×${v.height} → ${outW}×${outH}, ${preset.vbr / 1e6} Mb/s`;
+  let encError = null, framesOut = 0;
+  const gop = Math.max(1, Math.round(v.fps * 2)); // une image clé toutes les 2 s (pratique pour le montage)
+
+  const encoder = new VideoEncoder({
+    output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+    error: (e) => { encError = e; },
+  });
+  encoder.configure(encCfg);
+
+  // Canvas qui sert à réduire l'image (inutile si la taille ne change pas)
+  const canvas = scale < 1 ? new OffscreenCanvas(outW, outH) : null;
+  const ctx = canvas && canvas.getContext("2d");
+  if (ctx) ctx.imageSmoothingQuality = "high";
+
+  const decoder = new VideoDecoder({
+    output: (frame) => {
+      let toEncode = frame;
+      if (ctx) {
+        ctx.drawImage(frame, 0, 0, outW, outH);
+        const init = { timestamp: frame.timestamp };
+        if (frame.duration != null) init.duration = frame.duration;
+        toEncode = new VideoFrame(canvas, init);
+        frame.close();
+      }
+      encoder.encode(toEncode, { keyFrame: framesOut % gop === 0 });
+      toEncode.close();
+      framesOut++;
+    },
+    error: (e) => { encError = e; },
+  });
+  decoder.configure(decCfg);
+
+  const total = v.samples.length, t0 = performance.now();
+  let lastUi = 0;
+  for (let i = 0; i < total; i++) {
+    if (state.cancelled || encError) break;
+    const s = v.samples[i];
+    const data = await read(s.offset, s.size);
+    decoder.decode(new EncodedVideoChunk({
+      type: s.sync ? "key" : "delta",
+      timestamp: Math.round((s.cts * 1e6) / v.timescale), // en microsecondes
+      duration: Math.round((s.dur * 1e6) / v.timescale),
+      data,
+    }));
+    // Contre-pression : on attend si décodeur ou encodeur sont débordés (sinon la mémoire explose)
+    while (!encError && !state.cancelled && (decoder.decodeQueueSize > 4 || encoder.encodeQueueSize > 4)) await sleep(4);
+    const now = performance.now();
+    if (now - lastUi > 250) { lastUi = now; updateStats(framesOut, total, t0, v); }
+  }
+
+  if (state.cancelled) { try { decoder.close(); encoder.close(); } catch {} throw new Error("cancelled"); }
+  if (!encError) { await decoder.flush(); await encoder.flush(); }
+  if (encError) { try { decoder.close(); encoder.close(); } catch {} throw encError; }
+  decoder.close(); encoder.close();
+
+  muxer.finalize();
+  updateStats(total, total, t0, v);
+  releaseWakeLock();
+  showResult(new Blob([target.buffer], { type: "video/mp4" }), audioPlan, a);
+}
+
+// --- AAC : on recopie les paquets sans les toucher (aucune perte) ---
+async function copyAac(a, read, muxer) {
+  const meta = { decoderConfig: { codec: a.codec, numberOfChannels: a.channels, sampleRate: a.rate, description: a.dsi } };
+  for (let i = 0; i < a.samples.length; i++) {
+    if (state.cancelled) throw new Error("cancelled");
+    const s = a.samples[i];
+    const data = new Uint8Array(await read(s.offset, s.size)); // copie : la fenêtre sera réutilisée
+    muxer.addAudioChunkRaw(data, "key", Math.round((s.cts * 1e6) / a.timescale), Math.round((s.dur * 1e6) / a.timescale), i === 0 ? meta : undefined);
+  }
+}
+
+// --- PCM : on convertit les octets en nombres décimaux puis on encode en AAC/Opus ---
+async function encodePcm(a, read, muxer, cfg) {
+  let err = null;
+  const enc = new AudioEncoder({ output: (c, m) => muxer.addAudioChunk(c, m), error: (e) => { err = e; } });
+  enc.configure(cfg);
+  const ch = a.channels, bps = a.bits / 8, frameBytes = ch * bps;
+  // Les chunks PCM : on calcule leur taille nous-mêmes (nb de trames × octets par trame)
+  const chunks = [];
+  eachChunk(a.tables, (c, off, spc) => chunks.push({ off, frames: spc }));
+  let done = 0;
+  for (const c of chunks) {
+    if (state.cancelled) throw new Error("cancelled");
+    if (err) throw err;
+    const bytes = await read(c.off, c.frames * frameBytes);
+    const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    const n = Math.floor(bytes.byteLength / frameBytes);
+    const planar = new Float32Array(n * ch); // format « planar » : tout le canal 1, puis tout le canal 2
+    for (let f = 0; f < n; f++) {
+      for (let k = 0; k < ch; k++) {
+        const o = f * frameBytes + k * bps;
+        let val;
+        if (a.float) val = bps === 8 ? dv.getFloat64(o, a.le) : dv.getFloat32(o, a.le);
+        else if (bps === 2) val = dv.getInt16(o, a.le) / 32768;
+        else if (bps === 3) {
+          const b0 = dv.getUint8(o), b1 = dv.getUint8(o + 1), b2 = dv.getUint8(o + 2);
+          const x = a.le ? (b0 | (b1 << 8) | (b2 << 16)) : ((b0 << 16) | (b1 << 8) | b2);
+          val = ((x << 8) >> 8) / 8388608; // extension de signe sur 24 bits
+        } else val = dv.getInt32(o, a.le) / 2147483648;
+        planar[k * n + f] = val;
+      }
+    }
+    const ad = new AudioData({ format: "f32-planar", sampleRate: a.rate, numberOfFrames: n, numberOfChannels: ch,
+                               timestamp: Math.round((done * 1e6) / a.rate), data: planar });
+    enc.encode(ad); ad.close();
+    done += n;
+    while (enc.encodeQueueSize > 8) await sleep(2);
+  }
+  await enc.flush();
+  if (err) throw err;
+  enc.close();
+}
+
+/* ==========================================================================
+   4. AFFICHAGE : progression, résultat, enregistrement
+   ========================================================================== */
+function setProgress(pct, done, total, speed, eta) {
+  $("pct").textContent = Math.floor(pct) + " %";
+  $("barFill").style.width = pct + "%";
+  $("stFrames").textContent = `${done} / ${total}`;
+  $("stSpeed").textContent = speed == null ? "–" : speed.toFixed(1).replace(".", ",") + "×";
+  $("stEta").textContent = eta == null ? "–" : fmtTime(eta);
+}
+function updateStats(done, total, t0, v) {
+  const el = (performance.now() - t0) / 1000;
+  const fps = done / Math.max(el, 0.001);
+  const speed = fps / v.fps; // 1× = temps réel
+  const eta = done ? (total - done) / fps : null;
+  setProgress((done / total) * 100, done, total, done ? speed : null, eta);
+}
+
+function showResult(blob, audioPlan, a) {
+  state.output = blob;
+  $("work").hidden = true; $("done").hidden = false; $("go").disabled = false;
+  $("rBefore").textContent = fmtSize(state.file.size);
+  $("rAfter").textContent = fmtSize(blob.size);
+  $("rGain").textContent = `−${Math.round((1 - blob.size / state.file.size) * 100)} %`;
+  let note = "";
+  if (a && !audioPlan) note = "Attention : le format du son n'est pas géré, la vidéo est sans son.";
+  else if (audioPlan && audioPlan.muxCodec === "opus") note = "Son encodé en Opus (AAC indisponible ici) : lisible partout sauf certains vieux lecteurs.";
+  $("saveNote").textContent = note;
+  try { $("preview").src = URL.createObjectURL(blob); $("preview").hidden = false; } catch { $("preview").hidden = true; }
+}
+
+// Enregistrement : passe par la capacité « downloads » de Claude (le cadre bloque les liens de téléchargement)
+$("save").addEventListener("click", async () => {
+  if (!state.output) return;
+  const name = state.file.name.replace(/\.[^.]+$/, "") + "_compresse.mp4";
+  // Hors de Claude (page en ligne sur baiji.fr) : simple lien de téléchargement
+  if (!window.claude) {
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(state.output);
+    link.download = name;
+    document.body.appendChild(link); link.click(); link.remove();
+    $("saveNote").textContent = `Téléchargée : ${name} (dossier Téléchargements)`;
+    return;
+  }
+  const downloads = await window.claude.use("downloads");
+  if (!downloads) { $("saveNote").textContent = "L'enregistrement n'est pas disponible dans cette vue."; return; }
+  try {
+    await downloads.save({ filename: name, data: state.output });
+    $("saveNote").textContent = `Enregistrée : ${name}`;
+  } catch (e) {
+    const msgs = {
+      declined: "Enregistrement annulé.",
+      too_large: "Fichier trop gros pour l'appli (200 Mo max) : choisis le réglage « Pour partager » ou « Léger ».",
+      rate_limited: "Une demande est déjà ouverte, réessaie dans un instant.",
+    };
+    $("saveNote").textContent = msgs[e && e.code] || "Impossible d'enregistrer ici.";
+  }
+});
+
+$("again").addEventListener("click", () => {
+  $("done").hidden = true; $("specs").hidden = true; state.output = null; state.info = null; state.file = null;
+  $("file").value = ""; $("pickTitle").textContent = "Choisir une vidéo";
+  $("pickSub").textContent = "MP4 ou MOV, par exemple C0051.MP4 de l'appareil photo";
+  $("go").disabled = true; renderPresets();
+});
+
+function friendly(err) {
+  const m = (err && err.message) || String(err);
+  if (/memory|allocation|RangeError/i.test(m)) return "Le téléphone manque de mémoire pour cette vidéo. Essaie le réglage « Léger », ou coupe la vidéo en morceaux.";
+  return "La compression a échoué : " + m;
+}
+function showError(m) { $("error").textContent = m; $("error").hidden = false; }
+function hideError() { $("error").hidden = true; }
+</script>
+
+</body>
+</html>
