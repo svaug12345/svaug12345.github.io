@@ -1,0 +1,426 @@
+<!doctype html>
+<!--
+  Page « Entretien tuteur » — simulateur vocal pour tuteurs de stagiaires en maths
+  Version 1.0.0 – 31/10/2026
+  En ligne : https://baiji.fr/entretien-tuteur/
+
+  Historique :
+   • 1.0.0 : première version — 4 profils de stagiaires (4 agents ElevenLabs),
+             fiche de visite pour chaque profil, appel vocal intégré,
+             bouton « Débrief » qui demande au stagiaire de sortir du rôle
+             et de donner un retour de coach.
+
+  Comment ça marche ?
+  - Chaque profil de stagiaire est un AGENT ElevenLabs différent (sa voix, son
+    caractère, son scénario). Leurs identifiants sont dans la liste PROFILS, en bas.
+  - Le tuteur choisit un profil → la « fiche de visite » s'affiche (ce qu'il a
+    observé en classe) → il clique sur « Commencer l'entretien ».
+  - Le navigateur demande le micro, puis le stagiaire parle en premier.
+  - Pendant l'appel : un chrono, une indication « qui parle », et deux boutons :
+      • « Débrief » : envoie le mot « débrief » à l'agent, qui sort alors de son
+        rôle et donne un retour de coach (ce qui a marché, ce qui a manqué, une piste).
+        On peut aussi simplement le dire à voix haute.
+      • « Raccrocher ».
+  - On utilise le SDK officiel « @elevenlabs/client » (comme PochPoch et la
+    Salle de négociation) pour garder une page sur mesure, sans bulle toute faite.
+  - Charte « SV » : teal #0f7c7b, Manrope + JetBrains Mono, boutons en capitales espacées.
+-->
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <!-- Indispensable pour un bon affichage sur téléphone -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entretien tuteur</title>
+  <!-- « noindex » : la page n'apparaît pas sur Google (accessible avec le lien) -->
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0f7c7b">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <!-- Polices de la charte SV -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* ---------- Couleurs : une seule source de vérité ---------- */
+    :root {
+      --teal:      #0f7c7b;   /* couleur signature SV */
+      --teal-clair:#e3f1f0;   /* fond des éléments sélectionnés */
+      --fond:      #f4f7f7;   /* fond de page, neutre vert-bleu */
+      --carte:     #ffffff;
+      --texte:     #17302f;
+      --doux:      #5b7270;   /* texte secondaire */
+      --bord:      #d5e1e0;
+      --rouge:     #c8364a;   /* raccrocher */
+    }
+    /* Mode sombre automatique (si le téléphone est en thème sombre) */
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --teal: #3fb3b1; --teal-clair: #12302f; --fond: #0d1717; --carte: #142221;
+        --texte: #e3eeed; --doux: #93aaa8; --bord: #24393a; --rouge: #ef6a7c;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--fond);
+      color: var(--texte);
+      font-family: "Manrope", system-ui, sans-serif;
+      line-height: 1.5;
+    }
+    main { max-width: 860px; margin: 0 auto; padding: 28px 16px 60px; }
+
+    /* ---------- En-tête ---------- */
+    .surtitre {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px; letter-spacing: .18em; text-transform: uppercase;
+      color: var(--teal);
+    }
+    h1 { font-size: clamp(26px, 5vw, 38px); font-weight: 800; margin: 6px 0 10px; line-height: 1.15; }
+    .intro { color: var(--doux); max-width: 640px; margin: 0 0 8px; }
+
+    /* Les 3 étapes, en petit, sous l'intro */
+    .etapes { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 14px 0 26px; padding: 0; list-style: none;
+              font-size: 14px; color: var(--doux); }
+    .etapes b { font-family: "JetBrains Mono", monospace; color: var(--teal); margin-right: 4px; }
+
+    h2 { font-size: 13px; letter-spacing: .16em; text-transform: uppercase; color: var(--doux); margin: 0 0 12px; }
+
+    /* ---------- Grille des 4 profils ---------- */
+    .profils { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+    .profil {
+      text-align: left; cursor: pointer; font: inherit; color: inherit;
+      background: var(--carte); border: 1.5px solid var(--bord); border-radius: 14px;
+      padding: 16px; transition: border-color .2s, transform .2s;
+    }
+    .profil:hover { border-color: var(--teal); transform: translateY(-2px); }
+    .profil[aria-pressed="true"] { border-color: var(--teal); background: var(--teal-clair); }
+    .profil .emoji { font-size: 26px; }
+    .profil .nom { font-weight: 800; font-size: 17px; margin-top: 6px; }
+    .profil .type { font-size: 14px; color: var(--doux); }
+
+    /* ---------- Fiche de visite + appel (cachés tant qu'aucun profil n'est choisi) ---------- */
+    #fiche { display: none; margin-top: 26px; background: var(--carte); border: 1px solid var(--bord);
+             border-radius: 16px; padding: 22px 20px; }
+    #fiche.visible { display: block; animation: apparait .3s ease-out; }
+    #fiche h3 { margin: 0 0 2px; font-size: 21px; }
+    .contexte { color: var(--doux); font-size: 14px; margin-bottom: 14px; }
+    .bloc-titre { font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: .14em;
+                  text-transform: uppercase; color: var(--teal); margin: 16px 0 6px; }
+    #fiche ul { margin: 0; padding-left: 20px; }
+    #fiche li { margin: 3px 0; }
+    .objectif { background: var(--teal-clair); border-radius: 10px; padding: 10px 14px; margin-top: 14px; font-size: 15px; }
+
+    /* ---------- Boutons (charte SV : capitales espacées) ---------- */
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    .btn {
+      font-family: "JetBrains Mono", monospace; font-size: 13px; letter-spacing: .14em;
+      text-transform: uppercase; font-weight: 600;
+      border-radius: 999px; padding: 14px 22px; cursor: pointer; border: 1.5px solid var(--teal);
+      background: var(--teal); color: #fff;
+    }
+    .btn.secondaire { background: transparent; color: var(--teal); }
+    .btn.rouge { background: var(--rouge); border-color: var(--rouge); }
+    .btn:disabled { opacity: .5; cursor: progress; }
+    .btn[hidden] { display: none; }
+
+    /* ---------- Bandeau d'appel ---------- */
+    #appel { display: none; margin-top: 18px; padding: 14px 16px; border-radius: 12px;
+             border: 1.5px solid var(--teal); font-family: "JetBrains Mono", monospace; font-size: 14px; }
+    body.en-ligne #appel { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .voyant { width: 10px; height: 10px; border-radius: 50%; background: var(--teal); animation: led 1s infinite; }
+    #chrono { margin-left: auto; font-variant-numeric: tabular-nums; }
+    #parole { letter-spacing: .08em; }
+
+    #message { margin-top: 12px; font-size: 14px; color: var(--doux); min-height: 1.2em; }
+    #message.erreur { color: var(--rouge); }
+
+    /* Note de bas de page */
+    .note { margin-top: 34px; font-size: 13px; color: var(--doux); border-top: 1px solid var(--bord); padding-top: 14px; }
+
+    @keyframes led { 50% { opacity: .25; } }
+    @keyframes apparait { from { opacity: 0; transform: translateY(6px); } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="surtitre">Tutorat · Mathématiques</div>
+    <h1>Entretien tuteur</h1>
+    <p class="intro">
+      Entraînez-vous à mener l'entretien qui suit une visite de classe : écouter, questionner,
+      et donner des conseils adaptés à un professeur stagiaire… qui ne réagit pas toujours comme prévu.
+    </p>
+    <ol class="etapes">
+      <li><b>1</b>Choisissez un profil</li>
+      <li><b>2</b>Lisez la fiche de visite</li>
+      <li><b>3</b>Parlez — dites « débrief » pour avoir votre retour</li>
+    </ol>
+
+    <h2>Quel stagiaire recevez-vous ?</h2>
+    <!-- Les cartes sont générées par le script à partir de la liste PROFILS -->
+    <div class="profils" id="profils"></div>
+
+    <!-- Fiche de visite + commandes d'appel -->
+    <section id="fiche" aria-live="polite">
+      <h3 id="f-nom"></h3>
+      <div class="contexte" id="f-contexte"></div>
+
+      <div class="bloc-titre">Ce que vous avez observé en classe</div>
+      <ul id="f-obs"></ul>
+
+      <div class="objectif" id="f-objectif"></div>
+
+      <div class="actions">
+        <button class="btn" id="b-demarrer" type="button">Commencer l'entretien</button>
+        <button class="btn secondaire" id="b-debrief" type="button" hidden>Débrief</button>
+        <button class="btn rouge" id="b-raccrocher" type="button" hidden>Raccrocher</button>
+      </div>
+
+      <!-- Bandeau visible seulement pendant l'appel -->
+      <div id="appel">
+        <span class="voyant" aria-hidden="true"></span>
+        <span id="parole"></span>
+        <span id="chrono">00:00</span>
+      </div>
+      <div id="message"></div>
+    </section>
+
+    <p class="note">
+      Simulation pédagogique : les stagiaires sont fictifs et joués par une IA vocale.
+      L'entretien dure au maximum 15 minutes. Si vous-même traversez une période difficile,
+      parlez-en à un proche ou à un médecin, ou appelez le 3114 (gratuit, 24 h/24).
+    </p>
+  </main>
+
+  <!-- type="module" : permet d'utiliser « import » pour charger le SDK depuis un CDN -->
+  <script type="module">
+    /* ============================================================
+       1. LES PROFILS DE STAGIAIRES
+       Pour ajouter un profil : créer l'agent sur ElevenLabs, puis copier
+       un bloc { ... } ci-dessous et remplacer agentId et les textes.
+       ============================================================ */
+    const PROFILS = [
+      {
+        id: "camille",
+        emoji: "🙂",
+        nom: "Camille",
+        type: "D'accord avec tout… sans comprendre",
+        agentId: "agent_1701m68wxj3be7f9dh64y4am4p7q",
+        contexte: "Camille Morel, 24 ans · collège, classe de 5e · séance : addition de fractions",
+        observations: [
+          "Cours très magistral : 25 minutes de prise de notes au tableau.",
+          "La méthode est donnée tout de suite, sans temps de recherche pour les élèves.",
+          "Exercices d'application seulement dans les 10 dernières minutes.",
+          "Plusieurs élèves décrochés au fond de la salle.",
+          "Une élève additionne numérateurs et dénominateurs — non repéré.",
+        ],
+        objectif: "Votre défi : vérifier qu'elle comprend vraiment le « pourquoi », et pas seulement qu'elle dit oui.",
+      },
+      {
+        id: "julien",
+        emoji: "😤",
+        nom: "Julien",
+        type: "Contre les idées proposées",
+        agentId: "agent_2401m68wyhcfe40sg2ewvjb3pjga",
+        contexte: "Julien Fabre, 27 ans · lycée, classe de 2nde · séance : introduction des fonctions affines",
+        observations: [
+          "Démonstrations rigoureuses, vocabulaire très formel (« application de R dans R »).",
+          "Aucun exemple concret ni graphique avant la 40e minute.",
+          "Une question d'élève balayée par « c'est évident ».",
+          "La majorité de la classe recopie sans comprendre.",
+          "Évaluation prévue la semaine prochaine, jugée trop difficile.",
+        ],
+        objectif: "Votre défi : faire bouger quelqu'un qui conteste tout, sans entrer dans un rapport de force.",
+      },
+      {
+        id: "theo",
+        emoji: "😶",
+        nom: "Théo",
+        type: "Pas du tout dans l'échange",
+        agentId: "agent_2201m68wykhvebe8k4z0s95k2nvc",
+        contexte: "Théo Lambert, 23 ans · collège, classe de 4e · séance : théorème de Pythagore",
+        observations: [
+          "Séance correcte sur le fond mais sans relief : il lit sa fiche.",
+          "Très peu d'interactions avec les élèves.",
+          "Bavardages ignorés, trace écrite non vérifiée.",
+          "Il range ses affaires avant la sonnerie.",
+        ],
+        objectif: "Votre défi : créer assez de confiance pour qu'il sorte de ses « ouais, ça va ».",
+      },
+      {
+        id: "sarah",
+        emoji: "😢",
+        nom: "Sarah",
+        type: "Épuisée, elle craque",
+        agentId: "agent_1701m68wzjjhfejak7cn9fcj7n2e",
+        contexte: "Sarah Benali, 25 ans · collège, classe de 3e difficile · séance : résolution d'équations",
+        observations: [
+          "Classe agitée dès l'entrée ; Sarah élève la voix plusieurs fois.",
+          "Un élève l'insulte à voix basse.",
+          "Elle perd le fil, la séance n'est pas terminée.",
+          "Elle a les yeux rougis à la sonnerie.",
+        ],
+        objectif: "Votre défi : accueillir l'émotion, écouter, et orienter vers les bons soutiens.",
+      },
+    ];
+
+    // Textes affichés pendant l'appel (regroupés pour les modifier facilement)
+    const TEXTES = {
+      connexion:  "Connexion… autorisez le micro si le navigateur le demande.",
+      ilParle:    (nom) => `▶ ${nom.toUpperCase()} PARLE`,
+      aVous:      "● À VOUS",
+      fin:        "Entretien terminé. Vous pouvez relancer ou choisir un autre profil.",
+      erreurMicro:"Impossible de démarrer : vérifiez que le micro est autorisé, puis réessayez.",
+    };
+
+    /* ============================================================
+       2. RÉFÉRENCES VERS LES ÉLÉMENTS DE LA PAGE
+       ============================================================ */
+    const $ = (id) => document.getElementById(id);
+    const grille       = $("profils");
+    const fiche        = $("fiche");
+    const bDemarrer    = $("b-demarrer");
+    const bDebrief     = $("b-debrief");
+    const bRaccrocher  = $("b-raccrocher");
+    const parole       = $("parole");
+    const chrono       = $("chrono");
+    const message      = $("message");
+
+    let profilChoisi = null;   // le profil sélectionné (un objet de PROFILS)
+    let conversation = null;   // la conversation ElevenLabs en cours (null si aucune)
+    let minuteur     = null;   // l'intervalle qui fait tourner le chrono
+
+    /* ============================================================
+       3. AFFICHAGE DES CARTES ET DE LA FICHE
+       ============================================================ */
+    PROFILS.forEach((p) => {
+      const carte = document.createElement("button");
+      carte.type = "button";
+      carte.className = "profil";
+      carte.setAttribute("aria-pressed", "false");   // pour l'accessibilité : carte « enfoncée » ou non
+      carte.dataset.id = p.id;
+      carte.innerHTML = `<div class="emoji" aria-hidden="true">${p.emoji}</div>
+                         <div class="nom">${p.nom}</div>
+                         <div class="type">${p.type}</div>`;
+      carte.addEventListener("click", () => choisir(p));
+      grille.appendChild(carte);
+    });
+
+    function choisir(p) {
+      // On ne change pas de stagiaire en plein appel
+      if (conversation) return;
+      profilChoisi = p;
+
+      // Met en surbrillance la carte choisie
+      grille.querySelectorAll(".profil").forEach((c) =>
+        c.setAttribute("aria-pressed", String(c.dataset.id === p.id)));
+
+      // Remplit la fiche de visite
+      $("f-nom").textContent = `${p.emoji} ${p.nom}`;
+      $("f-contexte").textContent = p.contexte;
+      $("f-obs").innerHTML = p.observations.map((o) => `<li>${o}</li>`).join("");
+      $("f-objectif").textContent = p.objectif;
+      message.textContent = "";
+      message.classList.remove("erreur");
+
+      fiche.classList.add("visible");
+      fiche.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    /* ============================================================
+       4. LE CHRONO
+       ============================================================ */
+    function lancerChrono() {
+      const debut = Date.now();
+      minuteur = setInterval(() => {
+        const s = Math.floor((Date.now() - debut) / 1000);
+        // padStart(2, "0") : affiche 05 au lieu de 5
+        chrono.textContent = `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+      }, 500);
+    }
+
+    /* ============================================================
+       5. ÉTATS DE LA PAGE : repos ↔ en ligne
+       ============================================================ */
+    function etatEnLigne() {
+      document.body.classList.add("en-ligne");
+      bDemarrer.hidden = true;
+      bDebrief.hidden = false;
+      bRaccrocher.hidden = false;
+      message.textContent = "Astuce : dites « débrief » (ou cliquez le bouton) pour obtenir votre retour de coach.";
+      lancerChrono();
+    }
+
+    function etatRepos(texte = TEXTES.fin) {
+      document.body.classList.remove("en-ligne");
+      clearInterval(minuteur);
+      chrono.textContent = "00:00";
+      conversation = null;
+      bDemarrer.hidden = false;
+      bDemarrer.disabled = false;
+      bDemarrer.textContent = "Recommencer l'entretien";
+      bDebrief.hidden = true;
+      bRaccrocher.hidden = true;
+      message.textContent = texte;
+    }
+
+    function erreur(e) {
+      console.error(e);   // le détail technique reste dans la console du navigateur
+      etatRepos(TEXTES.erreurMicro);
+      message.classList.add("erreur");
+      bDemarrer.textContent = "Commencer l'entretien";
+    }
+
+    /* ============================================================
+       6. DÉMARRER / DÉBRIEF / RACCROCHER
+       ============================================================ */
+    bDemarrer.addEventListener("click", async () => {
+      if (!profilChoisi || conversation) return;
+      bDemarrer.disabled = true;
+      message.classList.remove("erreur");
+      message.textContent = TEXTES.connexion;
+
+      try {
+        // 1) On demande l'accès au micro AVANT de se connecter (message clair si refus)
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        // 2) On charge le SDK ElevenLabs seulement maintenant (page plus légère au départ)
+        const { Conversation } = await import(
+          "https://cdn.jsdelivr.net/npm/@elevenlabs/client@1.32.1/+esm"
+        );
+
+        // 3) On ouvre la conversation avec l'agent du profil choisi
+        conversation = await Conversation.startSession({
+          agentId: profilChoisi.agentId,
+          onConnect: () => {
+            etatEnLigne();
+            parole.textContent = TEXTES.ilParle(profilChoisi.nom);   // le stagiaire parle en premier
+          },
+          // mode = "speaking" (le stagiaire parle) ou "listening" (il vous écoute)
+          onModeChange: ({ mode }) => {
+            parole.textContent = mode === "speaking" ? TEXTES.ilParle(profilChoisi.nom) : TEXTES.aVous;
+          },
+          onDisconnect: () => etatRepos(),
+          onError: (e) => erreur(e),
+        });
+      } catch (e) {
+        // Micro refusé, pas de réseau, agent indisponible…
+        erreur(e);
+      }
+    });
+
+    // « Débrief » : on envoie le mot à l'agent comme si on l'avait dit.
+    // Son prompt lui dit alors de sortir du rôle et de donner un retour de coach.
+    bDebrief.addEventListener("click", () => {
+      if (!conversation) return;
+      conversation.sendUserMessage("Débrief, s'il te plaît : fin de l'entretien.");
+      bDebrief.hidden = true;   // une fois suffit
+    });
+
+    bRaccrocher.addEventListener("click", async () => {
+      if (conversation) await conversation.endSession();   // déclenche onDisconnect → etatRepos()
+    });
+  </script>
+</body>
+</html>
