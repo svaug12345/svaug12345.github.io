@@ -1,0 +1,39 @@
+{
+  "name": "SOS Amitié",
+  "short_name": "SOS Amitié",
+  "description": "La ligne d'écoute (taquine) de Charles",
+  "id": "/sos-amitie/",
+  "start_url": "/sos-amitie/",
+  "scope": "/sos-amitie/",
+  "display": "standalone",
+  "background_color": "#f6efe3",
+  "theme_color": "#f6efe3",
+  "lang": "fr",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "icones/icone-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icones/icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icones/icone-masquable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icones/icone-masquable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

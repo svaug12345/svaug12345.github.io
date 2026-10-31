@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr — Page d'accueil des projets (marque SV)
-  Version 1.7.0
+  Version 1.8.0
   ------------------------------------------------------------
   Historique :
    • v1.0.0 : première page d'accueil
@@ -19,6 +19,9 @@
    • v1.5.1 : la carte s'appelle simplement « SOS Amitié »
    • v1.6.0 : ajout de « Négo avec Papa » dans « Agents vocaux »
    • v1.7.0 : ajout de « Pressoir vidéo » dans « Applications »
+   • v1.8.0 : un picto par projet dans la pastille (au lieu de l'initiale) ;
+              page installable sur téléphone (manifest.webmanifest, sw.js,
+              icônes dans icones/ — fabriqués par outils/generer-pwa.py)
 
   À déposer dans le dépôt GitHub : svaug12345.github.io
   → c'est le fichier "index.html" à la racine.
@@ -50,6 +53,18 @@
 
   <!-- Favicon : l'icône d'appli SV (tuile turquoise + geste blanc) -->
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+
+  <!--
+    PWA = page installable sur téléphone (« Ajouter à l'écran d'accueil »).
+     • le manifeste donne le nom, les couleurs et les icônes de l'appli ;
+     • apple-touch-icon = l'icône utilisée par les iPhone ;
+     • theme-color = couleur de la barre d'état Android.
+    Le service worker (sw.js) est enregistré tout en bas de la page.
+  -->
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icones/apple-touch-icon.png">
+  <meta name="theme-color" content="#f6f9f9" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0e1a1c" media="(prefers-color-scheme: dark)">
 
   <!--
     Police de la charte SV : Manrope, chargée depuis Google Fonts.
@@ -187,7 +202,7 @@
       border-color: var(--teal);
     }
 
-    /* La pastille à gauche : tuile turquoise avec l'initiale,
+    /* La pastille à gauche : tuile turquoise avec le picto du projet,
        dans l'esprit de l'icône d'appli SV. */
     .pastille {
       flex: 0 0 44px;   /* largeur fixe, ne se déforme pas */
@@ -200,6 +215,22 @@
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+    /* Le picto dessiné dans la pastille : un trait (stroke) qui prend
+       la couleur du texte de la pastille grâce à "currentColor". */
+    .pastille svg {
+      width: 24px;
+      height: 24px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    /* Projet pas encore en ligne : pastille en teinte douce */
+    .carte:not(.cliquable) .pastille {
+      background: var(--teal-soft);
+      color: var(--teal);
     }
 
     .carte-texte { min-width: 0; } /* évite que le texte déborde */
@@ -260,7 +291,7 @@
 
     <!-- ===================== PIED DE PAGE ===================== -->
     <footer>
-      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.7.0</p>
+      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.8.0</p>
     </footer>
 
   </div>
@@ -278,42 +309,77 @@
                  • "QR/"  → ouvre baiji.fr/QR/ (chemin relatif)
                  • "https://..." → lien externe (Play Store, etc.)
                  • null   → pas encore de lien : affiche "Bientôt"
+        - icone : le nom du picto, pris dans la liste PICTOS juste en dessous
         - cat  : la catégorie ("Applications" ou "Jeux")
       ============================================================
     */
+
+    /*
+      ============================================================
+      PICTOS (icônes des cartes)
+      ------------------------------------------------------------
+      Dessins repris de la bibliothèque libre Lucide (licence ISC,
+      https://lucide.dev). Chaque picto est l'intérieur d'un SVG
+      dessiné sur une grille de 24 × 24 : des traits (path, rect,
+      circle) sans remplissage. La couleur et l'épaisseur du trait
+      sont réglées dans le CSS (.pastille svg).
+      Pour un NOUVEAU picto : choisir une icône sur lucide.dev,
+      « Copy SVG », et coller ici ce qu'il y a ENTRE <svg …> et </svg>.
+      ============================================================
+    */
+    const PICTOS = {
+      qr: `<path d="M17 12v4a1 1 0 0 1-1 1h-4"/> <path d="M17 3h2a2 2 0 0 1 2 2v2"/> <path d="M17 8V7"/> <path d="M21 17v2a2 2 0 0 1-2 2h-2"/> <path d="M3 7V5a2 2 0 0 1 2-2h2"/> <path d="M7 17h.01"/> <path d="M7 21H5a2 2 0 0 1-2-2v-2"/> <rect x="7" y="7" width="5" height="5" rx="1"/>`,  // scan-qr-code
+      signature: `<path d="m21 17-2.156-1.868A.5.5 0 0 0 18 15.5v.5a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1c0-2.545-3.991-3.97-8.5-4a1 1 0 0 0 0 5c4.153 0 4.745-11.295 5.708-13.5a2.5 2.5 0 1 1 3.31 3.284"/> <path d="M3 21h18"/>`,  // signature
+      livre: `<path d="M12 5v16"/> <path d="m16 12 2 2 4-4"/> <path d="M22 6V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2h4.001A2 2 0 0022 17v-1.344"/>`,  // book-open-check
+      video: `<path d="m12.296 3.464 3.02 3.956"/> <path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3z"/> <path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/> <path d="m6.18 5.276 3.1 3.899"/>`,  // clapperboard
+      masque: `<path d="M18 11c-1.5 0-2.5.5-3 2"/> <path d="M4 6a2 2 0 0 0-2 2v4a5 5 0 0 0 5 5 8 8 0 0 1 5 2 8 8 0 0 1 5-2 5 5 0 0 0 5-5V8a2 2 0 0 0-2-2h-3a8 8 0 0 0-5 2 8 8 0 0 0-5-2z"/> <path d="M6 11c1.5 0 2.5.5 3 2"/>`,  // venetian-mask
+      vagues: `<path d="M2 12q2.5 2 5 0t5 0 5 0 5 0"/> <path d="M2 19q2.5 2 5 0t5 0 5 0 5 0"/> <path d="M2 5q2.5 2 5 0t5 0 5 0 5 0"/>`,  // waves
+      cochon: `<path d="M11 17h3v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-3a3.16 3.16 0 0 0 2-2h1a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1h-1a5 5 0 0 0-2-4V3a4 4 0 0 0-3.2 1.6l-.3.4H11a6 6 0 0 0-6 6v1a5 5 0 0 0 2 4v3a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1z"/> <path d="M16 10h.01"/> <path d="M2 8v1a2 2 0 0 0 2 2h1"/>`,  // piggy-bank
+      camion: `<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/> <path d="M15 18H9"/> <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/> <circle cx="17" cy="18" r="2"/> <circle cx="7" cy="18" r="2"/>`,  // truck
+      poignee: `<path d="m11 17 2 2a1 1 0 1 0 3-3"/> <path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"/> <path d="m21 3 1 11h-2"/> <path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"/> <path d="M3 4h8"/>`,  // handshake
+      toque: `<path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/> <path d="M22 10v6"/> <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>`,  // graduation-cap
+      telephone: `<path d="M13 2a9 9 0 0 1 9 9"/> <path d="M13 6a5 5 0 0 1 5 5"/> <path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/>`,  // phone-call
+      balance: `<path d="M12 3v18"/> <path d="m19 8 3 8a5 5 0 0 1-6 0zV7"/> <path d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1"/> <path d="m5 8 3 8a5 5 0 0 1-6 0zV7"/> <path d="M7 21h10"/>`,  // scale
+    };
     const PROJETS = [
       {
         nom:  "Lecteur QR",
+        icone: "qr",                      // picto (voir la liste PICTOS)
         desc: "Scanner de QR codes, caméra et galerie",
         url:  "QR/",                     // ✅ en ligne : baiji.fr/QR/
         cat:  "Applications"
       },
       {
         nom:  "Paraphe",
+        icone: "signature",               // picto (voir la liste PICTOS)
         desc: "Crée une police à partir d'une écriture",
         url:  "paraphe/",                // ✅ en ligne : baiji.fr/paraphe/
         cat:  "Applications"
       },
       {
         nom:  "Mes Révisions",
+        icone: "livre",                   // picto (voir la liste PICTOS)
         desc: "Réviser les leçons en s'amusant",
         url:  "svaug12345-revisions/",   // ✅ en ligne : baiji.fr/svaug12345-revisions/
         cat:  "Applications"
       },
       {
         nom:  "Pressoir vidéo",
+        icone: "video",                   // picto (voir la liste PICTOS)
         desc: "Compresse une vidéo dans le téléphone, sans pub",
         url:  "pressoir/",               // ✅ en ligne : baiji.fr/pressoir/
         cat:  "Applications"
       },
       {
         nom:  "Undercover",
+        icone: "masque",                  // picto (voir la liste PICTOS)
         desc: "Jeu de mots et d'imposteur entre amis",
         url:  null,                      // ⬅️ lien à compléter
         cat:  "Jeux"
       },
       {
         nom:  "Unknown Waters",
+        icone: "vagues",                  // picto (voir la liste PICTOS)
         desc: "Casse-brique, ambiance graphique épurée",
         url:  null,                      // ⬅️ lien à compléter
         cat:  "Jeux"
@@ -322,36 +388,42 @@
       // le script crée tout seul la section correspondante.
       {
         nom:  "PochPoch",
+        icone: "cochon",                  // picto (voir la liste PICTOS)
         desc: "Le cost killer vocal qui refuse vos dépenses",
         url:  "pochpoch/",               // ✅ en ligne : baiji.fr/pochpoch/
         cat:  "Agents vocaux"
       },
       {
         nom:  "Assistant fournisseurs",
+        icone: "camion",                  // picto (voir la liste PICTOS)
         desc: "Aide vocale pour rejoindre Carrefour sur SAP Business Network",
         url:  "assistant-fournisseurs/", // ✅ en ligne : baiji.fr/assistant-fournisseurs/
         cat:  "Agents vocaux"
       },
       {
         nom:  "Salle de négociation",
+        icone: "poignee",                 // picto (voir la liste PICTOS)
         desc: "S'entraîner à négocier face à un fournisseur vocal",
         url:  "salle-negociation/",      // ✅ en ligne : baiji.fr/salle-negociation/
         cat:  "Agents vocaux"
       },
       {
         nom:  "Entretien tuteur",
+        icone: "toque",                   // picto (voir la liste PICTOS)
         desc: "S'entraîner à mener l'entretien avec un stagiaire en maths",
         url:  "entretien-tuteur/",       // ✅ en ligne : baiji.fr/entretien-tuteur/
         cat:  "Agents vocaux"
       },
       {
         nom:  "SOS Amitié",
+        icone: "telephone",               // picto (voir la liste PICTOS)
         desc: "La ligne d'écoute (taquine) de Charles, avec la voix de Seb",
         url:  "sos-amitie/",             // ✅ en ligne : baiji.fr/sos-amitie/
         cat:  "Agents vocaux"
       },
       {
         nom:  "Négo avec Papa",
+        icone: "balance",                 // picto (voir la liste PICTOS)
         desc: "Tom, Gaby et Nanon s'entraînent à négocier avec Papa (et son coach)",
         url:  "nego-papa/",              // ✅ en ligne : baiji.fr/nego-papa/
         cat:  "Agents vocaux"
@@ -383,12 +455,16 @@
         carte.className = "carte" + (aUnLien ? " cliquable" : "");
         if (aUnLien) carte.href = projet.url;
 
-        // Initiale (1re lettre du nom, en majuscule) pour la pastille
-        const initiale = projet.nom.trim().charAt(0).toUpperCase();
+        // Le picto du projet. S'il manque (oubli, faute de frappe),
+        // on retombe sur l'initiale : la carte reste toujours lisible.
+        const picto = PICTOS[projet.icone];
+        const dansPastille = picto
+          ? `<svg viewBox="0 0 24 24" aria-hidden="true">${picto}</svg>`
+          : projet.nom.trim().charAt(0).toUpperCase();
 
         // Contenu de la carte ; sans lien → badge "Bientôt" à la place de la description
         carte.innerHTML = `
-          <div class="pastille">${initiale}</div>
+          <div class="pastille">${dansPastille}</div>
           <div class="carte-texte">
             <div class="carte-nom">${projet.nom}</div>
             ${ aUnLien
@@ -402,6 +478,14 @@
 
       contenu.appendChild(grille);
     });
+
+    // ---- Page installable : enregistrement du service worker ----
+    // Le navigateur exige un site en https (c'est le cas de baiji.fr).
+    // Le fichier sw.js (racine) n'agit que sur les fichiers de l'accueil,
+    // jamais sur les dossiers des autres applis.
+    if ("serviceWorker" in navigator && location.protocol === "https:") {
+      navigator.serviceWorker.register("/sw.js", { scope: "/" });
+    }
   </script>
 </body>
 </html>

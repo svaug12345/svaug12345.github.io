@@ -14,6 +14,13 @@ Site GitHub Pages de svaug12345 : héberge des applis web (PWA), publiées aussi
 - `sos-amitie/` — « SOS Amitié » : ligne d'écoute humoristique perso pour Charles (ami de Seb), agent ElevenLabs avec la voix « SebastienV » ; SDK @elevenlabs/client ; page chaleureuse (crème/corail, Fraunces + Manrope); pas de mention « Baiji » ni de pied de page (les numéros d'aide sont donnés par l'agent) ; version dans le commentaire d'en-tête ; liée depuis l'accueil (« Agents vocaux »), en « noindex »
 - `nego-papa/` — « Négo avec Papa » : entraînement vocal à la négociation pour Tom (6 ans), Gaby (12) et Nanon (14, ado) face à un papa coriace, avec mode coach (« temps mort coach », « fin de la négo » = débrief) ; agent ElevenLabs voix « SebastienV » ; photo de Seb dans le bouton (`papa.jpg`) ; boutons qui envoient ces phrases via `sendUserMessage` ; charte SV ; version dans le commentaire d'en-tête ; liée depuis l'accueil (« Agents vocaux »), en « noindex »
 - `.well-known/assetlinks.json` — empreintes de signature Android (une entrée par appli)
+- `outils/generer-pwa.py` — rend les pages installables (PWA) : fabrique pour chaque page de sa liste `PAGES` le `manifest.webmanifest`, le `sw.js` (« réseau d'abord ») et les icônes `icones/` (picto Lucide sur tuile de couleur, via rsvg-convert) ; fait aussi l'accueil (icône SV). Les pages incluent le lien vers le manifeste (après `<title>`) et enregistrent `sw.js` en bas de page. Le `sw.js` de la racine n'agit que sur les fichiers à la racine (pas sur QR/, svaug12345-revisions/… qui viennent d'autres dépôts).
+- Accueil (`index.html`) : chaque projet a un champ `icone` qui pointe vers la liste `PICTOS` (pictos Lucide, ISC) affichés dans la pastille
+
+## Ajouter une nouvelle page
+
+1. Créer le dossier et sa page ; l'ajouter à `PROJETS` dans `index.html` (avec un `icone`) et ici.
+2. La rendre installable : ajouter une ligne dans `PAGES` de `outils/generer-pwa.py`, lancer le script, et copier dans la page le bloc « PWA » du `<head>` et le `<script>` d'enregistrement de `sw.js` (voir une page existante, ex. `pochpoch/`).
 
 ## Règles
 

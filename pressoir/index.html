@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr/pressoir/ — Pressoir vidéo
-  Version 1.0.1
+  Version 1.1.0
   ------------------------------------------------------------
   Compresse une vidéo (ex. 4K de l'appareil photo) directement
   dans le navigateur, avec l'encodeur matériel du téléphone
@@ -10,6 +10,7 @@
   Historique :
    • v1.0.0 : première version (artifact Claude)
    • v1.0.1 : version autonome pour baiji.fr (téléchargement direct)
+   • v1.1.0 : page installable sur téléphone (manifeste, icône, service worker)
   ============================================================
 -->
 <html lang="fr">
@@ -17,6 +18,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Pressoir vidéo</title>
+<!--
+  PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »
+  ou « Ajouter à l'écran d'accueil »). Fichiers fabriqués par outils/generer-pwa.py :
+   • manifest.webmanifest : nom, couleurs, icônes de l'appli ;
+   • icones/ : les icônes (apple-touch-icon = celle des iPhone) ;
+   • sw.js : le service worker, enregistré en bas de page.
+-->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+<meta name="theme-color" content="#eef2ef">
+<link rel="icon" href="icones/icone-192.png" type="image/png">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -123,7 +135,7 @@ video { width: 100%; border-radius: 10px; background: #000; max-height: 50vh; }
 <div class="wrap">
   <header>
     <h1>Pressoir <span>vidéo</span></h1>
-    <span class="version" id="version">v1.0.1</span>
+    <span class="version" id="version">v1.1.0</span>
   </header>
   <p class="lede">Compresse une vidéo directement dans ton téléphone, avec son encodeur matériel. Rien n'est envoyé sur internet, et il n'y a pas de pub.</p>
 
@@ -195,7 +207,7 @@ video { width: 100%; border-radius: 10px; background: #000; max-height: 50vh; }
    On ne charge jamais les 487 Mo d'un coup : on lit le fichier par fenêtres.
    ========================================================================== */
 
-const APP_VERSION = "1.0.1";
+const APP_VERSION = "1.1.0";
 document.getElementById("version").textContent = "v" + APP_VERSION;
 
 // ---- Préréglages : hauteur cible (côté court) et débit vidéo en bits/s ----
@@ -795,5 +807,12 @@ function showError(m) { $("error").textContent = m; $("error").hidden = false; }
 function hideError() { $("error").hidden = true; }
 </script>
 
+<script>
+  // ---- Page installable : enregistrement du service worker (sw.js, même dossier) ----
+  // Il fonctionne en « réseau d'abord » : la page en ligne est toujours la plus récente.
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    navigator.serviceWorker.register("sw.js");
+  }
+</script>
 </body>
 </html>

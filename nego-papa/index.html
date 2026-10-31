@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Page « Négo avec Papa » — l'entraînement à la négociation de Tom, Gaby et Nanon
-  Version 1.2.1 – 31/10/2026
+  Version 1.3.0 – 31/10/2026
   En ligne : https://baiji.fr/nego-papa/
 
   Historique :
@@ -13,6 +13,7 @@
              fiche de préparation : rappel que les basiques (chambre, devoirs)
              ne sont pas des contreparties, nouvel exemple d'échange
    • 1.2.1 : l'en-tête redevient « Nanon · Gaby · Tom » (prénoms, pas de surnoms)
+   • 1.3.0 : page installable sur téléphone (manifeste, icône, service worker)
 
   Comment ça marche ?
   - Avant l'appel : une petite « fiche de préparation » (ce que je veux,
@@ -32,6 +33,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Négo avec Papa</title>
+  <!--
+    PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »
+    ou « Ajouter à l'écran d'accueil »). Fichiers fabriqués par outils/generer-pwa.py :
+     • manifest.webmanifest : nom, couleurs, icônes de l'appli ;
+     • icones/ : les icônes (apple-touch-icon = celle des iPhone) ;
+     • sw.js : le service worker, enregistré en bas de page.
+  -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <link rel="icon" href="icones/icone-192.png" type="image/png">
   <!-- « noindex » : invisible sur Google, accessible seulement avec le lien -->
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#0f7c7b">
@@ -378,5 +389,12 @@
     document.getElementById("tempsMort").addEventListener("click", () => envoyer(PHRASE_TEMPS_MORT));
     document.getElementById("debrief").addEventListener("click",   () => envoyer(PHRASE_DEBRIEF));
   </script>
+<script>
+  // ---- Page installable : enregistrement du service worker (sw.js, même dossier) ----
+  // Il fonctionne en « réseau d'abord » : la page en ligne est toujours la plus récente.
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    navigator.serviceWorker.register("sw.js");
+  }
+</script>
 </body>
 </html>

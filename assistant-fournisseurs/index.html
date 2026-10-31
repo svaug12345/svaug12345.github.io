@@ -1,13 +1,14 @@
 <!doctype html>
 <!--
   Page « Assistant fournisseurs Carrefour – SAP Business Network »
-  Version 1.1.0 – 31/10/2026
+  Version 1.2.0 – 31/10/2026
   En ligne : https://baiji.fr/assistant-fournisseurs/
 
   Historique :
    • 1.0.0 : première version (étapes, bon à savoir, agent vocal, FR/EN)
    • 1.0.1 : mise en ligne sur baiji.fr + « noindex » (page non référencée par Google)
    • 1.1.0 : page en français uniquement (bouton English, traductions et script de bascule retirés)
+   • 1.2.0 : page installable sur téléphone (manifeste, icône, service worker)
 
   À quoi sert cette page ?
   - Elle explique en 4 étapes comment rejoindre Carrefour sur SAP Business Network.
@@ -23,6 +24,17 @@
   <!-- Indispensable pour un bon affichage sur téléphone -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Assistant fournisseurs Carrefour</title>
+  <!--
+    PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »
+    ou « Ajouter à l'écran d'accueil »). Fichiers fabriqués par outils/generer-pwa.py :
+     • manifest.webmanifest : nom, couleurs, icônes de l'appli ;
+     • icones/ : les icônes (apple-touch-icon = celle des iPhone) ;
+     • sw.js : le service worker, enregistré en bas de page.
+  -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <meta name="theme-color" content="#0E4C9A">
+  <link rel="icon" href="icones/icone-192.png" type="image/png">
   <meta name="description" content="Aide vocale pour rejoindre Carrefour sur SAP Business Network (Ariba).">
   <!-- « noindex » : demande aux moteurs de recherche de ne pas lister cette page.
        Elle reste accessible à toute personne qui a le lien, mais on ne la trouve pas sur Google. -->
@@ -193,5 +205,12 @@
   -->
   <elevenlabs-convai agent-id="agent_5001m682hzn4e77rpyj4a2s51aef"></elevenlabs-convai>
   <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
+<script>
+  // ---- Page installable : enregistrement du service worker (sw.js, même dossier) ----
+  // Il fonctionne en « réseau d'abord » : la page en ligne est toujours la plus récente.
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    navigator.serviceWorker.register("sw.js");
+  }
+</script>
 </body>
 </html>
