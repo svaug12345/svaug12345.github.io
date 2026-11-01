@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr — Page d'accueil des projets (marque SV)
-  Version 1.13.0
+  Version 1.14.0
   ------------------------------------------------------------
   Historique :
    • v1.0.0 : première page d'accueil
@@ -31,6 +31,10 @@
    • v1.12.1 : description de « Pressoir vidéo » (compresse et découpe vidéos et sons)
    • v1.12.2 : « Pressoir vidéo » devient simplement « Pressoir »
    • v1.13.0 : ajout de « Voitures » (suivi de charge) dans « Maison »
+   • v1.14.0 : Julien, FART et Famille regroupés dans « Sites » ;
+              sur téléphone, cartes sur 2 colonnes (picto au-dessus,
+              description courte « courte ») ; chaque catégorie se
+              replie / se déplie d'un toucher (choix mémorisé)
 
   À déposer dans le dépôt GitHub : svaug12345.github.io
   → c'est le fichier "index.html" à la racine.
@@ -173,14 +177,49 @@
     }
 
     /* ---- TITRE DE SECTION (Applications / Jeux) ---- */
+    /* Le titre est un <h2> qui contient un <button> : le bouton rend
+       la catégorie repliable (accessible au clavier et aux lecteurs
+       d'écran grâce à aria-expanded, mis à jour par le script). */
     .section-titre {
+      margin: 40px 4px 16px;
+    }
+    .section-titre button {
+      /* On enlève l'allure « bouton » du navigateur : il ressemble au titre */
+      all: unset;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
       font-size: 0.75rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;   /* style "label" de la charte */
       color: var(--teal);
       font-weight: 700;
-      margin: 40px 4px 16px;
+      font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
     }
+    /* Contour visible quand on navigue au clavier (Tab) */
+    .section-titre button:focus-visible {
+      outline: 2px solid var(--teal);
+      outline-offset: 4px;
+      border-radius: 4px;
+    }
+    /* Le nombre de projets, discret, à côté du nom de la catégorie */
+    .section-titre .nombre { color: var(--ink-muted); font-weight: 500; }
+    /* Un filet qui occupe la place restante : la ligne guide l'œil */
+    .section-titre .filet { flex: 1; height: 1px; background: var(--line); }
+    /* La flèche : pointe vers le bas quand c'est ouvert,
+       tourne d'un quart de tour vers la droite quand c'est replié */
+    .section-titre .fleche {
+      width: 16px; height: 16px;
+      fill: none; stroke: currentColor; stroke-width: 2.5;
+      stroke-linecap: round; stroke-linejoin: round;
+      transition: transform .2s ease;
+    }
+    .section-titre button[aria-expanded="false"] .fleche { transform: rotate(-90deg); }
+    /* Catégorie repliée : on cache sa grille (attribut hidden posé par le script) */
+    .grille[hidden] { display: none; }
 
     /* ---- GRILLE DE CARTES ----
        Les cartes se rangent en colonnes qui s'adaptent : au moins
@@ -260,6 +299,50 @@
       margin-top: 6px;
     }
 
+    /* La description courte (champ « courte ») ne sert que sur téléphone :
+       sur grand écran on la cache et on garde la description complète. */
+    .carte-desc .court { display: none; }
+
+    /*
+      ---- TÉLÉPHONE : 2 COLONNES ----
+      En dessous de 560px de large (≈ tous les téléphones en portrait) :
+       • 2 cartes par ligne (deux colonnes de même largeur, 1fr chacune) ;
+       • la carte passe « en hauteur » : picto au-dessus, texte dessous,
+         sinon le texte n'aurait que ~90px de large à côté du picto ;
+       • on affiche la description courte, coupée à 2 lignes au pire
+         (line-clamp ajoute « … » si elle déborde quand même).
+    */
+    @media (max-width: 560px) {
+      .page { padding-top: 40px; }
+      header { margin-bottom: 32px; }
+      .section-titre { margin-top: 28px; }
+
+      .grille {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      .carte {
+        flex-direction: column;   /* empile picto et texte */
+        align-items: flex-start;
+        gap: 10px;
+        padding: 14px 12px;
+      }
+      .pastille { flex: 0 0 auto; width: 40px; height: 40px; }
+      .pastille svg { width: 22px; height: 22px; }
+
+      .carte-nom  { font-size: 0.94rem; line-height: 1.25; }
+      .carte-desc {
+        font-size: 0.8rem;
+        line-height: 1.35;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;    /* 2 lignes maximum… */
+        -webkit-box-orient: vertical;
+        overflow: hidden;         /* …le reste est caché */
+      }
+      .carte-desc .long  { display: none; }
+      .carte-desc .court { display: inline; }
+    }
+
     /* ---- PIED DE PAGE ---- */
     footer {
       text-align: center;
@@ -300,7 +383,7 @@
 
     <!-- ===================== PIED DE PAGE ===================== -->
     <footer>
-      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.13.0</p>
+      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.14.0</p>
     </footer>
 
   </div>
@@ -319,7 +402,10 @@
                  • "https://..." → lien externe (Play Store, etc.)
                  • null   → pas encore de lien : affiche "Bientôt"
         - icone : le nom du picto, pris dans la liste PICTOS juste en dessous
-        - cat  : la catégorie ("Applications" ou "Jeux")
+        - courte : description raccourcie, affichée sur téléphone
+                   (2 colonnes = peu de place). Facultative : sans elle,
+                   la description complète est coupée à 2 lignes.
+        - cat  : la catégorie ("Applications", "Jeux", "Sites"…)
       ============================================================
     */
 
@@ -360,6 +446,7 @@
         nom:  "Lecteur QR",
         icone: "qr",                      // picto (voir la liste PICTOS)
         desc: "Scanner de QR codes, caméra et galerie",
+        courte: "Scanner de QR codes",              // version courte (téléphone)
         url:  "QR/",                     // ✅ en ligne : baiji.fr/QR/
         cat:  "Applications"
       },
@@ -367,6 +454,7 @@
         nom:  "Paraphe",
         icone: "signature",               // picto (voir la liste PICTOS)
         desc: "Crée une police à partir d'une écriture",
+        courte: "Une police avec son écriture",              // version courte (téléphone)
         url:  "paraphe/",                // ✅ en ligne : baiji.fr/paraphe/
         cat:  "Applications"
       },
@@ -374,6 +462,7 @@
         nom:  "Mes Révisions",
         icone: "livre",                   // picto (voir la liste PICTOS)
         desc: "Réviser les leçons en s'amusant",
+        courte: "Réviser en s'amusant",              // version courte (téléphone)
         url:  "svaug12345-revisions/",   // ✅ en ligne : baiji.fr/svaug12345-revisions/
         cat:  "Applications"
       },
@@ -381,6 +470,7 @@
         nom:  "Pressoir",
         icone: "video",                   // picto (voir la liste PICTOS)
         desc: "Compresse et découpe vidéos et sons dans le téléphone, sans pub",
+        courte: "Compresse vidéos et sons",              // version courte (téléphone)
         url:  "pressoir/",               // ✅ en ligne : baiji.fr/pressoir/
         cat:  "Applications"
       },
@@ -388,6 +478,7 @@
         nom:  "Undercover",
         icone: "masque",                  // picto (voir la liste PICTOS)
         desc: "Jeu de mots et d'imposteur entre amis",
+        courte: "Jeu d'imposteur",              // version courte (téléphone)
         url:  null,                      // ⬅️ lien à compléter
         cat:  "Jeux"
       },
@@ -395,6 +486,7 @@
         nom:  "Unknown Waters",
         icone: "vagues",                  // picto (voir la liste PICTOS)
         desc: "Casse-brique, ambiance graphique épurée",
+        courte: "Casse-brique épuré",              // version courte (téléphone)
         url:  null,                      // ⬅️ lien à compléter
         cat:  "Jeux"
       },
@@ -404,6 +496,7 @@
         nom:  "PochPoch",
         icone: "cochon",                  // picto (voir la liste PICTOS)
         desc: "Le cost killer vocal qui refuse vos dépenses",
+        courte: "Le cost killer vocal",              // version courte (téléphone)
         url:  "pochpoch/",               // ✅ en ligne : baiji.fr/pochpoch/
         cat:  "Agents vocaux"
       },
@@ -411,6 +504,7 @@
         nom:  "Assistant fournisseurs",
         icone: "camion",                  // picto (voir la liste PICTOS)
         desc: "Aide vocale pour rejoindre Carrefour sur SAP Business Network",
+        courte: "Aide SAP Business Network",              // version courte (téléphone)
         url:  "assistant-fournisseurs/", // ✅ en ligne : baiji.fr/assistant-fournisseurs/
         cat:  "Agents vocaux"
       },
@@ -418,6 +512,7 @@
         nom:  "Salle de négociation",
         icone: "poignee",                 // picto (voir la liste PICTOS)
         desc: "S'entraîner à négocier face à un fournisseur vocal",
+        courte: "Négocier face à un fournisseur",              // version courte (téléphone)
         url:  "salle-negociation/",      // ✅ en ligne : baiji.fr/salle-negociation/
         cat:  "Agents vocaux"
       },
@@ -425,6 +520,7 @@
         nom:  "Entretien tuteur",
         icone: "toque",                   // picto (voir la liste PICTOS)
         desc: "S'entraîner à mener l'entretien avec un stagiaire en maths",
+        courte: "Entretien avec un stagiaire",              // version courte (téléphone)
         url:  "entretien-tuteur/",       // ✅ en ligne : baiji.fr/entretien-tuteur/
         cat:  "Agents vocaux"
       },
@@ -432,6 +528,7 @@
         nom:  "SOS Amitié",
         icone: "telephone",               // picto (voir la liste PICTOS)
         desc: "La ligne d'écoute (taquine) de Charles, avec la voix de Seb",
+        courte: "La ligne d'écoute de Charles",              // version courte (téléphone)
         url:  "sos-amitie/",             // ✅ en ligne : baiji.fr/sos-amitie/
         cat:  "Agents vocaux"
       },
@@ -439,6 +536,7 @@
         nom:  "Négo avec Papa",
         icone: "balance",                 // picto (voir la liste PICTOS)
         desc: "Tom, Gaby et Nanon s'entraînent à négocier avec Papa (et son coach)",
+        courte: "Négocier avec Papa",              // version courte (téléphone)
         url:  "nego-papa/",              // ✅ en ligne : baiji.fr/nego-papa/
         cat:  "Agents vocaux"
       },
@@ -446,6 +544,7 @@
         nom:  "Foot & Chats",
         icone: "chat",                    // picto (voir la liste PICTOS)
         desc: "Max fait un quiz foot avec Titouan et des jeux de chats avec Ava",
+        courte: "Quiz foot et jeux de chats",              // version courte (téléphone)
         url:  "foot-chats/",             // ✅ en ligne : baiji.fr/foot-chats/
         cat:  "Agents vocaux"
       },
@@ -453,6 +552,7 @@
         nom:  "Julien · Mécanicien vélo",
         icone: "velo",                    // picto (voir la liste PICTOS)
         desc: "Le vélo doit être un plaisir : conseils, tarifs clairs",
+        courte: "Réparation, conseils, tarifs",              // version courte (téléphone)
         url:  "julien/",                 // ✅ en ligne : baiji.fr/julien/
         cat:  "Sites"
       },
@@ -460,20 +560,23 @@
         nom:  "FART · Séance d'observation",
         icone: "vent",                    // picto (voir la liste PICTOS)
         desc: "Six scénettes de classe à faire observer aux tuteurs et stagiaires",
+        courte: "Six scénettes à observer",              // version courte (téléphone)
         url:  "fart/",                   // ✅ en ligne : baiji.fr/fart/
-        cat:  "Formation"
+        cat:  "Sites"
       },
       {
         nom:  "Famille",
         icone: "maison",                  // picto (voir la liste PICTOS)
         desc: "Météo, tâches des enfants et batteries des voitures (mode TV : ?tv)",
+        courte: "Le tableau de bord maison",              // version courte (téléphone)
         url:  "famille/",                // ✅ en ligne : baiji.fr/famille/
-        cat:  "Maison"
+        cat:  "Sites"
       },
       {
         nom:  "Voitures",
         icone: "batterie",                // picto (voir la liste PICTOS)
         desc: "Batterie et charge de l'e-5008 et de la Corsa, suivi en direct",
+        courte: "Charge de l'e-5008 et de la Corsa",              // version courte (téléphone)
         url:  "voitures/",               // ✅ en ligne : baiji.fr/voitures/
         cat:  "Maison"
       }
@@ -487,17 +590,50 @@
     // 2) Catégories présentes, sans doublon, dans l'ordre d'apparition
     const categories = [...new Set(PROJETS.map(p => p.cat))];
 
-    // 3) Pour chaque catégorie : un titre, puis la grille de cartes
-    categories.forEach(cat => {
-      const titre = document.createElement("h2");
-      titre.className = "section-titre";
-      titre.textContent = cat;
-      contenu.appendChild(titre);
+    // 3) Catégories repliées : mémorisées dans le navigateur (localStorage),
+    //    pour retrouver la page comme on l'a laissée. try/catch : en navigation
+    //    privée le stockage peut être refusé → on fait alors sans mémoire.
+    const CLE_REPLIEES = "baiji-accueil-replies";
+    let repliees = [];
+    try { repliees = JSON.parse(localStorage.getItem(CLE_REPLIEES)) || []; } catch (e) {}
+    function memoriser() {
+      try { localStorage.setItem(CLE_REPLIEES, JSON.stringify(repliees)); } catch (e) {}
+    }
+
+    // 4) Pour chaque catégorie : un titre (bouton qui replie), puis la grille de cartes
+    categories.forEach((cat, i) => {
+      const projetsCat = PROJETS.filter(p => p.cat === cat);
+      const ouverte = !repliees.includes(cat);
 
       const grille = document.createElement("div");
       grille.className = "grille";
+      grille.id = "grille-" + i;          // relie le bouton à sa grille (aria-controls)
+      grille.hidden = !ouverte;
 
-      PROJETS.filter(p => p.cat === cat).forEach(projet => {
+      // Titre = <h2> contenant un <button> : nom, nombre de projets, filet, flèche
+      const titre = document.createElement("h2");
+      titre.className = "section-titre";
+      titre.innerHTML = `
+        <button type="button" aria-expanded="${ouverte}" aria-controls="${grille.id}">
+          <span>${cat}</span>
+          <span class="nombre">${projetsCat.length}</span>
+          <span class="filet"></span>
+          <svg class="fleche" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </button>`;
+
+      // Un toucher sur le titre : on inverse l'état et on le mémorise
+      const bouton = titre.querySelector("button");
+      bouton.addEventListener("click", () => {
+        const vaSouvrir = grille.hidden;
+        grille.hidden = !vaSouvrir;
+        bouton.setAttribute("aria-expanded", vaSouvrir);
+        repliees = vaSouvrir ? repliees.filter(c => c !== cat) : [...repliees, cat];
+        memoriser();
+      });
+
+      contenu.appendChild(titre);
+
+      projetsCat.forEach(projet => {
         // Carte = lien <a> si une url existe, sinon <div> non cliquable
         const aUnLien = projet.url !== null;
         const carte = document.createElement(aUnLien ? "a" : "div");
@@ -517,7 +653,10 @@
           <div class="carte-texte">
             <div class="carte-nom">${projet.nom}</div>
             ${ aUnLien
-                ? `<div class="carte-desc">${projet.desc}</div>`
+                // Deux versions de la description : le CSS montre « long » sur
+                // grand écran et « court » sur téléphone (sans « courte », on
+                // reprend la description complète, coupée à 2 lignes par le CSS)
+                ? `<div class="carte-desc"><span class="long">${projet.desc}</span><span class="court">${projet.courte || projet.desc}</span></div>`
                 : `<span class="badge">Bientôt</span>` }
           </div>
         `;
