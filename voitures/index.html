@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<!--
+  Voitures — suivi de la batterie et de la charge de l'e-5008 et de la Corsa
+  Version 1.0.0
+  Données : service « voitures » du NAS (https://voitures.baiji.fr), qui interroge
+  psa_car_controller à la maison et ne publie que la batterie et la charge (jamais le GPS).
+  Historique :
+   • v1.0.0 : jauges, état de charge, heure de fin estimée, bouton « Actualiser »
+              (réveil de la voiture), mode « Suivi de charge » (rafraîchit en continu
+              et garde l'écran allumé), courbe de batterie 24 h / 7 jours
+-->
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Voitures</title>
+  <meta name="robots" content="noindex">
+
+  <!--
+    PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »).
+    Fichiers fabriqués par outils/generer-pwa.py :
+     • manifest.webmanifest : nom, couleurs, icônes de l'appli ;
+     • icones/ : les icônes (apple-touch-icon = celle des iPhone) ;
+     • sw.js : le service worker, enregistré en bas de page.
+  -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <link rel="icon" href="icones/icone-192.png">
+  <meta name="theme-color" content="#0b4f55">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- Polices de la charte SV : Manrope (texte) + JetBrains Mono (chiffres) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ===================== COULEURS (charte SV) ===================== */
+    :root {
+      --surface: #f6f9f9;  --raised: #ffffff;  --line: #d6e2e3;
+      --ink: #102a2e;      --muted: #4d6468;
+      --teal: #0f7c7b;     --teal-deep: #0b4f55;  --teal-soft: #d4ecea;
+      --good: #16a34a;     --warn: #d97706;       --bad: #dc2626;
+      --track: #e3ecec;    /* fond des jauges */
+      --mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --surface: #0e1a1c; --raised: #152427; --line: #26393c;
+        --ink: #e6f1f1;     --muted: #9db3b5;
+        --teal: #3cc2b8;    --teal-deep: #1d6b6e; --teal-soft: #1c4245;
+        --track: #22383b;
+      }
+    }
+
+    /* ===================== BASE ===================== */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Manrope, system-ui, sans-serif; background: var(--surface); color: var(--ink);
+      min-height: 100vh;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+    svg { display: block; }
+    main { max-width: 560px; margin: 0 auto; padding: 18px 16px 48px; display: flex; flex-direction: column; gap: 14px; }
+
+    /* ===================== EN-TÊTE ===================== */
+    header { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 2px; }
+    h1 { font-size: 26px; font-weight: 800; letter-spacing: -.02em; }
+    .sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    /* Bouton « Suivi de charge » (interrupteur) */
+    .live {
+      display: flex; align-items: center; gap: 8px; padding: 9px 13px; border-radius: 999px;
+      background: var(--raised); border: 1px solid var(--line);
+      font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap;
+    }
+    .live .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+    .live.on { background: var(--teal); color: #fff; border-color: var(--teal); }
+    .live.on .dot { background: #fff; animation: pulse 1.4s infinite; }
+    @keyframes pulse { 50% { opacity: .25; } }
+
+    /* ===================== CARTE VOITURE ===================== */
+    .card { background: var(--raised); border: 1px solid var(--line); border-radius: 20px; padding: 18px; }
+    .car-top { display: flex; align-items: center; gap: 18px; }
+
+    /* Jauge circulaire : un cercle SVG dont on ne dessine qu'une portion du contour */
+    .gauge { position: relative; width: 132px; height: 132px; flex: 0 0 132px; }
+    .gauge svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .gauge circle { fill: none; stroke-width: 11; }
+    .gauge .track { stroke: var(--track); }
+    .gauge .val { stroke-linecap: round; transition: stroke-dashoffset .8s ease, stroke .4s; }
+    .gauge .center { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; }
+    .gauge .pct { font-family: var(--mono); font-size: 34px; font-weight: 700; letter-spacing: -.04em; line-height: 1; }
+    .gauge .pct small { font-size: 16px; }
+    .gauge .km { font-size: 13px; color: var(--muted); font-weight: 600; margin-top: 4px; }
+
+    .car-name { font-size: 20px; font-weight: 800; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; padding: 4px 10px; border-radius: 999px;
+      font-size: 12px; font-weight: 800; letter-spacing: .04em; background: var(--teal-soft); color: var(--teal);
+    }
+    .badge.charging { background: color-mix(in srgb, var(--good) 16%, transparent); color: var(--good); }
+    .badge.off { background: var(--track); color: var(--muted); }
+    .facts { margin-top: 10px; display: grid; gap: 3px; font-size: 13.5px; color: var(--muted); }
+    .facts b { color: var(--ink); font-weight: 700; }
+
+    /* Bandeau "fin de charge estimée" */
+    .eta {
+      margin-top: 14px; padding: 12px 14px; border-radius: 14px; background: var(--teal-soft);
+      display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    }
+    .eta .big { font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--teal); }
+    .eta .lbl { font-size: 12px; color: var(--muted); font-weight: 600; }
+
+    /* Pied de carte : âge de la mesure + bouton actualiser */
+    .car-foot { margin-top: 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .age { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+    .age.old { color: var(--warn); font-weight: 700; }
+    .refresh {
+      display: flex; align-items: center; gap: 7px; padding: 10px 14px; border-radius: 12px;
+      background: var(--teal); color: #fff; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .refresh svg { width: 16px; height: 16px; }
+    .refresh:disabled { background: var(--track); color: var(--muted); cursor: default; }
+    .refresh.busy svg { animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===================== COURBE ===================== */
+    .chart-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .title { font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+    .seg { display: flex; background: var(--track); border-radius: 10px; padding: 3px; }
+    .seg button { font-size: 12px; font-weight: 700; padding: 5px 11px; border-radius: 8px; color: var(--muted); }
+    .seg button.on { background: var(--raised); color: var(--ink); }
+    #chart { width: 100%; height: 190px; }
+    #chart text { font-family: var(--mono); font-size: 10px; fill: var(--muted); }
+    .legend { display: flex; gap: 16px; margin-top: 8px; font-size: 13px; font-weight: 700; }
+    .legend span::before { content: ''; display: inline-block; width: 12px; height: 4px; border-radius: 2px; background: var(--c); margin-right: 6px; vertical-align: middle; }
+    .note { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    footer { text-align: center; font-size: 12px; color: var(--muted); }
+    footer a { color: var(--teal); font-weight: 700; text-decoration: none; }
+
+    /* Message temporaire en bas d'écran */
+    #toast {
+      position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translate(-50%, 30px);
+      background: var(--ink); color: var(--surface); padding: 10px 16px; border-radius: 12px; font-size: 13px; font-weight: 600;
+      opacity: 0; transition: .3s; pointer-events: none; max-width: calc(100% - 32px); text-align: center;
+    }
+    #toast.show { opacity: 1; transform: translate(-50%, 0); }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Voitures</h1>
+        <div class="sub" id="sub">Chargement…</div>
+      </div>
+      <button class="live" id="live" title="Rafraîchit en continu et garde l'écran allumé">
+        <span class="dot"></span><span>Suivi de charge</span>
+      </button>
+    </header>
+
+    <!-- Les cartes des voitures sont fabriquées par le script -->
+    <div id="cars" style="display:flex;flex-direction:column;gap:14px"></div>
+
+    <section class="card">
+      <div class="chart-head">
+        <div class="title">Batterie</div>
+        <div class="seg" id="range">
+          <button data-h="24" class="on">24 h</button>
+          <button data-h="168">7 jours</button>
+        </div>
+      </div>
+      <svg id="chart"></svg>
+      <div class="legend" id="legend"></div>
+    </section>
+
+    <footer><a href="../famille/">← Tableau de bord Famille</a> · v<span id="version"></span></footer>
+  </main>
+  <div id="toast"></div>
+
+  <script>
+    /* =================================================================
+       CONFIGURATION
+       ================================================================= */
+    const VERSION = '1.0.0';
+    const API = 'https://voitures.baiji.fr';        // service du NAS
+    const POLL_NORMAL_S = 120;    // lecture de l'état : toutes les 2 min…
+    const POLL_LIVE_S = 30;       // …toutes les 30 s en mode « Suivi de charge »
+    const LIVE_WAKE_MIN = 10;     // en suivi, réveil auto d'une voiture en charge toutes les 10 min
+    const OLD_MEASURE_H = 3;      // au-delà, la mesure est signalée comme ancienne
+    const COLORS = { e5008: '#0f7c7b', corsa: '#d97706' };  // couleur de chaque voiture sur la courbe
+
+    /* =================================================================
+       OUTILS
+       ================================================================= */
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const hhmm = (d) => d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    // Les dates de Stellantis arrivent parfois sous la forme "2026-11-01 10:28:23+00:00" :
+    // on remplace l'espace par "T" pour que tous les navigateurs les comprennent.
+    const parseDate = (s) => s ? new Date(String(s).replace(' ', 'T')) : null;
+    const store = {
+      get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+      set(k, v) { try { localStorage.setItem(k, v); } catch {} }
+    };
+
+    // "il y a 7 h", "il y a 3 min"…
+    function ago(date) {
+      const min = Math.round((Date.now() - date) / 60000);
+      if (min < 1) return "à l'instant";
+      if (min < 60) return `il y a ${min} min`;
+      const h = Math.floor(min / 60);
+      if (h < 24) return `il y a ${h} h${min % 60 && h < 3 ? ' ' + String(min % 60).padStart(2, '0') : ''}`;
+      return `il y a ${Math.floor(h / 24)} j`;
+    }
+    // 155 → "2 h 35"
+    const duration = (min) => min >= 60 ? `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, '0')}` : `${min} min`;
+
+    function toast(msg) {
+      const t = $('toast');
+      t.textContent = msg; t.classList.add('show');
+      clearTimeout(toast.timer); toast.timer = setTimeout(() => t.classList.remove('show'), 3200);
+    }
+
+    // Identifiant d'une voiture : fourni par le service v2 ; avec la v1 on le déduit du nom
+    const carId = (c) => c.id || (String(c.name).toLowerCase().includes('5008') ? 'e5008' : 'corsa');
+
+    /* =================================================================
+       ÉTAT
+       ================================================================= */
+    let data = null;          // dernière réponse de /cars.json
+    let history = null;       // dernière réponse de /history.json (null si service v1)
+    let rangeH = Number(store.get('rangeH')) || 24;
+    let live = false;
+    let wakeLock = null;
+    const pending = {};       // réveils en cours : { e5008: horodatage de fin prévue }
+    const lastAutoWake = {};  // dernier réveil automatique (mode suivi)
+
+    /* =================================================================
+       CHARGEMENT DES DONNÉES
+       ================================================================= */
+    async function load() {
+      try {
+        const res = await fetch(`${API}/cars.json`, { cache: 'no-store' });
+        data = await res.json();
+        store.set('cache', JSON.stringify(data));
+        $('sub').textContent = `Mis à jour à ${hhmm(new Date())}`;
+      } catch (e) {
+        const old = store.get('cache');
+        if (old) data = JSON.parse(old);
+        $('sub').textContent = 'NAS injoignable — dernières valeurs connues';
+      }
+      renderCars();
+      if (live) autoWake();
+    }
+
+    async function loadHistory() {
+      try {
+        const res = await fetch(`${API}/history.json`, { cache: 'no-store' });
+        history = res.ok ? await res.json() : null;   // 404 = service v1, pas d'historique
+      } catch { history = null; }
+      renderChart();
+    }
+
+    /* =================================================================
+       AFFICHAGE D'UNE VOITURE
+       ================================================================= */
+    const ICON_REFRESH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36L21 8"/><path d="M21 3v5h-5"/></svg>';
+
+    function socColor(soc) {
+      if (soc == null) return 'var(--muted)';
+      return soc < 20 ? 'var(--bad)' : soc < 50 ? 'var(--warn)' : 'var(--good)';
+    }
+
+    function renderCars() {
+      if (!data) return;
+      $('cars').innerHTML = (data.cars || []).map(car => {
+        const id = carId(car);
+        const soc = Number.isFinite(car.soc) ? Math.round(car.soc) : null;
+
+        // --- Jauge : périmètre du cercle = 2πr ; on "cache" la partie vide avec dashoffset
+        const r = 54, C = 2 * Math.PI * r;
+        const offset = C * (1 - (soc ?? 0) / 100);
+
+        // --- État de la prise
+        let badge;
+        if (car.charging) badge = `<span class="badge charging">⚡ En charge</span>`;
+        else if (car.plugged) badge = `<span class="badge">🔌 Branchée${car.nextDelayedTime ? ' · charge programmée' : ''}</span>`;
+        else badge = `<span class="badge off">Débranchée</span>`;
+
+        // --- Détails (seulement ceux que le service fournit)
+        const facts = [];
+        if (car.charging && Number.isFinite(car.chargeRate) && car.chargeRate > 0) facts.push(`Vitesse : <b>+${Math.round(car.chargeRate)} km/h</b>`);
+        if (car.chargeMode) facts.push(`Mode : <b>${car.chargeMode === 'Quick' ? 'rapide' : car.chargeMode === 'Slow' ? 'lente' : esc(car.chargeMode)}</b>`);
+        if (Number.isFinite(car.mileage)) facts.push(`Compteur : <b>${Math.round(car.mileage).toLocaleString('fr-FR')} km</b>`);
+
+        // --- Fin de charge estimée (donnée par la voiture, ou calculée avec la courbe)
+        let eta = '';
+        const est = estimate(id, soc, car);
+        if (car.charging && est) {
+          eta = `<div class="eta"><div><div class="lbl">Charge terminée vers</div><div class="big">${hhmm(est.end)}</div></div>`
+              + `<div style="text-align:right"><div class="lbl">dans</div><div class="big">${duration(est.min)}</div></div></div>`;
+        }
+
+        // --- Âge de la mesure : la voiture n'envoie ses données que de temps en temps
+        const measured = parseDate(car.carUpdated || car.updated);
+        const old = measured && (Date.now() - measured) > OLD_MEASURE_H * 3600e3;
+        const ageTxt = measured ? `Mesure de la voiture ${ago(measured)}` : 'Date de mesure inconnue';
+
+        // --- Bouton actualiser (réveil) : désactivé si un réveil est en cours ou trop récent
+        const wake = car.wake;                         // fourni par le service v2
+        const busy = pending[id] && pending[id] > Date.now();
+        let btnTxt = 'Actualiser', disabled = false;
+        if (busy) { btnTxt = `${Math.ceil((pending[id] - Date.now()) / 1000)} s`; disabled = true; }
+        else if (!wake) { disabled = true; btnTxt = 'Actualiser'; }
+        else if (!wake.available) { disabled = true; btnTxt = wake.retryInS ? `Dans ${Math.ceil(wake.retryInS / 60)} min` : 'Quota atteint'; }
+        const quota = wake ? `<br>${wake.usedToday}/${wake.maxPerDay} réveils aujourd'hui` : '';
+
+        return `<article class="card">
+          <div class="car-top">
+            <div class="gauge">
+              <svg viewBox="0 0 132 132"><circle class="track" cx="66" cy="66" r="${r}"/>
+                <circle class="val" cx="66" cy="66" r="${r}" stroke="${socColor(soc)}" stroke-dasharray="${C}" stroke-dashoffset="${offset}"/></svg>
+              <div class="center"><div><div class="pct">${soc ?? '--'}<small>%</small></div>
+                <div class="km">${Number.isFinite(car.autonomy) ? Math.round(car.autonomy) + ' km' : ''}</div></div></div>
+            </div>
+            <div>
+              <div class="car-name">${esc(car.name)}</div>
+              ${badge}
+              <div class="facts">${facts.map(f => `<div>${f}</div>`).join('')}</div>
+            </div>
+          </div>
+          ${eta}
+          <div class="car-foot">
+            <div class="age ${old ? 'old' : ''}">${car.error ? '⚠ Voiture injoignable · ' : ''}${ageTxt}${quota}</div>
+            <button class="refresh ${busy ? 'busy' : ''}" data-car="${id}" ${disabled ? 'disabled' : ''}>${ICON_REFRESH}${btnTxt}</button>
+          </div>
+        </article>`;
+      }).join('');
+    }
+
+    /* Fin de charge : on prend le temps restant donné par la voiture s'il existe,
+       sinon on le calcule avec la pente de la courbe (points des 45 dernières minutes). */
+    function estimate(id, soc, car) {
+      let min = Number.isFinite(car.remainingMin) && car.remainingMin > 0 ? car.remainingMin : null;
+      if (min == null && history?.[id] && soc != null) {
+        const pts = history[id].filter(p => p[0] > Date.now() - 45 * 60e3);
+        if (pts.length >= 2) {
+          const [t0, s0] = pts[0], [t1, s1] = pts[pts.length - 1];
+          const perMin = (s1 - s0) / ((t1 - t0) / 60e3);     // % gagnés par minute
+          if (perMin > 0) min = Math.round((100 - soc) / perMin);
+        }
+      }
+      return min ? { min, end: new Date(Date.now() + min * 60e3) } : null;
+    }
+
+    /* =================================================================
+       BOUTON « ACTUALISER » : demande au NAS de réveiller la voiture
+       ================================================================= */
+    async function wakeCar(id, silent = false) {
+      try {
+        const res = await fetch(`${API}/refresh?car=${id}`, { method: 'POST' });
+        const body = await res.json().catch(() => ({}));
+        if (res.status === 202) {
+          const eta = (body.etaS || 45) + 5;
+          pending[id] = Date.now() + eta * 1000;
+          if (!silent) toast('Voiture réveillée, nouvelle mesure dans moins d\'une minute…');
+          setTimeout(() => { delete pending[id]; load(); loadHistory(); }, eta * 1000);
+        } else if (!silent) {
+          toast(body.error ? `Pas maintenant : ${body.error}` : 'Réveil impossible pour le moment');
+        }
+      } catch {
+        if (!silent) toast('NAS injoignable');
+      }
+      renderCars();
+    }
+
+    // Un seul écouteur pour tous les boutons (ils sont recréés à chaque affichage)
+    $('cars').addEventListener('click', (e) => {
+      const btn = e.target.closest('.refresh');
+      if (btn && !btn.disabled) wakeCar(btn.dataset.car);
+    });
+
+    // Compte à rebours des boutons pendant un réveil
+    setInterval(() => { if (Object.keys(pending).length) renderCars(); }, 1000);
+
+    /* =================================================================
+       MODE « SUIVI DE CHARGE »
+       - lit l'état toutes les 30 s ;
+       - réveille automatiquement une voiture en charge toutes les 10 min
+         (le NAS limite de toute façon à 40 réveils par jour) ;
+       - empêche l'écran de s'éteindre (Wake Lock), pratique posé sur un meuble.
+       ================================================================= */
+    let pollTimer;
+    function schedulePoll() {
+      clearInterval(pollTimer);
+      pollTimer = setInterval(() => { load(); loadHistory(); }, (live ? POLL_LIVE_S : POLL_NORMAL_S) * 1000);
+    }
+
+    function autoWake() {
+      for (const car of data?.cars || []) {
+        const id = carId(car);
+        if (!car.charging || !car.wake?.available || pending[id]) continue;
+        if (Date.now() - (lastAutoWake[id] || 0) < LIVE_WAKE_MIN * 60e3) continue;
+        lastAutoWake[id] = Date.now();
+        wakeCar(id, true);
+      }
+    }
+
+    async function setLive(on) {
+      live = on;
+      $('live').classList.toggle('on', on);
+      schedulePoll();
+      if (on) {
+        try { wakeLock = await navigator.wakeLock?.request('screen'); } catch {}
+        toast('Suivi de charge activé : écran allumé, mise à jour toutes les 30 s');
+        load();
+      } else {
+        try { await wakeLock?.release(); } catch {}
+        wakeLock = null;
+      }
+    }
+    $('live').addEventListener('click', () => setLive(!live));
+
+    /* =================================================================
+       COURBE DE BATTERIE (dessinée en SVG, sans bibliothèque)
+       ================================================================= */
+    function renderChart() {
+      const svg = $('chart');
+      // On dessine à la taille réelle de l'écran (sinon le texte serait déformé)
+      const W = Math.round(svg.getBoundingClientRect().width) || 520, H = 190;
+      const L = 30, R = 8, T = 8, B = 22;   // marges : gauche pour les %, bas pour les heures
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      const t1 = Date.now(), t0 = t1 - rangeH * 3600e3;
+      const x = (t) => L + (t - t0) / (t1 - t0) * (W - L - R);
+      const y = (s) => T + (1 - s / 100) * (H - T - B);
+
+      // Grille : 0 %, 50 %, 100 %
+      let out = [0, 50, 100].map(s =>
+        `<line x1="${L}" x2="${W - R}" y1="${y(s)}" y2="${y(s)}" stroke="var(--line)" stroke-dasharray="${s ? '3 4' : ''}"/>`
+        + `<text x="${L - 6}" y="${y(s) + 3}" text-anchor="end">${s}</text>`).join('');
+
+      // Graduations du temps : toutes les 6 h (24 h) ou chaque jour (7 jours)
+      const step = rangeH <= 24 ? 6 * 3600e3 : 24 * 3600e3;
+      const first = new Date(t0); first.setMinutes(0, 0, 0);
+      if (rangeH > 24) first.setHours(0); else first.setHours(Math.ceil(first.getHours() / 6) * 6);
+      for (let t = first.getTime(); t < t1; t += step) {
+        if (t < t0) continue;
+        const d = new Date(t);
+        const lbl = rangeH <= 24 ? `${d.getHours()}h` : d.toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', '');
+        out += `<text x="${x(t)}" y="${H - 6}" text-anchor="middle">${lbl}</text>`;
+      }
+
+      if (!history) {
+        out += `<text x="${W / 2}" y="${H / 2}" text-anchor="middle" style="font-family:Manrope;font-size:12px">Courbe disponible avec le service voitures v2</text>`;
+        svg.innerHTML = out; $('legend').innerHTML = ''; return;
+      }
+
+      // Une ligne par voiture. En "escalier" : la valeur reste la même jusqu'à la mesure suivante.
+      const names = { e5008: 'e-5008', corsa: 'Corsa' };
+      for (const [id, pts] of Object.entries(history)) {
+        const vis = pts.filter(p => p[0] >= t0);
+        const before = pts.filter(p => p[0] < t0).pop();          // point juste avant la fenêtre
+        if (before) vis.unshift([t0, before[1]]);
+        if (!vis.length) continue;
+        vis.push([t1, vis[vis.length - 1][1]]);                    // prolonge jusqu'à maintenant
+        let d = `M${x(vis[0][0])},${y(vis[0][1])}`;
+        for (let i = 1; i < vis.length; i++) d += ` H${x(vis[i][0]).toFixed(1)} V${y(vis[i][1]).toFixed(1)}`;
+        out += `<path d="${d}" fill="none" stroke="${COLORS[id] || 'var(--teal)'}" stroke-width="2.5" stroke-linejoin="round"/>`;
+      }
+      svg.innerHTML = out;
+      $('legend').innerHTML = Object.keys(history).map(id => `<span style="--c:${COLORS[id] || 'var(--teal)'}">${names[id] || id}</span>`).join('');
+    }
+
+    // Rotation du téléphone / redimensionnement : on redessine à la nouvelle largeur
+    window.addEventListener('resize', renderChart);
+
+    $('range').addEventListener('click', (e) => {
+      const b = e.target.closest('button'); if (!b) return;
+      rangeH = Number(b.dataset.h); store.set('rangeH', rangeH);
+      [...$('range').children].forEach(x => x.classList.toggle('on', x === b));
+      renderChart();
+    });
+
+    /* =================================================================
+       DÉMARRAGE
+       ================================================================= */
+    $('version').textContent = VERSION;
+    [...$('range').children].forEach(x => x.classList.toggle('on', Number(x.dataset.h) === rangeH));
+    const cached = store.get('cache'); if (cached) { data = JSON.parse(cached); renderCars(); }
+    load(); loadHistory(); schedulePoll();
+
+    // Retour sur l'appli : on relit tout et on reprend le verrou d'écran si le suivi est actif
+    document.addEventListener('visibilitychange', async () => {
+      if (document.hidden) return;
+      load(); loadHistory();
+      if (live) { try { wakeLock = await navigator.wakeLock?.request('screen'); } catch {} }
+    });
+
+    // Page installable (service worker)
+    if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js');
+  </script>
+</body>
+</html>

@@ -100,6 +100,10 @@ PAGES = [
          desc="Météo, tâches des enfants et batteries des voitures",
          picto="house", tuile="#0f7c7b", trait="#ffffff",
          fond="#f3f6f6", theme="#0e3a44"),
+    dict(dossier="voitures", nom="Voitures", court="Voitures",
+         desc="Batterie et charge de l'e-5008 et de la Corsa",
+         picto="battery-charging", tuile="#0b4f55", trait="#ffffff",
+         fond="#f6f9f9", theme="#0b4f55"),
 ]
 
 
