@@ -1,0 +1,442 @@
+<!doctype html>
+<!--
+  Page « Max · Foot & Chats » — le copain vocal de Titouan et Ava
+  Version 1.0.0 – 01/11/2026
+  En ligne : https://baiji.fr/foot-chats/
+
+  Historique :
+   • 1.0.0 : première version (agent vocal ElevenLabs « Max » :
+             quiz foot / PSG pour Titouan, jeux de chats pour Ava)
+
+  Comment ça marche ?
+  - Deux grosses cartes, une par enfant :
+       ⚽ Titouan → « Quiz foot »      🐱 Ava → « Jeux de chats »
+    + un petit bouton « On joue à deux ».
+    Ava a 6 ans et ne lit peut-être pas encore très bien : tout passe par
+    de gros dessins et des couleurs, pas par du texte.
+  - Appuyer sur une carte LANCE l'appel avec Max (si ce n'est pas déjà fait),
+    puis lui dit qui joue. Pour ça, on envoie un message TEXTE à l'agent
+    (sendUserMessage), exactement comme si l'enfant l'avait dit.
+    Pendant l'appel, appuyer sur l'autre carte = changer de joueur.
+  - Le message n'est envoyé qu'une fois que Max a fini sa phrase d'accueil
+    (premier passage en mode « écoute »), sinon il se couperait lui-même.
+  - Au centre, la bulle de Max pulse au rythme de sa voix.
+  - SDK officiel « @elevenlabs/client », même version que les autres pages.
+  - 3 états de page, posés en classe CSS sur <body> : (rien) / connexion / en-ligne.
+-->
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Max · Foot &amp; Chats</title>
+  <!--
+    PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »
+    ou « Ajouter à l'écran d'accueil »). Fichiers fabriqués par outils/generer-pwa.py :
+     • manifest.webmanifest : nom, couleurs, icônes de l'appli ;
+     • icones/ : les icônes (apple-touch-icon = celle des iPhone) ;
+     • sw.js : le service worker, enregistré en bas de page.
+  -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <link rel="icon" href="icones/icone-192.png" type="image/png">
+  <!-- « noindex » : invisible sur Google, accessible seulement avec le lien -->
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#fff6e9">
+  <!-- Fredoka = police ronde et joyeuse pour les titres ; Manrope (charte SV) pour le texte -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Manrope:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ---------- Couleurs : vert pelouse pour Titouan, rose pour Ava ---------- */
+    :root {
+      --fond:    #fff6e9;   /* crème chaud */
+      --carte:   #ffffff;
+      --encre:   #2b2233;   /* texte */
+      --doux:    #76697f;   /* texte secondaire */
+      --foot:    #1f8a4c;   /* vert pelouse */
+      --foot-2:  #156637;   /* vert foncé (ombre) */
+      --chat:    #e8649f;   /* rose */
+      --chat-2:  #b8467a;   /* rose foncé (ombre) */
+      --duo:     #f2a23a;   /* orange « à deux » */
+      --duo-2:   #c27a1c;
+      --sv:      #0f7c7b;   /* le teal SV, pour Max */
+      --rouge:   #d23a45;   /* raccrocher / erreur */
+    }
+    /* Mode sombre automatique si le téléphone est en thème sombre */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --fond:  #1b1720;
+        --carte: #262130;
+        --encre: #f4eef8;
+        --doux:  #b6a9c0;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      background: var(--fond);
+      color: var(--encre);
+      font-family: Manrope, system-ui, sans-serif;
+      min-height: 100dvh;
+      -webkit-tap-highlight-color: transparent;
+    }
+    main {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 26px 16px 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      text-align: center;
+    }
+
+    /* ---------- En-tête ---------- */
+    .surtitre {
+      font-size: 12px; font-weight: 700; letter-spacing: .22em;
+      text-transform: uppercase; color: var(--doux); margin: 0 0 4px;
+    }
+    h1 {
+      font-family: Fredoka, Manrope, sans-serif; font-weight: 700;
+      font-size: clamp(36px, 10vw, 54px); line-height: 1.05; margin: 0;
+    }
+    h1 .f { color: var(--foot); }
+    h1 .c { color: var(--chat); }
+    .chapo { color: var(--doux); font-size: 16px; margin: 8px auto 0; max-width: 30ch; }
+
+    /* ---------- La bulle de Max (au centre) ---------- */
+    .zone-max { position: relative; width: 150px; height: 150px; display: grid; place-items: center; }
+    .onde {
+      position: absolute; inset: 0; border-radius: 50%;
+      background: var(--sv); opacity: 0; pointer-events: none;
+      transition: transform .12s ease-out, opacity .2s;
+    }
+    body.en-ligne .onde { opacity: .14; }
+    #max {
+      position: relative; width: 130px; height: 130px; border-radius: 50%;
+      background: var(--sv); color: #fff;
+      display: grid; place-items: center;
+      font-size: 64px; line-height: 1;
+      box-shadow: 0 7px 0 #0a5857, 0 12px 26px rgba(0,0,0,.18);
+      transition: background .3s, box-shadow .3s;
+    }
+    /* La bulle prend la couleur du jeu en cours */
+    body[data-jeu="foot"] #max { background: var(--foot); box-shadow: 0 7px 0 var(--foot-2), 0 12px 26px rgba(0,0,0,.18); }
+    body[data-jeu="chat"] #max { background: var(--chat); box-shadow: 0 7px 0 var(--chat-2), 0 12px 26px rgba(0,0,0,.18); }
+    body[data-jeu="duo"]  #max { background: var(--duo);  box-shadow: 0 7px 0 var(--duo-2),  0 12px 26px rgba(0,0,0,.18); }
+    body.connexion #max { animation: sautille .8s ease-in-out infinite; }
+    #nom-max {
+      position: absolute; left: 50%; bottom: -12px; transform: translateX(-50%);
+      padding: 6px 14px; border-radius: 999px; background: var(--encre); color: var(--fond);
+      font: 700 13px Fredoka, sans-serif; letter-spacing: .08em; white-space: nowrap;
+    }
+
+    /* ---------- Infos pendant l'appel ---------- */
+    #infos { min-height: 3em; color: var(--doux); font-size: 15px; }
+    #chrono {
+      display: block; font: 700 22px Fredoka, sans-serif;
+      color: var(--encre); visibility: hidden;
+    }
+    body.en-ligne #chrono { visibility: visible; }
+
+    /* ---------- Les cartes des enfants ---------- */
+    .joueurs { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; }
+    .joueur {
+      position: relative; border: 0; border-radius: 22px; padding: 18px 10px 16px;
+      cursor: pointer; color: #fff; overflow: hidden;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      font-family: Fredoka, sans-serif;
+      transition: transform .1s, box-shadow .1s, outline-color .2s;
+      outline: 4px solid transparent; outline-offset: 3px;
+    }
+    .joueur .dessin { font-size: 64px; line-height: 1.1; }
+    .joueur .prenom { font-size: 26px; font-weight: 700; }
+    .joueur .jeu    { font-size: 14px; font-weight: 500; opacity: .92; letter-spacing: .04em; }
+    .joueur:active  { transform: translateY(5px); }
+
+    /* Titouan : une pelouse avec des bandes et la ligne médiane */
+    #foot {
+      background:
+        linear-gradient(90deg, transparent calc(50% - 1.5px), rgba(255,255,255,.45) calc(50% - 1.5px) calc(50% + 1.5px), transparent calc(50% + 1.5px)),
+        repeating-linear-gradient(90deg, var(--foot) 0 22px, #239656 22px 44px);
+      box-shadow: 0 6px 0 var(--foot-2);
+    }
+    #foot:active { box-shadow: 0 1px 0 var(--foot-2); }
+    /* Ava : du rose avec des petites empreintes de pattes en filigrane */
+    #chat {
+      background:
+        radial-gradient(circle at 20% 25%, rgba(255,255,255,.18) 0 7px, transparent 8px),
+        radial-gradient(circle at 80% 70%, rgba(255,255,255,.18) 0 7px, transparent 8px),
+        radial-gradient(circle at 75% 20%, rgba(255,255,255,.12) 0 5px, transparent 6px),
+        var(--chat);
+      box-shadow: 0 6px 0 var(--chat-2);
+    }
+    #chat:active { box-shadow: 0 1px 0 var(--chat-2); }
+    /* La carte du joueur en cours est entourée */
+    body[data-jeu="foot"] #foot { outline-color: var(--foot); }
+    body[data-jeu="chat"] #chat { outline-color: var(--chat); }
+
+    /* Le bouton « à deux » */
+    #duo {
+      border: 0; border-radius: 999px; padding: 12px 22px; cursor: pointer;
+      background: var(--duo); color: #2b1a00; box-shadow: 0 5px 0 var(--duo-2);
+      font: 700 16px Fredoka, sans-serif; letter-spacing: .03em;
+      outline: 4px solid transparent; outline-offset: 3px;
+    }
+    #duo:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--duo-2); }
+    body[data-jeu="duo"] #duo { outline-color: var(--duo); }
+
+    /* Le bouton raccrocher (visible seulement pendant l'appel) */
+    #raccrocher {
+      display: none; border: 0; border-radius: 999px; padding: 14px 26px; cursor: pointer;
+      background: var(--rouge); color: #fff; box-shadow: 0 5px 0 #8f1f28;
+      font: 700 15px Manrope, sans-serif; letter-spacing: .14em; text-transform: uppercase;
+    }
+    body.en-ligne #raccrocher, body.connexion #raccrocher { display: inline-block; }
+    #raccrocher:active { transform: translateY(4px); box-shadow: 0 1px 0 #8f1f28; }
+
+    /* ---------- Petit mode d'emploi (pour les grands) ---------- */
+    .aide {
+      width: 100%; background: var(--carte); border-radius: 18px;
+      padding: 6px 16px; text-align: left; font-size: 15px;
+      box-shadow: 0 1px 0 rgba(0,0,0,.06);
+    }
+    .aide p { margin: 10px 0; }
+
+    @keyframes sautille {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-10px); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      body.connexion #max { animation: none; }
+      .onde { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="surtitre">Titouan · Ava</p>
+      <h1><span class="f">Foot</span> &amp; <span class="c">Chats</span></h1>
+      <p class="chapo">Appuie sur ta carte : Max t'appelle pour jouer !</p>
+    </header>
+
+    <!-- La bulle de Max : son dessin change selon le jeu en cours -->
+    <div class="zone-max" aria-hidden="true">
+      <span class="onde"></span>
+      <span class="onde"></span>
+      <span class="onde"></span>
+      <div id="max"><span id="dessin-max">🎙️</span><span id="nom-max">MAX</span></div>
+    </div>
+
+    <div id="infos" aria-live="polite">
+      <span id="chrono">00:00</span>
+      <span id="parole">Choisis qui joue.</span>
+    </div>
+
+    <!-- Une carte par enfant : elle lance l'appel ET dit à Max qui joue -->
+    <div class="joueurs">
+      <button class="joueur" id="foot" type="button" data-jeu="foot">
+        <span class="dessin">⚽</span>
+        <span class="prenom">Titouan</span>
+        <span class="jeu">Quiz foot</span>
+      </button>
+      <button class="joueur" id="chat" type="button" data-jeu="chat">
+        <span class="dessin">🐱</span>
+        <span class="prenom">Ava</span>
+        <span class="jeu">Jeux de chats</span>
+      </button>
+    </div>
+
+    <button id="duo" type="button" data-jeu="duo">⚽ 🐱 On joue à deux</button>
+    <button id="raccrocher" type="button">Raccrocher</button>
+
+    <section class="aide">
+      <p><b>⚽ Titouan</b> : Max te pose des questions sur le PSG et les autres équipes. Chaque bonne réponse, c'est un but !</p>
+      <p><b>🐱 Ava</b> : devinettes, vrai ou faux, invente ton chat… et beaucoup de miaous.</p>
+      <p><b>Pour arrêter</b> : dis « au revoir Max » ou appuie sur Raccrocher.</p>
+    </section>
+  </main>
+
+  <script type="module">
+    /* ============================================================
+       1. RÉGLAGES
+       ============================================================ */
+    const AGENT_ID = "agent_8101m6b1b6dye9srccbe1t628d7r";   // « Foot & Chats – Titouan et Ava » sur ElevenLabs
+
+    // Pour chaque jeu : le dessin dans la bulle de Max, et la phrase envoyée
+    // à l'agent (son prompt sait reconnaître ces phrases).
+    const JEUX = {
+      foot: { dessin: "⚽", phrase: "C'est Titouan, on fait le quiz foot !" },
+      chat: { dessin: "🐱", phrase: "C'est Ava, on joue aux chats !" },
+      duo:  { dessin: "🏆", phrase: "C'est Titouan et Ava, on joue tous les deux à tour de rôle !" },
+    };
+
+    // Tous les textes affichés, regroupés ici pour les changer facilement
+    const TEXTES = {
+      choisis:   "Choisis qui joue.",
+      connexion: "Max arrive…",
+      maxParle:  "Max parle… (tu peux le couper)",
+      aToi:      "À toi ! Réponds à voix haute.",
+      micro:     "Il faut autoriser le micro, sinon Max ne t'entend pas.",
+      erreur:    "Oups, pas de réseau. Réessaie !",
+    };
+
+    const parole = document.getElementById("parole");
+    const chrono = document.getElementById("chrono");
+    const dessin = document.getElementById("dessin-max");
+    const ondes  = [...document.querySelectorAll(".onde")];
+
+    /* ============================================================
+       2. LES ÉTATS DE LA PAGE
+       - la classe de <body> : (rien) / connexion / en-ligne / erreur
+       - l'attribut data-jeu de <body> : foot / chat / duo (le CSS colore)
+       ============================================================ */
+    function etat(nom) { document.body.className = nom || ""; }
+    function choisirJeu(jeu) {
+      document.body.dataset.jeu = jeu || "";
+      dessin.textContent = jeu ? JEUX[jeu].dessin : "🎙️";
+    }
+
+    let debutAppel = 0, minuterie = null;
+    function lancerChrono() {
+      debutAppel = Date.now();
+      chrono.textContent = "00:00";
+      minuterie = setInterval(() => {
+        const s = Math.floor((Date.now() - debutAppel) / 1000);
+        // padStart(2, "0") ajoute un zéro devant : 7 → "07"
+        chrono.textContent =
+          String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+      }, 1000);
+    }
+
+    /* ============================================================
+       3. L'APPEL AVEC MAX
+       ============================================================ */
+    let conversation = null;   // la session en cours (null = pas d'appel)
+    let enAttente = null;      // phrase à envoyer dès que Max a fini son accueil
+    let boucle = null;         // boucle d'animation des ondes
+    let lisse  = 0;            // volume lissé, pour des ondes fluides
+
+    function repos() {
+      cancelAnimationFrame(boucle);
+      clearInterval(minuterie);
+      conversation = null;
+      enAttente = null;
+      ondes.forEach(o => o.style.transform = "scale(1)");
+      etat("");
+      choisirJeu(null);
+      parole.textContent = TEXTES.choisis;
+    }
+
+    function erreur(e, message) {
+      console.error("Foot & Chats :", e);
+      cancelAnimationFrame(boucle);
+      clearInterval(minuterie);
+      conversation = null;
+      etat("erreur");
+      parole.textContent = message || TEXTES.erreur;
+      setTimeout(repos, 3500);
+    }
+
+    // 60 fois par seconde : les ondes suivent la voix de Max
+    function animer() {
+      if (!conversation) return;
+      const v = Math.min(1, conversation.getOutputVolume() * 2.5);   // volume 0→1, un peu amplifié
+      lisse = lisse * 0.75 + v * 0.25;                                // moyenne glissante = mouvement doux
+      ondes.forEach((o, i) => o.style.transform = `scale(${1 + lisse * (0.2 + i * 0.17)})`);
+      boucle = requestAnimationFrame(animer);
+    }
+
+    // Envoie la phrase « qui joue » à Max (comme si l'enfant l'avait dite)
+    function envoyer(phrase) {
+      if (!conversation) return;
+      try { conversation.sendUserMessage(phrase); }
+      catch (e) { console.error("Envoi impossible :", e); }
+    }
+
+    async function demarrer() {
+      etat("connexion");
+      parole.textContent = TEXTES.connexion;
+
+      try {
+        // 1) Accès au micro (le navigateur demande l'autorisation)
+        try {
+          await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (e) {
+          return erreur(e, TEXTES.micro);
+        }
+
+        // 2) Le SDK ElevenLabs n'est chargé qu'au premier appui (page plus légère).
+        //    Même version figée que les autres agents du site.
+        const { Conversation } = await import(
+          "https://cdn.jsdelivr.net/npm/@elevenlabs/client@1.32.1/+esm"
+        );
+
+        // 3) Ouverture de la conversation
+        conversation = await Conversation.startSession({
+          agentId: AGENT_ID,
+          onConnect: () => {
+            etat("en-ligne");
+            parole.textContent = TEXTES.maxParle;
+            lancerChrono();
+            animer();
+          },
+          // mode = "speaking" (Max parle) ou "listening" (il écoute)
+          onModeChange: ({ mode }) => {
+            parole.textContent = mode === "speaking" ? TEXTES.maxParle : TEXTES.aToi;
+            // Max a fini sa phrase d'accueil → on lui dit qui joue
+            if (mode === "listening" && enAttente) {
+              const phrase = enAttente;
+              enAttente = null;
+              envoyer(phrase);
+            }
+          },
+          onDisconnect: repos,
+          onError: (e) => erreur(e),
+        });
+      } catch (e) {
+        erreur(e);
+      }
+    }
+
+    /* ============================================================
+       4. LES BOUTONS
+       ============================================================ */
+    // Une carte (ou « à deux ») : on choisit le jeu, puis
+    //  - pas d'appel → on appelle Max, et la phrase part après son accueil ;
+    //  - appel en cours → la phrase part tout de suite (changement de joueur).
+    document.querySelectorAll("[data-jeu]").forEach(bouton => {
+      if (bouton === document.body) return;
+      bouton.addEventListener("click", () => {
+        const jeu = bouton.dataset.jeu;
+        if (document.body.classList.contains("connexion")) {   // ça sonne encore :
+          choisirJeu(jeu);                                      // on change juste d'avis
+          enAttente = JEUX[jeu].phrase;
+          return;
+        }
+        choisirJeu(jeu);
+        if (conversation) {
+          envoyer(JEUX[jeu].phrase);
+        } else {
+          enAttente = JEUX[jeu].phrase;
+          demarrer();
+        }
+      });
+    });
+
+    document.getElementById("raccrocher").addEventListener("click", async () => {
+      if (conversation) await conversation.endSession();   // onDisconnect → repos()
+    });
+  </script>
+<script>
+  // ---- Page installable : enregistrement du service worker (sw.js, même dossier) ----
+  // Il fonctionne en « réseau d'abord » : la page en ligne est toujours la plus récente.
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    navigator.serviceWorker.register("sw.js");
+  }
+</script>
+</body>
+</html>

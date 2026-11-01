@@ -80,6 +80,10 @@ PAGES = [
          desc="S'entraîner à négocier avec Papa (et son coach)",
          picto="scale", tuile="#0f7c7b", trait="#ffffff",
          fond="#eef4f3", theme="#0f7c7b"),
+    dict(dossier="foot-chats", nom="Max · Foot & Chats", court="Foot & Chats",
+         desc="Quiz foot pour Titouan, jeux de chats pour Ava",
+         picto="cat", tuile="#1f8a4c", trait="#ffffff",
+         fond="#fff6e9", theme="#fff6e9"),
 ]
 
 

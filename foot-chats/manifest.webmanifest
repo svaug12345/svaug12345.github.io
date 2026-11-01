@@ -1,0 +1,39 @@
+{
+  "name": "Max · Foot & Chats",
+  "short_name": "Foot & Chats",
+  "description": "Quiz foot pour Titouan, jeux de chats pour Ava",
+  "id": "/foot-chats/",
+  "start_url": "/foot-chats/",
+  "scope": "/foot-chats/",
+  "display": "standalone",
+  "background_color": "#fff6e9",
+  "theme_color": "#fff6e9",
+  "lang": "fr",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "icones/icone-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icones/icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icones/icone-masquable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icones/icone-masquable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
