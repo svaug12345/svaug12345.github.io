@@ -1,0 +1,213 @@
+<!doctype html>
+<!--
+  Page « Assistant Nexus B2B – partenaires franchisés Carrefour »
+  Version 1.0.0 – 01/11/2026
+  En ligne : https://baiji.fr/assistant-nexus/
+
+  Historique :
+   • 1.0.0 : première version, copie de la page « Assistant fournisseurs » (OneBuy)
+             adaptée à Nexus, la plateforme B2B de Carrefour pour ses partenaires
+             franchisés (même process d'inscription Ariba) ; nouvel agent ElevenLabs
+             « Assistant Nexus B2B » (voix SebastienV) ; installable (PWA) ; « noindex »
+
+  À quoi sert cette page ?
+  - Elle explique en 4 étapes comment rejoindre Carrefour sur Nexus (plateforme Ariba).
+  - Elle intègre l'agent vocal ElevenLabs (bulle en bas à droite) pour répondre aux questions.
+  - L'agent prononce « B2B » à l'anglaise : dans son prompt, on lui fait écrire « bi-tou-bi ».
+-->
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <!-- Indispensable pour un bon affichage sur téléphone -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Assistant Nexus Carrefour</title>
+  <!--
+    PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »
+    ou « Ajouter à l'écran d'accueil »). Fichiers fabriqués par outils/generer-pwa.py :
+     • manifest.webmanifest : nom, couleurs, icônes de l'appli ;
+     • icones/ : les icônes (apple-touch-icon = celle des iPhone) ;
+     • sw.js : le service worker, enregistré en bas de page.
+  -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <meta name="theme-color" content="#0E4C9A">
+  <link rel="icon" href="icones/icone-192.png" type="image/png">
+  <meta name="description" content="Aide vocale pour les partenaires franchisés : rejoindre Nexus, la plateforme B2B de Carrefour.">
+  <!-- « noindex » : demande aux moteurs de recherche de ne pas lister cette page.
+       Elle reste accessible à toute personne qui a le lien, mais on ne la trouve pas sur Google. -->
+  <meta name="robots" content="noindex, nofollow">
+
+  <style>
+    /* ---------- Couleurs et réglages communs (variables CSS) ---------- */
+    :root {
+      --bleu: #0E4C9A;        /* bleu Carrefour */
+      --bleu-fonce: #0A3670;
+      --rouge: #E1251B;       /* rouge Carrefour */
+      --fond: #F4F7FB;
+      --carte: #FFFFFF;
+      --texte: #1B2430;
+      --texte-doux: #5A6675;
+      --rayon: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--fond);
+      color: var(--texte);
+      line-height: 1.55;
+    }
+
+    /* ---------- Bandeau du haut ---------- */
+    header {
+      background: linear-gradient(135deg, var(--bleu), var(--bleu-fonce));
+      color: #fff;
+      padding: 28px 16px 64px;   /* le bas plus grand laisse la place à la carte qui chevauche */
+    }
+    .conteneur { max-width: 760px; margin: 0 auto; }
+
+    .marque { font-weight: 800; letter-spacing: .5px; font-size: 1.1rem; }
+    .marque span { color: #fff; border-bottom: 3px solid var(--rouge); padding-bottom: 2px; }
+
+    h1 { font-size: clamp(1.5rem, 5vw, 2.1rem); margin: 28px 0 8px; line-height: 1.2; }
+    .sous-titre { margin: 0; opacity: .9; }
+
+    /* ---------- Contenu principal ---------- */
+    main { padding: 0 16px 120px; }   /* 120px en bas : la bulle vocale ne cache pas le texte */
+
+    .carte {
+      background: var(--carte); border-radius: var(--rayon);
+      box-shadow: 0 6px 24px rgba(14,76,154,.10);
+      padding: 22px; margin-top: 18px;
+    }
+    .carte.chevauche { margin-top: -40px; }   /* première carte qui « mord » sur le bandeau */
+
+    /* Encadré qui présente l'assistant vocal */
+    .assistant { display: flex; gap: 16px; align-items: flex-start; }
+    .micro {
+      flex: 0 0 48px; height: 48px; border-radius: 50%;
+      background: var(--rouge); display: grid; place-items: center;
+    }
+    .assistant h2 { margin: 0 0 4px; font-size: 1.15rem; }
+    .assistant p { margin: 0; color: var(--texte-doux); }
+
+    h2.section { font-size: 1.15rem; margin: 0 0 14px; color: var(--bleu); }
+
+    /* Liste des étapes numérotées */
+    ol.etapes { list-style: none; counter-reset: etape; margin: 0; padding: 0; }
+    ol.etapes li {
+      counter-increment: etape; position: relative;
+      padding: 0 0 16px 46px;
+    }
+    ol.etapes li::before {
+      content: counter(etape);
+      position: absolute; left: 0; top: 0;
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--bleu); color: #fff; font-weight: 700;
+      display: grid; place-items: center;
+    }
+    ol.etapes li:last-child { padding-bottom: 0; }
+    ol.etapes strong { display: block; }
+    ol.etapes span { color: var(--texte-doux); }
+
+    /* Petits encadrés « bon à savoir » */
+    .astuces { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+    .astuce { border-left: 4px solid var(--rouge); background: #FFF6F5; padding: 12px 14px; border-radius: 8px; }
+    .astuce strong { display: block; margin-bottom: 2px; }
+
+    footer { text-align: center; color: var(--texte-doux); font-size: .85rem; padding: 0 16px 24px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="conteneur">
+      <div class="marque"><span>Carrefour</span></div>
+      <h1>Rejoindre Nexus, la plateforme B2B de Carrefour</h1>
+      <p class="sous-titre">Pour les partenaires franchisés. Même démarche que OneBuy, sur la plateforme Ariba : un assistant vocal vous guide pas à pas.</p>
+    </div>
+  </header>
+
+  <main>
+    <div class="conteneur">
+
+      <!-- Carte de présentation de l'assistant vocal -->
+      <section class="carte chevauche assistant">
+        <div class="micro" aria-hidden="true">
+          <!-- Icône micro dessinée en SVG (aucune image externe) -->
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
+            <rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>
+          </svg>
+        </div>
+        <div>
+          <h2>Une question ? Parlez à l'assistant</h2>
+          <p>Cliquez sur la bulle en bas à droite de l'écran, autorisez le micro, puis posez votre question à voix haute.</p>
+        </div>
+      </section>
+
+      <!-- Les étapes du process -->
+      <section class="carte">
+        <h2 class="section">Les étapes</h2>
+        <ol class="etapes">
+          <li>
+            <strong>Repérez l'e-mail d'invitation</strong>
+            <span>Il vient de SAP Business Network (Ariba). Pensez à vérifier vos courriers indésirables.</span>
+          </li>
+          <li>
+            <strong>Acceptez la relation commerciale</strong>
+            <span>Cliquez sur le lien de l'e-mail pour accepter la demande de Carrefour.</span>
+          </li>
+          <li>
+            <strong>Créez votre compte ou connectez-vous</strong>
+            <span>Si votre entreprise a déjà un compte Ariba (par exemple pour OneBuy), connectez-vous avec : ne créez pas de doublon.</span>
+          </li>
+          <li>
+            <strong>Complétez votre profil</strong>
+            <span>Une fois la relation active, vos commandes Nexus apparaissent dans votre compte.</span>
+          </li>
+        </ol>
+      </section>
+
+      <!-- Points qui reviennent souvent -->
+      <section class="carte">
+        <h2 class="section">Bon à savoir</h2>
+        <div class="astuces">
+          <div class="astuce">
+            <strong>Le compte Standard est gratuit</strong>
+            <span>Il suffit pour travailler avec Carrefour.</span>
+          </div>
+          <div class="astuce">
+            <strong>Invitation introuvable ?</strong>
+            <span>Demandez à votre interlocuteur Carrefour de la renvoyer.</span>
+          </div>
+          <div class="astuce">
+            <strong>Jamais de mot de passe à l'oral</strong>
+            <span>L'assistant ne vous le demandera jamais.</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer>Carrefour – Nexus, plateforme B2B des partenaires franchisés · Assistant automatique, ne remplace pas votre interlocuteur Carrefour</footer>
+
+  <!--
+    ===== Agent vocal ElevenLabs =====
+    - La balise <elevenlabs-convai> affiche la bulle en bas à droite.
+    - agent-id = identifiant de ton agent (ne pas modifier).
+    - Le script charge le composant depuis unpkg (CDN public d'ElevenLabs).
+  -->
+  <elevenlabs-convai agent-id="agent_4901m6cm4302f1zsss28d9pbm8tn"></elevenlabs-convai>
+  <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
+<script>
+  // ---- Page installable : enregistrement du service worker (sw.js, même dossier) ----
+  // Il fonctionne en « réseau d'abord » : la page en ligne est toujours la plus récente.
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    navigator.serviceWorker.register("sw.js");
+  }
+</script>
+</body>
+</html>
