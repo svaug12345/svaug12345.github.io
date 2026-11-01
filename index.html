@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr — Page d'accueil des projets (marque SV)
-  Version 1.14.0
+  Version 1.15.0
   ------------------------------------------------------------
   Historique :
    • v1.0.0 : première page d'accueil
@@ -35,6 +35,7 @@
               sur téléphone, cartes sur 2 colonnes (picto au-dessus,
               description courte « courte ») ; chaque catégorie se
               replie / se déplie d'un toucher (choix mémorisé)
+   • v1.15.0 : ajout de « Photos » (Immich sur le NAS, photos.baiji.fr) dans « Maison »
 
   À déposer dans le dépôt GitHub : svaug12345.github.io
   → c'est le fichier "index.html" à la racine.
@@ -383,7 +384,7 @@
 
     <!-- ===================== PIED DE PAGE ===================== -->
     <footer>
-      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.14.0</p>
+      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.15.0</p>
     </footer>
 
   </div>
@@ -440,6 +441,7 @@
       balance: `<path d="M12 3v18"/> <path d="m19 8 3 8a5 5 0 0 1-6 0zV7"/> <path d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1"/> <path d="m5 8 3 8a5 5 0 0 1-6 0zV7"/> <path d="M7 21h10"/>`,  // scale
       vent: `<path d="M12.8 19.6A2 2 0 1 0 14 16H2"/> <path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"/> <path d="M9.8 4.4A2 2 0 1 1 11 8H2"/>`,  // wind
       velo: `<circle cx="18.5" cy="17.5" r="3.5"/> <circle cx="5.5" cy="17.5" r="3.5"/> <circle cx="15" cy="5" r="1"/> <path d="M12 17.5V14l-3-3 4-3 2 3h2"/>`,  // bike
+      photo: `<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/> <circle cx="9" cy="9" r="2"/> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>`,  // image
     };
     const PROJETS = [
       {
@@ -578,6 +580,18 @@
         desc: "Batterie et charge de l'e-5008 et de la Corsa, suivi en direct",
         courte: "Charge de l'e-5008 et de la Corsa",              // version courte (téléphone)
         url:  "voitures/",               // ✅ en ligne : baiji.fr/voitures/
+        cat:  "Maison"
+      },
+      {
+        // Photos = Immich, installé sur le NAS (Container Manager, projet « immich »).
+        // Ce n'est pas une page de ce dépôt : l'adresse est complète (https://…)
+        // et mène au NAS via le reverse proxy de DSM. L'accès est protégé par
+        // le compte Immich de chacun.
+        nom:  "Photos",
+        icone: "photo",                   // picto (voir la liste PICTOS)
+        desc: "La photothèque de la famille, avec visages et recherche (Immich)",
+        courte: "La photothèque familiale",              // version courte (téléphone)
+        url:  "https://photos.baiji.fr/", // ✅ en ligne : Immich sur le NAS
         cat:  "Maison"
       }
     ];
