@@ -1,0 +1,391 @@
+<!doctype html>
+<!--
+  Page d'aide « Accès au NAS »
+  Version 1.0.0 – 01/11/2026
+  En ligne : https://baiji.fr/nas-aide/ (non listée sur l'accueil, en « noindex » : Seb envoie le lien)
+
+  Historique :
+   • 1.0.0 : première version (Plex inchangé, accès DSM via partage Tailscale,
+             étapes Android / PC Windows, questions fréquentes) ; installable (PWA)
+
+  Une seule page autonome (HTML + CSS + un peu de JS), aux couleurs de la charte SV.
+  Elle ne contient volontairement AUCUNE info sensible (pas d'IP, pas de nom de réseau Tailscale) :
+  l'adresse du NAS se copie depuis l'appli Tailscale de chacun.
+-->
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Accès au NAS — ce qui change</title>
+  <!--
+    PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »
+    ou « Ajouter à l'écran d'accueil »). Fichiers fabriqués par outils/generer-pwa.py :
+     • manifest.webmanifest : nom, couleurs, icônes de l'appli ;
+     • icones/ : les icônes (apple-touch-icon = celle des iPhone) ;
+     • sw.js : le service worker, enregistré en bas de page.
+  -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <link rel="icon" href="icones/icone-192.png" type="image/png">
+  <meta name="theme-color" content="#0b4f55">
+  <meta name="description" content="Comment accéder au NAS de Seb depuis l'extérieur avec Tailscale.">
+  <!-- La page n'est pas listée sur l'accueil : on demande aussi aux moteurs de recherche de ne pas l'indexer. -->
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Polices de la charte SV : Manrope (texte) et JetBrains Mono (adresses, chiffres) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ===== Couleurs de la charte SV, écrites une seule fois en variables CSS ===== */
+    :root {
+      --surface: #f6f9f9;        /* fond de page */
+      --surface-raised: #ffffff; /* cartes */
+      --line: #d6e2e3;           /* bordures fines */
+      --ink: #102a2e;            /* texte principal */
+      --ink-muted: #4d6468;      /* texte secondaire */
+      --teal: #0f7c7b;           /* couleur de marque */
+      --on-teal: #ffffff;        /* texte posé sur du teal */
+      --teal-deep: #0b4f55;      /* bandeau du haut */
+      --teal-soft: #d4ecea;      /* zones mises en avant */
+      --accent: #20b2a6;         /* touche décorative uniquement */
+      --danger: #b23a34;         /* avertissements */
+      --radius-sm: 6px;
+      --radius-md: 12px;
+    }
+    /* Thème sombre automatique si le téléphone ou le PC est en mode sombre */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --surface: #0e1a1c; --surface-raised: #152427; --line: #26393c;
+        --ink: #e6f1f1; --ink-muted: #9db3b5;
+        --teal: #3cc2b8; --on-teal: #062022; --teal-deep: #1d6b6e;
+        --teal-soft: #1c4245; --accent: #5fe0d2; --danger: #f0857f;
+      }
+    }
+
+    /* ===== Mise en page générale ===== */
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--surface);
+      color: var(--ink);
+      font-family: Manrope, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+
+    /* Bandeau d'en-tête */
+    header {
+      background: var(--teal-deep);
+      color: #fff;
+      padding: 48px 0 40px;
+    }
+    @media (prefers-color-scheme: dark) { header { color: var(--ink); } }
+    .kicker {
+      font-size: 12px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; opacity: .85; margin: 0 0 8px;
+    }
+    h1 { font-size: clamp(28px, 6vw, 40px); line-height: 1.15; font-weight: 800; letter-spacing: -.02em; margin: 0 0 12px; }
+    header p.lead { margin: 0; font-size: 18px; opacity: .92; max-width: 56ch; }
+
+    /* « main.wrap » (et pas juste « main ») : sinon le padding de .wrap, plus prioritaire, écraserait celui-ci */
+    main.wrap { padding-top: 32px; padding-bottom: 48px; }
+    section { margin-bottom: 40px; }
+    h2 { font-size: 22px; line-height: 1.3; margin: 0 0 12px; }
+    h3 { font-size: 17px; margin: 24px 0 8px; }
+    p { margin: 0 0 12px; }
+    a { color: var(--teal); font-weight: 600; }
+
+    /* Cartes */
+    .card {
+      background: var(--surface-raised);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 20px;
+    }
+    .card + .card { margin-top: 12px; }
+
+    /* Encadré « rien ne change » (Plex) */
+    .ok {
+      background: var(--teal-soft);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      display: flex; gap: 12px; align-items: flex-start;
+    }
+    .ok svg { flex: none; margin-top: 3px; }
+
+    /* Étapes numérotées */
+    ol.steps { list-style: none; counter-reset: step; padding: 0; margin: 0; }
+    ol.steps > li {
+      counter-increment: step;
+      position: relative;
+      padding: 0 0 20px 48px;
+    }
+    ol.steps > li::before {
+      content: counter(step);
+      position: absolute; left: 0; top: 0;
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--teal); color: var(--on-teal);
+      font-weight: 800; display: grid; place-items: center;
+    }
+    ol.steps > li:last-child { padding-bottom: 0; }
+    ol.steps strong.t { display: block; font-size: 17px; margin-bottom: 4px; }
+    ul.sub { margin: 6px 0 0; padding-left: 20px; }
+    ul.sub li { margin-bottom: 4px; }
+
+    /* Onglets Android / Windows */
+    .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .tabs button {
+      font: inherit; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      padding: 10px 16px; border-radius: var(--radius-sm);
+      border: 1px solid var(--line); background: var(--surface-raised); color: var(--ink);
+      cursor: pointer;
+    }
+    .tabs button[aria-selected="true"] { background: var(--teal); color: var(--on-teal); border-color: var(--teal); }
+    .tabs button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    /* Sans JavaScript, les deux blocs restent visibles l'un sous l'autre (titre affiché). */
+    .js .panel[hidden] { display: none; }
+    .js .panel > h3:first-child { display: none; }
+
+    /* Adresse à taper, en police à chasse fixe */
+    code, .mono {
+      font-family: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+      font-size: 14px;
+      background: var(--teal-soft);
+      padding: 2px 6px; border-radius: var(--radius-sm);
+      word-break: break-all;
+    }
+    .addr {
+      display: block; margin: 8px 0; padding: 12px 14px;
+      font-size: 15px;
+    }
+
+    /* Note d'avertissement */
+    .note {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      background: var(--surface-raised);
+      font-size: 15px;
+    }
+    .note b { color: var(--danger); }
+
+    /* Questions fréquentes (dépliables) */
+    details {
+      background: var(--surface-raised);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 0 16px;
+    }
+    details + details { margin-top: 8px; }
+    summary { cursor: pointer; font-weight: 700; padding: 14px 0; list-style-position: outside; }
+    details[open] summary { border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+    details > p:last-child { padding-bottom: 14px; margin: 0; }
+
+    footer { border-top: 1px solid var(--line); padding: 20px 0 32px; color: var(--ink-muted); font-size: 13px; }
+    footer .mono { background: none; padding: 0; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <!-- On signale au CSS que le JavaScript tourne : les onglets peuvent alors masquer un des deux blocs. -->
+  <script>document.documentElement.classList.add('js');</script>
+
+  <header>
+    <div class="wrap">
+      <p class="kicker">NAS de Seb · accès à distance</p>
+      <h1>Ce qui change pour accéder au NAS</h1>
+      <p class="lead">Le NAS a été mieux protégé. Depuis l'extérieur de la maison, il passe maintenant par une petite appli gratuite, Tailscale. Dix minutes à installer, une seule fois.</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <!-- 1. Plex d'abord, pour rassurer -->
+    <section>
+      <div class="ok" role="note">
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="var(--teal)"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="var(--on-teal)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div><strong>Plex : rien ne change.</strong> Tu continues à regarder tes films et séries exactement comme avant, sans rien installer.</div>
+      </div>
+    </section>
+
+    <!-- 2. Pourquoi -->
+    <section>
+      <h2>Pourquoi ce changement ?</h2>
+      <p>La page de connexion du NAS était visible depuis tout Internet. Des robots essayaient en permanence d'y entrer, plus de 8 000 tentatives en une semaine. Aucune n'a réussi, mais il valait mieux fermer la porte.</p>
+      <p>Désormais, le NAS n'est joignable que par un tunnel privé et chiffré, réservé aux personnes invitées. C'est le rôle de Tailscale.</p>
+    </section>
+
+    <!-- 3. Les étapes -->
+    <section>
+      <h2>Ce que tu dois faire (une seule fois)</h2>
+      <div class="card">
+        <ol class="steps">
+          <li>
+            <strong class="t">Installe Tailscale et crée ton compte</strong>
+            C'est gratuit. Tu te connectes avec un compte que tu as déjà (Google, Microsoft…). Le détail pour ton appareil est juste en dessous.
+          </li>
+          <li>
+            <strong class="t">Envoie à Seb l'adresse e-mail de ce compte</strong>
+            Un simple message suffit. Seb t'envoie en retour un <strong>lien d'invitation</strong> vers le NAS.
+          </li>
+          <li>
+            <strong class="t">Ouvre le lien et accepte l'invitation</strong>
+            Connecte-toi avec le même compte qu'à l'étape 1, puis clique sur <em>Accept</em>. Le NAS, nommé <span class="mono">naslouseb</span>, apparaît alors dans ton appli Tailscale.
+          </li>
+          <li>
+            <strong class="t">Va sur le NAS</strong>
+            Tailscale activé, ouvre ton navigateur avec l'adresse du NAS (voir ci-dessous). Tu te connectes avec <strong>ton identifiant et ton mot de passe habituels</strong>, rien ne change de ce côté.
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 4. Détail par appareil -->
+    <section>
+      <h2>Le détail selon ton appareil</h2>
+
+      <div class="tabs" role="tablist" aria-label="Choisis ton appareil">
+        <button role="tab" id="tab-android" aria-controls="panel-android" aria-selected="true">Android</button>
+        <button role="tab" id="tab-windows" aria-controls="panel-windows" aria-selected="false" tabindex="-1">PC Windows</button>
+      </div>
+
+      <!-- Bloc Android -->
+      <div class="panel card" id="panel-android" role="tabpanel" aria-labelledby="tab-android">
+        <h3>Sur Android</h3>
+        <h3 style="margin-top:0">Installer</h3>
+        <ul class="sub">
+          <li>Ouvre le <strong>Play Store</strong>, cherche <strong>Tailscale</strong> et installe l'appli.</li>
+          <li>Ouvre-la, appuie sur <strong>Get started</strong> (ou <em>Log in</em>), puis connecte-toi avec ton compte Google ou autre.</li>
+          <li>Android affiche une <strong>demande de connexion VPN</strong> : appuie sur <strong>OK</strong>. C'est normal pour ce type d'appli. Une petite clé 🔑 apparaît en haut de l'écran quand Tailscale est actif.</li>
+        </ul>
+        <h3>Trouver l'adresse du NAS</h3>
+        <ul class="sub">
+          <li>Dans l'appli Tailscale, active l'interrupteur en haut.</li>
+          <li>Dans la liste, touche <span class="mono">naslouseb</span>, puis copie son adresse en <span class="mono">100.…</span> (ligne <em>IPv4</em>, icône de copie).</li>
+        </ul>
+        <h3>Ouvrir le NAS</h3>
+        <ul class="sub">
+          <li>Dans Chrome (ou ton navigateur), tape l'adresse copiée suivie de <span class="mono">:5000</span>, par exemple :
+            <span class="mono addr">http://100.x.x.x:5000</span>
+          </li>
+          <li>Ajoute la page en favori pour la prochaine fois.</li>
+        </ul>
+      </div>
+
+      <!-- Bloc Windows -->
+      <div class="panel card" id="panel-windows" role="tabpanel" aria-labelledby="tab-windows" hidden>
+        <h3>Sur PC Windows</h3>
+        <h3 style="margin-top:0">Installer</h3>
+        <ul class="sub">
+          <li>Télécharge Tailscale sur <a href="https://tailscale.com/download/windows" rel="noopener">tailscale.com/download/windows</a> et lance l'installation (accepte la demande d'autorisation de Windows).</li>
+          <li>Une icône Tailscale apparaît en bas à droite, près de l'horloge (clique sur la petite flèche <strong>^</strong> si tu ne la vois pas).</li>
+          <li>Clique dessus, puis sur <strong>Log in</strong> : ton navigateur s'ouvre, connecte-toi avec ton compte.</li>
+        </ul>
+        <h3>Trouver l'adresse du NAS</h3>
+        <ul class="sub">
+          <li>Clique sur l'icône Tailscale près de l'horloge, puis sur <strong>Network devices</strong> (ou <em>Appareils du réseau</em>).</li>
+          <li>Clique sur <span class="mono">naslouseb</span> : son adresse en <span class="mono">100.…</span> est copiée automatiquement.</li>
+        </ul>
+        <h3>Ouvrir le NAS</h3>
+        <ul class="sub">
+          <li>Dans ton navigateur, colle l'adresse suivie de <span class="mono">:5000</span>, par exemple :
+            <span class="mono addr">http://100.x.x.x:5000</span>
+          </li>
+          <li>Ajoute la page en favori pour la prochaine fois.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 5. Au quotidien -->
+    <section>
+      <h2>Au quotidien</h2>
+      <div class="card">
+        <p>Pour aller sur le NAS, il suffit que <strong>Tailscale soit activé</strong>, puis d'ouvrir ton favori.</p>
+        <p style="margin:0">Tu peux le laisser activé en permanence : Tailscale ne fait passer que ce qui va vers le NAS. Le reste de ta connexion (Internet, vidéos, jeux) ne change pas et ne passe pas par chez Seb.</p>
+      </div>
+    </section>
+
+    <!-- 6. Questions fréquentes -->
+    <section>
+      <h2>Questions fréquentes</h2>
+
+      <details>
+        <summary>Le navigateur affiche « Non sécurisé », c'est grave ?</summary>
+        <p>Non. Le navigateur voit <span class="mono">http://</span> et prévient par réflexe. En réalité, tout passe dans le tunnel chiffré de Tailscale : personne ne peut lire ce qui circule entre toi et le NAS.</p>
+      </details>
+
+      <details>
+        <summary>Ça ne marche pas, la page ne s'ouvre pas</summary>
+        <p>Vérifie que Tailscale est bien <strong>activé</strong> (la clé 🔑 en haut sur Android, l'icône près de l'horloge sur PC) et que <span class="mono">naslouseb</span> apparaît dans ta liste d'appareils. Vérifie aussi que tu as bien mis <span class="mono">:5000</span> à la fin de l'adresse. Si ça bloque encore, préviens Seb.</p>
+      </details>
+
+      <details>
+        <summary>Je me suis trompé de mot de passe plusieurs fois et je suis bloqué</summary>
+        <p>Par sécurité, le NAS bloque l'accès après plusieurs erreurs de mot de passe rapprochées. Envoie un message à Seb, il te débloquera.</p>
+      </details>
+
+      <details>
+        <summary>Est-ce que Seb ou Tailscale peuvent voir mes appareils ou mes données ?</summary>
+        <p>Non. L'invitation te donne accès au NAS, et uniquement au NAS. Seb ne voit pas tes autres appareils, et Tailscale ne peut pas lire ce qui passe dans le tunnel.</p>
+      </details>
+
+      <details>
+        <summary>C'est payant ?</summary>
+        <p>Non, Tailscale est gratuit pour cet usage. Ne rentre aucune carte bancaire : si on te le demande, c'est que tu es sur une mauvaise page.</p>
+      </details>
+
+      <details>
+        <summary>Plex ne marche plus</summary>
+        <p>Plex n'est pas concerné par ce changement. S'il ne marche plus, c'est un autre souci : préviens Seb.</p>
+      </details>
+    </section>
+
+    <div class="note" role="note">
+      <b>Important</b> : ne partage pas ton lien d'invitation ni tes identifiants du NAS. Chaque personne a les siens.
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">Une question ? Envoie un message à Seb. · <span class="mono">v1.0.0</span></div>
+  </footer>
+
+  <script>
+    // ===== Onglets Android / Windows =====
+    // Un clic sur un onglet affiche son bloc et masque l'autre.
+    // Les flèches gauche/droite du clavier passent d'un onglet à l'autre (accessibilité).
+    const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+
+    function selectTab(tab) {
+      tabs.forEach(t => {
+        const selected = t === tab;
+        t.setAttribute('aria-selected', selected);
+        t.tabIndex = selected ? 0 : -1;                               // seul l'onglet actif reçoit le focus clavier
+        document.getElementById(t.getAttribute('aria-controls')).hidden = !selected;
+      });
+    }
+
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => selectTab(tab));
+      tab.addEventListener('keydown', e => {
+        if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+        const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+        selectTab(next);
+        next.focus();
+      });
+    });
+
+    // Bonus : on ouvre directement le bon onglet selon l'appareil du visiteur.
+    if (!/Android/i.test(navigator.userAgent) && /Windows/i.test(navigator.userAgent)) {
+      selectTab(document.getElementById('tab-windows'));
+    }
+
+    // ---- Page installable : enregistrement du service worker (sw.js, même dossier) ----
+    // Il fonctionne en « réseau d'abord » : la page en ligne est toujours la plus récente.
+    if ("serviceWorker" in navigator && location.protocol === "https:") {
+      navigator.serviceWorker.register("sw.js");
+    }
+  </script>
+</body>
+</html>

@@ -104,6 +104,10 @@ PAGES = [
          desc="Batterie et charge de l'e-5008 et de la Corsa",
          picto="battery-charging", tuile="#0b4f55", trait="#ffffff",
          fond="#f6f9f9", theme="#0b4f55"),
+    dict(dossier="nas-aide", nom="Accès au NAS", court="Accès NAS",
+         desc="Comment accéder au NAS de Seb depuis l'extérieur avec Tailscale",
+         picto="hard-drive", tuile="#0b4f55", trait="#ffffff",
+         fond="#f6f9f9", theme="#0b4f55"),
 ]
 
 
