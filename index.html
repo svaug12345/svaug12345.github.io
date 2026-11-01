@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr — Page d'accueil des projets (marque SV)
-  Version 1.9.0
+  Version 1.10.0
   ------------------------------------------------------------
   Historique :
    • v1.0.0 : première page d'accueil
@@ -23,6 +23,7 @@
               page installable sur téléphone (manifest.webmanifest, sw.js,
               icônes dans icones/ — fabriqués par outils/generer-pwa.py)
    • v1.9.0 : ajout de « Foot & Chats » (Titouan et Ava) dans « Agents vocaux »
+   • v1.10.0 : nouvelle section « Sites » avec « Juju · Mécanicien vélo »
 
   À déposer dans le dépôt GitHub : svaug12345.github.io
   → c'est le fichier "index.html" à la racine.
@@ -292,7 +293,7 @@
 
     <!-- ===================== PIED DE PAGE ===================== -->
     <footer>
-      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.9.0</p>
+      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.10.0</p>
     </footer>
 
   </div>
@@ -342,6 +343,7 @@
       toque: `<path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/> <path d="M22 10v6"/> <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>`,  // graduation-cap
       telephone: `<path d="M13 2a9 9 0 0 1 9 9"/> <path d="M13 6a5 5 0 0 1 5 5"/> <path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/>`,  // phone-call
       balance: `<path d="M12 3v18"/> <path d="m19 8 3 8a5 5 0 0 1-6 0zV7"/> <path d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1"/> <path d="m5 8 3 8a5 5 0 0 1-6 0zV7"/> <path d="M7 21h10"/>`,  // scale
+      velo: `<circle cx="18.5" cy="17.5" r="3.5"/> <circle cx="5.5" cy="17.5" r="3.5"/> <circle cx="15" cy="5" r="1"/> <path d="M12 17.5V14l-3-3 4-3 2 3h2"/>`,  // bike
     };
     const PROJETS = [
       {
@@ -436,6 +438,13 @@
         desc: "Max fait un quiz foot avec Titouan et des jeux de chats avec Ava",
         url:  "foot-chats/",             // ✅ en ligne : baiji.fr/foot-chats/
         cat:  "Agents vocaux"
+      },
+      {
+        nom:  "Juju · Mécanicien vélo",
+        icone: "velo",                    // picto (voir la liste PICTOS)
+        desc: "Le site vitrine de Julien, mécano vélo réglo",
+        url:  "juju/",                   // ✅ en ligne : baiji.fr/juju/
+        cat:  "Sites"
       }
     ];
 
