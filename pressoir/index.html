@@ -2,15 +2,21 @@
 <!--
   ============================================================
   baiji.fr/pressoir/ — Pressoir vidéo
-  Version 1.1.0
+  Version 1.2.0
   ------------------------------------------------------------
-  Compresse une vidéo (ex. 4K de l'appareil photo) directement
-  dans le navigateur, avec l'encodeur matériel du téléphone
-  (API WebCodecs). Aucun envoi sur internet.
+  Compresse une vidéo ou un son directement dans le navigateur,
+  avec les encodeurs matériels du téléphone (API WebCodecs),
+  et peut découper le résultat en morceaux d'une taille max.
+  Aucun envoi sur internet.
   Historique :
    • v1.0.0 : première version (artifact Claude)
    • v1.0.1 : version autonome pour baiji.fr (téléchargement direct)
    • v1.1.0 : page installable sur téléphone (manifeste, icône, service worker)
+   • v1.2.0 : compression de fichiers audio (et extraction du son d'une vidéo) ;
+              découpe en morceaux selon une taille max (vidéo et audio) ;
+              réglage « Qualité d'origine » pour découper sans réencoder ;
+              correction : la durée (et donc la cadence) des vidéos était mal lue ;
+              le débit vidéo ne dépasse jamais celui de l'original
   ============================================================
 -->
 <html lang="fr">
@@ -33,7 +39,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
-/* Mise en page : une colonne étroite, pensée pour le téléphone, en trois temps (fichier → réglage → résultat). */
+/* Mise en page : une colonne étroite, pensée pour le téléphone : fichier → réglage → découpe → résultat. */
 :root {
   --bg: #eef2ef;        /* fond vert-gris très clair */
   --surface: #ffffff;   /* cartes */
@@ -81,9 +87,9 @@ section { background: var(--surface); border: 1px solid var(--line); border-radi
 h2 { margin: 0; font: 600 0.75rem var(--body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
 
 /* Zone de choix du fichier */
-.pick { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 22px 12px; border: 2px dashed var(--line); border-radius: 12px; cursor: pointer; text-align: center; }
+.pick { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 22px 12px; border: 2px dashed var(--line); border-radius: 12px; cursor: pointer; text-align: center; position: relative; }
 .pick:hover, .pick:focus-within { border-color: var(--accent); }
-.pick strong { font: 600 1.1rem var(--display); }
+.pick strong { font: 600 1.1rem var(--display); overflow-wrap: anywhere; }
 .pick small { color: var(--muted); }
 .pick input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 
@@ -91,6 +97,13 @@ h2 { margin: 0; font: 600 0.75rem var(--body); text-transform: uppercase; letter
 dl.specs { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; font-size: 0.92rem; }
 dl.specs dt { color: var(--muted); }
 dl.specs dd { margin: 0; font-family: var(--mono); font-size: 0.85rem; font-variant-numeric: tabular-nums; min-width: 0; overflow-wrap: anywhere; }
+
+/* Choix « Vidéo / Son seul » : deux boutons collés */
+.seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.seg label { position: relative; text-align: center; padding: 10px; cursor: pointer; font-weight: 600; }
+.seg input { position: absolute; opacity: 0; }
+.seg label:has(input:checked) { background: var(--accent); color: var(--accent-ink); }
+.seg label:has(input:focus-visible) { outline: 3px solid var(--accent); outline-offset: -3px; }
 
 /* Préréglages */
 .presets { display: flex; flex-direction: column; gap: 8px; }
@@ -101,11 +114,23 @@ dl.specs dd { margin: 0; font-family: var(--mono); font-size: 0.85rem; font-vari
 .preset .sub { color: var(--muted); font-size: 0.85rem; }
 .preset .est { font: 600 0.85rem var(--mono); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
 
+/* Découpe */
+.switch { display: flex; align-items: center; gap: 10px; font-weight: 600; cursor: pointer; }
+.switch input { accent-color: var(--accent); width: 20px; height: 20px; margin: 0; }
+.split-box { display: flex; flex-direction: column; gap: 10px; }
+.split-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.split-row input[type=number] { width: 7em; font: 600 1.1rem var(--mono); padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); }
+.nowrap { white-space: nowrap; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { font: 600 0.85rem var(--mono); padding: 6px 10px; border-radius: 99px; background: var(--bg); color: var(--ink); border: 1px solid var(--line); }
+.chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+
 button { font: 600 1rem var(--body); border-radius: 10px; padding: 14px 16px; border: 0; cursor: pointer; }
 button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .primary { background: var(--accent); color: var(--accent-ink); }
 .primary:disabled { opacity: 0.45; cursor: not-allowed; }
 .ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.small { padding: 8px 12px; font-size: 0.9rem; }
 .row { display: flex; gap: 10px; flex-wrap: wrap; }
 .row > button { flex: 1 1 140px; }
 
@@ -115,60 +140,93 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-variant-numeric: tabular-nums; }
 .stats div { display: flex; flex-direction: column; min-width: 0; }
 .stats span { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; }
-.stats b { font: 600 1.05rem var(--mono); }
+.stats b { font: 600 1.05rem var(--mono); overflow-wrap: anywhere; }
 .big { font: 800 2.6rem/1 var(--display); font-variant-numeric: tabular-nums; }
 
+/* Résultat : liste des morceaux */
 .result-sizes { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; font-family: var(--mono); }
 .result-sizes .arrow { color: var(--muted); }
 .gain { color: var(--ok); font-weight: 600; }
-video { width: 100%; border-radius: 10px; background: #000; max-height: 50vh; }
+.parts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.parts li { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
+.parts li.playing { border-color: var(--accent); }
+.parts .pname { font-weight: 600; font-size: 0.92rem; min-width: 0; overflow-wrap: anywhere; }
+.parts .pmeta { grid-column: 1; color: var(--muted); font: 0.8rem var(--mono); font-variant-numeric: tabular-nums; }
+.parts .pbtns { grid-column: 2; grid-row: 1 / span 2; display: flex; gap: 6px; }
+video, audio { width: 100%; border-radius: 10px; }
+video { background: #000; max-height: 50vh; }
 
 .msg { margin: 0; font-size: 0.92rem; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); }
 .msg.err { border-color: var(--bad); color: var(--bad); }
 .note { color: var(--muted); font-size: 0.85rem; margin: 0; }
+.note.warn { color: var(--bad); }
 @media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
 </style>
 </head>
 <body>
 
-
 <div class="wrap">
   <header>
     <h1>Pressoir <span>vidéo</span></h1>
-    <span class="version" id="version">v1.1.0</span>
+    <span class="version" id="version">v1.2.0</span>
   </header>
-  <p class="lede">Compresse une vidéo directement dans ton téléphone, avec son encodeur matériel. Rien n'est envoyé sur internet, et il n'y a pas de pub.</p>
+  <p class="lede">Compresse une vidéo ou un son directement dans ton téléphone, et découpe-le si besoin en morceaux d'une taille max. Rien n'est envoyé sur internet, et il n'y a pas de pub.</p>
 
   <p class="msg err" id="unsupported" hidden>Ce navigateur ne gère pas WebCodecs. Ouvre la page dans Chrome (Android ou ordinateur).</p>
 
   <!-- 1. Choix du fichier -->
   <section>
-    <h2>1 · Vidéo</h2>
+    <h2>1 · Fichier</h2>
     <label class="pick" id="pick">
-      <strong id="pickTitle">Choisir une vidéo</strong>
-      <small id="pickSub">MP4 ou MOV, par exemple C0051.MP4 de l'appareil photo</small>
-      <input type="file" id="file" accept="video/mp4,video/quicktime,.mp4,.mov,.m4v">
+      <strong id="pickTitle">Choisir une vidéo ou un son</strong>
+      <small id="pickSub">MP4, MOV, M4A, MP3, WAV, OGG…</small>
+      <input type="file" id="file" accept="video/*,audio/*,.mp4,.mov,.m4v,.m4a,.mp3,.wav,.ogg,.opus,.flac,.aac">
     </label>
     <dl class="specs" id="specs" hidden></dl>
+    <!-- Pour une vidéo : garder la vidéo, ou n'en garder que le son -->
+    <div class="seg" id="modeSeg" hidden role="radiogroup" aria-label="Ce qu'on garde">
+      <label><input type="radio" name="mode" id="mode-video" value="video" checked><span>Vidéo</span></label>
+      <label><input type="radio" name="mode" id="mode-audio" value="audio"><span>Son seul</span></label>
+    </div>
   </section>
 
   <!-- 2. Réglage -->
   <section>
     <h2>2 · Réglage</h2>
     <div class="presets" id="presets"></div>
-    <p class="note" id="estNote">Tailles estimées pour 1 minute de vidéo.</p>
+    <p class="note" id="estNote">Tailles estimées pour 1 minute.</p>
+  </section>
+
+  <!-- 3. Découpe -->
+  <section>
+    <h2>3 · Découpe</h2>
+    <label class="switch"><input type="checkbox" id="split"> Découper en morceaux</label>
+    <div class="split-box" id="splitBox" hidden>
+      <div class="split-row">
+        <label for="splitMo">Taille max par morceau</label>
+        <span class="nowrap"><input type="number" id="splitMo" min="1" step="1" value="25" inputmode="numeric"> Mo</span>
+      </div>
+      <div class="chips" id="chips">
+        <button type="button" class="chip" data-mo="10">10 Mo</button>
+        <button type="button" class="chip" data-mo="25">25 Mo</button>
+        <button type="button" class="chip" data-mo="50">50 Mo</button>
+        <button type="button" class="chip" data-mo="100">100 Mo</button>
+        <button type="button" class="chip" data-mo="500">500 Mo</button>
+      </div>
+      <p class="note" id="splitInfo"></p>
+    </div>
     <div class="row">
-      <button class="primary" id="go" disabled>Compresser</button>
+      <button class="primary" id="go" disabled>Lancer</button>
     </div>
   </section>
 
-  <!-- 3. Progression et résultat -->
+  <!-- 4. Progression -->
   <section id="work" hidden>
-    <h2 id="workTitle">3 · Compression</h2>
+    <h2>4 · Traitement</h2>
     <div class="big" id="pct">0 %</div>
     <div class="bar"><i id="barFill"></i></div>
     <div class="stats">
-      <div><span>Images</span><b id="stFrames">0 / 0</b></div>
+      <div><span>Fait</span><b id="stDone">–</b></div>
       <div><span>Vitesse</span><b id="stSpeed">–</b></div>
       <div><span>Reste</span><b id="stEta">–</b></div>
     </div>
@@ -176,13 +234,16 @@ video { width: 100%; border-radius: 10px; background: #000; max-height: 50vh; }
     <div class="row"><button class="ghost" id="cancel">Annuler</button></div>
   </section>
 
+  <!-- 4. Résultat -->
   <section id="done" hidden>
-    <h2>3 · Résultat</h2>
+    <h2>4 · Résultat</h2>
     <div class="result-sizes"><span id="rBefore"></span><span class="arrow">→</span><b id="rAfter"></b><span class="gain" id="rGain"></span></div>
+    <ul class="parts" id="parts"></ul>
     <video id="preview" controls playsinline hidden></video>
+    <audio id="previewAudio" controls hidden></audio>
     <div class="row">
-      <button class="primary" id="save">Enregistrer la vidéo</button>
-      <button class="ghost" id="again">Autre vidéo</button>
+      <button class="primary" id="saveAll">Tout enregistrer</button>
+      <button class="ghost" id="again">Autre fichier</button>
     </div>
     <p class="note" id="saveNote"></p>
   </section>
@@ -190,70 +251,75 @@ video { width: 100%; border-radius: 10px; background: #000; max-height: 50vh; }
   <p class="msg err" id="error" hidden></p>
 </div>
 
-<!-- mp4-muxer : assemble les images encodées dans un fichier .mp4 (global Mp4Muxer) -->
+<!-- mp4-muxer : assemble les morceaux encodés dans un fichier .mp4 / .m4a (global Mp4Muxer) -->
 <script src="https://cdn.jsdelivr.net/npm/mp4-muxer@5.1.3/build/mp4-muxer.js"></script>
 <script>
 /* ==========================================================================
-   Pressoir vidéo — compression vidéo 100 % locale avec WebCodecs
+   Pressoir vidéo — compression et découpe 100 % locales avec WebCodecs
    --------------------------------------------------------------------------
-   Principe, en 4 étapes :
-   1. On lit la « table des matières » du MP4 (la boîte « moov ») pour savoir
-      où se trouve chaque image et chaque morceau de son dans le fichier.
-   2. On donne les images compressées au décodeur matériel du téléphone
-      (VideoDecoder), qui les transforme en images brutes.
-   3. On réduit chaque image (4K → 1080p) sur un canvas, puis on la donne à
-      l'encodeur matériel (VideoEncoder) en H.264 avec un débit plus bas.
-   4. mp4-muxer range tout dans un nouveau fichier MP4.
-   On ne charge jamais les 487 Mo d'un coup : on lit le fichier par fenêtres.
+   Vue d'ensemble :
+   • LECTURE : pour un MP4/MOV/M4A, on lit nous-mêmes la « table des matières »
+     (boîte moov) pour savoir où est chaque image et chaque bout de son.
+     Pour les autres formats audio (MP3, WAV…), on laisse le navigateur
+     décoder tout le fichier (decodeAudioData).
+   • VIDÉO : décodeur matériel → réduction de l'image sur un canvas →
+     encodeur matériel H.264. Ou, en « Qualité d'origine », on recopie les
+     images compressées telles quelles (pas de perte, très rapide).
+   • SON : décodage → (passage en mono si demandé) → encodeur AAC.
+   • ÉCRITURE : un « PartWriter » range tout dans un MP4 et, si une taille max
+     est demandée, ferme le fichier en cours et en ouvre un nouveau juste avant
+     de dépasser la limite. En vidéo, on coupe toujours sur une image clé
+     (une image complète), sinon le morceau suivant commencerait par du gris.
+   On ne charge jamais une grosse vidéo d'un coup : on la lit par fenêtres.
    ========================================================================== */
 
-const APP_VERSION = "1.1.0";
+const APP_VERSION = "1.2.0";
 document.getElementById("version").textContent = "v" + APP_VERSION;
 
-// ---- Préréglages : hauteur cible (côté court) et débit vidéo en bits/s ----
-const PRESETS = [
+// ---- Préréglages vidéo : côté court visé (px) et débit vidéo (bits/s) ----
+const VIDEO_PRESETS = [
   { id: "montage", name: "Pour le montage", sub: "1080p · 12 Mb/s · qualité quasi intacte", short: 1080, vbr: 12e6 },
   { id: "partage", name: "Pour partager",   sub: "1080p · 6 Mb/s · WhatsApp, mail, NAS",  short: 1080, vbr: 6e6 },
   { id: "leger",   name: "Léger",           sub: "720p · 3 Mb/s · le plus petit",         short: 720,  vbr: 3e6 },
+  // copy:true = on ne réencode pas l'image : utile pour juste découper
+  { id: "origine", name: "Qualité d'origine", sub: "Aucune recompression · pour juste découper", copy: true },
 ];
-const AUDIO_BITRATE = 192000; // 192 kb/s en AAC : très bon pour la voix et la musique
+// ---- Préréglages audio : débit (bits/s) et nombre de canaux (1 = mono) ----
+const AUDIO_PRESETS = [
+  { id: "musique",   name: "Musique",     sub: "AAC 192 kb/s · stéréo",                  abr: 192000, ch: 2 },
+  { id: "standard",  name: "Standard",    sub: "AAC 128 kb/s · stéréo",                  abr: 128000, ch: 2 },
+  { id: "voix",      name: "Voix",        sub: "AAC 64 kb/s · mono · réunions, mémos",   abr: 64000,  ch: 1 },
+  { id: "voixleger", name: "Voix légère", sub: "AAC 32 kb/s · mono · le plus petit",     abr: 32000,  ch: 1 },
+];
+const AUDIO_IN_VIDEO = 192000; // débit du son quand on réencode le son d'une vidéo
+const GOP_SECONDS = 2;         // une image clé toutes les 2 s (= points de coupe possibles)
 
 const $ = (id) => document.getElementById(id);
-let state = { file: null, info: null, cancelled: false, output: null };
+// state : tout ce qu'on sait du fichier choisi et du résultat
+let state = { file: null, info: null, duration: null, hasVideo: false, audioOk: false, cancelled: false, parts: [], ext: "mp4" };
 
-// ---------- Petits utilitaires d'affichage ----------
+// ---------- Petits utilitaires ----------
 function fmtSize(bytes) {
   if (bytes >= 1e9) return (bytes / 1e9).toFixed(2).replace(".", ",") + " Go";
-  if (bytes >= 1e6) return Math.round(bytes / 1e6) + " Mo";
+  if (bytes >= 1e6) return (bytes >= 1e7 ? Math.round(bytes / 1e6) : (bytes / 1e6).toFixed(1).replace(".", ",")) + " Mo";
   return Math.round(bytes / 1e3) + " ko";
 }
-function fmtTime(sec) {
-  if (!isFinite(sec)) return "–";
+function fmtTime(sec) {            // durée « 3 min 05 »
+  if (sec == null || !isFinite(sec)) return "–";
   sec = Math.round(sec);
   const m = Math.floor(sec / 60), s = sec % 60;
   return m ? `${m} min ${String(s).padStart(2, "0")}` : `${s} s`;
 }
+function fmtClock(sec) {           // position « 3:05 »
+  sec = Math.max(0, Math.round(sec));
+  return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
+}
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const even = (n) => Math.max(2, Math.round(n / 2) * 2); // H.264 exige des dimensions paires
+const cancelled = () => { if (state.cancelled) throw new Error("cancelled"); };
+const mode = () => document.querySelector('input[name="mode"]:checked').value;
 
-// ---------- Affichage des préréglages avec la taille estimée ----------
-function renderPresets() {
-  const dur = state.info ? state.info.duration : 60; // sans fichier : estimation pour 1 min
-  $("presets").innerHTML = PRESETS.map((p, i) => {
-    const bytes = ((p.vbr + AUDIO_BITRATE) * dur) / 8;
-    return `<label class="preset">
-      <input type="radio" name="preset" id="preset-${p.id}" value="${p.id}" ${i === 0 ? "checked" : ""}>
-      <span><b>${p.name}</b><span class="sub">${p.sub}</span></span>
-      <span class="est">≈ ${fmtSize(bytes)}</span>
-    </label>`;
-  }).join("");
-  $("estNote").textContent = state.info
-    ? `Tailles estimées pour ta vidéo (${fmtTime(dur)}). Original : ${fmtSize(state.file.size)}.`
-    : "Tailles estimées pour 1 minute de vidéo.";
-}
-renderPresets();
-
-if (!("VideoEncoder" in window) || !("VideoDecoder" in window)) $("unsupported").hidden = false;
+if (!("VideoEncoder" in window) || !("AudioEncoder" in window)) $("unsupported").hidden = false;
 
 /* ==========================================================================
    1. LECTURE DU CONTENEUR MP4
@@ -301,8 +367,9 @@ function findDeep(dv, start, end, type) {
   return null;
 }
 
-// Trouve la boîte moov dans le fichier sans tout charger : on saute de boîte en boîte.
+// Trouve la boîte moov sans tout charger : on saute de boîte en boîte.
 // Sur les appareils photo, elle est souvent à la FIN du fichier, après les données (mdat).
+const MP4_FIRST_BOXES = ["ftyp", "moov", "mdat", "free", "skip", "wide", "pnot", "uuid"];
 async function readMoov(file) {
   let pos = 0;
   while (pos < file.size) {
@@ -310,13 +377,15 @@ async function readMoov(file) {
     if (h.byteLength < 8) break;
     let size = h.getUint32(0);
     const type = fourcc(h, 4);
+    // Garde-fou : un MP3 ou un WAV ne commence pas par une boîte connue → ce n'est pas un MP4
+    if (pos === 0 && !MP4_FIRST_BOXES.includes(type)) return null;
     if (size === 1) size = Number(h.getBigUint64(8));
     else if (size === 0) size = file.size - pos;
     if (size < 8) break;
     if (type === "moov") return new DataView(await file.slice(pos, pos + size).arrayBuffer());
     pos += size;
   }
-  throw new Error("Ce fichier n'est pas un MP4/MOV lisible (table « moov » introuvable).");
+  return null;
 }
 
 // Codec string WebCodecs à partir de la boîte avcC (H.264) : "avc1.PPCCLL"
@@ -370,7 +439,7 @@ function readTables(dv, stbl) {
   if (x) { t.sync = new Set(); for (let i = 0, n = u32(x.data + 4); i < n; i++) t.sync.add(u32(x.data + 8 + i * 4)); }
   // stsz : taille de chaque échantillon
   x = b("stsz"); t.constSize = u32(x.data + 4); t.count = u32(x.data + 8);
-  t.sizes = t.constSize ? null : new Uint32Array(dv.buffer.slice(dv.byteOffset + x.data + 12, dv.byteOffset + x.data + 12 + t.count * 4)).map((v) => ((v & 0xff) << 24 | (v & 0xff00) << 8 | (v >> 8) & 0xff00 | v >>> 24) >>> 0);
+  if (!t.constSize) { t.sizes = new Uint32Array(t.count); for (let i = 0; i < t.count; i++) t.sizes[i] = u32(x.data + 12 + i * 4); }
   // stsc : combien d'échantillons par « chunk » (bloc contigu dans le fichier)
   x = b("stsc"); t.stsc = [];
   for (let i = 0, n = u32(x.data + 4); i < n; i++) t.stsc.push([u32(x.data + 8 + i * 12), u32(x.data + 12 + i * 12)]);
@@ -407,24 +476,28 @@ function buildSamples(t) {
   return out;
 }
 
-// Analyse complète : pistes vidéo et audio
+// Analyse d'un MP4/MOV/M4A : pistes vidéo et audio (null si ce n'est pas un MP4)
 async function probe(file) {
   const dv = await readMoov(file);
+  if (!dv) return null;
   const moov = { data: 8, end: dv.byteLength };
   const info = { video: null, audio: null };
 
   for (const trak of boxes(dv, moov.data, moov.end)) {
     if (trak.type !== "trak") continue;
     const mdia = find(dv, trak, ["mdia"]);
-    const hdlr = find(dv, mdia, ["hdlr"]);
+    const hdlr = mdia && find(dv, mdia, ["hdlr"]);
+    if (!hdlr) continue;
     const handler = fourcc(dv, hdlr.data + 8);
     const mdhd = find(dv, mdia, ["mdhd"]);
     const v = dv.getUint8(mdhd.data);
     const timescale = dv.getUint32(mdhd.data + 4 + (v ? 16 : 8));
-    const mdur = v ? Number(dv.getBigUint64(mdhd.data + 20)) : dv.getUint32(mdhd.data + 12);
+    // Durée juste après le timescale (corrigé en v1.2.0 : on lisait le timescale à la place)
+    const mdur = v ? Number(dv.getBigUint64(mdhd.data + 24)) : dv.getUint32(mdhd.data + 16);
     const stbl = find(dv, mdia, ["minf", "stbl"]);
     const stsd = find(dv, stbl, ["stsd"]);
     const entry = boxes(dv, stsd.data + 8, stsd.end).next().value;
+    if (!entry) continue;
     const e = entry.data;
 
     if (handler === "vide" && !info.video) {
@@ -439,14 +512,14 @@ async function probe(file) {
       else if (a === 0 && bb === -0x10000) rotation = 270;
 
       const cfgBox = findDeep(dv, e + 78, entry.end, "avcC") || findDeep(dv, e + 78, entry.end, "hvcC");
-      if (!cfgBox) throw new Error(`Codec vidéo « ${entry.type} » non géré (H.264 ou H.265 attendu).`);
+      if (!cfgBox) { info.videoUnsupported = entry.type; continue; }
       const description = new Uint8Array(dv.buffer.slice(cfgBox.start + 8, cfgBox.end));
       const codec = cfgBox.type === "avcC" ? avcCodec(description) : hevcCodec(entry.type, description);
-      const tables = readTables(dv, stbl);
       info.video = {
         codec, description, rotation, timescale,
+        family: cfgBox.type === "avcC" ? "avc" : "hevc",   // nom attendu par mp4-muxer
         width: dv.getUint16(e + 24), height: dv.getUint16(e + 26),
-        samples: buildSamples(tables), duration: mdur / timescale,
+        samples: buildSamples(readTables(dv, stbl)), duration: mdur / timescale,
       };
       info.video.fps = info.video.samples.length / info.video.duration;
     }
@@ -483,14 +556,15 @@ async function probe(file) {
       info.audio = a;
     }
   }
-  if (!info.video) throw new Error("Aucune piste vidéo trouvée dans ce fichier.");
-  info.duration = info.video.duration;
+  info.duration = info.video ? info.video.duration : info.audio ? info.audio.duration : null;
   return info;
 }
 
 /* ==========================================================================
    Lecture par fenêtres : on lit des blocs de 8 Mo et on sert les
    échantillons qui tombent dedans. Bien plus rapide qu'une lecture par image.
+   ⚠️ Le résultat est une « vue » sur la fenêtre : il faut le copier (.slice())
+   si on veut le garder après la lecture suivante.
    ========================================================================== */
 function windowReader(file) {
   let wStart = 0, wEnd = 0, wBuf = null;
@@ -503,6 +577,21 @@ function windowReader(file) {
   };
 }
 
+// Durée d'un fichier audio non-MP4, demandée au lecteur du navigateur (null si illisible)
+function mediaDuration(file) {
+  return new Promise((resolve) => {
+    const el = document.createElement("audio");
+    const url = URL.createObjectURL(file);
+    let fini = false;
+    const done = (d) => { if (fini) return; fini = true; URL.revokeObjectURL(url); resolve(d); };
+    el.preload = "metadata";
+    el.onloadedmetadata = () => done(isFinite(el.duration) ? el.duration : null);
+    el.onerror = () => done(null);
+    setTimeout(() => done(null), 8000);
+    el.src = url;
+  });
+}
+
 /* ==========================================================================
    2. CHOIX DU FICHIER
    ========================================================================== */
@@ -510,25 +599,49 @@ $("file").addEventListener("change", async (ev) => {
   const file = ev.target.files[0];
   if (!file) return;
   hideError();
-  $("done").hidden = true;
-  state.file = file; state.info = null; $("go").disabled = true;
+  $("done").hidden = true; $("specs").hidden = true; $("modeSeg").hidden = true;
+  Object.assign(state, { file, info: null, duration: null, hasVideo: false, audioOk: false });
+  $("go").disabled = true;
   $("pickTitle").textContent = file.name;
   $("pickSub").textContent = fmtSize(file.size) + " · analyse…";
   try {
-    const info = await probe(file);
+    const info = await probe(file);       // null si ce n'est pas un MP4
     state.info = info;
-    const v = info.video, a = info.audio;
-    const audioTxt = !a ? "aucune piste son"
-      : a.kind === "aac" ? `AAC · ${a.rate} Hz · ${a.channels} canaux (recopié tel quel)`
-      : a.kind === "pcm" ? `PCM ${a.bits} bits · ${a.rate} Hz · ${a.channels} canaux (→ AAC)`
-      : `${a.type} (non géré, la vidéo sortira sans son)`;
-    $("specs").innerHTML = `
-      <dt>Image</dt><dd>${v.width} × ${v.height}${v.rotation ? ` · rotation ${v.rotation}°` : ""}</dd>
-      <dt>Cadence</dt><dd>${v.fps.toFixed(2).replace(".", ",")} images/s</dd>
-      <dt>Durée</dt><dd>${fmtTime(info.duration)}</dd>
-      <dt>Codec</dt><dd>${v.codec}</dd>
-      <dt>Son</dt><dd>${audioTxt}</dd>`;
+    const v = info && info.video, a = info && info.audio;
+    state.hasVideo = !!v;
+
+    if (info) {
+      state.duration = info.duration;
+      // Le son d'un MP4 est utilisable si on sait le lire (AAC, PCM)… ou si le navigateur sait le décoder
+      state.audioOk = !!a && (a.kind === "aac" || a.kind === "pcm");
+      if (!v && !a) throw new Error("Ce fichier ne contient ni vidéo ni son lisible.");
+      if (!v && info.videoUnsupported && !a) throw new Error(`Codec vidéo « ${info.videoUnsupported} » non géré (H.264 ou H.265 attendu).`);
+    } else {
+      // Pas un MP4 : MP3, WAV, OGG… on vérifie que le navigateur sait le lire
+      state.duration = await mediaDuration(file);
+      if (state.duration == null) throw new Error("Format non reconnu. Formats acceptés : MP4, MOV, M4A, MP3, WAV, OGG, FLAC.");
+      state.audioOk = true;
+    }
+
+    // ---- Fiche technique ----
+    const audioTxt = !info ? `${(file.name.split(".").pop() || "").toUpperCase()} · décodé par le navigateur`
+      : !a ? "aucune piste son"
+      : a.kind === "aac" ? `AAC · ${a.rate} Hz · ${a.channels} canaux`
+      : a.kind === "pcm" ? `PCM ${a.bits} bits · ${a.rate} Hz · ${a.channels} canaux`
+      : `${a.type} (non géré)`;
+    let html = "";
+    if (v) html += `<dt>Image</dt><dd>${v.width} × ${v.height}${v.rotation ? ` · rotation ${v.rotation}°` : ""}</dd>
+                    <dt>Cadence</dt><dd>${v.fps.toFixed(2).replace(".", ",")} images/s</dd>
+                    <dt>Codec</dt><dd>${v.codec}</dd>`;
+    html += `<dt>Durée</dt><dd>${fmtTime(state.duration)}</dd><dt>Son</dt><dd>${audioTxt}</dd>`;
+    $("specs").innerHTML = html;
     $("specs").hidden = false;
+
+    // ---- Vidéo : on propose « Son seul » si le son est exploitable ----
+    $("mode-video").checked = state.hasVideo;
+    $("mode-audio").checked = !state.hasVideo;
+    $("modeSeg").hidden = !(state.hasVideo && state.audioOk);
+
     $("pickSub").textContent = fmtSize(file.size) + " · touche pour changer";
     renderPresets();
     $("go").disabled = false;
@@ -538,8 +651,362 @@ $("file").addEventListener("change", async (ev) => {
   }
 });
 
+document.querySelectorAll('input[name="mode"]').forEach((r) => r.addEventListener("change", renderPresets));
+
 /* ==========================================================================
-   3. COMPRESSION
+   Réglages : liste des préréglages (avec taille estimée) et découpe
+   ========================================================================== */
+function presetsForMode() {
+  if (mode() === "audio") return AUDIO_PRESETS;
+  // « Qualité d'origine » seulement si on sait recopier la vidéo (H.264 / H.265)
+  return VIDEO_PRESETS.filter((p) => !p.copy || (state.info && state.info.video));
+}
+function currentPreset() {
+  const el = document.querySelector('input[name="preset"]:checked');
+  return presetsForMode().find((p) => p.id === (el && el.value)) || presetsForMode()[0];
+}
+
+// Taille estimée du résultat (octets) pour un préréglage
+function estimate(p) {
+  const dur = state.duration || 60; // sans fichier : estimation pour 1 min
+  if (mode() === "audio") return (p.abr * dur) / 8;
+  if (p.copy) {
+    // Vidéo recopiée : on additionne la taille réelle des images. Son AAC recopié, PCM → AAC.
+    const v = state.info.video, a = state.info.audio;
+    let bytes = v.samples.reduce((s, x) => s + x.size, 0);
+    if (a && a.kind === "aac") bytes += a.samples.reduce((s, x) => s + x.size, 0);
+    else if (a) bytes += (AUDIO_IN_VIDEO * dur) / 8;
+    return bytes;
+  }
+  return ((targetBitrate(p) + AUDIO_IN_VIDEO) * dur) / 8;
+}
+
+// Débit vidéo visé : celui du préréglage, mais jamais plus que l'original
+// (sinon une petite vidéo deviendrait plus grosse après « compression » !)
+function targetBitrate(p) {
+  const v = state.info && state.info.video;
+  if (!v || !v.duration) return p.vbr;
+  const srcBitrate = (v.samples.reduce((s, x) => s + x.size, 0) * 8) / v.duration;
+  return Math.min(p.vbr, Math.round(srcBitrate * 0.9));
+}
+
+function renderPresets() {
+  const list = presetsForMode();
+  const prev = document.querySelector('input[name="preset"]:checked');
+  const keep = prev && list.some((p) => p.id === prev.value) ? prev.value : list[0].id;
+  $("presets").innerHTML = list.map((p) => `<label class="preset">
+      <input type="radio" name="preset" id="preset-${p.id}" value="${p.id}" ${p.id === keep ? "checked" : ""}>
+      <span><b>${p.name}</b><span class="sub">${p.sub}</span></span>
+      <span class="est">≈ ${fmtSize(estimate(p))}</span>
+    </label>`).join("");
+  $("presets").querySelectorAll("input").forEach((r) => r.addEventListener("change", updateSplitInfo));
+  $("estNote").textContent = state.file
+    ? `Tailles estimées pour ton fichier (${fmtTime(state.duration)}). Original : ${fmtSize(state.file.size)}.`
+    : "Tailles estimées pour 1 minute.";
+  updateSplitInfo();
+}
+
+// Limite en octets (Infinity = pas de découpe). 1 Mo = 1 000 000 octets, comme sur Android.
+function splitLimit() {
+  if (!$("split").checked) return Infinity;
+  const mo = parseFloat($("splitMo").value);
+  return mo > 0 ? mo * 1e6 : Infinity;
+}
+function updateSplitInfo() {
+  $("splitBox").hidden = !$("split").checked;
+  const mo = parseFloat($("splitMo").value);
+  document.querySelectorAll(".chip").forEach((c) => c.setAttribute("aria-pressed", String(+c.dataset.mo === mo)));
+  const lim = splitLimit();
+  if (!isFinite(lim)) { $("splitInfo").textContent = ""; return; }
+  const est = estimate(currentPreset());
+  const n = Math.max(1, Math.ceil(est / (lim * 0.97)));
+  $("splitInfo").textContent = n === 1
+    ? `Le résultat (≈ ${fmtSize(est)}) tient déjà en un seul morceau.`
+    : `≈ ${n} morceaux de ${fmtSize(lim)} max${state.duration ? `, environ ${fmtTime(state.duration / n)} chacun` : ""}.${mode() === "video" ? " Les coupes tombent sur une image clé, donc les morceaux sont un peu sous la limite." : ""}`;
+}
+$("split").addEventListener("change", updateSplitInfo);
+$("splitMo").addEventListener("input", updateSplitInfo);
+$("chips").addEventListener("click", (e) => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  $("splitMo").value = b.dataset.mo; updateSplitInfo();
+});
+renderPresets();
+
+/* ==========================================================================
+   3. LE « PartWriter » : écrit un ou plusieurs MP4 en respectant la taille max
+   --------------------------------------------------------------------------
+   • addVideo(chunk) : à chaque image clé, on regarde si le prochain « paquet »
+     (de cette image clé à la suivante) risque de faire dépasser la limite.
+     Si oui → on ferme le fichier en cours et on en ouvre un nouveau.
+     On estime ce paquet avec le plus gros déjà vu, + 25 % de marge.
+   • Le son (préparé à l'avance) est glissé au fur et à mesure, aligné sur
+     le temps de la vidéo, pour que chaque morceau ait son propre son.
+   • addAudio(chunk) : mode « son seul », on coupe à n'importe quel paquet
+     de son (en AAC, chacun se lit tout seul).
+   Les horodatages sont en microsecondes (µs), comme dans WebCodecs.
+   ========================================================================== */
+class PartWriter {
+  constructor(limit) {
+    this.limit = limit;        // octets max par morceau
+    this.video = null;         // déclaration de la piste vidéo pour mp4-muxer
+    this.audio = null;         // déclaration de la piste son
+    this.videoConfig = null;   // config du décodeur (à répéter au début de chaque morceau)
+    this.audioConfig = null;
+    this.audioList = [];       // mode vidéo : tout le son, déjà encodé
+    this.audioPos = 0;
+    this.parts = [];
+    this.mux = null;
+    this.maxGop = 0;           // plus gros paquet image clé → image clé vu (octets)
+    this.gopBytes = 0;
+  }
+  // Taille du fichier si on y ajoutait encore « extra » octets : données
+  // + tables de la boîte moov (≈ 16 octets par échantillon) + en-têtes.
+  size(extra = 0, extraSamples = 0) { return this.bytes + extra + (this.samples + extraSamples) * 16 + 8192; }
+
+  open(startUs) {
+    this.target = new Mp4Muxer.ArrayBufferTarget();
+    this.mux = new Mp4Muxer.Muxer({
+      target: this.target,
+      video: this.video || undefined,
+      audio: this.audio || undefined,
+      fastStart: "in-memory",                   // table moov au début : lecture immédiate
+      firstTimestampBehavior: "cross-track-offset",
+    });
+    this.start = startUs; this.end = startUs;
+    this.bytes = 0; this.samples = 0; this.gops = 0;
+    this.firstVideo = true; this.firstAudio = true;
+  }
+
+  close(endUs) {
+    if (!this.mux) return;
+    if (this.video) this.flushAudio(endUs);    // le son restant jusqu'au point de coupe
+    this.mux.finalize();
+    const type = this.video ? "video/mp4" : "audio/mp4";
+    this.parts.push({ blob: new Blob([this.target.buffer], { type }), start: this.start / 1e6, end: this.end / 1e6 });
+    this.mux = null; this.target = null;
+  }
+
+  finish() { this.close(Infinity); }
+
+  // Écrit un paquet de son dans le morceau en cours
+  writeAudio(c) {
+    const meta = this.firstAudio ? { decoderConfig: this.audioConfig } : undefined;
+    this.mux.addAudioChunkRaw(c.data, "key", c.ts - this.start, c.dur, meta);
+    this.firstAudio = false;
+    this.bytes += c.data.byteLength; this.samples++; this.gopBytes += c.data.byteLength;
+    this.end = Math.max(this.end, c.ts + c.dur);
+  }
+
+  // Mode vidéo : ajoute le son préparé jusqu'à l'instant untilUs
+  flushAudio(untilUs) {
+    const L = this.audioList;
+    while (this.audioPos < L.length && L[this.audioPos].ts < untilUs) {
+      const c = L[this.audioPos++];
+      if (c.ts >= this.start) this.writeAudio(c);   // le son d'avant le début est ignoré
+    }
+  }
+
+  // Mode « son seul »
+  addAudio(c) {
+    if (!this.mux) this.open(c.ts);
+    else if (this.samples > 0 && this.size(c.data.byteLength, 1) > this.limit * 0.99) {
+      this.close(c.ts); this.open(c.ts);
+    }
+    this.writeAudio(c);
+  }
+
+  // Ajoute une image compressée : {data, key, ts (affichage), dur, cto (décalage affichage − décodage)}
+  addVideo(c) {
+    const dts = c.ts - c.cto;
+    if (c.key && this.mux) {
+      // Fin d'un paquet : on retient le plus gros, puis on décide s'il faut couper
+      this.maxGop = Math.max(this.maxGop, this.gopBytes);
+      if (this.gops === 1 && this.size() > this.limit)
+        throw new Error(`Taille max trop petite : 2 secondes de vidéo pèsent déjà ${fmtSize(this.size())}. Choisis au moins ${Math.ceil(this.size() * 1.5 / 1e6)} Mo, ou un réglage plus léger.`);
+      if (isFinite(this.limit) && this.size(this.maxGop * 1.25) > this.limit) this.close(dts);
+    }
+    if (c.key) { this.gopBytes = 0; }
+    if (!this.mux) {
+      if (!c.key) return;              // un morceau doit commencer par une image clé
+      this.open(dts);
+    }
+    if (c.key) this.gops++;
+    const meta = this.firstVideo ? { decoderConfig: this.videoConfig } : undefined;
+    this.mux.addVideoChunkRaw(c.data, c.key ? "key" : "delta", c.ts - this.start, c.dur, meta, c.cto);
+    this.firstVideo = false;
+    this.bytes += c.data.byteLength; this.samples++; this.gopBytes += c.data.byteLength;
+    this.end = Math.max(this.end, c.ts + c.dur);
+    this.flushAudio(c.ts + 1);         // son jusqu'à cette image
+  }
+}
+
+/* ==========================================================================
+   4. LE SON
+   Toutes les sources donnent des blocs « planar » : un Float32Array par
+   canal, valeurs entre −1 et 1. L'AudioSink les encode en AAC.
+   ========================================================================== */
+
+// Choisit un encodeur : AAC d'abord, sinon Opus (qui exige 48 000 Hz)
+async function pickAudioEncoder(rate, ch, bitrate) {
+  if (!("AudioEncoder" in window)) return null;
+  const tries = [["mp4a.40.2", "aac"]];
+  if (rate === 48000) tries.push(["opus", "opus"]);
+  for (const [codec, muxCodec] of tries) {
+    const cfg = { codec, sampleRate: rate, numberOfChannels: ch, bitrate };
+    try { if ((await AudioEncoder.isConfigSupported(cfg)).supported) return { cfg, muxCodec }; } catch { /* essai suivant */ }
+  }
+  return null;
+}
+
+class AudioSink {
+  constructor(cfg, onChunk) {
+    this.cfg = cfg; this.frames = 0; this.err = null; this.config = null;
+    this.enc = new AudioEncoder({
+      output: (chunk, meta) => {
+        try {
+          if (meta && meta.decoderConfig && !this.config) this.config = meta.decoderConfig;
+          const data = new Uint8Array(chunk.byteLength); chunk.copyTo(data);
+          onChunk({ data, ts: chunk.timestamp, dur: chunk.duration ?? Math.round(1024e6 / cfg.sampleRate) });
+        } catch (e) { this.err = e; }
+      },
+      error: (e) => { this.err = e; },
+    });
+    this.enc.configure(cfg);
+  }
+  // planes = un tableau par canal source ; n = nombre d'échantillons par canal
+  async push(planes, n) {
+    const ch = this.cfg.numberOfChannels;
+    const out = new Float32Array(n * ch);           // canal 1 entier, puis canal 2…
+    for (let k = 0; k < ch; k++) {
+      const dst = out.subarray(k * n, (k + 1) * n);
+      if (ch === 1 && planes.length > 1) {
+        // Passage en mono : moyenne de tous les canaux
+        for (let i = 0; i < n; i++) { let s = 0; for (const p of planes) s += p[i]; dst[i] = s / planes.length; }
+      } else {
+        // Même canal, ou mono dupliqué en stéréo
+        dst.set(planes[Math.min(k, planes.length - 1)].subarray(0, n));
+      }
+    }
+    const ad = new AudioData({ format: "f32-planar", sampleRate: this.cfg.sampleRate, numberOfFrames: n,
+                               numberOfChannels: ch, timestamp: Math.round((this.frames * 1e6) / this.cfg.sampleRate), data: out });
+    this.enc.encode(ad); ad.close();
+    this.frames += n;
+    if (this.err) throw this.err;
+    while (this.enc.encodeQueueSize > 8) await sleep(2);   // on attend si l'encodeur est débordé
+  }
+  async finish() { await this.enc.flush(); if (this.err) throw this.err; this.enc.close(); }
+}
+
+// Source 1 : PCM non compressé dans un MP4 (octets → nombres décimaux)
+async function readPcm(a, read, onBlock) {
+  const ch = a.channels, bps = a.bits / 8, frameBytes = ch * bps;
+  const chunks = [];
+  eachChunk(a.tables, (c, off, spc) => chunks.push({ off, frames: spc }));
+  for (const c of chunks) {
+    cancelled();
+    const bytes = await read(c.off, c.frames * frameBytes);
+    const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    const n = Math.floor(bytes.byteLength / frameBytes);
+    const planes = Array.from({ length: ch }, () => new Float32Array(n));
+    for (let f = 0; f < n; f++) {
+      for (let k = 0; k < ch; k++) {
+        const o = f * frameBytes + k * bps;
+        let val;
+        if (a.float) val = bps === 8 ? dv.getFloat64(o, a.le) : dv.getFloat32(o, a.le);
+        else if (bps === 2) val = dv.getInt16(o, a.le) / 32768;
+        else if (bps === 3) {
+          const b0 = dv.getUint8(o), b1 = dv.getUint8(o + 1), b2 = dv.getUint8(o + 2);
+          const x = a.le ? (b0 | (b1 << 8) | (b2 << 16)) : ((b0 << 16) | (b1 << 8) | b2);
+          val = ((x << 8) >> 8) / 8388608; // extension de signe sur 24 bits
+        } else val = dv.getInt32(o, a.le) / 2147483648;
+        planes[k][f] = val;
+      }
+    }
+    await onBlock(planes, n, a.rate);
+  }
+}
+
+// Source 2 : AAC dans un MP4/M4A, décodé au fil de l'eau par AudioDecoder
+async function decodeAac(a, read, onBlock) {
+  let err = null; const ready = [];
+  const dec = new AudioDecoder({ output: (d) => ready.push(d), error: (e) => { err = e; } });
+  dec.configure({ codec: a.codec, sampleRate: a.rate, numberOfChannels: a.channels, description: a.dsi });
+  // Vide la file des sons décodés : AudioData → un Float32Array par canal
+  const drain = async () => {
+    while (ready.length) {
+      const d = ready.shift();
+      const planes = [];
+      for (let c = 0; c < d.numberOfChannels; c++) {
+        const p = new Float32Array(d.numberOfFrames);
+        d.copyTo(p, { planeIndex: c, format: "f32-planar" });
+        planes.push(p);
+      }
+      const n = d.numberOfFrames, r = d.sampleRate;
+      d.close();
+      await onBlock(planes, n, r);
+    }
+  };
+  try {
+    for (const s of a.samples) {
+      cancelled();
+      if (err) throw err;
+      const data = await read(s.offset, s.size);
+      dec.decode(new EncodedAudioChunk({ type: "key", timestamp: Math.round((s.cts * 1e6) / a.timescale), data }));
+      await drain();
+      while (dec.decodeQueueSize > 16) await sleep(2);
+    }
+    await dec.flush(); await drain();
+    if (err) throw err;
+  } finally {
+    ready.forEach((d) => d.close());
+    if (dec.state !== "closed") dec.close();
+  }
+}
+
+// Source 3 : tout autre format (MP3, WAV, OGG…) décodé d'un coup par le navigateur,
+// directement à 48 000 Hz. Tout le son décodé tient en mémoire : attention aux fichiers très longs.
+async function decodeWhole(file, onBlock) {
+  const ctx = new OfflineAudioContext(1, 1, 48000);
+  const buf = await ctx.decodeAudioData(await file.arrayBuffer());
+  state.duration = state.duration || buf.duration;
+  const chans = Array.from({ length: buf.numberOfChannels }, (_, c) => buf.getChannelData(c));
+  for (let off = 0; off < buf.length; off += 48000) {
+    cancelled();
+    const n = Math.min(48000, buf.length - off);
+    await onBlock(chans.map((p) => p.subarray(off, off + n)), n, 48000);
+  }
+}
+
+// Chaîne complète « source → encodeur ». want = {bitrate, channels?, onStart?}
+// onChunk(paquet encodé, config) est appelé pour chaque paquet AAC produit.
+async function processAudio(src, want, onChunk, onProgress) {
+  let sink = null, info = null, doneSec = 0;
+  const onBlock = async (planes, n, rate) => {
+    cancelled();
+    if (!sink) {
+      // L'encodeur est créé au premier bloc, quand on connaît la fréquence réelle
+      const ch = want.channels || Math.min(2, planes.length);
+      const pick = await pickAudioEncoder(rate, ch, want.bitrate);
+      if (!pick) throw new Error("NO_AUDIO_ENCODER");
+      info = { mux: { codec: pick.muxCodec, numberOfChannels: ch, sampleRate: rate } };
+      if (want.onStart) want.onStart(info);
+      sink = new AudioSink(pick.cfg, (c) => onChunk(c, sink.config));
+    }
+    await sink.push(planes, n);
+    doneSec += n / rate;
+    if (onProgress) onProgress(doneSec);
+  };
+  if (src.kind === "pcm") await readPcm(src.a, src.read, onBlock);
+  else if (src.kind === "aac") await decodeAac(src.a, src.read, onBlock);
+  else await decodeWhole(src.file, onBlock);
+  if (!sink) throw new Error("Aucun son trouvé dans ce fichier.");
+  await sink.finish();
+  info.config = sink.config;
+  return info;
+}
+
+/* ==========================================================================
+   5. LANCEMENT
    ========================================================================== */
 $("go").addEventListener("click", () => run().catch((err) => {
   releaseWakeLock();
@@ -549,36 +1016,148 @@ $("go").addEventListener("click", () => run().catch((err) => {
 }));
 $("cancel").addEventListener("click", () => { state.cancelled = true; });
 
-let wakeLock = null;
+let wakeLock = null;  // empêche l'écran de s'éteindre pendant le traitement
 async function keepAwake() { try { wakeLock = await navigator.wakeLock.request("screen"); } catch { /* refusé : pas grave */ } }
 function releaseWakeLock() { try { wakeLock && wakeLock.release(); } catch {} wakeLock = null; }
 
 async function run() {
-  const { file, info } = state;
-  const preset = PRESETS.find((p) => p.id === document.querySelector('input[name="preset"]:checked').value);
-  const v = info.video;
+  const s = { mode: mode(), preset: currentPreset(), limit: splitLimit() };
   state.cancelled = false;
   hideError(); $("done").hidden = true; $("work").hidden = false; $("go").disabled = true;
-  setProgress(0, 0, v.samples.length, null, null);
+  setProgress(0, "–", null, null);
   keepAwake();
+  const res = s.mode === "audio" ? await runAudio(s) : await runVideo(s);
+  releaseWakeLock();
+  showResult(res, s);
+}
 
+// Suivi de progression : total = nombre d'unités (images ou secondes),
+// mediaPerUnit = durée de média d'une unité (pour afficher « 3,2× le temps réel »)
+function tracker(total, label, mediaPerUnit) {
+  const t0 = performance.now(); let last = 0;
+  return (done, force) => {
+    const now = performance.now();
+    if (!force && now - last < 250) return;
+    last = now;
+    const rate = done / Math.max((now - t0) / 1000, 0.001);
+    setProgress(Math.min(100, (done / total) * 100), label(done, total), done ? rate * mediaPerUnit : null, done ? (total - done) / rate : null);
+  };
+}
+
+// ---------- Mode « son seul » (fichier audio, ou son d'une vidéo) ----------
+async function runAudio(s) {
+  const p = s.preset;
+  const info = state.info, a = info && info.audio;
+  const total = state.duration || 1;
+  const track = tracker(total, (d, t) => `${fmtClock(d)} / ${fmtClock(t)}`, 1);
+
+  // Source : on lit nous-mêmes l'AAC/PCM d'un MP4, sinon le navigateur décode tout
+  let src = a && a.kind === "aac" ? { kind: "aac", a, read: windowReader(state.file) }
+          : a && a.kind === "pcm" ? { kind: "pcm", a, read: windowReader(state.file) }
+          : { kind: "whole", file: state.file };
+
+  const attempt = async (source) => {
+    const writer = new PartWriter(s.limit);
+    $("phase").textContent = source.kind === "whole" ? "Décodage du fichier (peut prendre un moment)…" : `Son → AAC ${p.abr / 1000} kb/s ${p.ch === 1 ? "mono" : "stéréo"}`;
+    await processAudio(source, {
+      bitrate: p.abr, channels: p.ch,
+      onStart: (inf) => { writer.audio = inf.mux; $("phase").textContent = `Son → ${inf.mux.codec.toUpperCase()} ${p.abr / 1000} kb/s ${p.ch === 1 ? "mono" : "stéréo"}`; },
+    }, (c, config) => { writer.audioConfig = config; writer.addAudio(c); }, (sec) => track(sec));
+    writer.finish();
+    track(total, true);
+    return writer.parts;
+  };
+
+  let parts;
+  try { parts = await attempt(src); }
+  catch (e) {
+    // Fréquence non gérée par l'encodeur (ex. 32 000 Hz) : on repasse par le décodage
+    // complet du navigateur, qui convertit tout en 48 000 Hz.
+    if (e.message !== "NO_AUDIO_ENCODER" || src.kind === "whole") throw e;
+    parts = await attempt({ kind: "whole", file: state.file });
+  }
+  return { parts, ext: "m4a", note: "" };
+}
+
+// ---------- Mode vidéo ----------
+async function runVideo(s) {
+  const { file, info } = state;
+  const v = info.video, p = s.preset, a = info.audio;
+  const read = windowReader(file);
+  const writer = new PartWriter(s.limit);
+  let note = "";
+
+  // ===== 1) Le son d'abord (rapide), rangé dans writer.audioList =====
+  if (a && a.kind === "aac") {
+    // AAC : recopié tel quel, sans perte
+    $("phase").textContent = "Lecture du son…";
+    for (const x of a.samples) {
+      cancelled();
+      writer.audioList.push({ data: (await read(x.offset, x.size)).slice(),  // .slice() = copie
+                              ts: Math.round((x.cts * 1e6) / a.timescale), dur: Math.round((x.dur * 1e6) / a.timescale) });
+    }
+    writer.audio = { codec: "aac", numberOfChannels: a.channels, sampleRate: a.rate };
+    writer.audioConfig = { codec: a.codec, numberOfChannels: a.channels, sampleRate: a.rate, description: a.dsi };
+  } else if (a && a.kind === "pcm") {
+    // PCM (Sony) : converti en AAC
+    $("phase").textContent = "Conversion du son en AAC…";
+    try {
+      const r = await processAudio({ kind: "pcm", a, read }, { bitrate: AUDIO_IN_VIDEO }, (c) => writer.audioList.push(c));
+      writer.audio = r.mux; writer.audioConfig = r.config;
+      if (r.mux.codec === "opus") note = "Son encodé en Opus (AAC indisponible ici) : lisible partout sauf certains vieux lecteurs.";
+    } catch (e) {
+      if (e.message !== "NO_AUDIO_ENCODER") throw e;
+      note = "Attention : aucun encodeur de son disponible, la vidéo est sans son.";
+    }
+  } else if (a) {
+    note = "Attention : le format du son n'est pas géré, la vidéo est sans son.";
+  }
+
+  // ===== 2) Puis la vidéo =====
+  if (p.copy) await copyVideo(v, read, writer);
+  else await encodeVideo(v, p, read, writer);
+  writer.finish();
+  return { parts: writer.parts, ext: "mp4", note };
+}
+
+// « Qualité d'origine » : les images compressées sont recopiées telles quelles
+async function copyVideo(v, read, writer) {
+  writer.video = { codec: v.family, width: v.width, height: v.height, rotation: v.rotation };
+  writer.videoConfig = { codec: v.codec, codedWidth: v.width, codedHeight: v.height, description: v.description };
+  $("phase").textContent = "Copie de la vidéo sans recompression…";
+  const us = (t) => Math.round((t * 1e6) / v.timescale);
+  const total = v.samples.length;
+  const track = tracker(total, (d, t) => `${d} / ${t}`, 1 / v.fps);
+  for (let i = 0; i < total; i++) {
+    cancelled();
+    const x = v.samples[i];
+    const data = (await read(x.offset, x.size)).slice();
+    writer.addVideo({ data, key: x.sync, ts: us(x.cts), dur: us(x.dur), cto: us(x.cts) - us(x.dts) });
+    if ((i & 31) === 0) await sleep(0);   // laisse respirer l'affichage
+    track(i + 1);
+  }
+  track(total, true);
+}
+
+// Recompression : décodeur → canvas (réduction) → encodeur H.264
+async function encodeVideo(v, preset, read, writer) {
   // ---- Taille de sortie : on réduit le côté court à la hauteur du préréglage ----
   const scale = Math.min(1, preset.short / Math.min(v.width, v.height));
   const outW = even(v.width * scale), outH = even(v.height * scale);
 
   // ---- Décodeur : vérifie que le téléphone sait lire ce format ----
-  let decCfg = { codec: v.codec, codedWidth: v.width, codedHeight: v.height, description: v.description, hardwareAcceleration: "prefer-hardware" };
+  const decCfg = { codec: v.codec, codedWidth: v.width, codedHeight: v.height, description: v.description, hardwareAcceleration: "prefer-hardware" };
   if (!(await VideoDecoder.isConfigSupported(decCfg)).supported) {
     delete decCfg.hardwareAcceleration;
     if (!(await VideoDecoder.isConfigSupported(decCfg)).supported)
-      throw new Error(`Ton téléphone ne sait pas décoder ce format vidéo (${v.codec}). Les vidéos 4:2:2 10 bits (XAVC HS) posent souvent ce problème : filme en 4:2:0 8 bits pour éviter ça.`);
+      throw new Error(`Ton téléphone ne sait pas décoder ce format vidéo (${v.codec}). Les vidéos 4:2:2 10 bits (XAVC HS) posent souvent ce problème. Tu peux quand même découper avec « Qualité d'origine ».`);
   }
 
   // ---- Encodeur : H.264, en essayant plusieurs profils du meilleur au plus simple ----
   let encCfg = null;
   for (const codec of ["avc1.640033", "avc1.640028", "avc1.4d0028", "avc1.42e01f"]) {
     for (const hw of ["prefer-hardware", "no-preference"]) {
-      const c = { codec, width: outW, height: outH, bitrate: preset.vbr, framerate: v.fps, hardwareAcceleration: hw,
+      const c = { codec, width: outW, height: outH, bitrate: targetBitrate(preset), framerate: v.fps, hardwareAcceleration: hw,
                   bitrateMode: "variable", latencyMode: "quality", avc: { format: "avc" } };
       if ((await VideoEncoder.isConfigSupported(c)).supported) { encCfg = c; break; }
     }
@@ -586,43 +1165,21 @@ async function run() {
   }
   if (!encCfg) throw new Error("Aucun encodeur H.264 disponible sur cet appareil.");
 
-  // ---- Son : AAC recopié tel quel, ou PCM réencodé (AAC si possible, sinon Opus) ----
-  const a = info.audio;
-  let audioPlan = null;
-  if (a && a.kind === "aac") audioPlan = { mode: "copy", muxCodec: "aac" };
-  if (a && a.kind === "pcm" && "AudioEncoder" in window) {
-    for (const [codec, muxCodec] of [["mp4a.40.2", "aac"], ["opus", "opus"]]) {
-      const c = { codec, sampleRate: a.rate, numberOfChannels: a.channels, bitrate: AUDIO_BITRATE };
-      try { if ((await AudioEncoder.isConfigSupported(c)).supported) { audioPlan = { mode: "encode", muxCodec, cfg: c }; break; } } catch {}
-    }
-  }
+  writer.video = { codec: "avc", width: outW, height: outH, rotation: v.rotation };
+  $("phase").textContent = `Vidéo : ${v.width}×${v.height} → ${outW}×${outH}, ${(targetBitrate(preset) / 1e6).toFixed(1).replace(".", ",")} Mb/s`;
 
-  // ---- Muxer : construit le MP4 en mémoire, avec la table moov au début (« fast start ») ----
-  const target = new Mp4Muxer.ArrayBufferTarget();
-  const muxer = new Mp4Muxer.Muxer({
-    target,
-    video: { codec: "avc", width: outW, height: outH, rotation: v.rotation },
-    audio: audioPlan ? { codec: audioPlan.muxCodec, numberOfChannels: a.channels, sampleRate: a.rate } : undefined,
-    fastStart: "in-memory",
-    firstTimestampBehavior: "offset", // recale le début à 0 si la première image n'est pas à 0
-  });
-
-  const read = windowReader(file);
-
-  // ===== Son d'abord (rapide) =====
-  if (audioPlan) {
-    $("phase").textContent = "Traitement du son…";
-    if (audioPlan.mode === "copy") await copyAac(a, read, muxer);
-    else await encodePcm(a, read, muxer, audioPlan.cfg);
-  }
-
-  // ===== Puis la vidéo =====
-  $("phase").textContent = `Vidéo : ${v.width}×${v.height} → ${outW}×${outH}, ${preset.vbr / 1e6} Mb/s`;
   let encError = null, framesOut = 0;
-  const gop = Math.max(1, Math.round(v.fps * 2)); // une image clé toutes les 2 s (pratique pour le montage)
+  const gop = Math.max(1, Math.round(v.fps * GOP_SECONDS));
+  const frameDur = Math.round(1e6 / v.fps);
 
   const encoder = new VideoEncoder({
-    output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+    output: (chunk, meta) => {
+      try {
+        if (meta && meta.decoderConfig && !writer.videoConfig) writer.videoConfig = meta.decoderConfig;
+        const data = new Uint8Array(chunk.byteLength); chunk.copyTo(data);
+        writer.addVideo({ data, key: chunk.type === "key", ts: chunk.timestamp, dur: chunk.duration ?? frameDur, cto: 0 });
+      } catch (e) { encError = e; }   // ex. taille max trop petite
+    },
     error: (e) => { encError = e; },
   });
   encoder.configure(encCfg);
@@ -642,6 +1199,7 @@ async function run() {
         toEncode = new VideoFrame(canvas, init);
         frame.close();
       }
+      // Une image clé toutes les 2 s : ce sont les seuls endroits où l'on peut couper
       encoder.encode(toEncode, { keyFrame: framesOut % gop === 0 });
       toEncode.close();
       framesOut++;
@@ -650,158 +1208,142 @@ async function run() {
   });
   decoder.configure(decCfg);
 
-  const total = v.samples.length, t0 = performance.now();
-  let lastUi = 0;
+  const total = v.samples.length;
+  const track = tracker(total, (d, t) => `${d} / ${t}`, 1 / v.fps);
+  const stop = () => { try { decoder.close(); } catch {} try { encoder.close(); } catch {} };
   for (let i = 0; i < total; i++) {
-    if (state.cancelled || encError) break;
-    const s = v.samples[i];
-    const data = await read(s.offset, s.size);
+    if (state.cancelled) { stop(); throw new Error("cancelled"); }
+    if (encError) break;
+    const x = v.samples[i];
+    const data = await read(x.offset, x.size);
     decoder.decode(new EncodedVideoChunk({
-      type: s.sync ? "key" : "delta",
-      timestamp: Math.round((s.cts * 1e6) / v.timescale), // en microsecondes
-      duration: Math.round((s.dur * 1e6) / v.timescale),
+      type: x.sync ? "key" : "delta",
+      timestamp: Math.round((x.cts * 1e6) / v.timescale), // en microsecondes
+      duration: Math.round((x.dur * 1e6) / v.timescale),
       data,
     }));
     // Contre-pression : on attend si décodeur ou encodeur sont débordés (sinon la mémoire explose)
     while (!encError && !state.cancelled && (decoder.decodeQueueSize > 4 || encoder.encodeQueueSize > 4)) await sleep(4);
-    const now = performance.now();
-    if (now - lastUi > 250) { lastUi = now; updateStats(framesOut, total, t0, v); }
+    track(framesOut);
   }
-
-  if (state.cancelled) { try { decoder.close(); encoder.close(); } catch {} throw new Error("cancelled"); }
   if (!encError) { await decoder.flush(); await encoder.flush(); }
-  if (encError) { try { decoder.close(); encoder.close(); } catch {} throw encError; }
-  decoder.close(); encoder.close();
-
-  muxer.finalize();
-  updateStats(total, total, t0, v);
-  releaseWakeLock();
-  showResult(new Blob([target.buffer], { type: "video/mp4" }), audioPlan, a);
-}
-
-// --- AAC : on recopie les paquets sans les toucher (aucune perte) ---
-async function copyAac(a, read, muxer) {
-  const meta = { decoderConfig: { codec: a.codec, numberOfChannels: a.channels, sampleRate: a.rate, description: a.dsi } };
-  for (let i = 0; i < a.samples.length; i++) {
-    if (state.cancelled) throw new Error("cancelled");
-    const s = a.samples[i];
-    const data = new Uint8Array(await read(s.offset, s.size)); // copie : la fenêtre sera réutilisée
-    muxer.addAudioChunkRaw(data, "key", Math.round((s.cts * 1e6) / a.timescale), Math.round((s.dur * 1e6) / a.timescale), i === 0 ? meta : undefined);
-  }
-}
-
-// --- PCM : on convertit les octets en nombres décimaux puis on encode en AAC/Opus ---
-async function encodePcm(a, read, muxer, cfg) {
-  let err = null;
-  const enc = new AudioEncoder({ output: (c, m) => muxer.addAudioChunk(c, m), error: (e) => { err = e; } });
-  enc.configure(cfg);
-  const ch = a.channels, bps = a.bits / 8, frameBytes = ch * bps;
-  // Les chunks PCM : on calcule leur taille nous-mêmes (nb de trames × octets par trame)
-  const chunks = [];
-  eachChunk(a.tables, (c, off, spc) => chunks.push({ off, frames: spc }));
-  let done = 0;
-  for (const c of chunks) {
-    if (state.cancelled) throw new Error("cancelled");
-    if (err) throw err;
-    const bytes = await read(c.off, c.frames * frameBytes);
-    const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-    const n = Math.floor(bytes.byteLength / frameBytes);
-    const planar = new Float32Array(n * ch); // format « planar » : tout le canal 1, puis tout le canal 2
-    for (let f = 0; f < n; f++) {
-      for (let k = 0; k < ch; k++) {
-        const o = f * frameBytes + k * bps;
-        let val;
-        if (a.float) val = bps === 8 ? dv.getFloat64(o, a.le) : dv.getFloat32(o, a.le);
-        else if (bps === 2) val = dv.getInt16(o, a.le) / 32768;
-        else if (bps === 3) {
-          const b0 = dv.getUint8(o), b1 = dv.getUint8(o + 1), b2 = dv.getUint8(o + 2);
-          const x = a.le ? (b0 | (b1 << 8) | (b2 << 16)) : ((b0 << 16) | (b1 << 8) | b2);
-          val = ((x << 8) >> 8) / 8388608; // extension de signe sur 24 bits
-        } else val = dv.getInt32(o, a.le) / 2147483648;
-        planar[k * n + f] = val;
-      }
-    }
-    const ad = new AudioData({ format: "f32-planar", sampleRate: a.rate, numberOfFrames: n, numberOfChannels: ch,
-                               timestamp: Math.round((done * 1e6) / a.rate), data: planar });
-    enc.encode(ad); ad.close();
-    done += n;
-    while (enc.encodeQueueSize > 8) await sleep(2);
-  }
-  await enc.flush();
-  if (err) throw err;
-  enc.close();
+  stop();
+  if (encError) throw encError;
+  track(total, true);
 }
 
 /* ==========================================================================
-   4. AFFICHAGE : progression, résultat, enregistrement
+   6. AFFICHAGE : progression, résultat, enregistrement
    ========================================================================== */
-function setProgress(pct, done, total, speed, eta) {
+function setProgress(pct, doneTxt, speed, eta) {
   $("pct").textContent = Math.floor(pct) + " %";
   $("barFill").style.width = pct + "%";
-  $("stFrames").textContent = `${done} / ${total}`;
+  $("stDone").textContent = doneTxt;
   $("stSpeed").textContent = speed == null ? "–" : speed.toFixed(1).replace(".", ",") + "×";
   $("stEta").textContent = eta == null ? "–" : fmtTime(eta);
 }
-function updateStats(done, total, t0, v) {
-  const el = (performance.now() - t0) / 1000;
-  const fps = done / Math.max(el, 0.001);
-  const speed = fps / v.fps; // 1× = temps réel
-  const eta = done ? (total - done) / fps : null;
-  setProgress((done / total) * 100, done, total, done ? speed : null, eta);
+
+function partName(i, n, ext) {
+  const base = state.file.name.replace(/\.[^.]+$/, "");
+  return n === 1 ? `${base}_compresse.${ext}` : `${base}_partie${String(i + 1).padStart(2, "0")}.${ext}`;
 }
 
-function showResult(blob, audioPlan, a) {
-  state.output = blob;
+function showResult(res, s) {
+  state.parts = res.parts; state.ext = res.ext;
+  const n = res.parts.length;
+  const total = res.parts.reduce((t, p) => t + p.blob.size, 0);
   $("work").hidden = true; $("done").hidden = false; $("go").disabled = false;
   $("rBefore").textContent = fmtSize(state.file.size);
-  $("rAfter").textContent = fmtSize(blob.size);
-  $("rGain").textContent = `−${Math.round((1 - blob.size / state.file.size) * 100)} %`;
-  let note = "";
-  if (a && !audioPlan) note = "Attention : le format du son n'est pas géré, la vidéo est sans son.";
-  else if (audioPlan && audioPlan.muxCodec === "opus") note = "Son encodé en Opus (AAC indisponible ici) : lisible partout sauf certains vieux lecteurs.";
-  $("saveNote").textContent = note;
-  try { $("preview").src = URL.createObjectURL(blob); $("preview").hidden = false; } catch { $("preview").hidden = true; }
+  $("rAfter").textContent = fmtSize(total) + (n > 1 ? ` en ${n} morceaux` : "");
+  const gain = Math.round((1 - total / state.file.size) * 100);
+  $("rGain").textContent = gain > 0 ? `−${gain} %` : "";
+
+  // Une ligne par morceau : nom, début → fin, taille, boutons
+  $("parts").innerHTML = res.parts.map((p, i) => `<li data-i="${i}">
+      <span class="pname">${partName(i, n, res.ext)}</span>
+      <span class="pmeta">${fmtClock(p.start)} → ${fmtClock(p.end)} · ${fmtSize(p.blob.size)}</span>
+      <span class="pbtns">
+        <button class="ghost small" data-act="play" data-i="${i}">${res.ext === "m4a" ? "Écouter" : "Voir"}</button>
+        <button class="primary small" data-act="save" data-i="${i}">Enregistrer</button>
+      </span>
+    </li>`).join("");
+  $("saveAll").hidden = n < 2;
+
+  const notes = [];
+  if (res.note) notes.push(res.note);
+  const over = res.parts.filter((p) => p.blob.size > s.limit).length;
+  if (over) notes.push(`${over} morceau(x) dépasse(nt) légèrement la limite : relance avec une taille max un peu plus petite.`);
+  $("saveNote").textContent = notes.join(" ");
+  $("saveNote").classList.toggle("warn", notes.length > 0);
+  play(0);
 }
 
-// Enregistrement : passe par la capacité « downloads » de Claude (le cadre bloque les liens de téléchargement)
-$("save").addEventListener("click", async () => {
-  if (!state.output) return;
-  const name = state.file.name.replace(/\.[^.]+$/, "") + "_compresse.mp4";
-  // Hors de Claude (page en ligne sur baiji.fr) : simple lien de téléchargement
+// Aperçu d'un morceau dans le lecteur
+let previewUrl = null;
+function play(i) {
+  const isAudio = state.ext === "m4a";
+  const el = isAudio ? $("previewAudio") : $("preview");
+  $("preview").hidden = isAudio; $("previewAudio").hidden = !isAudio;
+  if (previewUrl) URL.revokeObjectURL(previewUrl);
+  previewUrl = URL.createObjectURL(state.parts[i].blob);
+  el.src = previewUrl;
+  document.querySelectorAll("#parts li").forEach((li) => li.classList.toggle("playing", +li.dataset.i === i));
+}
+
+$("parts").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  const i = +b.dataset.i;
+  if (b.dataset.act === "play") { play(i); (state.ext === "m4a" ? $("previewAudio") : $("preview")).play().catch(() => {}); }
+  else saveBlob(state.parts[i].blob, partName(i, state.parts.length, state.ext));
+});
+
+// « Tout enregistrer » : un téléchargement après l'autre (Chrome peut demander l'autorisation)
+$("saveAll").addEventListener("click", async () => {
+  for (let i = 0; i < state.parts.length; i++) {
+    await saveBlob(state.parts[i].blob, partName(i, state.parts.length, state.ext));
+    await sleep(600);
+  }
+});
+
+// Enregistrement : simple lien de téléchargement sur baiji.fr ;
+// dans Claude, on passe par sa capacité « downloads » (les liens y sont bloqués).
+async function saveBlob(blob, name) {
   if (!window.claude) {
     const link = document.createElement("a");
-    link.href = URL.createObjectURL(state.output);
+    link.href = URL.createObjectURL(blob);
     link.download = name;
     document.body.appendChild(link); link.click(); link.remove();
-    $("saveNote").textContent = `Téléchargée : ${name} (dossier Téléchargements)`;
+    setTimeout(() => URL.revokeObjectURL(link.href), 60000);
+    $("saveNote").classList.remove("warn");
+    $("saveNote").textContent = `Téléchargé : ${name} (dossier Téléchargements)`;
     return;
   }
   const downloads = await window.claude.use("downloads");
   if (!downloads) { $("saveNote").textContent = "L'enregistrement n'est pas disponible dans cette vue."; return; }
   try {
-    await downloads.save({ filename: name, data: state.output });
-    $("saveNote").textContent = `Enregistrée : ${name}`;
+    await downloads.save({ filename: name, data: blob });
+    $("saveNote").textContent = `Enregistré : ${name}`;
   } catch (e) {
-    const msgs = {
-      declined: "Enregistrement annulé.",
-      too_large: "Fichier trop gros pour l'appli (200 Mo max) : choisis le réglage « Pour partager » ou « Léger ».",
-      rate_limited: "Une demande est déjà ouverte, réessaie dans un instant.",
-    };
-    $("saveNote").textContent = msgs[e && e.code] || "Impossible d'enregistrer ici.";
+    $("saveNote").textContent = (e && e.code === "declined") ? "Enregistrement annulé." : "Impossible d'enregistrer ici.";
   }
-});
+}
 
 $("again").addEventListener("click", () => {
-  $("done").hidden = true; $("specs").hidden = true; state.output = null; state.info = null; state.file = null;
-  $("file").value = ""; $("pickTitle").textContent = "Choisir une vidéo";
-  $("pickSub").textContent = "MP4 ou MOV, par exemple C0051.MP4 de l'appareil photo";
+  $("done").hidden = true; $("specs").hidden = true; $("modeSeg").hidden = true;
+  $("preview").removeAttribute("src"); $("previewAudio").removeAttribute("src");
+  Object.assign(state, { file: null, info: null, duration: null, hasVideo: false, audioOk: false, parts: [] });
+  $("file").value = ""; $("pickTitle").textContent = "Choisir une vidéo ou un son";
+  $("pickSub").textContent = "MP4, MOV, M4A, MP3, WAV, OGG…";
+  $("mode-video").checked = true;
   $("go").disabled = true; renderPresets();
 });
 
 function friendly(err) {
   const m = (err && err.message) || String(err);
-  if (/memory|allocation|RangeError/i.test(m)) return "Le téléphone manque de mémoire pour cette vidéo. Essaie le réglage « Léger », ou coupe la vidéo en morceaux.";
-  return "La compression a échoué : " + m;
+  if (m === "NO_AUDIO_ENCODER") return "Aucun encodeur de son disponible dans ce navigateur. Essaie dans Chrome.";
+  if (/memory|allocation|RangeError/i.test(m)) return "Le téléphone manque de mémoire pour ce fichier. Essaie un réglage plus léger, ou active la découpe.";
+  if (/^Taille max|^Ton téléphone|^Aucun/.test(m)) return m;
+  return "Le traitement a échoué : " + m;
 }
 function showError(m) { $("error").textContent = m; $("error").hidden = false; }
 function hideError() { $("error").hidden = true; }

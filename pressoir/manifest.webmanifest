@@ -1,7 +1,7 @@
 {
   "name": "Pressoir vidéo",
   "short_name": "Pressoir",
-  "description": "Compresse une vidéo dans le téléphone, sans pub",
+  "description": "Compresse et découpe vidéos et sons dans le téléphone, sans pub",
   "id": "/pressoir/",
   "start_url": "/pressoir/",
   "scope": "/pressoir/",

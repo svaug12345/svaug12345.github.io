@@ -52,7 +52,7 @@ RACINE = Path(__file__).resolve().parent.parent  # racine du dépôt
 # ------------------------------------------------------------
 PAGES = [
     dict(dossier="pressoir", nom="Pressoir vidéo", court="Pressoir",
-         desc="Compresse une vidéo dans le téléphone, sans pub",
+         desc="Compresse et découpe vidéos et sons dans le téléphone, sans pub",
          picto="clapperboard", tuile="#d1501a", trait="#ffffff",
          fond="#eef2ef", theme="#eef2ef"),
     dict(dossier="pochpoch", nom="PochPoch assistant", court="PochPoch",
