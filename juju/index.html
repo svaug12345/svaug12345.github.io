@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr/juju/ — Julien, mécanicien vélo
-  Version 1.2.0
+  Version 1.3.0
   ------------------------------------------------------------
   Site vitrine d'une page pour Julien, mécanicien vélo.
   Devise : « Le vélo doit être un plaisir ».
@@ -26,7 +26,7 @@
     6. « Qu'est-ce qui cloche ? » : on choisit un symptôme,
        la page explique la cause probable et prépare un SMS
     7. « Rayon » : l'assistant vocal (une IA, présentée comme telle)
-    8. Comment ça se passe (3 étapes)
+    8. Comment ça se passe (3 étapes) + « À l'atelier ou chez vous »
     9. Contact
 
   Historique :
@@ -36,17 +36,20 @@
    • v1.2.0 : « Juju » devient « Julien » ; vraies coordonnées (tél., e-mail) ;
               devise « Le vélo doit être un plaisir » ; section « Dépannez-vous
               vous-même » ; tarifs indicatifs + bloc « sans coût caché »
+   • v1.3.0 : localisation : Gif-sur-Yvette et communes voisines, à l'atelier
+              ou à domicile (section « Où ? » + bloc contact + Rayon)
   ============================================================
 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Julien · Mécanicien vélo</title>
-<meta name="description" content="Julien, mécanicien vélo. Le vélo doit être un plaisir : conseils pour vous dépanner vous-même, tarifs affichés, aucun coût caché.">
+<title>Julien · Mécanicien vélo à Gif-sur-Yvette</title>
+<meta name="description" content="Julien, mécanicien vélo à Gif-sur-Yvette, à l'atelier ou à domicile. Le vélo doit être un plaisir : conseils pour vous dépanner vous-même, tarifs affichés, aucun coût caché.">
 <!-- Invisible des moteurs de recherche tant que Julien n'a pas validé les tarifs.
      Quand tout est prêt : supprimer cette ligne pour que Google puisse trouver le site. -->
 <meta name="robots" content="noindex">
+<meta name="geo.placename" content="Gif-sur-Yvette">
 <meta name="theme-color" content="#f4efe6">
 <!-- Petit vélo en guise d'icône d'onglet (SVG directement dans l'adresse) -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231b1d1a' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='24' height='24' rx='6' fill='%23f5c21b' stroke='none'/%3E%3Ccircle cx='7' cy='15' r='3.2'/%3E%3Ccircle cx='17' cy='15' r='3.2'/%3E%3Cpath d='M7 15l4-6h5l1 6M11 9l1 6h5'/%3E%3C/svg%3E">
@@ -368,6 +371,26 @@ header .btn { min-height: 42px; padding: 0 16px; font-size: 13px; }
 .etape h3 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
 .etape p { margin: 0; color: var(--muted); }
 
+/* ---------- Où ? À l'atelier ou chez vous ---------- */
+.lieux { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-top: 48px; }
+.lieu {
+  background: var(--surface); border: 2px solid var(--ink); border-radius: var(--radius);
+  padding: 24px 22px; display: grid; gap: 10px; align-content: start;
+}
+.lieu .pic {
+  width: 50px; height: 50px; border-radius: 14px; display: grid; place-items: center;
+  background: var(--accent); color: #1b1d1a; border: 2px solid var(--ink);
+}
+.lieu .pic svg { width: 26px; height: 26px; }
+.lieu h3 { font: 850 22px/1.1 var(--display); font-stretch: 108%; }
+.lieu p { margin: 0; color: var(--muted); }
+.lieu .pour { font-weight: 700; color: var(--ink); font-size: 15px; }
+.zone-bandeau {
+  margin-top: 14px; display: flex; gap: 10px; align-items: center; font-weight: 600;
+  padding: 14px 18px; border-radius: 14px; border: 2px dashed var(--line);
+}
+.zone-bandeau svg { flex: none; width: 22px; height: 22px; color: var(--rust); }
+
 /* ---------- Contact ---------- */
 .contact .carte {
   background: var(--accent); color: var(--accent-ink); border: 2px solid #1b1d1a;
@@ -432,7 +455,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 <section class="hero">
   <div class="wrap">
     <div>
-      <span class="kicker">Julien · Mécanicien vélo</span>
+      <span class="kicker">Julien · Mécanicien vélo · Gif-sur-Yvette</span>
       <h1>Le vélo doit être un <span class="surligne">plaisir.</span></h1>
       <p class="lead">Un pneu à plat, une chaîne qui grince, ça ne devrait pas gâcher votre balade. Je vous montre <strong>comment vous dépanner vous-même</strong> quand c'est simple. Et quand c'est trop compliqué, ou que vous préférez rouler sans vous en soucier, je m'en occupe, <strong>au prix affiché</strong>.</p>
       <div class="actions">
@@ -446,6 +469,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Tarifs affichés</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Aucun coût caché</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Conseils gratuits</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>À l'atelier ou à domicile</li>
       </ul>
     </div>
 
@@ -571,6 +595,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Aucun supplément sans votre accord. Si je découvre autre chose, je vous appelle d'abord.</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Le diagnostic et les conseils sont gratuits. Si vous ne faites pas réparer, vous ne payez rien.</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Une facture détaillée, ligne par ligne, et vos pièces usées rendues.</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>À domicile, le déplacement éventuel est compris dans le prix total annoncé avant. Pas de surprise à la porte.</li>
       </ul>
       <p class="petit">Tarifs indicatifs pour un vélo classique. Un vélo très abîmé, très ancien ou très technique peut demander plus de temps : dans ce cas, je vous le dis avant.</p>
     </div>
@@ -633,7 +658,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   </div>
 </section>
 
-<!-- ============ 7. COMMENT ÇA SE PASSE ============ -->
+<!-- ============ 8. COMMENT ÇA SE PASSE + À L'ATELIER OU CHEZ VOUS ============ -->
 <section id="deroule">
   <div class="wrap">
     <span class="kicker">Comment ça se passe</span>
@@ -641,7 +666,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     <div class="etapes">
       <div class="etape apparait">
         <h3>Vous appelez</h3>
-        <p>Vous décrivez le problème en deux phrases. On convient d'un moment pour voir le vélo.</p>
+        <p>Vous décrivez le problème en deux phrases. On choisit ensemble : vous passez à l'atelier, ou Julien vient chez vous.</p>
       </div>
       <div class="etape apparait">
         <h3>Julien regarde et chiffre</h3>
@@ -651,6 +676,34 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
         <h3>Vous repartez en roulant</h3>
         <p>Vélo réparé, réglé et testé. Vous savez ce qui a été fait, et pourquoi.</p>
       </div>
+    </div>
+
+    <!-- Les deux façons de faire réparer. L'adresse exacte de l'atelier
+         n'est pas publiée : Julien la donne au téléphone. -->
+    <div class="lieux" id="ou">
+      <div class="lieu apparait">
+        <span class="pic">
+          <!-- picto atelier (Lucide « warehouse », ISC) -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 21V10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v11"/><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 1.132-1.803l7.95-3.974a2 2 0 0 1 1.837 0l7.948 3.974A2 2 0 0 1 22 8z"/><path d="M6 13h12"/><path d="M6 17h12"/></svg>
+        </span>
+        <h3>À l'atelier, à Gif-sur-Yvette</h3>
+        <p>Vous déposez votre vélo, Julien a tous ses outils sous la main. Idéal pour une révision complète ou une grosse réparation.</p>
+        <p class="pour">L'adresse vous est donnée au téléphone.</p>
+      </div>
+      <div class="lieu apparait">
+        <span class="pic">
+          <!-- picto maison (Lucide « house », ISC) -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        </span>
+        <h3>Chez vous, à domicile</h3>
+        <p>Pas de voiture, pas le temps, un vélo cargo ou électrique lourd à transporter ? Julien vient avec ses outils et répare sur place.</p>
+        <p class="pour">Le confort en plus, sans coût caché.</p>
+      </div>
+    </div>
+    <div class="zone-bandeau apparait">
+      <!-- picto repère (Lucide « map-pin », ISC) -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
+      Gif-sur-Yvette et communes voisines. Un doute sur votre adresse ? Demandez à Julien.
     </div>
   </div>
 </section>
@@ -720,8 +773,8 @@ const JULIEN = {
   tel:        "+33658230740",          // format international, sans espaces (pour les liens « tel: » et « sms: »)
   telAffiche: "06 58 23 07 40",        // tel qu'on le lit
   email:      "julien.vaugoude@gmail.com",
-  zone:       "",            // ex. "Gif-sur-Yvette et alentours — à l'atelier ou à domicile"
-  zoneDetail: "",            // ex. "Je me déplace jusqu'à 10 km"
+  zone:       "Gif-sur-Yvette et communes voisines",
+  zoneDetail: "À l'atelier, ou à domicile : Julien se déplace chez vous.",
   horaires:   "",            // ex. "Du mardi au samedi, 9 h – 19 h"
   horairesDetail: "Si je ne décroche pas, laissez un message : je rappelle.",
 };
