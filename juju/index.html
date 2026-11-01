@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr/juju/ — Juju, mécanicien vélo
-  Version 1.0.0
+  Version 1.1.0
   ------------------------------------------------------------
   Site vitrine d'une page pour Julien (« Juju »), mécanicien vélo.
   But : donner confiance et donner envie de l'appeler.
@@ -19,11 +19,14 @@
     4. Les réparations proposées
     5. « Qu'est-ce qui cloche ? » : on choisit un symptôme,
        la page explique la cause probable et prépare un SMS
-    6. Comment ça se passe (3 étapes)
-    7. Contact
+    6. « Rayon » : l'assistant vocal (une IA, présentée comme telle)
+    7. Comment ça se passe (3 étapes)
+    8. Contact
 
   Historique :
    • v1.0.0 : première version
+   • v1.1.0 : assistant vocal « Rayon » (agent ElevenLabs) qui répond aux
+              premières questions et invite à contacter Juju
   ============================================================
 -->
 <html lang="fr">
@@ -239,6 +242,55 @@ header .btn { min-height: 42px; padding: 0 16px; font-size: 13px; }
 .reponse .verdict i { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); display: block; }
 .reponse .verdict.urgent i { background: var(--rust); }
 
+/* ---------- Assistant vocal « Rayon » ----------
+   Une grande carte sombre avec un bouton rond. L'état de l'appel
+   est porté par une classe sur la carte : repos / connexion / en-ligne. */
+.assistant { padding-top: 0; }
+.rayon {
+  background: var(--deep); color: var(--deep-ink); border-radius: 28px;
+  padding: clamp(26px, 5vw, 48px); display: grid; gap: 28px; align-items: center;
+}
+@media (min-width: 860px) { .rayon { grid-template-columns: 1.15fr .85fr; } }
+.rayon .kicker { color: var(--accent); }
+.rayon h2 { font-size: clamp(30px, 6vw, 46px); }
+.rayon .intro { color: color-mix(in srgb, var(--deep-ink) 75%, transparent); margin: 16px 0 0; max-width: 46ch; }
+/* Les promesses de transparence : petites lignes cochées */
+.franchise { list-style: none; padding: 0; margin: 22px 0 0; display: grid; gap: 10px; font-size: 15px; }
+.franchise li { display: flex; gap: 10px; align-items: flex-start; color: color-mix(in srgb, var(--deep-ink) 85%, transparent); }
+.franchise svg { flex: none; width: 18px; height: 18px; margin-top: 2px; color: var(--accent); }
+/* Côté droit : le bouton d'appel et l'état */
+.poste { display: grid; justify-items: center; gap: 16px; text-align: center; }
+.bouton-rayon {
+  position: relative; width: 168px; height: 168px; border-radius: 50%; cursor: pointer;
+  background: var(--accent); color: #1b1d1a; border: 3px solid var(--deep-ink);
+  display: grid; place-items: center; transition: transform .15s;
+  font: 800 15px/1.15 var(--body); letter-spacing: .06em; text-transform: uppercase;
+}
+.bouton-rayon:hover { transform: scale(1.03); }
+.bouton-rayon svg { width: 46px; height: 46px; margin: 0 auto 8px; }
+/* L'onde autour du bouton : son épaisseur suit le volume de la voix (variable --niveau, 0 à 1) */
+.bouton-rayon::after {
+  content: ""; position: absolute; inset: -10px; border-radius: 50%;
+  border: 3px solid var(--accent); opacity: 0;
+  transform: scale(calc(1 + var(--niveau, 0) * .25)); transition: transform .08s, opacity .2s;
+}
+.rayon.en-ligne .bouton-rayon::after { opacity: .7; }
+.rayon.connexion .bouton-rayon { animation: sonne 1s ease-in-out infinite; }
+@keyframes sonne { 50% { transform: scale(.95); } }
+@media (prefers-reduced-motion: reduce) { .rayon.connexion .bouton-rayon { animation: none; } }
+.etat-appel { min-height: 48px; font-weight: 600; }
+.etat-appel small { display: block; font-weight: 500; opacity: .7; font-size: 14px; margin-top: 4px; }
+.raccrocher {
+  display: none; min-height: 46px; padding: 0 22px; border-radius: 999px; cursor: pointer;
+  background: transparent; color: var(--deep-ink); border: 2px solid color-mix(in srgb, var(--deep-ink) 50%, transparent);
+  font: 700 14px/1 var(--body); letter-spacing: .06em; text-transform: uppercase;
+}
+.rayon.en-ligne .raccrocher, .rayon.connexion .raccrocher { display: inline-flex; align-items: center; }
+.mention-ia { font-size: 13px; opacity: .65; max-width: 34ch; margin: 0; }
+/* Après l'appel : on propose de contacter Juju (le vrai) */
+.apres-appel { display: none; }
+.rayon.fini .apres-appel { display: flex; }
+
 /* ---------- Comment ça se passe ---------- */
 .etapes { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); counter-reset: etape; }
 .etape { position: relative; padding-top: 70px; }
@@ -321,7 +373,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>
           Appeler Juju
         </a>
-        <a class="btn btn-ghost" href="#diagnostic">Qu'est-ce qui cloche ?</a>
+        <a class="btn btn-ghost" href="#rayon">Poser une question</a>
       </div>
       <ul class="badges">
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Devis avant intervention</li>
@@ -444,7 +496,44 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   </div>
 </section>
 
-<!-- ============ 6. COMMENT ÇA SE PASSE ============ -->
+<!-- ============ 6. ASSISTANT VOCAL « RAYON » ============
+     Rayon est un agent ElevenLabs (conversation à la voix, dans le navigateur).
+     Transparence d'abord : il se présente comme une IA, ne connaît pas les prix,
+     ne prend pas de rendez-vous, et renvoie toujours vers Juju lui-même. -->
+<section class="assistant" id="rayon">
+  <div class="wrap">
+    <div class="rayon" id="carteRayon">
+      <div>
+        <span class="kicker">Une question avant d'appeler ?</span>
+        <h2>Parlez-en d'abord à Rayon, l'assistant de Juju.</h2>
+        <p class="intro">Décrivez ce que fait votre vélo, à voix haute : Rayon vous dit d'où ça vient le plus souvent, si vous pouvez régler ça vous-même, et quoi dire à Juju.</p>
+        <ul class="franchise">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Rayon est une intelligence artificielle, pas Juju. Il vous le dira lui-même.</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Il ne donne aucun prix et ne promet rien : c'est Juju qui chiffre, avant de commencer.</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Si un simple coup de pompe suffit, il vous le dit. Même si vous n'avez pas besoin de Juju.</li>
+        </ul>
+      </div>
+      <div class="poste">
+        <button class="bouton-rayon" id="boutonRayon" type="button" aria-describedby="etatAppel">
+          <span>
+            <!-- picto micro (Lucide « mic », ISC) -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19v3"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><rect x="9" y="2" width="6" height="13" rx="3"/></svg>
+            <span id="libelleBouton">Parler<br>à Rayon</span>
+          </span>
+        </button>
+        <div class="etat-appel" id="etatAppel" aria-live="polite">Appuyez, puis parlez normalement.<small>Il faudra autoriser le micro.</small></div>
+        <button class="raccrocher" id="raccrocher" type="button">Raccrocher</button>
+        <div class="actions apres-appel">
+          <a class="btn btn-main js-appel" href="#contact">Appeler Juju</a>
+          <a class="btn btn-ghost js-sms" href="#contact" style="color:var(--deep-ink);border-color:var(--deep-ink)">SMS</a>
+        </div>
+        <p class="mention-ia">Conversation traitée par ElevenLabs (voix et IA). Votre voix n'est pas enregistrée ; le texte de l'échange est gardé 30 jours. Évitez de donner votre nom ou votre adresse : vous les donnerez à Juju directement.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. COMMENT ÇA SE PASSE ============ -->
 <section id="deroule">
   <div class="wrap">
     <span class="kicker">Comment ça se passe</span>
@@ -466,7 +555,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   </div>
 </section>
 
-<!-- ============ 7. CONTACT ============ -->
+<!-- ============ 8. CONTACT ============ -->
 <section class="contact" id="contact">
   <div class="wrap">
     <div class="carte">
@@ -528,7 +617,7 @@ const JUJU = {
   horaires:   "",            // ex. "Du mardi au samedi, 9 h – 19 h"
   horairesDetail: "Si je ne décroche pas, laissez un message : je rappelle.",
 };
-const VERSION = "1.0.0";     // ← à augmenter à chaque modification (voir l'historique en haut)
+const VERSION = "1.1.0";     // ← à augmenter à chaque modification (voir l'historique en haut)
 
 /* ------------------------------------------------------------
    Pictos (bibliothèque Lucide, licence ISC) — juste le dessin
@@ -687,6 +776,110 @@ document.querySelectorAll(".apparait").forEach(el => obs.observe(el));
 
 remplirContact();
 brancherLiens();
+
+/* ============================================================
+   ASSISTANT VOCAL « RAYON » (agent ElevenLabs)
+   ------------------------------------------------------------
+   Même principe que les autres agents du site (PochPoch, Foot & Chats) :
+   1) on demande le micro ; 2) on charge le SDK officiel ElevenLabs
+   (seulement au premier appui, pour garder la page légère) ;
+   3) on ouvre la conversation avec l'identifiant de l'agent.
+   L'agent n'accepte que les appels venant de baiji.fr (réglé côté
+   ElevenLabs) : en local, depuis un fichier, l'appel sera refusé.
+   ============================================================ */
+const AGENT_RAYON = "agent_9901m6b24af2f15s8fxy0ezqm92c";   // « Rayon – assistant de Juju » sur ElevenLabs
+
+const carteRayon  = document.getElementById("carteRayon");
+const boutonRayon = document.getElementById("boutonRayon");
+const libelle     = document.getElementById("libelleBouton");
+const etatAppel   = document.getElementById("etatAppel");
+let conversation  = null;   // la conversation en cours (null = pas d'appel)
+let animation     = null;   // identifiant de la boucle d'animation de l'onde
+
+/* Change l'état visuel : "repos", "connexion", "en-ligne" ou "fini" */
+function etatRayon(etat, texte, detail) {
+  carteRayon.classList.remove("repos", "connexion", "en-ligne", "fini");
+  carteRayon.classList.add(etat);
+  etatAppel.innerHTML = texte + (detail ? `<small>${detail}</small>` : "");
+  libelle.innerHTML = etat === "en-ligne" ? "En<br>ligne" : etat === "connexion" ? "Ça<br>sonne…" : "Parler<br>à Rayon";
+}
+
+/* L'onde autour du bouton suit le volume de la voix de Rayon (0 → 1) */
+function animerOnde() {
+  if (!conversation) return;
+  try {
+    const v = conversation.getOutputVolume ? conversation.getOutputVolume() : 0;
+    boutonRayon.style.setProperty("--niveau", Math.min(1, v * 2.5).toFixed(2));
+  } catch (e) { /* pas grave : l'onde reste fixe */ }
+  animation = requestAnimationFrame(animerOnde);
+}
+
+/* Fin d'appel (raccroché par l'un ou l'autre) : on propose de contacter Juju */
+function finAppel() {
+  conversation = null;
+  cancelAnimationFrame(animation);
+  boutonRayon.style.setProperty("--niveau", 0);
+  const aUnNumero = JUJU.tel.trim() !== "";
+  etatRayon("fini", "Merci d'avoir discuté avec Rayon !",
+    aUnNumero ? "Pour la suite, c'est Juju en personne :" : "Les coordonnées de Juju arrivent très bientôt sur cette page.");
+  if (!aUnNumero) carteRayon.classList.remove("fini");   // pas de boutons grisés inutiles
+}
+
+/* Erreur : on explique simplement ce qui s'est passé */
+function erreurRayon(e, message) {
+  console.error("Rayon :", e);
+  conversation = null;
+  cancelAnimationFrame(animation);
+  etatRayon("repos", message || "La ligne ne répond pas pour l'instant.",
+    "Réessayez dans un moment, ou contactez Juju directement.");
+}
+
+async function appelerRayon() {
+  etatRayon("connexion", "Connexion…", "Rayon décroche dans un instant.");
+  // 1) Le micro (le navigateur affiche sa demande d'autorisation)
+  try {
+    await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (e) {
+    return erreurRayon(e, "Le micro n'est pas autorisé.");
+  }
+  try {
+    // 2) Le SDK ElevenLabs, même version figée que les autres pages du site
+    const { Conversation } = await import("https://cdn.jsdelivr.net/npm/@elevenlabs/client@1.32.1/+esm");
+    // 3) L'appel
+    conversation = await Conversation.startSession({
+      agentId: AGENT_RAYON,
+      onConnect: () => {
+        etatRayon("en-ligne", "Rayon vous écoute.", "Parlez normalement, comme au téléphone.");
+        animerOnde();
+      },
+      // mode = "speaking" (Rayon parle) ou "listening" (il vous écoute)
+      onModeChange: ({ mode }) => {
+        if (!conversation) return;
+        etatAppel.innerHTML = mode === "speaking"
+          ? "Rayon parle…<small>Vous pouvez le couper si besoin.</small>"
+          : "À vous !<small>Décrivez ce que fait votre vélo.</small>";
+      },
+      onDisconnect: finAppel,
+      onError: (e) => erreurRayon(e),
+    });
+  } catch (e) {
+    erreurRayon(e);
+  }
+}
+
+boutonRayon.addEventListener("click", () => {
+  // Pendant un appel, le gros bouton ne relance rien (on raccroche avec « Raccrocher »)
+  if (conversation || carteRayon.classList.contains("connexion")) return;
+  appelerRayon();
+});
+document.getElementById("raccrocher").addEventListener("click", async () => {
+  if (conversation) await conversation.endSession();   // → onDisconnect → finAppel()
+});
+// Si on quitte la page en plein appel, on raccroche proprement
+window.addEventListener("pagehide", () => { if (conversation) conversation.endSession(); });
+
+etatRayon("repos", "Appuyez, puis parlez normalement.", "Il faudra autoriser le micro.");
+brancherLiens();   // les boutons « Appeler / SMS » de fin d'appel reçoivent le bon lien
 </script>
 </body>
 </html>
