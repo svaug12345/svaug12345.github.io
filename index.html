@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr — Page d'accueil des projets (marque SV)
-  Version 1.10.2
+  Version 1.11.0
   ------------------------------------------------------------
   Historique :
    • v1.0.0 : première page d'accueil
@@ -26,6 +26,7 @@
    • v1.10.0 : nouvelle section « Sites » avec le site du mécanicien vélo
    • v1.10.1 : la carte devient « Julien · Mécanicien vélo »
    • v1.10.2 : le site de Julien déménage à baiji.fr/julien/
+   • v1.11.0 : nouvelle section « Formation » avec la séance d'observation FART
 
   À déposer dans le dépôt GitHub : svaug12345.github.io
   → c'est le fichier "index.html" à la racine.
@@ -295,7 +296,7 @@
 
     <!-- ===================== PIED DE PAGE ===================== -->
     <footer>
-      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.10.2</p>
+      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.11.0</p>
     </footer>
 
   </div>
@@ -345,6 +346,7 @@
       toque: `<path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/> <path d="M22 10v6"/> <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>`,  // graduation-cap
       telephone: `<path d="M13 2a9 9 0 0 1 9 9"/> <path d="M13 6a5 5 0 0 1 5 5"/> <path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/>`,  // phone-call
       balance: `<path d="M12 3v18"/> <path d="m19 8 3 8a5 5 0 0 1-6 0zV7"/> <path d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1"/> <path d="m5 8 3 8a5 5 0 0 1-6 0zV7"/> <path d="M7 21h10"/>`,  // scale
+      vent: `<path d="M12.8 19.6A2 2 0 1 0 14 16H2"/> <path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"/> <path d="M9.8 4.4A2 2 0 1 1 11 8H2"/>`,  // wind
       velo: `<circle cx="18.5" cy="17.5" r="3.5"/> <circle cx="5.5" cy="17.5" r="3.5"/> <circle cx="15" cy="5" r="1"/> <path d="M12 17.5V14l-3-3 4-3 2 3h2"/>`,  // bike
     };
     const PROJETS = [
@@ -447,6 +449,13 @@
         desc: "Le vélo doit être un plaisir : conseils, tarifs clairs",
         url:  "julien/",                 // ✅ en ligne : baiji.fr/julien/
         cat:  "Sites"
+      },
+      {
+        nom:  "FART · Séance d'observation",
+        icone: "vent",                    // picto (voir la liste PICTOS)
+        desc: "Six scénettes de classe à faire observer aux tuteurs et stagiaires",
+        url:  "fart/",                   // ✅ en ligne : baiji.fr/fart/
+        cat:  "Formation"
       }
     ];
 

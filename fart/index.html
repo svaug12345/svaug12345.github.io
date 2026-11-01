@@ -1,0 +1,477 @@
+<!doctype html>
+<!--
+  Page « FART · Séance d'observation » — six scénettes animées pour former les tuteurs
+  et les professeurs stagiaires à l'observation d'une séance
+  Version 1.0.0 – 01/11/2026
+  En ligne : https://baiji.fr/fart/
+
+  Historique :
+   • 1.0.0 : première version — logo FART animé, mode d'emploi de la séance,
+             6 scénettes (vidéos) avec leurs questions d'échange, film complet,
+             grilles d'observation à télécharger.
+
+  Comment ça marche ?
+  - Les vidéos sont dans le dossier videos/ (une par scène + le film complet),
+    avec une image d'aperçu par scène (posters/). Elles sont fabriquées ailleurs
+    (animation SVG filmée image par image, voix et bruitages ElevenLabs) puis déposées ici.
+  - La liste SCENES, en bas de page, est le seul endroit à modifier : titre, domaine
+    de la grille, durée, questions. Le script construit les cartes à partir d'elle.
+  - Clic sur l'aperçu d'une scène → la vidéo se lance dans la carte ; le bouton
+    « Projeter » la passe en plein écran (pratique en salle, avec un vidéoprojecteur).
+  - Identité visuelle propre à l'équipe FART (pas la charte SV) : bleu nuit, bleu France,
+    rouge Marianne, Unbounded pour le logo et les titres, Manrope pour le texte.
+  - Page en « noindex » : elle n'apparaît pas dans les moteurs de recherche.
+-->
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <!-- Indispensable pour un bon affichage sur téléphone -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>FART · Séance d'observation</title>
+  <!-- Pas d'indexation par Google & co : la page se partage par lien -->
+  <meta name="robots" content="noindex">
+  <meta name="description" content="Six scénettes animées pour faire observer une séance aux tuteurs et professeurs stagiaires.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&family=Manrope:wght@500;600;700;800&display=swap">
+  <style>
+    /* ---------- Palette FART ---------- */
+    :root{
+      --nuit:#0A0A2E;          /* fond de l'en-tête et des écrans de pause */
+      --nuit-2:#14144A;
+      --bleu:#000091;          /* bleu France */
+      --rouge:#E1000F;         /* rouge Marianne */
+      --rouge-vif:#FF3B47;
+      --lavande:#9A9AF8;
+      --encre:#14143A;         /* texte courant */
+      --gris:#6E6E8A;          /* textes secondaires */
+      --ligne:#DCDDEA;         /* filets */
+      --fond:#F1F2F9;          /* fond de page */
+      --blanc:#FFFFFF;
+      --d-blanc:linear-gradient(165deg,#FFFFFF 0%,#C9C9FF 100%);   /* F, A, R : blanc avec reflet */
+      --d-rouge:linear-gradient(165deg,#FF5A64 0%,#E1000F 70%);    /* T : rouge avec reflet */
+      --f-mark:"Unbounded","Arial Black",Arial,sans-serif;
+      --f-txt:"Manrope","Helvetica Neue",Arial,sans-serif;
+      color-scheme:light;
+    }
+    *{box-sizing:border-box}
+    html{-webkit-text-size-adjust:100%}
+    body{margin:0;background:var(--fond);color:var(--encre);font-family:var(--f-txt);line-height:1.5}
+    .gutter{padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+    .w{max-width:1100px;margin:0 auto}
+    a{color:var(--bleu)}
+    :focus-visible{outline:3px solid var(--rouge-vif);outline-offset:3px;border-radius:6px}
+
+    /* ---------- En-tête : le logo animé sur fond nuit ---------- */
+    header{
+      color:#fff;padding-top:max(48px,env(safe-area-inset-top,0px));padding-bottom:56px;position:relative;overflow:hidden;
+      background:
+        radial-gradient(900px 600px at 0% 0%,rgba(60,60,220,.32),transparent 70%),
+        radial-gradient(800px 600px at 100% 100%,rgba(225,0,15,.20),transparent 70%),var(--nuit);
+    }
+    .eyebrow{font-weight:800;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--lavande)}
+    .scene{position:relative;min-height:300px;display:flex;flex-direction:column;justify-content:center;margin-top:18px}
+    .scene.no-anim,.scene.no-anim *{transition:none!important;animation:none!important}
+    .mark{display:flex;align-items:flex-start;gap:.06em;position:relative;z-index:1}
+    .name{display:flex;flex-direction:column;gap:.08em;font-family:var(--f-mark);font-weight:800;font-size:clamp(26px,6vw,46px);line-height:1.05}
+    .word{opacity:0;transform:translateX(-36px);filter:blur(8px);transition:opacity .7s,transform .8s cubic-bezier(.2,.8,.2,1),filter .7s}
+    .scene.s-words .word{opacity:1;transform:none;filter:none}
+    .init{display:inline-block;background:var(--d-blanc);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .word:last-child .init{background:var(--d-rouge);-webkit-background-clip:text;background-clip:text}
+    .rest{color:#8C8CB8;font-weight:500}
+    /* La rafale : chaque lettre secondaire s'envole (trajectoire posée par le script) */
+    .ch{display:inline-block;white-space:pre;transition:transform .9s cubic-bezier(.55,0,.75,.2),opacity .9s,filter .9s;transition-delay:var(--d,0s)}
+    .scene.s-blow .ch{transform:translate(var(--dx),var(--dy)) rotate(var(--r));opacity:0;filter:blur(5px)}
+    .streaks{position:absolute;inset:0;pointer-events:none}
+    .streaks i{position:absolute;left:0;height:3px;width:45%;border-radius:3px;opacity:0;background:linear-gradient(90deg,transparent,rgba(154,154,248,.6),transparent)}
+    .streaks i:nth-child(1){top:30%} .streaks i:nth-child(3){top:66%}
+    .streaks i:nth-child(2){top:48%;background:linear-gradient(90deg,transparent,rgba(255,59,71,.6),transparent)}
+    .scene.s-blow .streaks i{animation:sweep .9s ease-in-out both}
+    .scene.s-blow .streaks i:nth-child(2){animation-delay:.08s} .scene.s-blow .streaks i:nth-child(3){animation-delay:.16s}
+    /* Les initiales seules, en grand : FART */
+    .scene.s-compact .name{flex-direction:row;gap:0;font-size:clamp(72px,19vw,170px);line-height:.95;letter-spacing:-.03em}
+    .scene.s-compact .rest{display:none}
+    .scene.s-wave .init{animation:hop .55s ease-out both;animation-delay:calc(var(--i) * .07s)}
+    /* Le souffle */
+    .gust{display:none;width:.6em;height:.6em;margin-top:.05em;font-size:clamp(72px,19vw,170px);flex:none}
+    .scene.s-compact .gust{display:block}
+    .gust path{fill:none;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset .8s ease-out}
+    .scene.s-wind .gust path{stroke-dashoffset:0}
+    .scene.s-wind .gust path:nth-child(2){transition-delay:.15s} .scene.s-wind .gust path:nth-child(3){transition-delay:.3s}
+    .scene.s-idle .gust{animation:sway 2.2s ease-in-out infinite alternate}
+    /* La base line, lettre par lettre */
+    .baseline{margin-top:18px;font-weight:700;font-size:clamp(16px,3.6vw,22px);display:flex;align-items:center;gap:14px;position:relative;z-index:1}
+    .baseline::before{content:"";width:40px;height:4px;border-radius:2px;background:var(--rouge);flex:none;transform:scaleX(0);transform-origin:left;transition:transform .5s ease-out}
+    .scene.s-base .baseline::before{transform:none}
+    .bl-txt{min-width:0;line-height:1.4} .bw{display:inline-block;white-space:nowrap}
+    .bc{display:inline-block;opacity:0;transform:translateY(8px);filter:blur(4px);transition:opacity .45s,transform .45s,filter .45s;transition-delay:var(--d,0s)}
+    .scene.s-base .bc{opacity:1;transform:none;filter:none}
+    @keyframes sweep{0%{transform:translateX(-120%);opacity:0}25%{opacity:1}100%{transform:translateX(260%);opacity:0}}
+    @keyframes hop{0%,100%{transform:none}40%{transform:translateY(-.12em)}}
+    @keyframes sway{to{transform:translateX(.04em) skewX(-4deg)}}
+    .intro{margin-top:36px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:28px;align-items:end}
+    .intro h1{margin:0;font-family:var(--f-mark);font-weight:500;font-size:clamp(26px,4.4vw,40px);line-height:1.15;text-wrap:balance}
+    .intro p{margin:0;color:#C9C9E8;font-size:17px;max-width:46ch}
+    .btn{display:inline-flex;align-items:center;gap:10px;border:0;cursor:pointer;text-decoration:none;font:800 13px var(--f-txt);letter-spacing:.14em;text-transform:uppercase;border-radius:999px;padding:14px 22px}
+    .btn.rouge{background:var(--rouge);color:#fff} .btn.rouge:hover{background:#c4000d}
+    .btn.clair{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.22)}
+    .btn.ligne{background:transparent;color:var(--encre);border:1.5px solid var(--ligne);padding:10px 16px;font-size:12px}
+    .btn.ligne:hover{border-color:var(--bleu);color:var(--bleu)}
+    .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+
+    /* ---------- Sections ---------- */
+    section.bloc{padding-block:56px 8px}
+    h2{margin:0 0 6px;font-family:var(--f-mark);font-weight:800;font-size:clamp(24px,3.6vw,32px);letter-spacing:-.01em;text-wrap:balance}
+    .chapo{margin:0 0 28px;color:var(--gris);font-size:17px;max-width:62ch}
+    /* Déroulé de la séance : 4 temps qui se répètent pour chaque scène */
+    .etapes{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;counter-reset:e}
+    .etapes li{counter-increment:e;background:var(--blanc);border-radius:18px;padding:20px 20px 22px;min-width:0}
+    .etapes li::before{content:counter(e);display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--nuit);color:#fff;font:800 16px var(--f-mark);margin-bottom:12px}
+    .etapes li:nth-child(3)::before{background:var(--rouge)}
+    .etapes b{display:block;font-size:17px;margin-bottom:4px}
+    .etapes span{color:var(--gris);font-size:15px}
+
+    /* ---------- Cartes des scènes ---------- */
+    .scenes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+    .carte{background:var(--blanc);border-radius:22px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+    .ecran{position:relative;aspect-ratio:16/9;background:var(--nuit);max-width:100%}
+    .ecran img,.ecran video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+    .ecran button.lire{position:absolute;inset:0;border:0;background:transparent;cursor:pointer;display:grid;place-items:center}
+    .ecran button.lire::after{content:"";width:74px;height:74px;border-radius:50%;background:rgba(10,10,46,.78) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8 5v14l11-7z' fill='%23fff'/%3E%3C/svg%3E") center/34px no-repeat;transition:transform .2s}
+    .ecran button.lire:hover::after{transform:scale(1.08);background-color:var(--rouge)}
+    .duree{position:absolute;right:12px;bottom:12px;background:rgba(10,10,46,.82);color:#fff;font:700 13px var(--f-txt);padding:4px 10px;border-radius:999px;font-variant-numeric:tabular-nums}
+    .corps{padding:20px 22px 22px;display:flex;flex-direction:column;gap:12px;flex:1}
+    .tete{display:flex;align-items:center;gap:12px}
+    .num{flex:none;width:40px;height:40px;border-radius:12px;background:var(--nuit);color:#fff;display:grid;place-items:center;font:800 15px var(--f-mark)}
+    .carte h3{margin:0;font-family:var(--f-mark);font-weight:500;font-size:21px;line-height:1.2}
+    .tag{align-self:flex-start;font-size:13px;font-weight:700;color:var(--bleu);background:#E8E8FB;border-radius:999px;padding:4px 12px}
+    .resume{margin:0;color:var(--gris);font-size:15px}
+    details{border-top:1px solid var(--ligne);padding-top:10px}
+    summary{cursor:pointer;font-weight:800;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--rouge);list-style:none;display:flex;align-items:center;gap:8px}
+    summary::-webkit-details-marker{display:none}
+    summary::before{content:"+";font:800 18px var(--f-mark);width:18px}
+    details[open] summary::before{content:"–"}
+    details ol{margin:10px 0 0;padding-left:22px;display:flex;flex-direction:column;gap:8px;font-size:15.5px}
+    .bas{display:flex;flex-wrap:wrap;gap:10px;margin-top:auto;padding-top:6px}
+
+    /* ---------- Film complet ---------- */
+    .film{background:var(--nuit);color:#fff;border-radius:26px;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}
+    .film .ecran{border-radius:0}
+    .film .txt{padding:28px;display:flex;flex-direction:column;gap:12px;justify-content:center}
+    .film h3{margin:0;font-family:var(--f-mark);font-weight:800;font-size:24px}
+    .film p{margin:0;color:#C9C9E8}
+
+    /* ---------- Grilles et personnages ---------- */
+    .deux{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+    .boite{background:var(--blanc);border-radius:22px;padding:24px;min-width:0}
+    .boite h3{margin:0 0 12px;font-size:18px}
+    .fichier{display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--ligne);text-decoration:none;color:var(--encre)}
+    .fichier:first-of-type{border-top:0}
+    .fichier i{flex:none;width:44px;height:52px;border-radius:8px;background:var(--rouge);color:#fff;display:grid;place-items:center;font:800 11px var(--f-txt);font-style:normal}
+    .fichier b{display:block} .fichier span{color:var(--gris);font-size:14px}
+    .fichier:hover b{color:var(--bleu)}
+    table{width:100%;border-collapse:collapse;font-size:15px}
+    td{padding:9px 0;border-top:1px solid var(--ligne);vertical-align:top}
+    tr:first-child td{border-top:0}
+    td:first-child{font-weight:800;width:34%;padding-right:12px}
+    td:last-child{color:var(--gris)}
+
+    footer{padding-block:56px max(40px,env(safe-area-inset-bottom,0px));color:var(--gris);font-size:14px}
+    footer .w{border-top:1px solid var(--ligne);padding-top:20px;display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
+
+    /* ---------- Téléphone ---------- */
+    @media (max-width:860px){
+      .intro,.film,.deux{grid-template-columns:minmax(0,1fr)}
+      .etapes{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .scenes{grid-template-columns:minmax(0,1fr)}
+    }
+    @media (max-width:480px){ .etapes{grid-template-columns:minmax(0,1fr)} }
+    /* Accessibilité : sans animation, on affiche directement l'état final */
+    @media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important} }
+  </style>
+</head>
+<body>
+
+<header class="gutter">
+  <div class="w">
+    <div class="eyebrow">Formation des tuteurs et des professeurs stagiaires</div>
+    <!-- Le logo démarre à l'état final (lisible tout de suite), puis le script rejoue l'animation -->
+    <div class="scene s-words s-blow s-compact s-wind s-base" id="scene" aria-label="FART : Formateur Académique Réseau des Tuteurs">
+      <div class="streaks" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="mark">
+        <div class="name" id="name">
+          <span class="word"><span class="init">F</span><span class="rest">ormateur</span></span>
+          <span class="word"><span class="init">A</span><span class="rest">cadémique</span></span>
+          <span class="word"><span class="init">R</span><span class="rest">éseau des</span></span>
+          <span class="word"><span class="init">T</span><span class="rest">uteurs</span></span>
+        </div>
+        <svg class="gust" viewBox="0 0 100 100" aria-hidden="true">
+          <path pathLength="1" stroke="#FFFFFF" stroke-width="10" d="M6 30 H58 C78 30 84 10 70 6 C60 3 54 14 62 20"/>
+          <path pathLength="1" stroke="#FF3B47" stroke-width="10" d="M6 54 H80 C94 54 96 72 84 76 C76 78 72 70 78 66"/>
+          <path pathLength="1" stroke="#9A9AF8" stroke-width="10" d="M6 78 H40"/>
+        </svg>
+      </div>
+      <div class="baseline" id="baseline">Faire souffler un vent nouveau</div>
+    </div>
+
+    <div class="intro">
+      <div>
+        <h1>Séance d'observation : six scénettes pour faire réagir</h1>
+        <div class="actions">
+          <a class="btn rouge" href="#scenes">Voir les scènes</a>
+          <a class="btn clair" href="#film">Film complet</a>
+        </div>
+      </div>
+      <p>Une entrée en classe de 3e, rejouée en six moments clés. Après chaque scène, l'écran « Pause échange » pose trois questions : on arrête la vidéo, le groupe réagit, puis on passe à la suite.</p>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="bloc gutter">
+    <div class="w">
+      <h2>Animer la séance</h2>
+      <p class="chapo">Le même déroulé se répète pour chaque scène. Chacune dure moins d'une minute.</p>
+      <ol class="etapes">
+        <li><b>Distribuer la grille</b><span>Une fiche par personne. Faits observés d'un côté, questions pour l'entretien de l'autre.</span></li>
+        <li><b>Projeter la scène</b><span>Les participants notent ce qui est dit entre guillemets, ce qui est fait sans guillemets, et le minutage.</span></li>
+        <li><b>Pause échange</b><span>La vidéo se fige sur trois questions. Mettez en pause et laissez le groupe réagir.</span></li>
+        <li><b>Scène suivante</b><span>Relancez quand l'échange est terminé. La dernière question renvoie à la première scène.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="bloc gutter" id="scenes">
+    <div class="w">
+      <h2>Les six scénettes</h2>
+      <p class="chapo">Cliquez sur l'image pour lancer la scène. « Projeter » la passe en plein écran pour le vidéoprojecteur.</p>
+      <div class="scenes" id="liste"></div>
+    </div>
+  </section>
+
+  <section class="bloc gutter" id="film">
+    <div class="w">
+      <div class="film">
+        <div class="ecran" id="ecran-film">
+          <img src="posters/film.jpg" alt="Le logo FART en ouverture du film" loading="lazy">
+          <button class="lire" type="button" aria-label="Lire le film complet" data-src="videos/FART_Scenettes_film_complet.mp4"></button>
+          <span class="duree" id="duree-film"></span>
+        </div>
+        <div class="txt">
+          <div class="eyebrow">Tout en un</div>
+          <h3>Le film complet</h3>
+          <p>Ouverture FART, les six scènes enchaînées avec leurs écrans de pause, puis la fin « À vous : qu'avez-vous observé ? ». Mettez en pause à chaque écran d'échange.</p>
+          <div class="actions">
+            <button class="btn rouge" type="button" data-projeter="ecran-film">Projeter</button>
+            <a class="btn clair" href="videos/FART_Scenettes_film_complet.mp4" download>Télécharger</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bloc gutter">
+    <div class="w deux">
+      <div class="boite">
+        <h3>Grilles d'observation</h3>
+        <a class="fichier" href="grilles/Ma_fiche_d_observation.pdf" download><i>PDF</i><div><b>Grille par compétences</b><span>Sécuriser son enseignement, prendre en main sa classe…</span></div></a>
+        <a class="fichier" href="grilles/Fiche_observation_seance.pdf" download><i>PDF</i><div><b>Fiche d'observation de séance</b><span>Faits, questions à poser, propositions du tuteur</span></div></a>
+      </div>
+      <div class="boite">
+        <h3>Les personnages</h3>
+        <table>
+          <tr><td>Mme Morel</td><td>Professeure de français, 2e année</td></tr>
+          <tr><td>Yanis</td><td>Arrive en dernier, garde son blouson</td></tr>
+          <tr><td>Inaïa</td><td>Bavarde, assise sur la table à l'arrivée</td></tr>
+          <tr><td>Mehdi</td><td>Au fond de la classe, décroche</td></tr>
+          <tr><td>Clara</td><td>Sérieuse, au premier rang</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="gutter">
+  <div class="w">
+    <span>Scénettes inspirées d'une vidéo INRP · Néopass@ction. Dialogues écrits pour la formation, noms et personnages fictifs. Voix et bruitages : ElevenLabs.</span>
+    <span id="version"></span>
+  </div>
+</footer>
+
+<script>
+  const VERSION = "1.0.0";
+  document.getElementById("version").textContent = "FART · v" + VERSION;
+
+  /*
+    ============================================================
+    LISTE DES SCÈNES — seul endroit à modifier
+    ------------------------------------------------------------
+    Pour chaque scène :
+      - titre, grille (domaine de la grille d'observation), resume
+      - fichier : nom de la vidéo dans videos/ ; poster : image dans posters/
+      - duree : affichée sur l'aperçu
+      - questions : les 3 questions de l'écran « Pause échange »
+    ============================================================
+  */
+  const SCENES = [
+    { titre: "L'arrivée des élèves", grille: "Prendre en main sa classe", duree: "0:52",
+      resume: "Mme Morel attend, bras croisés, pendant que les élèves entrent et circulent.",
+      fichier: "FART_Scene_1_Arrivee_des_eleves.mp4", poster: "scene1.jpg",
+      questions: ["Qu'avez-vous observé ? Notez ce qui est dit et ce qui est fait, sans interpréter.",
+        "Que dit l'attitude de Mme Morel (debout, bras croisés, silencieuse) ? Qu'est-ce que les élèves en comprennent ?",
+        "Où auriez-vous placé la professeure pendant l'entrée des élèves, et pourquoi ?"] },
+    { titre: "L'installation qui traîne", grille: "Prendre en main sa classe", duree: "1:00",
+      resume: "Il faut quatre minutes pour que tout le monde soit assis et que l'appel commence.",
+      fichier: "FART_Scene_2_Installation.mp4", poster: "scene2.jpg",
+      questions: ["Combien de temps a pris l'installation ? Qu'est-ce qui l'a ralentie ?",
+        "Quelles demandes la professeure a-t-elle faites, et lesquelles ont été suivies d'effet ?",
+        "Quelle routine d'entrée auriez-vous mise en place dès le premier jour ?"] },
+    { titre: "Le blouson", grille: "Sécuriser son enseignement", duree: "0:53",
+      resume: "Yanis refuse d'enlever son blouson. Mme Morel s'approche et baisse la voix.",
+      fichier: "FART_Scene_3_Le_blouson.mp4", poster: "scene3.jpg",
+      questions: ["Qu'est-ce qui, dans la manière de faire de Mme Morel, a permis de désamorcer la situation ?",
+        "Faut-il répondre au « pourquoi moi ? » devant la classe ?",
+        "Quelles règles de vie de classe poser dès la rentrée pour éviter ce face-à-face ?"] },
+    { titre: "Le lancement de la séance", grille: "Présenter une situation d'apprentissage", duree: "1:02",
+      resume: "Distribution des photocopies, consigne donnée au tableau, et les questions fusent.",
+      fichier: "FART_Scene_4_Lancement_de_la_seance.mp4", poster: "scene4.jpg",
+      questions: ["Les élèves savent-ils pourquoi ils lisent ce texte et ce qu'on attend d'eux ? Qu'est-ce qui vous le montre ?",
+        "Comptez les questions posées après la consigne. Que révèlent-elles ?",
+        "Comment auriez-vous organisé la distribution et la passation des consignes ?"] },
+    { titre: "La mise au travail", grille: "Accompagner les élèves · Réguler", duree: "0:54",
+      resume: "L'avant de la classe écrit, le fond décroche. La professeure reste au tableau.",
+      fichier: "FART_Scene_5_Mise_au_travail.mp4", poster: "scene5.jpg",
+      questions: ["Quels signes de décrochage pouviez-vous repérer, et à quel moment ?",
+        "Depuis où la professeure suit-elle le travail ? Qu'est-ce que ça change pour les élèves du fond ?",
+        "Que faire pour Mehdi : reformuler, découper la tâche, l'associer à un pair ? Proposez un geste concret."] },
+    { titre: "La fin du cours", grille: "Prendre en main sa classe", duree: "0:43",
+      resume: "La sonnerie coupe la professeure avant qu'elle ait donné le travail à faire.",
+      fichier: "FART_Scene_6_Fin_du_cours.mp4", poster: "scene6.jpg",
+      questions: ["Qu'est-ce que les élèves retiennent de cette séance ? Comment le savoir ?",
+        "À quel moment auriez-vous donné le travail à faire, et sous quelle forme ?",
+        "Revenez à la scène 1 : quel lien voyez-vous entre l'entrée en classe et la sortie ?"] },
+  ];
+  const DUREE_FILM = "5:30";
+
+  // ---- Construction des cartes à partir de la liste ----
+  const liste = document.getElementById("liste");
+  SCENES.forEach((s, i) => {
+    const carte = document.createElement("article");
+    carte.className = "carte";
+    carte.innerHTML = `
+      <div class="ecran" id="ecran-${i + 1}">
+        <img src="posters/${s.poster}" alt="Scène ${i + 1} : ${s.titre}" loading="lazy">
+        <button class="lire" type="button" aria-label="Lire la scène ${i + 1}" data-src="videos/${s.fichier}"></button>
+        <span class="duree">${s.duree}</span>
+      </div>
+      <div class="corps">
+        <div class="tete"><span class="num">${String(i + 1).padStart(2, "0")}</span><h3>${s.titre}</h3></div>
+        <span class="tag">Grille : ${s.grille}</span>
+        <p class="resume">${s.resume}</p>
+        <details><summary>Questions pour l'échange</summary><ol>${s.questions.map(q => `<li>${q}</li>`).join("")}</ol></details>
+        <div class="bas">
+          <button class="btn ligne" type="button" data-projeter="ecran-${i + 1}">Projeter</button>
+          <a class="btn ligne" href="videos/${s.fichier}" download>Télécharger</a>
+        </div>
+      </div>`;
+    liste.appendChild(carte);
+  });
+  document.getElementById("duree-film").textContent = DUREE_FILM;
+
+  // ---- Lecture : l'aperçu est remplacé par la vidéo au premier clic ----
+  // (on ne charge pas les 7 vidéos d'un coup : seulement celle qu'on regarde)
+  function lancer(ecran) {
+    let v = ecran.querySelector("video");
+    if (!v) {
+      const bouton = ecran.querySelector("button.lire");
+      v = document.createElement("video");
+      v.src = bouton.dataset.src;
+      v.controls = true; v.playsInline = true; v.preload = "auto";
+      ecran.querySelector("img").replaceWith(v);
+      bouton.remove();
+      ecran.querySelector(".duree")?.remove();
+    }
+    // Une seule vidéo à la fois : on met les autres en pause
+    document.querySelectorAll("video").forEach(o => { if (o !== v) o.pause(); });
+    v.play().catch(() => {});
+    return v;
+  }
+  document.addEventListener("click", e => {
+    const lire = e.target.closest("button.lire");
+    if (lire) lancer(lire.closest(".ecran"));
+    const proj = e.target.closest("[data-projeter]");
+    if (proj) {
+      const v = lancer(document.getElementById(proj.dataset.projeter));
+      // Plein écran (sur iPhone, la vidéo a sa propre fonction plein écran)
+      (v.requestFullscreen ? v.requestFullscreen() : v.webkitEnterFullscreen?.())?.catch?.(() => {});
+    }
+  });
+
+  // ---- Animation du logo (même séquence que la vidéo d'ouverture) ----
+  const scene = document.getElementById("scene");
+  const inits = [...document.querySelectorAll("#name .init")];
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const FINAL = "scene s-words s-blow s-compact s-wind s-base";
+  let timers = [];
+  const at = (ms, fn) => timers.push(setTimeout(fn, ms));      // planifie une étape
+  const rnd = (a, b) => a + Math.random() * (b - a);          // nombre au hasard entre a et b
+
+  // 1) La fin de chaque mot est découpée en lettres, chacune avec sa trajectoire d'envol
+  document.querySelectorAll("#name .rest").forEach((rest, w) => {
+    const lettres = [...rest.textContent]; rest.textContent = "";
+    lettres.forEach((c, i) => {
+      const s = document.createElement("span");
+      s.className = "ch"; s.textContent = c === " " ? " " : c;
+      s.style.setProperty("--dx", rnd(200, 520) + "px");
+      s.style.setProperty("--dy", rnd(-80, 60) + "px");
+      s.style.setProperty("--r", rnd(-80, 120) + "deg");
+      s.style.setProperty("--d", ((lettres.length - i) * 0.025 + w * 0.06) + "s");
+      rest.appendChild(s);
+    });
+  });
+  // 2) La base line, lettre par lettre (regroupées par mot pour pouvoir passer à la ligne)
+  const bl = document.getElementById("baseline");
+  const mots = bl.textContent.split(" "); bl.textContent = "";
+  const blTxt = document.createElement("span"); blTxt.className = "bl-txt"; bl.appendChild(blTxt);
+  let n = 0;
+  mots.forEach((mot, wi) => {
+    const w = document.createElement("span"); w.className = "bw";
+    [...mot].forEach(c => { const s = document.createElement("span"); s.className = "bc"; s.textContent = c; s.style.setProperty("--d", (0.2 + n++ * 0.025) + "s"); w.appendChild(s); });
+    blTxt.appendChild(w);
+    if (wi < mots.length - 1) { blTxt.appendChild(document.createTextNode(" ")); n++; }
+  });
+  inits.forEach((e, i) => e.style.setProperty("--i", i));
+  document.querySelectorAll("#name .word").forEach((w, i) => w.style.transitionDelay = (i * 0.14) + "s");
+
+  // 3) Les initiales rejoignent leur place (technique FLIP : on mesure avant/après et on anime l'écart)
+  function versInitiales() {
+    const avant = inits.map(e => e.getBoundingClientRect());
+    scene.classList.add("s-compact");
+    const apres = inits.map(e => e.getBoundingClientRect());
+    inits.forEach((e, i) => {
+      e.style.transition = "none"; e.style.transformOrigin = "top left";
+      e.style.transform = `translate(${avant[i].left - apres[i].left}px,${avant[i].top - apres[i].top}px) scale(${avant[i].height / apres[i].height})`;
+    });
+    requestAnimationFrame(() => requestAnimationFrame(() => inits.forEach((e, i) => {
+      e.style.transition = `transform 1s cubic-bezier(.34,1.45,.64,1) ${i * 0.06}s`; e.style.transform = "none";
+    })));
+  }
+  function jouer() {
+    timers.forEach(clearTimeout); timers = [];
+    scene.className = "scene no-anim";
+    inits.forEach(e => { e.style.transition = "none"; e.style.transform = ""; });
+    if (reduce) { scene.className = FINAL; return; }
+    void scene.offsetWidth;                                  // force le recalcul avant de rejouer
+    scene.classList.remove("no-anim");
+    at(150, () => scene.classList.add("s-words"));            // les mots arrivent
+    at(2000, () => scene.classList.add("s-blow"));            // la rafale
+    at(3200, versInitiales);                                  // FART
+    at(4200, () => scene.classList.add("s-wind"));            // le souffle
+    at(4500, () => scene.classList.add("s-base", "s-wave"));  // la base line
+    at(5600, () => scene.classList.add("s-idle"));            // le souffle ondule
+  }
+  jouer();
+  scene.addEventListener("click", jouer);                     // un clic sur le logo le rejoue
+</script>
+</body>
+</html>
