@@ -1,41 +1,50 @@
 <!doctype html>
 <!--
   ============================================================
-  baiji.fr/juju/ — Juju, mécanicien vélo
-  Version 1.1.0
+  baiji.fr/juju/ — Julien, mécanicien vélo
+  Version 1.2.0
   ------------------------------------------------------------
-  Site vitrine d'une page pour Julien (« Juju »), mécanicien vélo.
-  But : donner confiance et donner envie de l'appeler.
+  Site vitrine d'une page pour Julien, mécanicien vélo.
+  Devise : « Le vélo doit être un plaisir ».
+  But : donner confiance. On aide d'abord les gens à se dépanner
+  eux-mêmes ; ils appellent Julien quand c'est trop compliqué, ou
+  pour le confort. Tarifs affichés, pas de coût caché.
+  (Le dossier reste « juju/ » pour ne pas casser l'adresse.)
 
-  ⚙️ TOUT CE QUI EST À PERSONNALISER est dans l'objet JUJU,
-     dans le <script> en bas de page (téléphone, zone, horaires…).
-     Tant que le téléphone est vide, les boutons « Appeler » sont
-     grisés et la page reste en « noindex » (invisible de Google).
+  ⚙️ TOUT CE QUI EST À PERSONNALISER est dans le <script> en bas :
+     l'objet JULIEN (téléphone, e-mail, zone, horaires), la liste
+     SERVICES (avec les tarifs) et la liste ASTUCES (dépannage).
+     La page reste en « noindex » (invisible de Google) tant que
+     Julien n'a pas validé les tarifs.
 
   Organisation de la page :
     1. En-tête (nom + bouton appeler toujours visible)
     2. Accroche + dessin de vélo (roues qui tournent)
-    3. « La méthode Juju » : les engagements réglo
-    4. Les réparations proposées
-    5. « Qu'est-ce qui cloche ? » : on choisit un symptôme,
+    3. « La méthode Julien » : les engagements réglo
+    4. « Dépannez-vous vous-même » : astuces pas à pas (+ quand appeler)
+    5. Réparations et tarifs, + le bloc « sans coût caché »
+    6. « Qu'est-ce qui cloche ? » : on choisit un symptôme,
        la page explique la cause probable et prépare un SMS
-    6. « Rayon » : l'assistant vocal (une IA, présentée comme telle)
-    7. Comment ça se passe (3 étapes)
-    8. Contact
+    7. « Rayon » : l'assistant vocal (une IA, présentée comme telle)
+    8. Comment ça se passe (3 étapes)
+    9. Contact
 
   Historique :
    • v1.0.0 : première version
    • v1.1.0 : assistant vocal « Rayon » (agent ElevenLabs) qui répond aux
               premières questions et invite à contacter Juju
+   • v1.2.0 : « Juju » devient « Julien » ; vraies coordonnées (tél., e-mail) ;
+              devise « Le vélo doit être un plaisir » ; section « Dépannez-vous
+              vous-même » ; tarifs indicatifs + bloc « sans coût caché »
   ============================================================
 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Juju · Mécanicien vélo</title>
-<meta name="description" content="Julien, mécanicien vélo : réparation, entretien et réglages, avec un devis clair avant toute intervention.">
-<!-- Invisible des moteurs de recherche tant que les coordonnées ne sont pas remplies.
+<title>Julien · Mécanicien vélo</title>
+<meta name="description" content="Julien, mécanicien vélo. Le vélo doit être un plaisir : conseils pour vous dépanner vous-même, tarifs affichés, aucun coût caché.">
+<!-- Invisible des moteurs de recherche tant que Julien n'a pas validé les tarifs.
      Quand tout est prêt : supprimer cette ligne pour que Google puisse trouver le site. -->
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#f4efe6">
@@ -181,7 +190,7 @@ header .btn { min-height: 42px; padding: 0 16px; font-size: 13px; }
 }
 .velo-cadre { isolation: isolate; }
 
-/* ---------- La méthode Juju (bloc sombre) ---------- */
+/* ---------- La méthode Julien (bloc sombre) ---------- */
 .methode { background: var(--deep); color: var(--deep-ink); }
 .methode .kicker { color: var(--accent); }
 .methode h2 { max-width: 16ch; }
@@ -216,6 +225,60 @@ header .btn { min-height: 42px; padding: 0 16px; font-size: 13px; }
 }
 .note-prix svg { flex: none; width: 22px; height: 22px; color: var(--rust); }
 
+/* ---------- Dépannez-vous vous-même ----------
+   Chaque astuce est un <details> : on touche le titre, ça s'ouvre.
+   Pas besoin de JavaScript pour ouvrir/fermer, c'est natif. */
+.check-minute {
+  display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  background: var(--accent); color: var(--accent-ink); border: 2px solid #1b1d1a;
+  border-radius: var(--radius); padding: 20px 22px; margin-bottom: 26px;
+}
+.check-minute b { font: 900 30px/1 var(--display); display: block; }
+.check-minute span { font-size: 15px; font-weight: 600; }
+.check-titre { grid-column: 1 / -1; font: 800 18px/1.2 var(--display); font-stretch: 105%; }
+.astuces { display: grid; gap: 12px; }
+@media (min-width: 860px) { .astuces { grid-template-columns: 1fr 1fr; align-items: start; } }
+.astuce { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.astuce[open] { border-color: var(--ink); }
+.astuce summary {
+  list-style: none; cursor: pointer; padding: 18px 20px; display: flex; gap: 14px; align-items: center;
+}
+.astuce summary::-webkit-details-marker { display: none; }
+.astuce summary .pic {
+  flex: none; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center;
+  background: color-mix(in srgb, var(--accent) 30%, var(--surface));
+}
+.astuce summary .pic svg { width: 22px; height: 22px; }
+.astuce summary h3 { font: 800 18px/1.2 var(--display); font-stretch: 105%; margin: 0 0 4px; }
+.astuce summary small { color: var(--muted); font-size: 14px; font-weight: 600; }
+.astuce summary .plus { margin-left: auto; font: 700 24px/1 var(--body); transition: transform .2s; }
+.astuce[open] summary .plus { transform: rotate(45deg); }
+.astuce .corps { padding: 0 20px 20px; }
+.astuce ol { margin: 0 0 14px; padding-left: 22px; display: grid; gap: 8px; }
+.astuce .outils { font-size: 14px; color: var(--muted); margin: 0 0 12px; }
+.appelez {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 15px;
+  background: color-mix(in srgb, var(--rust) 10%, var(--surface));
+  border-left: 4px solid var(--rust); border-radius: 8px; padding: 12px 14px;
+}
+.appelez svg { flex: none; width: 18px; height: 18px; margin-top: 2px; color: var(--rust); }
+
+/* ---------- Tarifs ---------- */
+.service .prix {
+  display: inline-block; margin-top: 10px; font: 800 15px/1.3 var(--body);
+  background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px;
+}
+.sans-cache {
+  margin-top: 22px; border: 2px solid var(--ink); border-radius: var(--radius);
+  background: var(--surface); padding: 24px 22px; box-shadow: 6px 6px 0 var(--ink);
+}
+.sans-cache h3 { font: 850 24px/1.1 var(--display); font-stretch: 110%; margin-bottom: 14px; }
+.sans-cache ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+@media (min-width: 860px) { .sans-cache ul { grid-template-columns: 1fr 1fr; } }
+.sans-cache li { display: flex; gap: 10px; align-items: flex-start; }
+.sans-cache li svg { flex: none; width: 18px; height: 18px; margin-top: 3px; color: var(--ok); }
+.sans-cache .petit { margin: 16px 0 0; color: var(--muted); font-size: 14px; }
+
 /* ---------- Qu'est-ce qui cloche ? ---------- */
 .diag { background: var(--surface); border-block: 1px solid var(--line); }
 .diag-grille { display: grid; gap: 28px; }
@@ -241,6 +304,8 @@ header .btn { min-height: 42px; padding: 0 16px; font-size: 13px; }
 }
 .reponse .verdict i { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); display: block; }
 .reponse .verdict.urgent i { background: var(--rust); }
+.reponse .essai { margin: 0 0 18px; padding: 12px 14px; border-radius: 10px; background: var(--surface); border: 1px dashed var(--line); font-size: 15px; }
+.reponse .essai b { color: var(--ok); }
 
 /* ---------- Assistant vocal « Rayon » ----------
    Une grande carte sombre avec un bouton rond. L'état de l'appel
@@ -287,7 +352,7 @@ header .btn { min-height: 42px; padding: 0 16px; font-size: 13px; }
 }
 .rayon.en-ligne .raccrocher, .rayon.connexion .raccrocher { display: inline-flex; align-items: center; }
 .mention-ia { font-size: 13px; opacity: .65; max-width: 34ch; margin: 0; }
-/* Après l'appel : on propose de contacter Juju (le vrai) */
+/* Après l'appel : on propose de contacter Julien (le vrai) */
 .apres-appel { display: none; }
 .rayon.fini .apres-appel { display: flex; }
 
@@ -319,6 +384,7 @@ header .btn { min-height: 42px; padding: 0 16px; font-size: 13px; }
 .coordonnees li { display: flex; gap: 12px; align-items: flex-start; font-weight: 600; }
 .coordonnees svg { flex: none; width: 22px; height: 22px; margin-top: 1px; }
 .coordonnees span small { display: block; font-weight: 500; opacity: .75; font-size: 14px; }
+.mail { font-weight: 700; word-break: break-all; }
 .tel-grand { font: 900 clamp(28px, 6vw, 40px)/1 var(--display); font-stretch: 110%; text-decoration: none; display: inline-block; margin-bottom: 18px; }
 
 footer { padding: 36px 0 48px; color: var(--muted); font-size: 14px; }
@@ -330,7 +396,8 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   display: flex; gap: 10px; transform: translateY(140%); transition: transform .25s;
 }
 .barre-appel.visible { transform: none; }
-.barre-appel .btn { flex: 1; min-height: 54px; }
+.barre-appel .btn { flex: 1; min-height: 54px; padding: 0 14px; white-space: nowrap; font-size: 14px; }
+.barre-appel .btn-main { flex: 1.6; } /* le bouton principal prend plus de place */
 .barre-appel .btn-ghost { background: var(--surface); }
 @media (min-width: 860px) { .barre-appel { display: none; } }
 
@@ -345,12 +412,12 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 <!-- ============ 1. EN-TÊTE ============ -->
 <header>
   <div class="wrap">
-    <a class="logo" href="#haut" aria-label="Juju, mécanicien vélo — haut de page">
+    <a class="logo" href="#haut" aria-label="Julien, mécanicien vélo — haut de page">
       <span class="logo-pastille">
         <!-- picto clé à molette (Lucide « wrench », licence ISC) -->
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z"/></svg>
       </span>
-      <span><b>Juju</b><small>Mécanicien vélo</small></span>
+      <span><b>Julien</b><small>Mécanicien vélo</small></span>
     </a>
     <a class="btn btn-main js-appel" href="#contact">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>
@@ -365,20 +432,20 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 <section class="hero">
   <div class="wrap">
     <div>
-      <span class="kicker">Réparation · Entretien · Réglages</span>
-      <h1>Votre vélo entre de <span class="surligne">bonnes mains.</span></h1>
-      <p class="lead">Je m'appelle Julien — tout le monde dit Juju. Je répare votre vélo <strong>comme si c'était le mien</strong> : je vous explique ce qui cloche, je vous donne le prix avant, et je ne touche qu'à ce qui le mérite.</p>
+      <span class="kicker">Julien · Mécanicien vélo</span>
+      <h1>Le vélo doit être un <span class="surligne">plaisir.</span></h1>
+      <p class="lead">Un pneu à plat, une chaîne qui grince, ça ne devrait pas gâcher votre balade. Je vous montre <strong>comment vous dépanner vous-même</strong> quand c'est simple. Et quand c'est trop compliqué, ou que vous préférez rouler sans vous en soucier, je m'en occupe, <strong>au prix affiché</strong>.</p>
       <div class="actions">
         <a class="btn btn-main js-appel" href="#contact">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>
-          Appeler Juju
+          Appeler Julien
         </a>
-        <a class="btn btn-ghost" href="#rayon">Poser une question</a>
+        <a class="btn btn-ghost" href="#astuces">Me dépanner moi-même</a>
       </div>
       <ul class="badges">
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Devis avant intervention</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Pièces usées rendues</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Explications claires</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Tarifs affichés</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Aucun coût caché</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Conseils gratuits</li>
       </ul>
     </div>
 
@@ -428,10 +495,10 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 
 <div class="wrap"><div class="chaine"></div></div>
 
-<!-- ============ 3. LA MÉTHODE JUJU ============ -->
+<!-- ============ 3. LA MÉTHODE JULIEN ============ -->
 <section class="methode" id="methode">
   <div class="wrap">
-    <span class="kicker">La méthode Juju</span>
+    <span class="kicker">La méthode Julien</span>
     <h2>Réglo, du premier coup d'œil à la facture.</h2>
     <p class="intro">Un bon mécanicien, c'est d'abord quelqu'un à qui on peut confier son vélo sans arrière-pensée. Voilà ce que vous pouvez attendre, à chaque fois.</p>
     <div class="engagements">
@@ -452,28 +519,60 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       </div>
       <div class="engagement apparait">
         <span class="num">04</span>
-        <h3>Des conseils en plus</h3>
-        <p>Comment entretenir votre chaîne, quand revenir : vous repartez avec un vélo réparé et quelques astuces.</p>
+        <h3>Je vous apprends à vous dépanner</h3>
+        <p>Les petites réparations, vous pouvez les faire vous-même : je vous montre comment. Un client autonome, c'est un client qui roule.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ 4. RÉPARATIONS ============ -->
+<!-- ============ 4. DÉPANNEZ-VOUS VOUS-MÊME ============
+     Les astuces sont fabriquées par le script à partir de la liste ASTUCES.
+     Chacune finit par « Appelez Julien si… » : on dit franchement quand
+     ça devient trop compliqué ou risqué. -->
+<section id="astuces">
+  <div class="wrap">
+    <div class="entete-section">
+      <div>
+        <span class="kicker">Gratuit, sans rendez-vous</span>
+        <h2>Dépannez-vous<br>vous-même.</h2>
+      </div>
+      <p>La plupart des petits soucis se règlent en cinq minutes, avec une pompe et une clé. Voici comment. Et si c'est trop compliqué, ou si vous n'avez simplement pas envie : Julien est là.</p>
+    </div>
+    <!-- Le contrôle d'une minute avant de partir -->
+    <div class="check-minute apparait">
+      <div class="check-titre">Le contrôle d'une minute, avant chaque sortie</div>
+      <div><b>1</b><span>Les pneus : on appuie avec le pouce, ils doivent être bien fermes.</span></div>
+      <div><b>2</b><span>Les freins : leviers serrés, ils ne touchent pas le guidon.</span></div>
+      <div><b>3</b><span>La chaîne : propre, pas sèche, pas rouillée.</span></div>
+      <div><b>4</b><span>Les roues : bien serrées, sans jeu quand on les secoue.</span></div>
+    </div>
+    <div class="astuces" id="listeAstuces"></div>
+  </div>
+</section>
+
+<!-- ============ 5. RÉPARATIONS ET TARIFS ============ -->
 <section id="reparations">
   <div class="wrap">
     <div class="entete-section">
       <div>
-        <span class="kicker">Ce que Juju répare</span>
-        <h2>Du pneu crevé<br>à la révision complète.</h2>
+        <span class="kicker">Quand c'est Julien qui s'en occupe</span>
+        <h2>Les réparations,<br>prix affichés.</h2>
       </div>
-      <p>Vélo de ville, VTT, route, vélo d'enfant ou vélo électrique : on en parle, et si ce n'est pas dans mes cordes, je vous le dis franchement.</p>
+      <p>Vélo de ville, VTT, route, vélo d'enfant ou vélo électrique. Les prix ci-dessous sont ceux de la main-d'œuvre ; les pièces s'ajoutent seulement s'il faut en changer, et toujours après votre accord.</p>
     </div>
     <!-- Les cartes sont fabriquées par le script à partir de la liste SERVICES (plus facile à modifier) -->
     <div class="services" id="services"></div>
-    <div class="note-prix">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-      Chaque vélo est différent : le tarif est toujours annoncé avant de commencer.
+    <!-- L'engagement « sans coût caché » -->
+    <div class="sans-cache apparait">
+      <h3>Sans coût caché. Jamais.</h3>
+      <ul>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Le prix total, main-d'œuvre et pièces, vous est annoncé avant de commencer.</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Aucun supplément sans votre accord. Si je découvre autre chose, je vous appelle d'abord.</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Le diagnostic et les conseils sont gratuits. Si vous ne faites pas réparer, vous ne payez rien.</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Une facture détaillée, ligne par ligne, et vos pièces usées rendues.</li>
+      </ul>
+      <p class="petit">Tarifs indicatifs pour un vélo classique. Un vélo très abîmé, très ancien ou très technique peut demander plus de temps : dans ce cas, je vous le dis avant.</p>
     </div>
   </div>
 </section>
@@ -484,7 +583,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     <div>
       <span class="kicker">Petit diagnostic</span>
       <h2>Qu'est-ce qui cloche ?</h2>
-      <p style="color:var(--muted);margin:16px 0 0;max-width:40ch">Touchez ce que fait votre vélo. Juju vous dit d'où ça vient le plus souvent — et le message pour lui est déjà prêt.</p>
+      <p style="color:var(--muted);margin:16px 0 0;max-width:40ch">Touchez ce que fait votre vélo : vous saurez d'où ça vient le plus souvent, ce que vous pouvez essayer vous-même, et le message pour Julien est déjà prêt.</p>
       <div class="symptomes" id="symptomes" role="group" aria-label="Symptômes"></div>
     </div>
     <div class="reponse" id="reponse" aria-live="polite">
@@ -498,19 +597,20 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 
 <!-- ============ 6. ASSISTANT VOCAL « RAYON » ============
      Rayon est un agent ElevenLabs (conversation à la voix, dans le navigateur).
-     Transparence d'abord : il se présente comme une IA, ne connaît pas les prix,
-     ne prend pas de rendez-vous, et renvoie toujours vers Juju lui-même. -->
+     Transparence d'abord : il se présente comme une IA, aide d'abord à se
+     dépanner soi-même, ne cite que les tarifs affichés, ne prend pas de
+     rendez-vous, et renvoie vers Julien quand c'est trop compliqué. -->
 <section class="assistant" id="rayon">
   <div class="wrap">
     <div class="rayon" id="carteRayon">
       <div>
         <span class="kicker">Une question avant d'appeler ?</span>
-        <h2>Parlez-en d'abord à Rayon, l'assistant de Juju.</h2>
-        <p class="intro">Décrivez ce que fait votre vélo, à voix haute : Rayon vous dit d'où ça vient le plus souvent, si vous pouvez régler ça vous-même, et quoi dire à Juju.</p>
+        <h2>Parlez-en d'abord à Rayon, l'assistant de Julien.</h2>
+        <p class="intro">Décrivez ce que fait votre vélo, à voix haute : Rayon vous dit d'où ça vient le plus souvent et vous guide pour régler ça vous-même. Si c'est trop compliqué, il vous dit quoi dire à Julien.</p>
         <ul class="franchise">
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Rayon est une intelligence artificielle, pas Juju. Il vous le dira lui-même.</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Il ne donne aucun prix et ne promet rien : c'est Juju qui chiffre, avant de commencer.</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Si un simple coup de pompe suffit, il vous le dit. Même si vous n'avez pas besoin de Juju.</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Rayon est une intelligence artificielle, pas Julien. Il vous le dira lui-même.</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Il ne cite que les tarifs affichés sur cette page, et ne promet rien d'autre : c'est Julien qui confirme le prix, avant de commencer.</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Si un simple coup de pompe suffit, il vous le dit. Même si vous n'avez pas besoin de Julien.</li>
         </ul>
       </div>
       <div class="poste">
@@ -524,10 +624,10 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
         <div class="etat-appel" id="etatAppel" aria-live="polite">Appuyez, puis parlez normalement.<small>Il faudra autoriser le micro.</small></div>
         <button class="raccrocher" id="raccrocher" type="button">Raccrocher</button>
         <div class="actions apres-appel">
-          <a class="btn btn-main js-appel" href="#contact">Appeler Juju</a>
+          <a class="btn btn-main js-appel" href="#contact">Appeler Julien</a>
           <a class="btn btn-ghost js-sms" href="#contact" style="color:var(--deep-ink);border-color:var(--deep-ink)">SMS</a>
         </div>
-        <p class="mention-ia">Conversation traitée par ElevenLabs (voix et IA). Votre voix n'est pas enregistrée ; le texte de l'échange est gardé 30 jours. Évitez de donner votre nom ou votre adresse : vous les donnerez à Juju directement.</p>
+        <p class="mention-ia">Conversation traitée par ElevenLabs (voix et IA). Votre voix n'est pas enregistrée ; le texte de l'échange est gardé 30 jours. Évitez de donner votre nom ou votre adresse : vous les donnerez à Julien directement.</p>
       </div>
     </div>
   </div>
@@ -544,8 +644,8 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
         <p>Vous décrivez le problème en deux phrases. On convient d'un moment pour voir le vélo.</p>
       </div>
       <div class="etape apparait">
-        <h3>Juju regarde et chiffre</h3>
-        <p>Diagnostic, explications, prix. Vous décidez tranquillement, sans pression.</p>
+        <h3>Julien regarde et chiffre</h3>
+        <p>Diagnostic gratuit, explications, prix total. Vous décidez tranquillement, sans pression.</p>
       </div>
       <div class="etape apparait">
         <h3>Vous repartez en roulant</h3>
@@ -560,12 +660,17 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   <div class="wrap">
     <div class="carte">
       <div>
-        <h2>Un souci avec votre vélo ? Parlez-en à Juju.</h2>
-        <p>Un appel ou un SMS suffit. Il vous répond lui-même — pas de standard, pas de formulaire.</p>
+        <h2>Un souci avec votre vélo ? Parlez-en à Julien.</h2>
+        <p>Un appel, un SMS ou un e-mail suffit. Il vous répond lui-même, pas de standard, pas de formulaire. Parce que le vélo doit rester un plaisir.</p>
       </div>
       <div>
         <a class="tel-grand js-appel" id="telGrand" href="#contact">Numéro bientôt en ligne</a>
         <ul class="coordonnees">
+          <li id="ligneMail">
+            <!-- picto enveloppe (Lucide « mail », ISC) -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            <a class="mail js-mail" id="mail" href="#contact"></a>
+          </li>
           <li id="ligneZone">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
             <span id="zone"></span>
@@ -578,6 +683,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
         <div class="actions" style="margin-top:24px">
           <a class="btn btn-main js-appel" href="#contact">Appeler</a>
           <a class="btn btn-ghost js-sms" href="#contact">Envoyer un SMS</a>
+          <a class="btn btn-ghost js-mail" href="#contact">E-mail</a>
         </div>
       </div>
     </div>
@@ -588,14 +694,14 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 
 <footer>
   <div class="wrap">
-    <span>Juju · Mécanicien vélo</span>
+    <span>Julien · Mécanicien vélo · Le vélo doit être un plaisir</span>
     <span id="version"></span>
   </div>
 </footer>
 
 <!-- Barre d'appel qui apparaît en bas de l'écran du téléphone quand on fait défiler -->
 <div class="barre-appel" id="barreAppel">
-  <a class="btn btn-main js-appel" href="#contact">Appeler Juju</a>
+  <a class="btn btn-main js-appel" href="#contact">Appeler Julien</a>
   <a class="btn btn-ghost js-sms" href="#contact">SMS</a>
 </div>
 
@@ -603,21 +709,23 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 /* ============================================================
    ⚙️ RÉGLAGES — c'est ICI qu'on personnalise le site.
    ------------------------------------------------------------
+   email : l'adresse e-mail ; "" = ligne et bouton masqués.
    tel   : le numéro, sans espaces, au format international
            (ex. "+33612345678"). Laisser "" = boutons grisés.
    telAffiche : le même numéro, tel qu'on veut le voir écrit
            (ex. "06 12 34 56 78").
    zone / horaires : texte libre ; "" = la ligne est masquée.
    ============================================================ */
-const JUJU = {
-  tel:        "",
-  telAffiche: "",
+const JULIEN = {
+  tel:        "+33658230740",          // format international, sans espaces (pour les liens « tel: » et « sms: »)
+  telAffiche: "06 58 23 07 40",        // tel qu'on le lit
+  email:      "julien.vaugoude@gmail.com",
   zone:       "",            // ex. "Gif-sur-Yvette et alentours — à l'atelier ou à domicile"
   zoneDetail: "",            // ex. "Je me déplace jusqu'à 10 km"
   horaires:   "",            // ex. "Du mardi au samedi, 9 h – 19 h"
   horairesDetail: "Si je ne décroche pas, laissez un message : je rappelle.",
 };
-const VERSION = "1.1.0";     // ← à augmenter à chaque modification (voir l'historique en haut)
+const VERSION = "1.2.0";     // ← à augmenter à chaque modification (voir l'historique en haut)
 
 /* ------------------------------------------------------------
    Pictos (bibliothèque Lucide, licence ISC) — juste le dessin
@@ -633,29 +741,116 @@ const PICTOS = {
   enfant:   '<circle cx="12" cy="5" r="2"/><path d="M9 20l1-6-2-2 4-3 4 3-2 2 1 6"/>',
   reglage:  '<path d="M20 7h-9M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/>',
   velo:     '<circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/>',
+  goutte:   '<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
+  jauge:    '<path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/>',
+  selle:    '<path d="M4 9c4-2 12-2 16 0-1 3-5 4-8 4S5 12 4 9z"/><path d="M12 13v8"/>',
+  alerte:   '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
 };
 function svg(nom) {
   return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${PICTOS[nom] || PICTOS.velo}</svg>`;
 }
 
 /* ------------------------------------------------------------
-   Liste des réparations. Pour en ajouter une : copier une ligne.
+   Liste des réparations, avec leurs TARIFS (main-d'œuvre).
+   ⚠️ Tarifs indicatifs à faire valider par Julien : pour en changer
+   un, il suffit de modifier le texte « prix » de la ligne.
+   Pour ajouter une réparation : copier une ligne.
    ------------------------------------------------------------ */
 const SERVICES = [
-  { pic: "pneu",     titre: "Crevaison & pneus",     texte: "Chambre à air, pneu usé, tubeless : on repart vite, et on cherche pourquoi ça a crevé." },
-  { pic: "frein",    titre: "Freins",                texte: "Patins, plaquettes, câbles, purge des freins hydrauliques. Le réglage qui rassure." },
-  { pic: "chaine",   titre: "Vitesses & chaîne",     texte: "Dérailleur qui saute, chaîne qui grince, câble fatigué : une transmission douce et silencieuse." },
-  { pic: "roue",     titre: "Roues",                 texte: "Roue voilée, rayon cassé, jeu dans le moyeu : redressée et centrée." },
-  { pic: "revision", titre: "Révision complète",     texte: "Tout est vérifié, nettoyé, graissé et réglé. Idéal en début de saison." },
-  { pic: "eclair",   titre: "Vélo électrique",       texte: "Freins, transmission, pneus : toute la partie vélo de votre VAE, qui s'use plus vite." },
-  { pic: "enfant",   titre: "Vélos d'enfants",       texte: "Remise en état du vélo qui passe d'un enfant à l'autre, réglé à la bonne taille." },
-  { pic: "reglage",  titre: "Réglages & position",   texte: "Hauteur de selle, cintre, petits bruits : un vélo qui vous va, c'est un vélo qu'on utilise." },
+  { pic: "pneu",     titre: "Crevaison & pneus",     texte: "Chambre à air, pneu usé, tubeless : on repart vite, et on cherche pourquoi ça a crevé.", prix: "Crevaison : 12 € · pose d'un pneu : 12 €" },
+  { pic: "frein",    titre: "Freins",                texte: "Patins, plaquettes, câbles, purge des freins hydrauliques. Le réglage qui rassure.", prix: "Réglage : 10 € · patins ou plaquettes : 12 € par frein" },
+  { pic: "chaine",   titre: "Vitesses & chaîne",     texte: "Dérailleur qui saute, chaîne qui grince, câble fatigué : une transmission douce et silencieuse.", prix: "Réglage des vitesses : 12 € · pose de chaîne : 10 €" },
+  { pic: "roue",     titre: "Roues",                 texte: "Roue voilée, rayon cassé, jeu dans le moyeu : redressée et centrée.", prix: "Dévoilage : 15 € · rayon cassé : 15 €" },
+  { pic: "revision", titre: "Révision complète",     texte: "Tout est vérifié, nettoyé, graissé et réglé. Idéal en début de saison.", prix: "Révision complète : 55 €" },
+  { pic: "eclair",   titre: "Vélo électrique",       texte: "Freins, transmission, pneus : toute la partie vélo de votre VAE, qui s'use plus vite.", prix: "Révision partie vélo : 70 €" },
+  { pic: "enfant",   titre: "Vélos d'enfants",       texte: "Remise en état du vélo qui passe d'un enfant à l'autre, réglé à la bonne taille.", prix: "Remise en état : 25 €" },
+  { pic: "reglage",  titre: "Réglages & position",   texte: "Hauteur de selle, cintre, petits bruits : un vélo qui vous va, c'est un vélo qu'on utilise.", prix: "10 € · offert avec une révision" },
 ];
 document.getElementById("services").innerHTML = SERVICES.map(s => `
   <div class="service apparait">
     <div class="pic">${svg(s.pic)}</div>
-    <div><h3>${s.titre}</h3><p>${s.texte}</p></div>
+    <div><h3>${s.titre}</h3><p>${s.texte}</p>${s.prix ? `<span class="prix">${s.prix}</span>` : ""}</div>
   </div>`).join("");
+
+/* ------------------------------------------------------------
+   ASTUCES « Dépannez-vous vous-même ».
+   - niveau : affiché sous le titre (difficulté et durée)
+   - outils : ce qu'il faut avoir sous la main
+   - etapes : les étapes, dans l'ordre
+   - appel  : quand ça vaut le coup d'appeler Julien (trop compliqué,
+              risqué, ou simplement pour le confort)
+   Règle de prudence : pas de tuto sur ce qui touche à la sécurité
+   (freins hydrauliques, serrages au couple…) — on renvoie vers Julien.
+   ------------------------------------------------------------ */
+const ASTUCES = [
+  { pic: "jauge", titre: "Gonfler à la bonne pression", niveau: "Très facile · 2 minutes",
+    outils: "Une pompe avec manomètre (la petite aiguille qui indique la pression).",
+    etapes: [
+      "Lisez la pression conseillée sur le flanc du pneu : deux chiffres en « bar » ou « PSI », par exemple 3,5 – 5 bar.",
+      "Repérez la valve : large comme celle d'une voiture, ou fine avec une petite molette à dévisser d'abord.",
+      "Gonflez jusqu'au milieu de la fourchette indiquée. Revissez le bouchon.",
+      "À refaire toutes les deux ou trois semaines : un pneu perd de l'air tout seul, c'est normal.",
+    ],
+    appel: "le pneu se dégonfle en quelques jours (crevaison lente), ou si vous voyez des fissures sur le flanc." },
+  { pic: "pneu", titre: "Réparer une crevaison", niveau: "Facile · 15 à 20 minutes",
+    outils: "Deux démonte-pneus en plastique, un kit de rustines (ou une chambre à air neuve de la bonne taille), une pompe.",
+    etapes: [
+      "Démontez la roue, dégonflez complètement, puis glissez les démonte-pneus sous le bord du pneu pour le faire sortir d'un côté.",
+      "Sortez la chambre à air, gonflez-la un peu et écoutez (ou passez-la dans une bassine d'eau) pour trouver le trou.",
+      "Passez doucement les doigts à l'intérieur du pneu pour retirer ce qui a percé : éclat de verre, épine, petit caillou.",
+      "Collez la rustine (ou mettez une chambre neuve), remettez le tout en commençant par la valve, puis gonflez.",
+    ],
+    appel: "c'est la roue arrière d'un vélo électrique ou d'un vélo à vitesses dans le moyeu, si vous crevez souvent, ou si vous n'avez ni le temps ni les outils." },
+  { pic: "goutte", titre: "Entretenir sa chaîne", niveau: "Très facile · 5 minutes",
+    outils: "Un chiffon et du lubrifiant pour chaîne de vélo (pas d'huile de cuisine ni de dégrippant).",
+    etapes: [
+      "Tenez le chiffon autour de la chaîne et faites tourner les pédales en arrière pour enlever la saleté.",
+      "Mettez une petite goutte de lubrifiant sur chaque maillon en continuant de pédaler en arrière.",
+      "Laissez pénétrer quelques minutes, puis essuyez l'excédent : une chaîne trop grasse attire la poussière.",
+      "À refaire toutes les deux ou trois semaines, et après chaque sortie sous la pluie.",
+    ],
+    appel: "la chaîne saute ou craque même bien propre : elle est sans doute usée, et Julien vérifie l'usure en dix secondes." },
+  { pic: "frein", titre: "Contrôler ses freins", niveau: "Facile · 2 minutes (contrôle seulement)",
+    outils: "Rien, juste vos mains et vos yeux.",
+    etapes: [
+      "Serrez fort chaque levier : il doit rester à au moins deux doigts du guidon.",
+      "Regardez les patins ou plaquettes : s'il ne reste presque plus de matière, ou si ça grince sur du métal, il faut les changer.",
+      "Poussez le vélo et freinez : il doit s'arrêter net, sans bruit de frottement.",
+      "Sur des freins à câble, une molette près du levier permet de rattraper un peu de jeu : un ou deux tours suffisent.",
+    ],
+    appel: "le levier touche le guidon, si un frein hydraulique est « mou », ou si ça frotte sur du métal. Dans ces cas, ne roulez pas avec : c'est votre sécurité." },
+  { pic: "chaine", titre: "Une vitesse qui saute", niveau: "Facile · 5 minutes",
+    outils: "Rien : tout se fait avec la petite molette sur le dérailleur arrière ou sur la manette.",
+    etapes: [
+      "Retournez le vélo ou faites tourner les pédales à la main, roue arrière soulevée.",
+      "Si la chaîne hésite à monter vers les grands pignons, tournez la molette d'un quart de tour vers l'extérieur (sens inverse des aiguilles d'une montre).",
+      "Si elle hésite à redescendre vers les petits, un quart de tour dans l'autre sens.",
+      "Testez toutes les vitesses. Un quart de tour à la fois, c'est le secret.",
+    ],
+    appel: "le dérailleur a pris un choc (il penche), si le câble est effiloché, ou si rien ne change après quelques quarts de tour." },
+  { pic: "selle", titre: "Régler la hauteur de selle", niveau: "Très facile · 5 minutes",
+    outils: "Une clé Allen (souvent 5 mm) ou le levier de serrage rapide.",
+    etapes: [
+      "Asseyez-vous, talon posé sur la pédale tout en bas : la jambe doit être presque tendue.",
+      "Desserrez, montez ou descendez la selle, puis resserrez fermement, sans forcer comme un sourd.",
+      "Ne dépassez jamais le repère « minimum » gravé sur la tige de selle.",
+      "Faites un petit tour : genoux confortables, pas de bascule du bassin, c'est gagné.",
+    ],
+    appel: "la tige de selle ou le cadre sont en carbone (serrage précis obligatoire), ou si vous avez mal aux genoux ou au dos malgré le réglage." },
+];
+document.getElementById("listeAstuces").innerHTML = ASTUCES.map(a => `
+  <details class="astuce">
+    <summary>
+      <span class="pic">${svg(a.pic)}</span>
+      <span><h3>${a.titre}</h3><small>${a.niveau}</small></span>
+      <span class="plus" aria-hidden="true">+</span>
+    </summary>
+    <div class="corps">
+      <p class="outils"><b>Il vous faut :</b> ${a.outils}</p>
+      <ol>${a.etapes.map(e => `<li>${e}</li>`).join("")}</ol>
+      <div class="appelez">${svg("alerte")}<span><b>Appelez Julien si</b> ${a.appel}</span></div>
+    </div>
+  </details>`).join("");
 
 /* ------------------------------------------------------------
    « Qu'est-ce qui cloche ? » — chaque symptôme a :
@@ -666,27 +861,32 @@ const SYMPTOMES = [
   { label: "Ça freine mal",        titre: "Des freins fatigués",
     cause: "Le plus souvent : patins ou plaquettes usés, ou un câble qui s'est détendu. Sur les freins hydrauliques, il faut parfois une purge.",
     urgent: true,  verdict: "À regarder vite : c'est votre sécurité",
-    sms: "Bonjour Juju, mon vélo freine mal. Est-ce que tu pourrais y jeter un œil ?" },
+    sms: "Bonjour Julien, mon vélo freine mal. Est-ce que tu pourrais y jeter un œil ?" },
   { label: "Les vitesses sautent", titre: "Un dérailleur à régler",
     cause: "En général, un câble qui s'est allongé ou un dérailleur un peu tordu. Souvent un simple réglage, parfois une chaîne usée.",
     urgent: false, verdict: "Pas urgent, mais pénible",
-    sms: "Bonjour Juju, mes vitesses sautent. Quand pourrais-tu regarder mon vélo ?" },
+    essai: "un quart de tour de la petite molette du dérailleur (voir « Une vitesse qui saute » plus haut).",
+    sms: "Bonjour Julien, mes vitesses sautent. Quand pourrais-tu regarder mon vélo ?" },
   { label: "Ça grince",            titre: "Une chaîne qui a soif",
     cause: "Neuf fois sur dix, une chaîne sèche ou encrassée. Sinon, le pédalier ou la selle qui ont besoin d'être resserrés et graissés.",
     urgent: false, verdict: "Rapide à corriger",
-    sms: "Bonjour Juju, mon vélo grince. Tu pourrais regarder d'où ça vient ?" },
+    essai: "nettoyer et lubrifier la chaîne, cinq minutes suffisent (voir « Entretenir sa chaîne »).",
+    sms: "Bonjour Julien, mon vélo grince. Tu pourrais regarder d'où ça vient ?" },
   { label: "J'ai crevé",           titre: "Une crevaison",
-    cause: "Chambre à air à changer ou à réparer. Juju vérifie aussi le pneu : un éclat de verre caché, et ça recommence.",
+    cause: "Chambre à air à changer ou à réparer. Julien vérifie aussi le pneu : un éclat de verre caché, et ça recommence.",
     urgent: true,  verdict: "On vous remet en selle vite",
-    sms: "Bonjour Juju, j'ai crevé. Quand est-ce que je peux passer ?" },
+    essai: "avec deux démonte-pneus et une rustine, c'est faisable en vingt minutes (voir « Réparer une crevaison »).",
+    sms: "Bonjour Julien, j'ai crevé. Quand est-ce que je peux passer ?" },
   { label: "La roue frotte",       titre: "Une roue voilée",
     cause: "Après un choc ou un trou, la roue n'est plus droite. On la redresse en retendant les rayons, sans forcément la changer.",
     urgent: false, verdict: "À faire avant que ça empire",
-    sms: "Bonjour Juju, ma roue frotte (je crois qu'elle est voilée). Tu peux regarder ?" },
+    essai: "vérifier que la roue est bien serrée et bien centrée dans le cadre. Si elle ondule en tournant, elle est voilée : ça, c'est pour Julien.",
+    sms: "Bonjour Julien, ma roue frotte (je crois qu'elle est voilée). Tu peux regarder ?" },
   { label: "Il dort au garage",    titre: "Un vélo à réveiller",
     cause: "Pneus à plat, chaîne grippée, freins collés : une révision complète, et il redevient comme avant.",
     urgent: false, verdict: "Parfait avant la belle saison",
-    sms: "Bonjour Juju, j'ai un vélo qui n'a pas roulé depuis longtemps. Tu pourrais le remettre en état ?" },
+    essai: "regonfler, lubrifier la chaîne et contrôler les freins. Souvent, ça suffit à le réveiller !",
+    sms: "Bonjour Julien, j'ai un vélo qui n'a pas roulé depuis longtemps. Tu pourrais le remettre en état ?" },
 ];
 
 const boiteSymptomes = document.getElementById("symptomes");
@@ -709,6 +909,7 @@ function choisir(i, bouton) {
     <h3>${s.titre}</h3>
     <p class="cause">${s.cause}</p>
     <span class="verdict ${s.urgent ? "urgent" : ""}"><i></i>${s.verdict}</span>
+    ${s.essai ? `<p class="essai"><b>Essayez d'abord :</b> ${s.essai}</p>` : ""}
     <div class="actions">
       <a class="btn btn-main js-sms" data-texte="${s.sms.replace(/"/g, "&quot;")}" href="#contact">Envoyer ce message</a>
       <a class="btn btn-ghost js-appel" href="#contact">Appeler</a>
@@ -725,16 +926,21 @@ function choisir(i, bouton) {
      (cette écriture marche à la fois sur Android et sur iPhone).
    Sans numéro renseigné : boutons grisés (aria-disabled).
    ------------------------------------------------------------ */
-const smsParDefaut = "Bonjour Juju, j'ai un souci avec mon vélo. Est-ce que tu pourrais regarder ?";
+const smsParDefaut = "Bonjour Julien, j'ai un souci avec mon vélo. Est-ce que tu pourrais regarder ?";
 function brancherLiens() {
-  const aUnNumero = JUJU.tel.trim() !== "";
+  // « mailto: » ouvre l'appli e-mail avec l'adresse et un objet déjà remplis
+  document.querySelectorAll(".js-mail").forEach(a => {
+    if (JULIEN.email) a.href = "mailto:" + JULIEN.email + "?subject=" + encodeURIComponent("Mon vélo");
+    else a.hidden = true;
+  });
+  const aUnNumero = JULIEN.tel.trim() !== "";
   document.querySelectorAll(".js-appel").forEach(a => {
-    if (aUnNumero) { a.href = "tel:" + JUJU.tel; a.removeAttribute("aria-disabled"); }
+    if (aUnNumero) { a.href = "tel:" + JULIEN.tel; a.removeAttribute("aria-disabled"); }
     else a.setAttribute("aria-disabled", "true");
   });
   document.querySelectorAll(".js-sms").forEach(a => {
     const texte = a.dataset.texte || smsParDefaut;
-    if (aUnNumero) { a.href = "sms:" + JUJU.tel + "?&body=" + encodeURIComponent(texte); a.removeAttribute("aria-disabled"); }
+    if (aUnNumero) { a.href = "sms:" + JULIEN.tel + "?&body=" + encodeURIComponent(texte); a.removeAttribute("aria-disabled"); }
     else a.setAttribute("aria-disabled", "true");
   });
 }
@@ -742,7 +948,7 @@ function brancherLiens() {
 /* Remplit le bloc contact à partir des réglages */
 function remplirContact() {
   const telGrand = document.getElementById("telGrand");
-  if (JUJU.tel) telGrand.textContent = JUJU.telAffiche || JUJU.tel;
+  if (JULIEN.tel) telGrand.textContent = JULIEN.telAffiche || JULIEN.tel;
   telGrand.removeAttribute("aria-disabled"); // le gros numéro reste lisible même vide
 
   const ligne = (id, texte, detail) => {
@@ -750,8 +956,10 @@ function remplirContact() {
     if (!texte) { li.hidden = true; return; }
     li.querySelector("span").innerHTML = texte + (detail ? `<small>${detail}</small>` : "");
   };
-  ligne("ligneZone", JUJU.zone, JUJU.zoneDetail);
-  ligne("ligneHoraires", JUJU.horaires, JUJU.horairesDetail);
+  document.getElementById("mail").textContent = JULIEN.email;
+  if (!JULIEN.email) document.getElementById("ligneMail").hidden = true;
+  ligne("ligneZone", JULIEN.zone, JULIEN.zoneDetail);
+  ligne("ligneHoraires", JULIEN.horaires, JULIEN.horairesDetail);
   document.getElementById("version").textContent = "v" + VERSION;
 }
 
@@ -764,7 +972,7 @@ new IntersectionObserver(([e]) => { heroVisible = e.isIntersecting; majBarre(); 
 new IntersectionObserver(([e]) => { contactVisible = e.isIntersecting; majBarre(); }).observe(contact);
 function majBarre() {
   // Pas de numéro = pas de barre (des boutons grisés flottants ne serviraient à rien)
-  const aUnNumero = JUJU.tel.trim() !== "";
+  const aUnNumero = JULIEN.tel.trim() !== "";
   barre.classList.toggle("visible", aUnNumero && !heroVisible && !contactVisible);
 }
 
@@ -787,7 +995,7 @@ brancherLiens();
    L'agent n'accepte que les appels venant de baiji.fr (réglé côté
    ElevenLabs) : en local, depuis un fichier, l'appel sera refusé.
    ============================================================ */
-const AGENT_RAYON = "agent_9901m6b24af2f15s8fxy0ezqm92c";   // « Rayon – assistant de Juju » sur ElevenLabs
+const AGENT_RAYON = "agent_9901m6b24af2f15s8fxy0ezqm92c";   // « Rayon – assistant de Julien » sur ElevenLabs
 
 const carteRayon  = document.getElementById("carteRayon");
 const boutonRayon = document.getElementById("boutonRayon");
@@ -814,14 +1022,14 @@ function animerOnde() {
   animation = requestAnimationFrame(animerOnde);
 }
 
-/* Fin d'appel (raccroché par l'un ou l'autre) : on propose de contacter Juju */
+/* Fin d'appel (raccroché par l'un ou l'autre) : on propose de contacter Julien */
 function finAppel() {
   conversation = null;
   cancelAnimationFrame(animation);
   boutonRayon.style.setProperty("--niveau", 0);
-  const aUnNumero = JUJU.tel.trim() !== "";
+  const aUnNumero = JULIEN.tel.trim() !== "";
   etatRayon("fini", "Merci d'avoir discuté avec Rayon !",
-    aUnNumero ? "Pour la suite, c'est Juju en personne :" : "Les coordonnées de Juju arrivent très bientôt sur cette page.");
+    aUnNumero ? "Pour la suite, c'est Julien en personne :" : "Les coordonnées de Julien arrivent très bientôt sur cette page.");
   if (!aUnNumero) carteRayon.classList.remove("fini");   // pas de boutons grisés inutiles
 }
 
@@ -831,7 +1039,7 @@ function erreurRayon(e, message) {
   conversation = null;
   cancelAnimationFrame(animation);
   etatRayon("repos", message || "La ligne ne répond pas pour l'instant.",
-    "Réessayez dans un moment, ou contactez Juju directement.");
+    "Réessayez dans un moment, ou contactez Julien directement.");
 }
 
 async function appelerRayon() {
