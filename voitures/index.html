@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <!--
   Voitures — suivi de la batterie et de la charge de l'e-5008 et de la Corsa
-  Version 1.0.0
+  Version 1.0.1
   Données : service « voitures » du NAS (https://voitures.baiji.fr), qui interroge
   psa_car_controller à la maison et ne publie que la batterie et la charge (jamais le GPS).
   Historique :
    • v1.0.0 : jauges, état de charge, heure de fin estimée, bouton « Actualiser »
               (réveil de la voiture), mode « Suivi de charge » (rafraîchit en continu
               et garde l'écran allumé), courbe de batterie 24 h / 7 jours
+   • v1.0.1 : n'affiche plus « Mode : No » ni « charge programmée » à tort
+              (la voiture renvoie "No" et "PT0S" quand il n'y a rien)
 -->
 <html lang="fr">
 <head>
@@ -186,7 +188,7 @@
     /* =================================================================
        CONFIGURATION
        ================================================================= */
-    const VERSION = '1.0.0';
+    const VERSION = '1.0.1';
     const API = 'https://voitures.baiji.fr';        // service du NAS
     const POLL_NORMAL_S = 120;    // lecture de l'état : toutes les 2 min…
     const POLL_LIVE_S = 30;       // …toutes les 30 s en mode « Suivi de charge »
@@ -287,15 +289,18 @@
         const offset = C * (1 - (soc ?? 0) / 100);
 
         // --- État de la prise
+        // Une charge programmée a une durée d'attente non nulle ("PT0S" = 0 seconde = rien de programmé)
+        const scheduled = car.nextDelayedTime && car.nextDelayedTime !== 'PT0S';
         let badge;
         if (car.charging) badge = `<span class="badge charging">⚡ En charge</span>`;
-        else if (car.plugged) badge = `<span class="badge">🔌 Branchée${car.nextDelayedTime ? ' · charge programmée' : ''}</span>`;
+        else if (car.plugged) badge = `<span class="badge">🔌 Branchée${scheduled ? ' · charge programmée' : ''}</span>`;
         else badge = `<span class="badge off">Débranchée</span>`;
 
         // --- Détails (seulement ceux que le service fournit)
         const facts = [];
         if (car.charging && Number.isFinite(car.chargeRate) && car.chargeRate > 0) facts.push(`Vitesse : <b>+${Math.round(car.chargeRate)} km/h</b>`);
-        if (car.chargeMode) facts.push(`Mode : <b>${car.chargeMode === 'Quick' ? 'rapide' : car.chargeMode === 'Slow' ? 'lente' : esc(car.chargeMode)}</b>`);
+        // Le mode de charge n'a de sens que câble branché (la voiture renvoie "No" sinon)
+        if (car.plugged && car.chargeMode && car.chargeMode !== 'No') facts.push(`Mode : <b>${car.chargeMode === 'Quick' ? 'rapide' : car.chargeMode === 'Slow' ? 'lente' : esc(car.chargeMode)}</b>`);
         if (Number.isFinite(car.mileage)) facts.push(`Compteur : <b>${Math.round(car.mileage).toLocaleString('fr-FR')} km</b>`);
 
         // --- Fin de charge estimée (donnée par la voiture, ou calculée avec la courbe)
