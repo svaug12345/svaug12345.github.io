@@ -84,6 +84,18 @@ PAGES = [
          desc="Quiz foot pour Titouan, jeux de chats pour Ava",
          picto="cat", tuile="#1f8a4c", trait="#ffffff",
          fond="#fff6e9", theme="#fff6e9"),
+    dict(dossier="julien", nom="Julien · Mécanicien vélo", court="Julien vélo",
+         desc="Le vélo doit être un plaisir : conseils, dépannage, tarifs clairs",
+         picto="bike", tuile="#f5c21b", trait="#1b1d1a",
+         fond="#f4efe6", theme="#f4efe6"),
+    dict(dossier="atelier-polices", nom="Atelier de polices", court="Polices",
+         desc="Fabrique et ajuste ses polices manuscrites",
+         picto="type", tuile="#3552b8", trait="#ffffff",
+         fond="#eef1f7", theme="#eef1f7"),
+    dict(dossier="fart", nom="FART · Séance d'observation", court="FART",
+         desc="Six scénettes de classe à faire observer aux tuteurs et stagiaires",
+         picto="wind", tuile="#0A0A2E", trait="#ffffff",
+         fond="#0A0A2E", theme="#0A0A2E"),
 ]
 
 
@@ -180,6 +192,10 @@ self.addEventListener("fetch", (e) => {
   // On ne s'occupe que des lectures (GET) de fichiers de CE dossier
   if (e.request.method !== "GET" || url.origin !== location.origin) return;
   if (!url.pathname.startsWith(portee)) return;
+  // Vidéos et sons : on les laisse passer sans les garder. Ils sont lourds (ils rempliraient
+  // le téléphone) et le navigateur les lit par morceaux (requêtes « Range » → réponses 206),
+  // que le cache ne sait pas stocker.
+  if (e.request.headers.has("range") || /\\.(mp4|webm|mov|m4a|mp3|wav|ogg)$/i.test(url.pathname)) return;
   {RACINE_SEULE}
 
   e.respondWith(

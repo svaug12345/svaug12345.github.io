@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr/julien/ — Julien, mécanicien vélo
-  Version 1.5.0
+  Version 1.6.0
   ------------------------------------------------------------
   Site vitrine d'une page pour Julien, mécanicien vélo.
   Devise : « Le vélo doit être un plaisir ».
@@ -45,6 +45,7 @@
    • v1.5.0 : bon numéro (06 58 23 67 40) ; WhatsApp, SMS et e-mail en simples
               pictos ronds ; le verdict « vous pouvez le faire » explique
               directement quoi faire, étape par étape
+   • v1.6.0 : site installable sur téléphone (manifeste, icône vélo, service worker)
   ============================================================
 -->
 <html lang="fr">
@@ -52,6 +53,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Julien · Mécanicien vélo à Gif-sur-Yvette</title>
+<!--
+  PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »
+  ou « Ajouter à l'écran d'accueil »). Fichiers fabriqués par outils/generer-pwa.py :
+   • manifest.webmanifest : nom, couleurs, icônes de l'appli ;
+   • icones/ : les icônes (apple-touch-icon = celle des iPhone) ;
+   • sw.js : le service worker, enregistré en bas de page.
+-->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+<link rel="icon" href="icones/icone-192.png" type="image/png">
 <meta name="description" content="Julien, mécanicien vélo à Gif-sur-Yvette, à l'atelier ou à domicile. Le vélo doit être un plaisir : conseils pour vous dépanner vous-même, tarifs affichés, aucun coût caché.">
 <!-- Invisible des moteurs de recherche tant que Julien n'a pas validé les tarifs.
      Quand tout est prêt : supprimer cette ligne pour que Google puisse trouver le site. -->
@@ -822,7 +833,7 @@ const JULIEN = {
   horaires:   "",            // ex. "Du mardi au samedi, 9 h – 19 h"
   horairesDetail: "Si je ne décroche pas, laissez un message : je rappelle.",
 };
-const VERSION = "1.5.0";     // ← à augmenter à chaque modification (voir l'historique en haut)
+const VERSION = "1.6.0";     // ← à augmenter à chaque modification (voir l'historique en haut)
 
 /* ------------------------------------------------------------
    Pictos (bibliothèque Lucide, licence ISC) — juste le dessin
@@ -1421,6 +1432,14 @@ window.addEventListener("pagehide", () => { if (conversation) conversation.endSe
 
 etatRayon("repos", "Appuyez, puis parlez normalement.", "Il faudra autoriser le micro.");
 brancherLiens();   // les boutons « Appeler / SMS » de fin d'appel reçoivent le bon lien
+</script>
+<script>
+  // ---- Page installable : enregistrement du service worker (sw.js, même dossier) ----
+  // Il fonctionne en « réseau d'abord » : la page en ligne est toujours la plus récente.
+  // (Il ne garde jamais les vidéos ni les sons : ils sont lus directement en ligne.)
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    navigator.serviceWorker.register("sw.js");
+  }
 </script>
 </body>
 </html>

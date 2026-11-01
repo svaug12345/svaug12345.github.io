@@ -1,10 +1,28 @@
 <!doctype html>
+<!--
+  Atelier de polices — baiji.fr/atelier-polices/
+  Version 1.1.0 – 01/11/2026
+  Historique :
+   • 1.0.0 : première version (page autonome)
+   • 1.1.0 : page installable sur téléphone (manifeste, icône, service worker)
+-->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#eef1f7">
 <title>Atelier de polices</title>
+<!--
+  PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »
+  ou « Ajouter à l'écran d'accueil »). Fichiers fabriqués par outils/generer-pwa.py :
+   • manifest.webmanifest : nom, couleurs, icônes de l'appli ;
+   • icones/ : les icônes (apple-touch-icon = celle des iPhone) ;
+   • sw.js : le service worker, enregistré en bas de page.
+-->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+<link rel="icon" href="icones/icone-192.png" type="image/png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
@@ -1029,5 +1047,13 @@ chargerExemple();
 window.__atelier = { ttf: () => etat.ttf, lire: lireFichiers };   // utile pour les tests
 </script>
 
+<script>
+  // ---- Page installable : enregistrement du service worker (sw.js, même dossier) ----
+  // Il fonctionne en « réseau d'abord » : la page en ligne est toujours la plus récente.
+  // (Il ne garde jamais les vidéos ni les sons : ils sont lus directement en ligne.)
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    navigator.serviceWorker.register("sw.js");
+  }
+</script>
 </body>
 </html>

@@ -2,13 +2,15 @@
 <!--
   Page « FART · Séance d'observation » — six scénettes animées pour former les tuteurs
   et les professeurs stagiaires à l'observation d'une séance
-  Version 1.0.0 – 01/11/2026
+  Version 1.1.0 – 01/11/2026
   En ligne : https://baiji.fr/fart/
 
   Historique :
    • 1.0.0 : première version — logo FART animé, mode d'emploi de la séance,
              6 scénettes (vidéos) avec leurs questions d'échange, film complet,
              grilles d'observation à télécharger.
+   • 1.1.0 : page installable sur téléphone (manifeste, icône FART, service worker
+             qui laisse les vidéos en ligne au lieu de les garder dans le téléphone).
 
   Comment ça marche ?
   - Les vidéos sont dans le dossier videos/ (une par scène + le film complet),
@@ -20,6 +22,8 @@
     « Projeter » la passe en plein écran (pratique en salle, avec un vidéoprojecteur).
   - Identité visuelle propre à l'équipe FART (pas la charte SV) : bleu nuit, bleu France,
     rouge Marianne, Unbounded pour le logo et les titres, Manrope pour le texte.
+  - Page installable (PWA) : manifest.webmanifest, icones/ et sw.js viennent de
+    outils/generer-pwa.py. Les vidéos ne sont jamais mises en cache (trop lourdes).
   - Page en « noindex » : elle n'apparaît pas dans les moteurs de recherche.
 -->
 <html lang="fr">
@@ -28,8 +32,19 @@
   <!-- Indispensable pour un bon affichage sur téléphone -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>FART · Séance d'observation</title>
+<!--
+  PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »
+  ou « Ajouter à l'écran d'accueil »). Fichiers fabriqués par outils/generer-pwa.py :
+   • manifest.webmanifest : nom, couleurs, icônes de l'appli ;
+   • icones/ : les icônes (apple-touch-icon = celle des iPhone) ;
+   • sw.js : le service worker, enregistré en bas de page.
+-->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+<link rel="icon" href="icones/icone-192.png" type="image/png">
   <!-- Pas d'indexation par Google & co : la page se partage par lien -->
   <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#0A0A2E">
   <meta name="description" content="Six scénettes animées pour faire observer une séance aux tuteurs et professeurs stagiaires.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -299,7 +314,7 @@
 </footer>
 
 <script>
-  const VERSION = "1.0.0";
+  const VERSION = "1.1.0";
   document.getElementById("version").textContent = "FART · v" + VERSION;
 
   /*
@@ -472,6 +487,14 @@
   }
   jouer();
   scene.addEventListener("click", jouer);                     // un clic sur le logo le rejoue
+</script>
+<script>
+  // ---- Page installable : enregistrement du service worker (sw.js, même dossier) ----
+  // Il fonctionne en « réseau d'abord » : la page en ligne est toujours la plus récente.
+  // (Il ne garde jamais les vidéos ni les sons : ils sont lus directement en ligne.)
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    navigator.serviceWorker.register("sw.js");
+  }
 </script>
 </body>
 </html>

@@ -27,6 +27,10 @@ self.addEventListener("fetch", (e) => {
   // On ne s'occupe que des lectures (GET) de fichiers de CE dossier
   if (e.request.method !== "GET" || url.origin !== location.origin) return;
   if (!url.pathname.startsWith(portee)) return;
+  // Vidéos et sons : on les laisse passer sans les garder. Ils sont lourds (ils rempliraient
+  // le téléphone) et le navigateur les lit par morceaux (requêtes « Range » → réponses 206),
+  // que le cache ne sait pas stocker.
+  if (e.request.headers.has("range") || /\.(mp4|webm|mov|m4a|mp3|wav|ogg)$/i.test(url.pathname)) return;
   // Accueil : seulement les fichiers à la racine (pas les sous-dossiers des autres applis)
   if (url.pathname.slice(1).includes("/")) return;
 
