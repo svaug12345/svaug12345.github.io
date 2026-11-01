@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<!--
+  Famille · Vaugoude's Family — tableau de bord de la maison
+  Version 1.0.0
+  Mobile par défaut ; mode TV avec baiji.fr/famille/?tv (retour : ?mobile).
+  Historique :
+   • v1.0.0 : météo, tâches du jour (Google Sheet), 7 prochains jours, Pass TV,
+              batteries des voitures (service du NAS), éphéméride, mode TV
+-->
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <!-- viewport-fit=cover : l'appli occupe tout l'écran, y compris sous l'encoche du téléphone -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Famille</title>
+  <meta name="description" content="Tableau de bord de la famille Vaugoude : météo, tâches des enfants, batteries des voitures.">
+
+  <!-- Page familiale : on ne la fait pas apparaître dans les moteurs de recherche -->
+  <meta name="robots" content="noindex">
+
+  <!--
+    PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »).
+    Fichiers fabriqués par outils/generer-pwa.py :
+     • manifest.webmanifest : nom, couleurs, icônes de l'appli ;
+     • icones/ : les icônes (apple-touch-icon = celle des iPhone) ;
+     • sw.js : le service worker, enregistré en bas de page.
+  -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <link rel="icon" href="icones/icone-192.png">
+  <meta name="theme-color" content="#0e3a44">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- Police : la même que ton planning des tâches (Plus Jakarta Sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* =========================================================
+       1. COULEURS (variables CSS)
+       On définit les couleurs une seule fois ici ; tout le reste
+       de la page les réutilise. Changer une couleur = 1 ligne.
+       ========================================================= */
+    :root {
+      --bg: #f3f6f6;          /* fond de page */
+      --card: #ffffff;        /* fond des cartes */
+      --ink: #10282d;         /* texte principal */
+      --muted: #5d7277;       /* texte secondaire */
+      --line: #dfe7e8;        /* traits de séparation */
+      --brand: #0e3a44;       /* bleu-vert foncé (charte SV, comme l'en-tête du Sheet) */
+      --accent: #14a3a0;      /* turquoise */
+      --warn: #d97706;        /* orange (batterie moyenne) */
+      --bad: #dc2626;         /* rouge (batterie faible) */
+      --good: #16a34a;        /* vert (batterie OK) */
+      /* Une couleur par enfant, reprise de ton planning */
+      --gaby: #10b981;
+      --tom: #3b82f6;
+      --nanon: #f43f5e;
+      --tous: #64748b;
+      --radius: 18px;
+    }
+
+    /* Thème sombre automatique si le téléphone est en mode sombre */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #071a1f; --card: #0f262c; --ink: #e8f1f2; --muted: #93a9ad; --line: #1d3a41;
+      }
+    }
+
+    /* Mode TV : toujours sombre (mieux pour un écran OLED et dans un salon) */
+    body.tv {
+      --bg: #050f12; --card: #0c1f24; --ink: #eef6f7; --muted: #8aa3a8; --line: #18343b;
+    }
+
+    /* =========================================================
+       2. BASE
+       ========================================================= */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      /* "safe-area" = marges de l'encoche et de la barre de navigation Android */
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+    svg { display: block; }
+
+    #app { max-width: 560px; margin: 0 auto; padding: 16px 16px 40px; display: flex; flex-direction: column; gap: 14px; }
+
+    .card { background: var(--card); border-radius: var(--radius); padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+    .card-title {
+      font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 8px;   /* les filtres passent à la ligne proprement sur petit écran */
+    }
+
+    /* =========================================================
+       3. EN-TÊTE (famille, date, heure)
+       ========================================================= */
+    .top { display: flex; justify-content: space-between; align-items: flex-end; padding: 4px 2px 2px; }
+    .brand { font-size: 11px; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; color: var(--accent); }
+    .date { font-size: 24px; font-weight: 800; text-transform: capitalize; line-height: 1.15; }
+    .clock { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+    .icon-btn { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: var(--muted); }
+    .icon-btn:active { background: var(--line); }
+    .icon-btn svg { width: 20px; height: 20px; }
+    .spin svg { animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* =========================================================
+       4. MÉTÉO
+       ========================================================= */
+    .weather { background: linear-gradient(150deg, var(--brand), #13606a); color: #fff; }
+    .weather .card-title { color: rgba(255,255,255,.7); }
+    .now { display: flex; align-items: center; gap: 14px; }
+    .now-icon svg { width: 72px; height: 72px; stroke-width: 1.6; }
+    .now-temp { font-size: 72px; font-weight: 800; letter-spacing: -.05em; line-height: .9; }
+    .now-desc { font-size: 17px; font-weight: 700; }
+    .now-sub { font-size: 13px; opacity: .8; margin-top: 2px; }
+    .details { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+    .chip { background: rgba(255,255,255,.12); border-radius: 999px; padding: 5px 11px; font-size: 13px; font-weight: 600; }
+
+    /* Prévisions heure par heure : bande qui défile horizontalement */
+    .hourly { display: flex; gap: 6px; overflow-x: auto; margin: 14px -16px 0; padding: 0 16px 2px; scrollbar-width: none; }
+    .hourly::-webkit-scrollbar { display: none; }
+    .hour { flex: 0 0 52px; text-align: center; padding: 8px 0; border-radius: 12px; background: rgba(255,255,255,.08); }
+    .hour b { display: block; font-size: 15px; }
+    .hour small { font-size: 12px; opacity: .8; }
+    .hour svg { width: 24px; height: 24px; margin: 4px auto; stroke-width: 2; }
+    .hour .rainp { font-size: 11px; color: #9be7ff; min-height: 14px; }
+
+    /* Prévisions des jours suivants */
+    .days { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; text-align: center; }
+    .day-name { font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--muted); }
+    .day svg { width: 30px; height: 30px; margin: 6px auto; stroke-width: 1.8; color: var(--accent); }
+    .day-t { font-size: 14px; font-weight: 800; }
+    .day-t span { color: var(--muted); font-weight: 600; }
+
+    /* =========================================================
+       5. TÂCHES
+       ========================================================= */
+    .kid { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-top: 1px solid var(--line); }
+    .kid:first-of-type { border-top: 0; padding-top: 0; }
+    .avatar {
+      flex: 0 0 42px; height: 42px; border-radius: 14px; display: grid; place-items: center;
+      font-weight: 800; font-size: 18px; color: #fff; background: var(--c, var(--tous));
+    }
+    .kid-name { font-weight: 800; font-size: 16px; }
+    .kid-tasks { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
+    .task {
+      font-size: 14px; font-weight: 600; padding: 4px 10px; border-radius: 10px;
+      background: color-mix(in srgb, var(--c, var(--tous)) 14%, transparent);
+    }
+    .empty { color: var(--muted); font-style: italic; font-size: 14px; }
+
+    .pass-tv {
+      margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: var(--brand); color: #fff;
+      display: flex; gap: 10px; align-items: center;
+    }
+    .pass-tv b { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+    .pass-tv span { font-size: 13px; opacity: .9; }
+
+    /* Filtre par enfant */
+    .filters { display: flex; gap: 6px; flex-wrap: wrap; }
+    .filter { font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 999px; background: var(--line); text-transform: none; letter-spacing: 0; color: var(--ink); }
+    .filter.on { background: var(--brand); color: #fff; }
+
+    /* Semaine à venir */
+    .week-day { display: grid; grid-template-columns: 58px 1fr; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); }
+    .week-day:first-of-type { border-top: 0; }
+    .week-label { font-weight: 800; font-size: 13px; text-transform: capitalize; line-height: 1.2; }
+    .week-label small { display: block; color: var(--muted); font-weight: 600; }
+    .week-items { display: flex; flex-wrap: wrap; gap: 5px; }
+    .mini { font-size: 12.5px; font-weight: 600; padding: 3px 8px; border-radius: 8px; background: color-mix(in srgb, var(--c) 14%, transparent); }
+    .mini i { font-style: normal; font-weight: 800; color: var(--c); margin-right: 4px; }
+
+    /* =========================================================
+       6. VOITURES
+       ========================================================= */
+    .cars { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .car-name { font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 6px; }
+    .car-soc { font-size: 34px; font-weight: 800; letter-spacing: -.03em; margin: 2px 0 6px; }
+    .bar { height: 10px; border-radius: 99px; background: var(--line); overflow: hidden; }
+    .bar > div { height: 100%; border-radius: 99px; background: var(--good); transition: width .6s; }
+    .car-sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .note { font-size: 13px; color: var(--muted); line-height: 1.45; }
+
+    /* =========================================================
+       7. ÉPHÉMÉRIDE
+       ========================================================= */
+    .history-year { font-size: 22px; font-weight: 800; color: var(--accent); }
+    .history-text { font-size: 15px; line-height: 1.5; margin-top: 4px; }
+
+    footer { text-align: center; font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 6px; align-items: center; }
+    footer a { color: var(--accent); font-weight: 700; text-decoration: none; }
+
+    /* =========================================================
+       8. MODE TV
+       Une grille fixe en 3 colonnes qui tient sur un écran 16:9,
+       sans défilement. Les tailles sont en "vw" (pourcentage de la
+       largeur d'écran) pour s'adapter à toutes les télés.
+       ========================================================= */
+    body.tv #app {
+      max-width: none; height: 100vh; padding: 2.2vw; gap: 1.4vw;
+      display: grid; grid-template-columns: 1.15fr 1fr 0.85fr; grid-template-rows: auto 1fr;
+      transition: transform 2s;  /* léger déplacement anti-marquage OLED */
+    }
+    body.tv .top { grid-column: 1 / -1; }
+    body.tv .brand { font-size: .9vw; }
+    body.tv .date { font-size: 2.4vw; }
+    body.tv .clock { font-size: 4.2vw; line-height: 1; }
+    body.tv .card { padding: 1.4vw; border-radius: 1.4vw; overflow: hidden; }
+    body.tv .card-title { font-size: .85vw; margin-bottom: 1vw; }
+    body.tv .col { display: flex; flex-direction: column; gap: 1.4vw; min-height: 0; }
+    body.tv .weather { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    body.tv .now-icon svg { width: 7vw; height: 7vw; }
+    body.tv .now-temp { font-size: 8vw; }
+    body.tv .now-desc { font-size: 1.8vw; }
+    body.tv .now-sub, body.tv .chip { font-size: 1vw; }
+    body.tv .hourly { overflow: hidden; margin: 1vw 0 0; padding: 0; gap: .5vw; }
+    body.tv .hour { flex: 1 1 0; padding: .6vw 0; }
+    body.tv .hour b { font-size: 1.15vw; } body.tv .hour small { font-size: .85vw; }
+    body.tv .hour svg { width: 1.8vw; height: 1.8vw; }
+    body.tv .hour .rainp { font-size: .8vw; min-height: 1vw; }
+    body.tv .days { gap: .6vw; }
+    body.tv .day-name { font-size: .9vw; } body.tv .day-t { font-size: 1.1vw; }
+    body.tv .day svg { width: 2.4vw; height: 2.4vw; }
+    body.tv .tasks-today { flex: 1; }
+    body.tv .avatar { flex-basis: 3.6vw; height: 3.6vw; font-size: 1.6vw; border-radius: 1vw; }
+    body.tv .kid { padding: 1vw 0; gap: 1vw; }
+    body.tv .kid-name { font-size: 1.6vw; }
+    body.tv .task { font-size: 1.3vw; padding: .3vw .8vw; border-radius: .7vw; }
+    body.tv .pass-tv b, body.tv .pass-tv span { font-size: 1vw; }
+    body.tv .pass-tv { padding: 1vw; border-radius: 1vw; }
+    body.tv .mini { font-size: 1vw; }
+    body.tv .car-name { font-size: 1.2vw; } body.tv .car-soc { font-size: 2.8vw; }
+    body.tv .bar { height: .8vw; }
+    body.tv .car-sub, body.tv .note { font-size: .9vw; }
+    body.tv .history-year { font-size: 1.5vw; }
+    body.tv .history-text { font-size: 1.1vw; display: -webkit-box; -webkit-line-clamp: 7; -webkit-box-orient: vertical; overflow: hidden; }
+    body.tv .empty { font-size: 1.2vw; }
+    /* Éléments masqués à la télé (pas de télécommande pour cliquer) */
+    body.tv .mobile-only { display: none !important; }
+    body:not(.tv) .tv-only { display: none !important; }
+    /* Sur mobile, les "colonnes" ne sont que des conteneurs transparents */
+    body:not(.tv) .col { display: contents; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- ===== En-tête ===== -->
+    <header class="top">
+      <div>
+        <div class="brand">Vaugoude's Family</div>
+        <div class="date" id="date">—</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:4px">
+        <div class="clock" id="clock">--:--</div>
+        <button class="icon-btn mobile-only" id="refresh" title="Actualiser" aria-label="Actualiser">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36L21 8"/><path d="M21 3v5h-5"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- ===== Colonne 1 (TV) : météo ===== -->
+    <div class="col">
+      <section class="card weather">
+        <div>
+          <div class="card-title"><span>Gif-sur-Yvette</span><span id="w-updated"></span></div>
+          <div class="now">
+            <div class="now-icon" id="w-icon"></div>
+            <div>
+              <div class="now-temp" id="w-temp">--°</div>
+            </div>
+            <div style="margin-left:auto;text-align:right">
+              <div class="now-desc" id="w-desc">Chargement…</div>
+              <div class="now-sub" id="w-minmax"></div>
+            </div>
+          </div>
+          <div class="details" id="w-details"></div>
+        </div>
+        <div class="hourly" id="w-hourly"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">Prochains jours</div>
+        <div class="days" id="w-days"></div>
+      </section>
+    </div>
+
+    <!-- ===== Colonne 2 (TV) : tâches ===== -->
+    <div class="col">
+      <section class="card tasks-today">
+        <div class="card-title"><span id="tasks-title">Tâches du jour</span></div>
+        <div id="tasks-today"></div>
+        <div class="pass-tv">
+          <b>📺 Pass TV</b>
+          <span>Habits dans le panier · Cartable prêt · Table dressée</span>
+        </div>
+      </section>
+
+      <!-- Demain (TV) : le planning complet est trop long pour la télé -->
+      <section class="card tv-only">
+        <div class="card-title">Demain</div>
+        <div class="week-items" id="tasks-tomorrow"></div>
+      </section>
+    </div>
+
+    <!-- ===== Colonne 3 (TV) : voitures + histoire ===== -->
+    <div class="col">
+      <section class="card">
+        <div class="card-title"><span>Voitures</span><span id="cars-updated"></span></div>
+        <div id="cars"></div>
+      </section>
+
+      <!-- Planning de la semaine (mobile uniquement) -->
+      <section class="card mobile-only">
+        <div class="card-title">
+          <span>7 prochains jours</span>
+          <div class="filters" id="filters"></div>
+        </div>
+        <div id="week"></div>
+      </section>
+
+      <section class="card" style="flex:1">
+        <div class="card-title">Dans l'histoire</div>
+        <div class="history-year" id="h-year">—</div>
+        <div class="history-text" id="h-text">Recherche…</div>
+      </section>
+    </div>
+
+    <footer class="mobile-only">
+      <div id="status">—</div>
+      <div><a href="?tv">Passer en mode TV</a> · v<span id="version"></span></div>
+    </footer>
+  </div>
+
+  <script>
+    /* =================================================================
+       CONFIGURATION — les seules lignes à modifier en temps normal
+       ================================================================= */
+    const VERSION = '1.0.0';
+
+    // Google Sheet "Family tasks" publié en TSV (Fichier > Partager > Publier sur le web).
+    // C'est le même lien que celui de ton Kindle.
+    const SHEET_TSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRGC5e1KLZdKKeTUSLC8aqJXHvPphh1ceso4-yYJAUtbyZGPPhriMMtEQpeL4cjcrbQfcp6WOM_RUT2/pub?gid=647675679&single=true&output=tsv';
+
+    // Adresse HTTPS du petit service "voitures" qui tourne sur le NAS (voir dossier nas/).
+    // Tant qu'il n'est pas en place, laisse '' : la carte affichera une explication.
+    const CARS_URL = 'https://voitures.baiji.fr/cars.json';
+
+    // Coordonnées de Gif-sur-Yvette pour la météo
+    const LAT = 48.7018, LON = 2.1340;
+
+    // Couleur de chaque enfant (mêmes couleurs que le planning)
+    const KIDS = { Gaby: 'var(--gaby)', Tom: 'var(--tom)', Nanon: 'var(--nanon)', Tous: 'var(--tous)' };
+
+    // Fréquences de rafraîchissement (en minutes)
+    const REFRESH = { weather: 15, tasks: 10, cars: 5 };
+
+    /* =================================================================
+       MODE TV
+       On active le mode TV si l'adresse contient "?tv" (ex : baiji.fr/famille/?tv).
+       "?mobile" le désactive. Le choix est mémorisé sur l'appareil.
+       ================================================================= */
+    const params = new URLSearchParams(location.search);
+    const store = {   // petites fonctions "sûres" : le stockage peut être indisponible
+      get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+      set(k, v) { try { localStorage.setItem(k, v); } catch {} }
+    };
+    if (params.has('tv')) store.set('mode', 'tv');
+    if (params.has('mobile')) store.set('mode', 'mobile');
+    const IS_TV = store.get('mode') === 'tv';
+    document.body.classList.toggle('tv', IS_TV);
+
+    /* =================================================================
+       OUTILS
+       ================================================================= */
+    const $ = (id) => document.getElementById(id);
+
+    // Échappe le texte venant de l'extérieur (Sheet, Wikipédia) avant de l'injecter
+    // dans la page : empêche qu'un caractère < ou & casse l'affichage.
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    // Date au format AAAA-MM-JJ (en heure locale) : sert de "clé" pour retrouver les tâches d'un jour
+    const isoDay = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+    const hhmm = (d) => d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+    // Cache local : on garde la dernière réponse de chaque source pour afficher
+    // quelque chose tout de suite au démarrage, même sans réseau.
+    const cache = {
+      save(key, data) { store.set('cache:' + key, JSON.stringify({ t: Date.now(), data })); },
+      load(key) { try { return JSON.parse(store.get('cache:' + key)); } catch { return null; } }
+    };
+
+    // fetch avec délai maximum (sinon une requête bloquée pourrait attendre indéfiniment)
+    async function getJSON(url, ms = 12000) {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), ms);
+      try {
+        const res = await fetch(url, { cache: 'no-store', signal: ctrl.signal });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return await res.json();
+      } finally { clearTimeout(timer); }
+    }
+
+    /* =================================================================
+       ICÔNES MÉTÉO (SVG dessinés au trait, comme sur le Kindle)
+       ================================================================= */
+    const svg = (inner) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+    const ICONS = {
+      sun: svg('<circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/>'),
+      moon: svg('<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>'),
+      partly: svg('<path d="M12 2v2M4.9 4.9l1.4 1.4M2 12h2M19.1 4.9l-1.4 1.4"/><path d="M15.9 11.1A4 4 0 1 0 8 12"/><path d="M17 20H9a4 4 0 1 1 1-7.9A5 5 0 0 1 19.6 14 3 3 0 0 1 17 20Z"/>'),
+      cloud: svg('<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>'),
+      rain: svg('<path d="M16 13v8M8 13v8M12 15v8M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/>'),
+      snow: svg('<path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25"/><path d="M8 16h.01M8 20h.01M12 18h.01M12 22h.01M16 16h.01M16 20h.01"/>'),
+      storm: svg('<path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"/><path d="m13 11-4 6h6l-4 6"/>'),
+      fog: svg('<path d="M4 14h16M4 18h16M4 10h16"/>'),
+      battery: svg('<rect x="2" y="7" width="16" height="10" rx="2"/><path d="M22 11v2"/>'),
+      bolt: svg('<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/>')
+    };
+
+    // Codes météo Open-Meteo (norme WMO) → texte français + icône
+    function weatherInfo(code, isNight = false) {
+      const sunny = isNight ? ICONS.moon : ICONS.sun;
+      const table = {
+        0: ['Ensoleillé', sunny], 1: ['Plutôt dégagé', sunny], 2: ['Peu nuageux', ICONS.partly], 3: ['Couvert', ICONS.cloud],
+        45: ['Brouillard', ICONS.fog], 48: ['Brouillard givrant', ICONS.fog],
+        51: ['Bruine', ICONS.rain], 53: ['Bruine', ICONS.rain], 55: ['Bruine', ICONS.rain], 56: ['Bruine verglaçante', ICONS.rain], 57: ['Bruine verglaçante', ICONS.rain],
+        61: ['Pluie faible', ICONS.rain], 63: ['Pluie', ICONS.rain], 65: ['Forte pluie', ICONS.rain], 66: ['Pluie verglaçante', ICONS.rain], 67: ['Pluie verglaçante', ICONS.rain],
+        71: ['Neige légère', ICONS.snow], 73: ['Neige', ICONS.snow], 75: ['Forte neige', ICONS.snow], 77: ['Grésil', ICONS.snow],
+        80: ['Averses', ICONS.rain], 81: ['Averses', ICONS.rain], 82: ['Fortes averses', ICONS.storm],
+        85: ['Averses de neige', ICONS.snow], 86: ['Averses de neige', ICONS.snow],
+        95: ['Orage', ICONS.storm], 96: ['Orage et grêle', ICONS.storm], 99: ['Gros orage', ICONS.storm]
+      };
+      const [text, icon] = table[code] || ['Variable', ICONS.cloud];
+      return { text, icon };
+    }
+
+    /* =================================================================
+       HORLOGE ET DATE
+       ================================================================= */
+    let currentDay = isoDay(new Date());
+    function tickClock() {
+      const now = new Date();
+      $('clock').textContent = hhmm(now);
+      $('date').textContent = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+      // Passage à minuit : on recharge les tâches du nouveau jour et l'éphéméride
+      if (isoDay(now) !== currentDay) { currentDay = isoDay(now); renderTasks(); loadHistory(); }
+    }
+
+    /* =================================================================
+       MÉTÉO (Open-Meteo : gratuit, sans clé, autorisé depuis un navigateur)
+       ================================================================= */
+    async function loadWeather() {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}`
+        + `&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,precipitation,is_day`
+        + `&hourly=temperature_2m,weather_code,precipitation_probability,is_day`
+        + `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset`
+        + `&timezone=Europe%2FParis&forecast_days=7`;
+      try {
+        const data = await getJSON(url);
+        cache.save('weather', data);
+        renderWeather(data, Date.now());
+      } catch (e) {
+        console.warn('Météo indisponible', e);
+        const old = cache.load('weather');
+        if (old) renderWeather(old.data, old.t);
+      }
+    }
+
+    function renderWeather(d, time) {
+      const c = d.current;
+      const info = weatherInfo(c.weather_code, c.is_day === 0);
+      $('w-icon').innerHTML = info.icon;
+      $('w-temp').textContent = Math.round(c.temperature_2m) + '°';
+      $('w-desc').textContent = info.text;
+      $('w-minmax').textContent = `${Math.round(d.daily.temperature_2m_min[0])}° / ${Math.round(d.daily.temperature_2m_max[0])}° · ressenti ${Math.round(c.apparent_temperature)}°`;
+      $('w-updated').textContent = 'màj ' + hhmm(new Date(time));
+
+      const sunset = new Date(d.daily.sunset[0]);
+      $('w-details').innerHTML = [
+        `💧 ${c.relative_humidity_2m} %`,
+        `💨 ${Math.round(c.wind_speed_10m)} km/h`,
+        `☔ ${d.daily.precipitation_probability_max[0] ?? 0} %`,
+        `🌇 ${hhmm(sunset)}`
+      ].map(t => `<span class="chip">${t}</span>`).join('');
+
+      // Heure par heure : on cherche la première heure à venir dans la liste
+      const nowMs = Date.now();
+      let start = d.hourly.time.findIndex(t => new Date(t).getTime() > nowMs);
+      if (start < 0) start = 0;
+      const count = IS_TV ? 10 : 12;
+      let html = '';
+      for (let i = start; i < start + count && i < d.hourly.time.length; i++) {
+        const h = new Date(d.hourly.time[i]).getHours();
+        const p = d.hourly.precipitation_probability[i];
+        const hi = weatherInfo(d.hourly.weather_code[i], d.hourly.is_day[i] === 0);
+        html += `<div class="hour"><small>${h}h</small>${hi.icon}<b>${Math.round(d.hourly.temperature_2m[i])}°</b>`
+              + `<div class="rainp">${p >= 20 ? p + '%' : ''}</div></div>`;
+      }
+      $('w-hourly').innerHTML = html;
+
+      // Les 5 jours suivants (on saute aujourd'hui, index 0)
+      let days = '';
+      for (let i = 1; i <= 5 && i < d.daily.time.length; i++) {
+        const date = new Date(d.daily.time[i] + 'T12:00:00');
+        const label = i === 1 ? 'Demain' : date.toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', '');
+        days += `<div class="day"><div class="day-name">${label}</div>${weatherInfo(d.daily.weather_code[i]).icon}`
+              + `<div class="day-t">${Math.round(d.daily.temperature_2m_max[i])}° <span>${Math.round(d.daily.temperature_2m_min[i])}°</span></div></div>`;
+      }
+      $('w-days').innerHTML = days;
+    }
+
+    /* =================================================================
+       TÂCHES (Google Sheet publié en TSV = texte séparé par tabulations)
+       Colonnes : A Mois | B Jour | C Date (JJ/MM/AAAA) | D Qui | E Tâches
+       ================================================================= */
+    let tasksByDay = {};          // { '2026-11-01': [ {qui, tache}, ... ] }
+    let kidFilter = store.get('kidFilter') || 'Tous';
+
+    async function loadTasks() {
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 15000);
+        const res = await fetch(SHEET_TSV_URL, { cache: 'no-store', signal: ctrl.signal });
+        clearTimeout(timer);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const text = await res.text();
+        tasksByDay = parseTasks(text);
+        cache.save('tasks', tasksByDay);
+        setStatus('tasks', Date.now());
+      } catch (e) {
+        console.warn('Tâches indisponibles', e);
+        const old = cache.load('tasks');
+        if (old) { tasksByDay = old.data; setStatus('tasks', old.t, true); }
+      }
+      renderTasks();
+    }
+
+    function parseTasks(tsv) {
+      const out = {};
+      const rows = tsv.split('\n').map(r => r.replace('\r', '').split('\t'));
+      for (const cols of rows.slice(1)) {            // slice(1) : on saute la ligne d'en-têtes
+        if (cols.length < 5) continue;
+        const [dd, mm, yyyy] = cols[2].trim().split('/');
+        if (!yyyy) continue;                         // ligne sans date valide
+        const key = `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`;
+        const qui = cols[3].trim(), tache = cols[4].trim();
+        if (!qui && !tache) continue;
+        (out[key] ||= []).push({ qui, tache });
+      }
+      return out;
+    }
+
+    // Tâches d'un jour donné + la règle automatique "Chambre nikel" le lundi
+    // (même règle que dans ton planning Apps Script)
+    function tasksFor(date) {
+      const list = [...(tasksByDay[isoDay(date)] || [])];
+      if (date.getDay() === 1) list.push({ qui: 'Tous', tache: 'Chambre nikel' });
+      return list;
+    }
+
+    // Petit pictogramme selon le nom de la tâche (repris de ton planning)
+    function taskIcon(name) {
+      const t = (name || '').toLowerCase();
+      if (t.includes('table')) return '🍽️';
+      if (t.includes('compost') || t.includes('poubelle')) return '♻️';
+      if (t.includes('linge') || t.includes('habit') || t.includes('saucisson')) return '🧦';
+      if (t.includes('courses')) return '🛒';
+      if (t.includes('boite') || t.includes('lettre')) return '📬';
+      if (t.includes('repas') || t.includes('cuisine')) return '🍳';
+      if (t.includes('poule')) return '🐔';
+      if (t.includes('jardin') || t.includes('bazar')) return '🌿';
+      if (t.includes('chambre')) return '🧽';
+      if (t.includes('tizouk')) return '🐶';
+      return '✨';
+    }
+
+    // Regroupe une liste de tâches par enfant : { Gaby: [...], Tom: [...] }
+    function groupByKid(list) {
+      const g = {};
+      for (const t of list) (g[t.qui || 'Tous'] ||= []).push(t.tache);
+      return g;
+    }
+
+    function renderTasks() {
+      const today = new Date();
+
+      // --- Aujourd'hui : une ligne par enfant, même ceux qui n'ont rien (journée libre)
+      const groups = groupByKid(tasksFor(today));
+      const names = ['Nanon', 'Gaby', 'Tom'];
+      if (groups.Tous) names.push('Tous');
+      $('tasks-today').innerHTML = names.map(name => {
+        const items = groups[name] || [];
+        const color = KIDS[name] || KIDS.Tous;
+        const body = items.length
+          ? `<div class="kid-tasks">${items.map(t => `<span class="task">${taskIcon(t)} ${esc(t)}</span>`).join('')}</div>`
+          : `<div class="empty">Journée libre 🎉</div>`;
+        return `<div class="kid" style="--c:${color}"><div class="avatar">${name === 'Tous' ? '★' : name[0]}</div>`
+             + `<div><div class="kid-name">${name}</div>${body}</div></div>`;
+      }).join('');
+
+      // --- Demain (affiché en mode TV)
+      const tomorrow = tasksFor(addDays(today, 1));
+      $('tasks-tomorrow').innerHTML = tomorrow.length
+        ? tomorrow.map(t => `<span class="mini" style="--c:${KIDS[t.qui] || KIDS.Tous}"><i>${esc(t.qui)}</i>${esc(t.tache)}</span>`).join('')
+        : '<span class="empty">Rien de prévu</span>';
+
+      // --- 7 prochains jours (mobile), avec filtre par enfant
+      $('filters').innerHTML = ['Tous', 'Nanon', 'Gaby', 'Tom'].map(k =>
+        `<button class="filter ${k === kidFilter ? 'on' : ''}" data-kid="${k}">${k}</button>`).join('');
+      let week = '';
+      for (let i = 1; i <= 7; i++) {
+        const d = addDays(today, i);
+        let list = tasksFor(d);
+        if (kidFilter !== 'Tous') list = list.filter(t => t.qui === kidFilter || t.qui === 'Tous');
+        const label = i === 1 ? 'Demain' : d.toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', '');
+        week += `<div class="week-day"><div class="week-label">${label}<small>${d.getDate()}/${d.getMonth() + 1}</small></div><div class="week-items">`
+              + (list.length ? list.map(t => `<span class="mini" style="--c:${KIDS[t.qui] || KIDS.Tous}"><i>${esc(t.qui)}</i>${esc(t.tache)}</span>`).join('') : '<span class="empty">—</span>')
+              + `</div></div>`;
+      }
+      $('week').innerHTML = week;
+    }
+
+    // Clic sur un filtre (un seul écouteur pour tous les boutons = "délégation d'événement")
+    $('filters').addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-kid]');
+      if (!btn) return;
+      kidFilter = btn.dataset.kid;
+      store.set('kidFilter', kidFilter);
+      renderTasks();
+    });
+
+    /* =================================================================
+       VOITURES (via le petit service du NAS, en HTTPS)
+       Format attendu : { updated, cars: [ {name, soc, autonomy, charging, updated} ] }
+       ================================================================= */
+    async function loadCars() {
+      if (!CARS_URL) return renderCarsHelp();
+      try {
+        const data = await getJSON(CARS_URL, 10000);
+        cache.save('cars', data);
+        renderCars(data, false);
+      } catch (e) {
+        console.warn('Voitures indisponibles', e);
+        const old = cache.load('cars');
+        if (old) renderCars(old.data, true); else renderCarsHelp(true);
+      }
+    }
+
+    function renderCars(data, stale) {
+      const cars = data.cars || [];
+      $('cars-updated').textContent = data.updated ? (stale ? '⚠ ' : '') + 'màj ' + hhmm(new Date(data.updated)) : '';
+      $('cars').innerHTML = `<div class="cars">` + cars.map(car => {
+        const soc = Number.isFinite(car.soc) ? Math.round(car.soc) : null;
+        // Couleur de la jauge selon le niveau
+        const color = soc == null ? 'var(--muted)' : soc < 20 ? 'var(--bad)' : soc < 50 ? 'var(--warn)' : 'var(--good)';
+        const sub = [
+          car.charging ? '⚡ en charge' : null,
+          Number.isFinite(car.autonomy) ? `${Math.round(car.autonomy)} km` : null
+        ].filter(Boolean).join(' · ');
+        return `<div><div class="car-name">${esc(car.name)}</div>`
+             + `<div class="car-soc" style="color:${color}">${soc ?? '--'}%</div>`
+             + `<div class="bar"><div style="width:${soc ?? 0}%;background:${color}"></div></div>`
+             + `<div class="car-sub">${sub || '&nbsp;'}</div></div>`;
+      }).join('') + `</div>`;
+    }
+
+    function renderCarsHelp(failed) {
+      $('cars').innerHTML = `<div class="note">${failed
+        ? 'Le NAS ne répond pas pour l\'instant (service voitures non joignable).'
+        : 'Service voitures du NAS pas encore branché.'}</div>`;
+    }
+
+    /* =================================================================
+       ÉPHÉMÉRIDE (API Wikipédia "ce jour-là")
+       ================================================================= */
+    async function loadHistory() {
+      const now = new Date();
+      const mm = String(now.getMonth() + 1).padStart(2, '0'), dd = String(now.getDate()).padStart(2, '0');
+      try {
+        const data = await getJSON(`https://fr.wikipedia.org/api/rest_v1/feed/onthisday/events/${mm}/${dd}`);
+        const events = data.events || [];
+        if (!events.length) return;
+        // On tire un événement au hasard mais de façon stable dans la journée
+        // (même événement sur le téléphone et la TV) : on se sert du jour comme "graine".
+        const ev = events[(now.getDate() * 7 + now.getMonth()) % events.length];
+        $('h-year').textContent = ev.year;
+        $('h-text').textContent = ev.text;
+      } catch (e) {
+        $('h-text').textContent = 'Éphéméride indisponible.';
+      }
+    }
+
+    /* =================================================================
+       BAS DE PAGE : état de la synchro
+       ================================================================= */
+    function setStatus(what, time, stale) {
+      $('status').textContent = (stale ? 'Hors ligne · ' : '') + 'Tâches synchronisées à ' + hhmm(new Date(time));
+    }
+
+    /* =================================================================
+       DÉMARRAGE
+       ================================================================= */
+    function loadAll() {
+      return Promise.allSettled([loadWeather(), loadTasks(), loadCars()]);
+    }
+
+    function start() {
+      $('version').textContent = VERSION;
+
+      // 1) Affichage immédiat avec les données en cache (démarrage instantané)
+      const w = cache.load('weather'); if (w) renderWeather(w.data, w.t);
+      const t = cache.load('tasks'); if (t) { tasksByDay = t.data; }
+      renderTasks();
+      const c = cache.load('cars'); if (c) renderCars(c.data, true);
+
+      // 2) Puis on va chercher les données fraîches
+      tickClock();
+      setInterval(tickClock, 10 * 1000);
+      loadAll();
+      loadHistory();
+
+      // 3) Rafraîchissements automatiques
+      setInterval(loadWeather, REFRESH.weather * 60e3);
+      setInterval(loadTasks, REFRESH.tasks * 60e3);
+      setInterval(loadCars, REFRESH.cars * 60e3);
+
+      // 4) Quand on revient sur l'appli après l'avoir quittée : on actualise
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) loadAll(); });
+
+      // 5) Bouton actualiser (mobile)
+      $('refresh').addEventListener('click', async (e) => {
+        const btn = e.currentTarget;
+        btn.classList.add('spin');
+        await loadAll();
+        btn.classList.remove('spin');
+      });
+
+      // 6) Mode TV : on décale très légèrement l'écran toutes les 5 minutes
+      //    pour éviter le marquage des pixels de l'écran OLED.
+      if (IS_TV) {
+        let step = 0;
+        setInterval(() => {
+          step = (step + 1) % 4;
+          const dx = [0, 6, 6, 0][step], dy = [0, 0, 6, 6][step];
+          $('app').style.transform = `translate(${dx}px, ${dy}px)`;
+        }, 5 * 60e3);
+      }
+
+      // 7) Service worker : rend l'appli installable et utilisable hors ligne
+      if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+
+    start();
+  </script>
+</body>
+</html>

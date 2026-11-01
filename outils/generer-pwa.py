@@ -96,6 +96,10 @@ PAGES = [
          desc="Six scénettes de classe à faire observer aux tuteurs et stagiaires",
          picto="wind", tuile="#0A0A2E", trait="#ffffff",
          fond="#0A0A2E", theme="#0A0A2E"),
+    dict(dossier="famille", nom="Vaugoude's Family", court="Famille",
+         desc="Météo, tâches des enfants et batteries des voitures",
+         picto="house", tuile="#0f7c7b", trait="#ffffff",
+         fond="#f3f6f6", theme="#0e3a44"),
 ]
 
 
