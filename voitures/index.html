@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Voitures — suivi de la batterie et de la charge de l'e-5008 et de la Corsa
-  Version 1.2.0
+  Version 1.2.1
   Données : service « voitures » du NAS (https://voitures.baiji.fr), qui interroge
   psa_car_controller à la maison et ne publie que la batterie et la charge (jamais le GPS).
   Historique :
@@ -19,6 +19,8 @@
               coupe la charge quand la batterie atteint le % choisi ; repère du
               seuil sur la jauge ; fin de charge estimée jusqu'au seuil ;
               commande protégée par le code secret du NAS (demandé une fois)
+   • v1.2.1 : seuil de coupure réglable dès 10 % (au lieu de 50 %) avec le service v3.2 ;
+              avec un service plus ancien, le curseur reste à 50 % minimum
 -->
 <html lang="fr">
 <head>
@@ -254,7 +256,7 @@
     /* =================================================================
        CONFIGURATION
        ================================================================= */
-    const VERSION = '1.2.0';
+    const VERSION = '1.2.1';
     const API = 'https://voitures.baiji.fr';        // service du NAS
     const POLL_NORMAL_S = 120;    // lecture de l'état : toutes les 2 min…
     const POLL_LIVE_S = 30;       // …toutes les 30 s en mode « Suivi de charge »
@@ -461,7 +463,10 @@
        dans les 2 minutes qui suivent.
        100 % = pas de limite (la voiture charge jusqu'au bout).
        ================================================================= */
-    const LIMIT_MIN = 50, LIMIT_MAX = 100, LIMIT_STEP = 5;   // réglages du curseur
+    const LIMIT_MAX = 100, LIMIT_STEP = 5;   // réglages du curseur
+    // Seuil le plus bas : le service v3.2 l'annonce dans /cars.json (limitMin = 10).
+    // Un service plus ancien ne l'annonce pas : on garde alors 50 %, qu'il accepte.
+    const limitMin = () => (Number.isFinite(data?.limitMin) ? data.limitMin : 50);
 
     // Petit trait sur le cercle de la jauge, à l'endroit du seuil
     function limitMark(limit, r) {
@@ -491,7 +496,7 @@
             <div class="limit-now">${current >= 100 ? 'Aucune coupure prévue' : `Prévue à <b>${current} %</b>`}</div>
           </div>
           <div class="limit-row">
-            <input type="range" min="${LIMIT_MIN}" max="${LIMIT_MAX}" step="${LIMIT_STEP}" value="${draft}" data-limit="${id}" aria-label="Seuil de coupure">
+            <input type="range" min="${limitMin()}" max="${LIMIT_MAX}" step="${LIMIT_STEP}" value="${draft}" data-limit="${id}" aria-label="Seuil de coupure">
             <button class="cut" data-cut="${id}" ${same ? 'disabled' : ''}>${label}</button>
           </div>${codeBox}
         </div>`;
