@@ -1,18 +1,25 @@
 <!doctype html>
 <!--
   Page « Le Grand Verdict » — qui est le fils préféré de Papa et Maman ?
-  Version 1.0.0 – 02/11/2026
+  Version 1.1.0 – 02/11/2026
   En ligne : https://baiji.fr/fils-prefere/
 
   Historique :
    • 1.0.0 : première version (faux jeu télé vocal, agent ElevenLabs « Jean-Mi »,
              trois candidats, diplôme final toujours au nom de Sébastien)
+   • 1.1.0 : réglages de l'agent ElevenLabs (rien ne change dans le code de la page) :
+             - correction des appels qui raccrochaient tout de suite : l'agent exigeait
+               l'en-tête « origine », que le SDK n'envoie pas → option désactivée
+               (la liste des sites autorisés baiji.fr reste en place) ;
+             - voix « SebastienV » (la voix de Seb) au lieu de « JT VOX Pro » ;
+             - Julien et Adrien marquent de vrais points, mais Sébastien gagne
+               toujours grâce à ses « bonus de l'aîné »
 
   Comment ça marche ?
   - Un plateau de jeu télé : titre lumineux, les 3 candidats (Sébastien, Julien,
     Adrien) et un gros bouton « Entrer sur le plateau ».
   - Au clic, on parle avec l'animateur Jean-Mi (agent ElevenLabs « Le Grand
-    Verdict – Fils préféré », voix « JT VOX Pro »). Il pose des questions à Papa
+    Verdict – Fils préféré », voix « SebastienV »). Il pose des questions à Papa
     ou Maman et, quoi qu'ils répondent… c'est Sébastien qui gagne.
   - États de la page (classe CSS sur <body>) : connexion → en-ligne → repos.
   - L'outil client « annoncer_verdict » : quand l'animateur annonce le verdict,
