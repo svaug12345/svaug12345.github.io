@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<!--
+  Cartable — devoirs et emplois du temps Pronote de Gaby et Nanon
+  Version 1.0.0
+  Les données viennent du service « pronote » du NAS (https://pronote.baiji.fr),
+  qui se connecte au Pronote du collège comme l'appli mobile officielle.
+  La page ne parle jamais directement à Pronote.
+  Plus tard : les devoirs de demain iront aussi sur le dashboard Famille.
+  Historique :
+   • v1.0.0 : devoirs groupés par date de rendu, emploi du temps jour par jour
+              (prof absent, contrôle, cours annulé), un onglet par enfant,
+              première connexion par QR code Pronote, clé d'accès au service
+-->
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <!-- viewport-fit=cover : l'appli occupe tout l'écran, y compris sous l'encoche du téléphone -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Cartable</title>
+  <meta name="description" content="Devoirs et emplois du temps de Gaby et Nanon (Pronote).">
+
+  <!-- Page familiale : on ne la fait pas apparaître dans les moteurs de recherche -->
+  <meta name="robots" content="noindex">
+
+  <!--
+    PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »).
+    Fichiers fabriqués par outils/generer-pwa.py :
+     • manifest.webmanifest : nom, couleurs, icônes de l'appli ;
+     • icones/ : les icônes (apple-touch-icon = celle des iPhone) ;
+     • sw.js : le service worker, enregistré en bas de page.
+  -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <link rel="icon" href="icones/icone-192.png">
+  <meta name="theme-color" content="#0e3a44">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- Polices de la charte SV : Manrope (texte) et JetBrains Mono (heures) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* =========================================================
+       1. COULEURS (variables CSS) — charte SV
+       Définies une seule fois ; tout le reste les réutilise.
+       ========================================================= */
+    :root {
+      --bg: #f3f6f6;          /* fond de page */
+      --card: #ffffff;        /* fond des cartes */
+      --ink: #10282d;         /* texte principal */
+      --muted: #5d7277;       /* texte secondaire */
+      --line: #dfe7e8;        /* traits de séparation */
+      --soft: #edf3f3;        /* fonds discrets (pastilles, champs) */
+      --brand: #0e3a44;       /* bleu-vert foncé SV */
+      --accent: #0f7c7b;      /* teal SV */
+      --warn: #b45309;        /* orange : contrôle, à faire bientôt */
+      --bad: #b91c1c;         /* rouge : prof absent, cours annulé */
+      --good: #15803d;        /* vert : fait */
+      /* Une couleur par enfant, les mêmes que sur le dashboard Famille */
+      --gaby: #10b981;
+      --nanon: #f43f5e;
+      --tom: #3b82f6;
+      --radius: 18px;
+      --enfant: var(--accent);   /* remplacée par la couleur de l'enfant affiché */
+    }
+
+    /* Thème sombre automatique si le téléphone est en mode sombre… */
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #071a1f; --card: #0f262c; --ink: #e8f1f2; --muted: #93a9ad; --line: #1d3a41; --soft: #15323a;
+        --warn: #f59e0b; --bad: #f87171; --good: #4ade80; --accent: #2bb3b1;
+      }
+    }
+    /* … ou forcé (pour plus tard, si on ajoute un bouton) */
+    :root[data-theme="dark"] {
+      --bg: #071a1f; --card: #0f262c; --ink: #e8f1f2; --muted: #93a9ad; --line: #1d3a41; --soft: #15323a;
+      --warn: #f59e0b; --bad: #f87171; --good: #4ade80; --accent: #2bb3b1;
+    }
+
+    /* =========================================================
+       2. BASE
+       ========================================================= */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: 'Manrope', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      /* "safe-area" = marges de l'encoche et de la barre de navigation Android */
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    button, input, textarea { font: inherit; color: inherit; }
+    button { background: none; border: 0; cursor: pointer; }
+    svg { display: block; }
+    [hidden] { display: none !important; }
+
+    #app { max-width: 560px; margin: 0 auto; padding: 16px 16px 40px; display: flex; flex-direction: column; gap: 14px; }
+
+    .card { background: var(--card); border-radius: var(--radius); padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+    .card-title {
+      font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 10px;
+    }
+    .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+    /* Bouton principal de la charte SV : capitales espacées */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      background: var(--accent); color: #fff; border-radius: 12px; padding: 12px 18px;
+      font-size: 13px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+    }
+    .btn:disabled { opacity: .5; }
+    .btn.secondaire { background: var(--soft); color: var(--ink); }
+
+    .champ {
+      width: 100%; background: var(--soft); border: 1px solid var(--line); border-radius: 12px;
+      padding: 12px 14px; font-size: 16px;   /* 16px : évite le zoom automatique du téléphone */
+    }
+    .champ:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+    label { display: block; font-size: 13px; font-weight: 700; color: var(--muted); margin: 12px 0 6px; }
+
+    /* =========================================================
+       3. EN-TÊTE
+       ========================================================= */
+    .top { display: flex; justify-content: space-between; align-items: flex-end; padding: 4px 2px 0; gap: 8px; }
+    .brand { font-size: 11px; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; color: var(--accent); }
+    .date { font-size: 24px; font-weight: 800; text-transform: capitalize; line-height: 1.15; }
+    .actions { display: flex; gap: 2px; }
+    .icon-btn { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: var(--muted); }
+    .icon-btn:active { background: var(--line); }
+    .icon-btn svg { width: 20px; height: 20px; }
+    .spin svg { animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* =========================================================
+       4. CHOIX DE L'ENFANT ET DE LA VUE
+       ========================================================= */
+    .enfants { display: flex; gap: 8px; }
+    .enfant {
+      flex: 1; display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+      background: var(--card); border-radius: 14px; border: 2px solid transparent; text-align: left;
+    }
+    .enfant .pastille {
+      width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; flex: none;
+      background: var(--c); color: #fff; font-weight: 800; font-size: 15px;
+    }
+    .enfant .nom { font-weight: 800; font-size: 15px; line-height: 1.1; }
+    .enfant .classe { font-size: 12px; color: var(--muted); }
+    .enfant .nb { margin-left: auto; font-size: 12px; font-weight: 800; color: var(--c); }
+    .enfant[aria-pressed="true"] { border-color: var(--c); }
+
+    /* Onglets « Devoirs » / « Emploi du temps » */
+    .onglets { display: flex; background: var(--soft); border-radius: 12px; padding: 4px; }
+    .onglet {
+      flex: 1; padding: 9px 6px; border-radius: 9px; font-size: 12px; font-weight: 800;
+      letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+    }
+    .onglet[aria-selected="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+
+    /* =========================================================
+       5. DEVOIRS
+       ========================================================= */
+    .jour-titre { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+    .jour-titre h2 { font-size: 17px; font-weight: 800; }
+    .jour-titre h2 small { font-weight: 600; color: var(--muted); font-size: 14px; }
+    .jour-titre .compte { font-size: 12px; font-weight: 800; color: var(--muted); white-space: nowrap; }
+    .jour-titre .compte.reste { color: var(--warn); }
+
+    .devoir { display: flex; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+    .devoir:first-of-type { border-top: 0; }
+    .barre { width: 4px; border-radius: 4px; flex: none; background: var(--mc, var(--muted)); }
+    .devoir .corps { flex: 1; min-width: 0; }
+    .devoir .ligne1 { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+    .matiere { font-size: 13px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+    .texte { margin-top: 4px; font-size: 15px; line-height: 1.45; white-space: pre-line; overflow-wrap: anywhere; }
+    .devoir.fait .matiere, .devoir.fait .texte { color: var(--muted); }
+    .devoir.fait .texte { display: none; }          /* fait : on replie la consigne… */
+    .devoir.fait.ouvert .texte { display: block; }  /* … qu'on peut rouvrir d'un clic */
+    .devoir.fait { cursor: pointer; }
+    .extras { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .extras a, .extras span {
+      font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--soft);
+      color: var(--muted); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
+    }
+    .extras a { color: var(--accent); }
+
+    /* Badges (fait, à faire, prof absent…) */
+    .badge {
+      font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 6px; white-space: nowrap; flex: none;
+      background: var(--soft); color: var(--muted);
+    }
+    .badge.fait { color: var(--good); }
+    .badge.afaire { color: var(--warn); }
+    .badge.rouge { background: var(--bad); color: #fff; }
+    .badge.orange { background: var(--warn); color: #fff; }
+
+    .vide { text-align: center; color: var(--muted); padding: 22px 8px; font-weight: 600; }
+    .vide strong { display: block; font-size: 30px; margin-bottom: 4px; }
+
+    /* =========================================================
+       6. EMPLOI DU TEMPS
+       ========================================================= */
+    .nav-jour { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .nav-jour .titre { flex: 1; text-align: center; }
+    .nav-jour .titre b { display: block; font-size: 17px; font-weight: 800; text-transform: capitalize; }
+    .nav-jour .titre span { font-size: 12px; color: var(--muted); font-weight: 700; }
+    .nav-jour .icon-btn:disabled { opacity: .25; }
+
+    .cours { display: grid; grid-template-columns: 52px 4px 1fr; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+    .cours:first-of-type { border-top: 0; }
+    .cours .heures { text-align: right; font-size: 13px; line-height: 1.25; }
+    .cours .heures b { display: block; font-weight: 700; }
+    .cours .heures span { color: var(--muted); }
+    .cours .infos { min-width: 0; }
+    .cours .details { font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .cours .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .cours.annule .matiere, .cours.annule .details { text-decoration: line-through; color: var(--muted); }
+    .cours.maintenant { background: var(--soft); border-radius: 12px; margin: 0 -8px; padding: 10px 8px; border-top-color: transparent; }
+    /* Pause déjeuner (ou trou) : petite ligne discrète entre deux cours */
+    .pause { font-size: 12px; color: var(--muted); padding: 6px 0 6px 64px; border-top: 1px dashed var(--line); }
+
+    /* =========================================================
+       7. ÉCRANS DE RÉGLAGE (clé, connexion Pronote) ET BAS DE PAGE
+       ========================================================= */
+    .etapes { margin: 6px 0 4px 18px; font-size: 14px; line-height: 1.5; }
+    .etapes li { margin-bottom: 6px; }
+    .aide { font-size: 13px; color: var(--muted); line-height: 1.45; }
+    .erreur { color: var(--bad); font-size: 14px; font-weight: 700; margin-top: 10px; }
+    .boutons { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+    .alerte { background: color-mix(in srgb, var(--warn) 14%, var(--card)); border-left: 4px solid var(--warn); }
+    .alerte p { font-size: 14px; line-height: 1.45; }
+
+    footer { text-align: center; font-size: 12px; color: var(--muted); line-height: 1.6; }
+    footer button { text-decoration: underline; color: var(--muted); font-size: 12px; }
+  </style>
+</head>
+<body>
+  <main id="app">
+    <!-- En-tête : nom de l'appli, date, boutons -->
+    <header class="top">
+      <div>
+        <div class="brand">Cartable</div>
+        <div class="date" id="date"></div>
+      </div>
+      <div class="actions">
+        <button class="icon-btn" id="btn-actu" title="Actualiser" aria-label="Actualiser" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+        </button>
+        <button class="icon-btn" id="btn-reglages" title="Réglages" aria-label="Réglages">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Écran 1 : clé d'accès au service du NAS (une seule fois par téléphone) -->
+    <section class="card" id="ecran-cle" hidden>
+      <div class="card-title">Clé d'accès</div>
+      <p class="aide">Les emplois du temps disent où sont les enfants : le service du NAS demande une clé.
+        C'est celle écrite dans le fichier <code>.env</code> du projet « pronote » (ligne <code>CLE_ACCES</code>).
+        Elle reste enregistrée sur ce téléphone.</p>
+      <label for="champ-cle">Clé</label>
+      <input class="champ" id="champ-cle" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <div class="erreur" id="erreur-cle" hidden></div>
+      <div class="boutons"><button class="btn" id="btn-cle">Valider</button></div>
+    </section>
+
+    <!-- Écran 2 : première connexion à Pronote par QR code -->
+    <section class="card" id="ecran-qr" hidden>
+      <div class="card-title">Connecter Pronote</div>
+      <ol class="etapes">
+        <li>Sur le <b>PC</b>, ouvre Pronote (compte parent) comme d'habitude.</li>
+        <li>En haut de la page, clique sur le pictogramme <b>QR code</b> (« connexion à l'appli mobile »).</li>
+        <li>Choisis un <b>code à 4 chiffres</b> : le QR code s'affiche, il est valable quelques minutes.</li>
+        <li>Lis-le avec le téléphone : bouton <b>Scanner</b> ci-dessous si ton navigateur le permet,
+          sinon avec <a href="/QR/" target="_blank" rel="noopener">Lecteur QR</a>, puis copie le texte obtenu ici.</li>
+      </ol>
+      <label for="champ-qr">Texte du QR code</label>
+      <textarea class="champ mono" id="champ-qr" rows="3" placeholder='{"jeton":"…","login":"…","url":"https://…"}' spellcheck="false"></textarea>
+      <label for="champ-pin">Code à 4 chiffres</label>
+      <input class="champ mono" id="champ-pin" inputmode="numeric" maxlength="4" pattern="\d{4}" autocomplete="off">
+      <div class="erreur" id="erreur-qr" hidden></div>
+      <div class="boutons">
+        <button class="btn" id="btn-qr">Connecter</button>
+        <button class="btn secondaire" id="btn-scan" hidden>Scanner</button>
+      </div>
+      <video id="video-scan" playsinline muted hidden style="width:100%;border-radius:12px;margin-top:12px"></video>
+      <p class="aide" style="margin-top:12px">Aucun mot de passe n'est enregistré : Pronote donne au NAS un jeton,
+        comme à l'appli officielle. Tu peux le révoquer dans Pronote (Mes données › Sécurisation).</p>
+    </section>
+
+    <!-- Message d'erreur du service (jeton refusé, Pronote injoignable…) -->
+    <section class="card alerte" id="alerte" hidden><p id="alerte-texte"></p></section>
+
+    <!-- Contenu principal (caché tant qu'il n'y a pas de données) -->
+    <div id="contenu" hidden style="display:flex;flex-direction:column;gap:14px">
+      <nav class="enfants" id="enfants" aria-label="Enfant affiché"></nav>
+      <div class="onglets" role="tablist">
+        <button class="onglet" role="tab" id="onglet-devoirs" aria-selected="true">Devoirs</button>
+        <button class="onglet" role="tab" id="onglet-edt" aria-selected="false">Emploi du temps</button>
+      </div>
+      <div id="vue" style="display:flex;flex-direction:column;gap:14px"></div>
+    </div>
+
+    <footer id="pied"></footer>
+  </main>
+
+  <script>
+    /* =========================================================
+       RÉGLAGES
+       ========================================================= */
+    const VERSION = '1.0.0';
+    // Adresse du service du NAS (reverse proxy DSM). Pour essayer un autre service :
+    // ?service=http://192.168.1.161:8092 (retenu sur ce téléphone, ?service= vide pour revenir).
+    const SERVICE_PAR_DEFAUT = 'https://pronote.baiji.fr';
+    // Couleur de chaque enfant (la même que sur le dashboard Famille)
+    const COULEURS = { Gaby: 'var(--gaby)', Nanon: 'var(--nanon)', Tom: 'var(--tom)' };
+
+    /* =========================================================
+       PETITS OUTILS
+       ========================================================= */
+    const $ = (id) => document.getElementById(id);
+
+    // localStorage peut être indisponible (navigation privée…) : on l'entoure de try/catch
+    const memo = {
+      lire(cle, defaut = null) { try { return localStorage.getItem('cartable.' + cle) ?? defaut; } catch { return defaut; } },
+      ecrire(cle, val) { try { val == null ? localStorage.removeItem('cartable.' + cle) : localStorage.setItem('cartable.' + cle, val); } catch {} },
+    };
+
+    // Échapper le texte avant de l'insérer dans la page (évite toute injection de HTML)
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    // Dates : on travaille en « AAAA-MM-JJ » (format du service) ; midi évite les pièges des changements d'heure
+    const versDate = (ymd) => new Date(ymd + 'T12:00:00');
+    const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const ajouterJours = (ymdTxt, n) => { const d = versDate(ymdTxt); d.setDate(d.getDate() + n); return ymd(d); };
+    const aujourdhui = () => ymd(new Date());
+    const fmt = (ymdTxt, options) => versDate(ymdTxt).toLocaleDateString('fr-FR', options);
+
+    /** « aujourd'hui », « demain », « jeudi 5 nov. » */
+    function nomDuJour(ymdTxt) {
+      const ecart = Math.round((versDate(ymdTxt) - versDate(aujourdhui())) / 864e5);
+      if (ecart === 0) return "Aujourd'hui";
+      if (ecart === 1) return 'Demain';
+      if (ecart === 2) return 'Après-demain';
+      return fmt(ymdTxt, { weekday: 'long', day: 'numeric', month: 'short' });
+    }
+
+    /** Les matières arrivent en CAPITALES depuis Pronote : « ANGLAIS LV1 » → « Anglais LV1 » */
+    function joliNom(m) {
+      return String(m || '').toLowerCase()
+        .replace(/(^|[\s\-'(])(\p{L})/gu, (_, a, b) => a + b.toUpperCase())
+        .replace(/\b(Lv\d|Ed|Svt|Emc|Eps)\b/gi, (x) => x.toUpperCase());
+    }
+
+    /* =========================================================
+       ÉTAT DE L'APPLI
+       ========================================================= */
+    let SERVICE = SERVICE_PAR_DEFAUT;
+    let donnees = null;                                  // dernier JSON reçu du service
+    let enfantChoisi = memo.lire('enfant');              // prénom
+    let vueChoisie = memo.lire('vue', 'devoirs');        // 'devoirs' ou 'edt'
+    let jourEDT = null;                                  // jour affiché dans l'emploi du temps
+
+    /* =========================================================
+       DIALOGUE AVEC LE SERVICE DU NAS
+       ========================================================= */
+    /** Appel au service, avec la clé dans l'en-tête X-Cle */
+    async function api(chemin, options = {}) {
+      const ctrl = new AbortController();
+      const minuteur = setTimeout(() => ctrl.abort(), options.delai || 20000);
+      try {
+        const res = await fetch(SERVICE + chemin, {
+          method: options.methode || 'GET',
+          headers: { 'X-Cle': memo.lire('cle', ''), ...(options.corps ? { 'Content-Type': 'application/json' } : {}) },
+          body: options.corps ? JSON.stringify(options.corps) : undefined,
+          cache: 'no-store', signal: ctrl.signal,
+        });
+        const json = await res.json().catch(() => ({}));
+        return { statut: res.status, json };
+      } finally {
+        clearTimeout(minuteur);
+      }
+    }
+
+    /** Charge les données et choisit quoi afficher */
+    async function charger() {
+      if (!memo.lire('cle')) return montrer('cle');
+      try {
+        const { statut, json } = await api('/pronote.json');
+        if (statut === 401) { memo.ecrire('cle', null); return montrer('cle', 'Clé refusée par le service, saisis-la à nouveau.'); }
+        if (statut !== 200) throw new Error(json.erreur || 'Erreur ' + statut);
+        donnees = json;
+        memo.ecrire('cache', JSON.stringify(json));      // pour un affichage immédiat la prochaine fois
+        if (!json.connecte) return montrer('qr');
+        montrer('contenu');
+      } catch (e) {
+        // Service injoignable : on affiche les dernières données gardées sur le téléphone
+        const cache = memo.lire('cache');
+        if (cache && !donnees) donnees = JSON.parse(cache);
+        if (donnees?.enfants?.length) {
+          montrer('contenu');
+          afficherAlerte(`Le NAS ne répond pas (${e.name === 'AbortError' ? 'délai dépassé' : e.message}). Affichage des dernières données connues.`);
+        } else {
+          afficherAlerte(`Impossible de joindre le service du NAS (${SERVICE}). Vérifie qu'il tourne dans Container Manager.`);
+        }
+      }
+    }
+
+    /* =========================================================
+       ÉCRANS
+       ========================================================= */
+    function montrer(ecran, message) {
+      $('ecran-cle').hidden = ecran !== 'cle';
+      $('ecran-qr').hidden = ecran !== 'qr';
+      $('contenu').hidden = ecran !== 'contenu';
+      $('btn-actu').hidden = ecran !== 'contenu';
+      $('alerte').hidden = true;
+      if (ecran === 'cle') { $('erreur-cle').hidden = !message; $('erreur-cle').textContent = message || ''; }
+      if (ecran === 'contenu') {
+        // Erreur côté service (ex. jeton refusé) : on l'affiche au-dessus des dernières données
+        if (donnees.ok === false && donnees.erreur) {
+          afficherAlerte(donnees.connexion === 'a_refaire'
+            ? donnees.erreur + ' (Réglages › Reconnecter Pronote)'
+            : 'Dernière lecture de Pronote en échec : ' + donnees.erreur);
+        }
+        afficherTout();
+      }
+      afficherPied();
+    }
+
+    function afficherAlerte(texte) { $('alerte-texte').textContent = texte; $('alerte').hidden = false; }
+
+    /* =========================================================
+       AFFICHAGE : enfants, onglets, devoirs, emploi du temps
+       ========================================================= */
+    function enfantCourant() {
+      const liste = donnees?.enfants || [];
+      return liste.find((e) => e.nom === enfantChoisi) || liste[0];
+    }
+
+    function afficherTout() {
+      const enfant = enfantCourant();
+      if (!enfant) { $('vue').innerHTML = '<div class="card vide">Aucun enfant trouvé sur ce compte Pronote.</div>'; return; }
+      enfantChoisi = enfant.nom;
+      // La couleur de l'enfant affiché sert d'accent dans toute la page
+      document.documentElement.style.setProperty('--enfant', COULEURS[enfant.nom] || 'var(--accent)');
+
+      // Boutons des enfants, avec le nombre de devoirs à faire pour demain (ou le prochain jour de cours)
+      $('enfants').innerHTML = donnees.enfants.map((e) => {
+        const prochain = prochainJourDevoirs(e);
+        const reste = prochain ? e.devoirs.filter((d) => d.pour === prochain && !d.fait).length : 0;
+        return `<button class="enfant" style="--c:${COULEURS[e.nom] || 'var(--accent)'}" aria-pressed="${e.nom === enfant.nom}" data-enfant="${esc(e.nom)}">
+          <span class="pastille">${esc(e.nom[0])}</span>
+          <span><span class="nom">${esc(e.nom)}</span><br><span class="classe">${esc(classeLisible(e.classe))}</span></span>
+          ${reste ? `<span class="nb" title="Devoirs à faire pour ${esc(nomDuJour(prochain).toLowerCase())}">${reste}</span>` : ''}
+        </button>`;
+      }).join('');
+
+      $('onglet-devoirs').setAttribute('aria-selected', vueChoisie === 'devoirs');
+      $('onglet-edt').setAttribute('aria-selected', vueChoisie === 'edt');
+      if (vueChoisie === 'edt') afficherEDT(enfant); else afficherDevoirs(enfant);
+    }
+
+    /** « 603 » → « 6e3 », « 304 » → « 3e4 » (format des classes de ce collège) */
+    function classeLisible(c) {
+      const m = /^([3-6])0?(\d{1,2})$/.exec(String(c || ''));
+      return m ? `${m[1]}e${m[2]}` : (c || '');
+    }
+
+    /** Premier jour, à partir de demain, qui a des devoirs (sert au badge sur l'enfant) */
+    function prochainJourDevoirs(e) {
+      const demain = ajouterJours(aujourdhui(), 1);
+      return e.devoirs.map((d) => d.pour).filter((p) => p >= demain).sort()[0] || null;
+    }
+
+    /* ---------- Devoirs : groupés par date de rendu ---------- */
+    function afficherDevoirs(enfant) {
+      const auj = aujourdhui();
+      // On garde aujourd'hui et la suite ; regroupement par date
+      const parJour = new Map();
+      for (const d of enfant.devoirs.filter((d) => d.pour >= auj)) {
+        if (!parJour.has(d.pour)) parJour.set(d.pour, []);
+        parJour.get(d.pour).push(d);
+      }
+      if (!parJour.size) {
+        $('vue').innerHTML = `<div class="card vide"><strong>🎒</strong>Aucun devoir noté pour les prochains jours.</div>`;
+        return;
+      }
+
+      $('vue').innerHTML = [...parJour].map(([jour, liste]) => {
+        const reste = liste.filter((d) => !d.fait).length;
+        // Pas fait d'abord, puis fait
+        liste.sort((a, b) => a.fait - b.fait);
+        const nom = nomDuJour(jour);
+        const sousTitre = /jour|main/.test(nom) ? ` <small>${esc(fmt(jour, { weekday: 'short', day: 'numeric', month: 'short' }))}</small>` : '';
+        return `<section class="card">
+          <div class="jour-titre">
+            <h2>Pour ${esc(nom.toLowerCase().startsWith('aujourd') ? "aujourd'hui" : nom.toLowerCase())}${sousTitre}</h2>
+            <span class="compte ${reste ? 'reste' : ''}">${reste ? `${reste} à faire` : 'tout est fait ✓'}</span>
+          </div>
+          ${liste.map(carteDevoir).join('')}
+        </section>`;
+      }).join('');
+    }
+
+    function carteDevoir(d) {
+      const liens = d.liens.map((l) => `<a href="${esc(l.url)}" target="_blank" rel="noopener">🔗 ${esc(l.nom || 'Lien')}</a>`).join('');
+      const fichiers = d.fichiers.map((f) => `<span title="À ouvrir dans Pronote">📎 ${esc(f)}</span>`).join('');
+      const duree = d.duree ? `<span>⏱ ${d.duree} min</span>` : '';
+      const extras = liens + fichiers + duree;
+      return `<article class="devoir ${d.fait ? 'fait' : ''}" ${d.fait ? 'title="Toucher pour revoir la consigne"' : ''}>
+        <span class="barre" style="--mc:${esc(d.couleur || '')}"></span>
+        <div class="corps">
+          <div class="ligne1">
+            <span class="matiere">${esc(joliNom(d.matiere))}</span>
+            <span class="badge ${d.fait ? 'fait' : 'afaire'}">${d.fait ? 'Fait ✓' : 'À faire'}</span>
+          </div>
+          ${d.texte ? `<div class="texte">${esc(d.texte)}</div>` : ''}
+          ${extras ? `<div class="extras">${extras}</div>` : ''}
+        </div>
+      </article>`;
+    }
+
+    /* ---------- Emploi du temps : un jour à la fois ---------- */
+    function joursAvecCours(enfant) {
+      return [...new Set(enfant.edt.map((c) => c.date))].sort();
+    }
+
+    /** Jour affiché par défaut : aujourd'hui s'il reste des cours, sinon le prochain jour de cours */
+    function jourParDefaut(enfant) {
+      const jours = joursAvecCours(enfant);
+      const auj = aujourdhui();
+      const maintenant = new Date().toTimeString().slice(0, 5);
+      const coursAuj = enfant.edt.filter((c) => c.date === auj && !c.annule);
+      if (coursAuj.length && coursAuj.at(-1).fin > maintenant) return auj;
+      return jours.find((j) => j > auj) || jours.at(-1) || auj;
+    }
+
+    function afficherEDT(enfant) {
+      const jours = joursAvecCours(enfant);
+      if (!jours.length) { $('vue').innerHTML = `<div class="card vide">Pas d'emploi du temps pour ces deux semaines.</div>`; return; }
+      if (!jourEDT || !jours.includes(jourEDT)) jourEDT = jourParDefaut(enfant);
+      const i = jours.indexOf(jourEDT);
+      const cours = enfant.edt.filter((c) => c.date === jourEDT);
+
+      // Devoirs à rendre ce jour-là : on marque les cours concernés
+      const devoirsDuJour = enfant.devoirs.filter((d) => d.pour === jourEDT);
+      const auj = aujourdhui();
+      const maintenant = new Date().toTimeString().slice(0, 5);
+
+      let precedent = null;
+      const lignes = cours.map((c) => {
+        let pause = '';
+        // Un trou d'au moins 30 min entre deux cours = pause (déjeuner, permanence…)
+        if (precedent && minutes(c.debut) - minutes(precedent.fin) >= 30) {
+          pause = `<div class="pause">${minutes(c.debut) - minutes(precedent.fin) >= 60 && precedent.fin <= '12:30' && c.debut >= '12:00' ? '🍽 Pause déjeuner' : 'Pas de cours'} · ${precedent.fin} – ${c.debut}</div>`;
+        }
+        precedent = c;
+        const enCours = jourEDT === auj && c.debut <= maintenant && maintenant < c.fin;
+        const devoir = devoirsDuJour.find((d) => d.matiere === c.matiere);
+        const badges = [
+          c.statut ? `<span class="badge ${c.annule ? 'rouge' : 'orange'}">${esc(c.statut)}</span>` : (c.annule ? '<span class="badge rouge">Annulé</span>' : ''),
+          c.controle ? '<span class="badge orange">Contrôle</span>' : '',
+          c.dispense ? '<span class="badge">Dispensé</span>' : '',
+          c.type === 'retenue' ? '<span class="badge rouge">Retenue</span>' : '',
+          devoir ? `<span class="badge ${devoir.fait ? 'fait' : 'afaire'}">Devoir ${devoir.fait ? 'fait ✓' : 'à rendre'}</span>` : '',
+        ].join('');
+        const details = [c.profs?.join(', '), c.salles?.join(', ')].filter(Boolean).join(' · ');
+        return `${pause}<div class="cours ${c.annule ? 'annule' : ''} ${enCours ? 'maintenant' : ''}">
+          <div class="heures mono"><b>${c.debut}</b><span>${c.fin}</span></div>
+          <span class="barre" style="--mc:${esc(c.couleur || '')}"></span>
+          <div class="infos">
+            <div class="matiere">${esc(joliNom(c.matiere))}</div>
+            ${details ? `<div class="details">${esc(details)}</div>` : ''}
+            ${badges.trim() ? `<div class="badges">${badges}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+
+      const debut = cours.find((c) => !c.annule)?.debut, fin = [...cours].reverse().find((c) => !c.annule)?.fin;
+      $('vue').innerHTML = `<section class="card">
+        <div class="nav-jour">
+          <button class="icon-btn" id="jour-avant" aria-label="Jour précédent" ${i <= 0 ? 'disabled' : ''}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          <div class="titre">
+            <b>${esc(fmt(jourEDT, { weekday: 'long', day: 'numeric', month: 'long' }))}</b>
+            <span>${esc(jourEDT === auj ? "Aujourd'hui" : nomDuJour(jourEDT))}${debut ? ` · ${debut} – ${fin}` : ''}</span>
+          </div>
+          <button class="icon-btn" id="jour-apres" aria-label="Jour suivant" ${i >= jours.length - 1 ? 'disabled' : ''}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+        </div>
+        ${lignes}
+      </section>`;
+
+      $('jour-avant').onclick = () => { jourEDT = jours[i - 1]; afficherEDT(enfant); };
+      $('jour-apres').onclick = () => { jourEDT = jours[i + 1]; afficherEDT(enfant); };
+    }
+
+    const minutes = (hhmm) => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
+
+    /* ---------- Bas de page : fraîcheur des données ---------- */
+    function afficherPied() {
+      let fraicheur = '';
+      if (donnees?.maj) {
+        const min = Math.round((Date.now() - new Date(donnees.maj)) / 60000);
+        fraicheur = 'Pronote lu ' + (min < 1 ? "à l'instant" : min < 60 ? `il y a ${min} min`
+          : new Date(donnees.maj).toLocaleString('fr-FR', { weekday: 'short', hour: '2-digit', minute: '2-digit' })) + ' · ';
+      }
+      $('pied').innerHTML = `${fraicheur}Cartable v${VERSION}${SERVICE !== SERVICE_PAR_DEFAUT ? ` · service ${esc(SERVICE)}` : ''}`;
+    }
+
+    /* =========================================================
+       ACTIONS
+       ========================================================= */
+    // Clé d'accès
+    $('btn-cle').onclick = async () => {
+      const cle = $('champ-cle').value.trim();
+      if (!cle) return;
+      memo.ecrire('cle', cle);
+      $('champ-cle').value = '';
+      await charger();
+    };
+    $('champ-cle').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('btn-cle').click(); });
+
+    // Connexion Pronote par QR code
+    $('btn-qr').onclick = async () => {
+      const qr = $('champ-qr').value.trim(), pin = $('champ-pin').value.trim();
+      const err = $('erreur-qr');
+      err.hidden = true;
+      if (!qr || !/^\d{4}$/.test(pin)) { err.textContent = 'Il faut le texte du QR code et le code à 4 chiffres.'; err.hidden = false; return; }
+      const btn = $('btn-qr');
+      btn.disabled = true; btn.textContent = 'Connexion…';
+      try {
+        const { statut, json } = await api('/connexion', { methode: 'POST', corps: { qr, pin }, delai: 60000 });
+        if (statut === 401) { memo.ecrire('cle', null); return montrer('cle', 'Clé refusée, saisis-la à nouveau.'); }
+        if (statut !== 200) throw new Error(json.erreur || 'Erreur ' + statut);
+        donnees = json;
+        $('champ-qr').value = ''; $('champ-pin').value = '';
+        montrer('contenu');
+      } catch (e) {
+        err.textContent = e.message; err.hidden = false;
+      } finally {
+        btn.disabled = false; btn.textContent = 'Connecter';
+      }
+    };
+
+    // Scanner le QR code avec l'appareil photo (BarcodeDetector : Chrome sur Android, pas partout)
+    if ('BarcodeDetector' in window) {
+      $('btn-scan').hidden = false;
+      $('btn-scan').onclick = async () => {
+        const video = $('video-scan');
+        try {
+          const flux = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+          video.srcObject = flux; video.hidden = false; await video.play();
+          const detecteur = new BarcodeDetector({ formats: ['qr_code'] });
+          const arreter = () => { flux.getTracks().forEach((t) => t.stop()); video.hidden = true; };
+          // On regarde l'image toutes les 300 ms jusqu'à trouver un QR code (2 minutes max)
+          const fin = Date.now() + 120000;
+          const chercher = async () => {
+            if (Date.now() > fin) return arreter();
+            const codes = await detecteur.detect(video).catch(() => []);
+            if (codes.length) { $('champ-qr').value = codes[0].rawValue; arreter(); $('champ-pin').focus(); }
+            else setTimeout(chercher, 300);
+          };
+          chercher();
+        } catch (e) {
+          $('erreur-qr').textContent = "Appareil photo indisponible : utilise Lecteur QR puis colle le texte.";
+          $('erreur-qr').hidden = false;
+        }
+      };
+    }
+
+    // Choix de l'enfant, de l'onglet, et devoirs faits qu'on rouvre d'un toucher
+    $('enfants').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-enfant]');
+      if (!b) return;
+      enfantChoisi = b.dataset.enfant; memo.ecrire('enfant', enfantChoisi);
+      jourEDT = null;                 // on revient au jour par défaut de cet enfant
+      afficherTout();
+    });
+    $('onglet-devoirs').onclick = () => { vueChoisie = 'devoirs'; memo.ecrire('vue', vueChoisie); afficherTout(); };
+    $('onglet-edt').onclick = () => { vueChoisie = 'edt'; memo.ecrire('vue', vueChoisie); afficherTout(); };
+    $('vue').addEventListener('click', (e) => {
+      const d = e.target.closest('.devoir.fait');
+      if (d && !e.target.closest('a')) d.classList.toggle('ouvert');
+    });
+
+    // Actualiser : demande au NAS de relire Pronote maintenant (1 fois / 5 min au plus)
+    $('btn-actu').onclick = async (e) => {
+      const btn = e.currentTarget;
+      btn.classList.add('spin');
+      try {
+        const { statut, json } = await api('/actualiser', { methode: 'POST', delai: 60000 });
+        if (statut === 200) { donnees = json; montrer('contenu'); }
+        else await charger();         // trop tôt (429) ou autre : on relit simplement les données
+      } catch { await charger(); }
+      btn.classList.remove('spin');
+    };
+
+    // Réglages : un petit menu par boîte de dialogue, sans écran de plus
+    $('btn-reglages').onclick = () => {
+      const choix = prompt('Réglages :\n1 = Reconnecter Pronote (nouveau QR code)\n2 = Changer la clé d\'accès\n\nTape 1 ou 2 :');
+      if (choix === '1') montrer('qr');
+      if (choix === '2') { memo.ecrire('cle', null); montrer('cle'); }
+    };
+
+    /* =========================================================
+       DÉMARRAGE
+       ========================================================= */
+    function demarrer() {
+      // Service de remplacement passé dans l'adresse (?service=…), retenu sur ce téléphone
+      const p = new URLSearchParams(location.search);
+      if (p.has('service')) memo.ecrire('service', p.get('service') || null);
+      SERVICE = (memo.lire('service') || SERVICE_PAR_DEFAUT).replace(/\/$/, '');
+
+      $('date').textContent = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+
+      // Affichage immédiat des dernières données gardées, puis mise à jour depuis le NAS
+      const cache = memo.lire('cache');
+      if (cache && memo.lire('cle')) { try { donnees = JSON.parse(cache); if (donnees.enfants?.length) montrer('contenu'); } catch {} }
+      charger();
+
+      // Au retour sur l'appli (après 10 min), on relit
+      let derniere = Date.now();
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && Date.now() - derniere > 10 * 60e3) { derniere = Date.now(); charger(); }
+      });
+
+      // Service worker : rend l'appli installable et utilisable hors ligne
+      if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+
+    demarrer();
+  </script>
+</body>
+</html>

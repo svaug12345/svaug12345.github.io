@@ -1,0 +1,39 @@
+{
+  "name": "Cartable",
+  "short_name": "Cartable",
+  "description": "Devoirs et emplois du temps Pronote de Gaby et Nanon",
+  "id": "/cartable/",
+  "start_url": "/cartable/",
+  "scope": "/cartable/",
+  "display": "standalone",
+  "background_color": "#f3f6f6",
+  "theme_color": "#0e3a44",
+  "lang": "fr",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "icones/icone-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icones/icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icones/icone-masquable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icones/icone-masquable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
