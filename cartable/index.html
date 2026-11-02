@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Cartable — devoirs et emplois du temps Pronote de Gaby et Nanon
-  Version 1.0.2
+  Version 1.1.0
   Les données viennent du service « pronote » du NAS (https://pronote.baiji.fr),
   qui se connecte au Pronote du collège comme l'appli mobile officielle.
   La page ne parle jamais directement à Pronote.
@@ -13,6 +13,9 @@
    • v1.0.1 : messages clairs quand la clé est refusée ou que le service s'est bloqué
               (trop d'essais), au lieu de « impossible de joindre le service »
    • v1.0.2 : si la connexion Pronote échoue, affiche ce que Pronote a répondu au NAS
+   • v1.1.0 : onglet « Messages » (discussions + informations, lecture seule, pastille
+              des non-lus) ; toucher « À faire / Fait » coche le devoir dans Pronote ;
+              bandeau 🌙 quand le NAS montre la dernière image de la journée
 -->
 <html lang="fr">
 <head>
@@ -225,6 +228,38 @@
     /* Pause déjeuner (ou trou) : petite ligne discrète entre deux cours */
     .pause { font-size: 12px; color: var(--muted); padding: 6px 0 6px 64px; border-top: 1px dashed var(--line); }
 
+    /* Badge « À faire / Fait » cliquable : coche le devoir dans Pronote */
+    button.badge { cursor: pointer; border: 1px solid transparent; }
+    button.badge.afaire { border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
+    button.badge:disabled { opacity: .5; cursor: wait; }
+
+    /* Bandeau « dernière image de la journée » (heures de déconnexion de Pronote) */
+    .instantane { font-size: 13px; color: var(--muted); background: var(--soft); border-radius: 12px; padding: 10px 12px; line-height: 1.4; }
+
+    /* =========================================================
+       6 bis. MESSAGES (discussions et informations)
+       <details> = bloc qui s'ouvre d'un toucher, sans JavaScript
+       ========================================================= */
+    #nb-messages:not(:empty) {
+      display: inline-block; margin-left: 6px; min-width: 18px; padding: 1px 5px; border-radius: 999px;
+      background: var(--bad); color: #fff; font-size: 10px; letter-spacing: 0;
+    }
+    .msg { border-top: 1px solid var(--line); }
+    .msg:first-of-type { border-top: 0; }
+    .msg summary { list-style: none; cursor: pointer; padding: 12px 0; display: flex; gap: 10px; align-items: flex-start; }
+    .msg summary::-webkit-details-marker { display: none; }
+    .msg .point { width: 8px; height: 8px; border-radius: 50%; margin-top: 7px; flex: none; background: transparent; }
+    .msg.non-lu .point { background: var(--bad); }
+    .msg .entete { flex: 1; min-width: 0; }
+    .msg .sujet { font-weight: 800; font-size: 15px; overflow-wrap: anywhere; }
+    .msg.non-lu .sujet::after { content: " • nouveau"; color: var(--bad); font-size: 12px; font-weight: 800; }
+    .msg .qui { font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .msg .date { font-size: 12px; color: var(--muted); white-space: nowrap; }
+    .echange { margin: 0 0 12px 18px; padding: 10px 12px; border-radius: 12px; background: var(--soft); }
+    .echange.moi { background: color-mix(in srgb, var(--accent) 12%, var(--card)); }
+    .echange .de { font-size: 12px; font-weight: 800; color: var(--muted); margin-bottom: 4px; }
+    .echange .texte { margin-top: 0; font-size: 14px; }
+
     /* =========================================================
        7. ÉCRANS DE RÉGLAGE (clé, connexion Pronote) ET BAS DE PAGE
        ========================================================= */
@@ -303,6 +338,7 @@
       <div class="onglets" role="tablist">
         <button class="onglet" role="tab" id="onglet-devoirs" aria-selected="true">Devoirs</button>
         <button class="onglet" role="tab" id="onglet-edt" aria-selected="false">Emploi du temps</button>
+        <button class="onglet" role="tab" id="onglet-messages" aria-selected="false">Messages<span id="nb-messages"></span></button>
       </div>
       <div id="vue" style="display:flex;flex-direction:column;gap:14px"></div>
     </div>
@@ -314,7 +350,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = '1.0.2';
+    const VERSION = '1.1.0';
     // Adresse du service du NAS (reverse proxy DSM). Pour essayer un autre service :
     // ?service=http://192.168.1.161:8092 (retenu sur ce téléphone, ?service= vide pour revenir).
     const SERVICE_PAR_DEFAUT = 'https://pronote.baiji.fr';
@@ -466,7 +502,23 @@
 
       $('onglet-devoirs').setAttribute('aria-selected', vueChoisie === 'devoirs');
       $('onglet-edt').setAttribute('aria-selected', vueChoisie === 'edt');
-      if (vueChoisie === 'edt') afficherEDT(enfant); else afficherDevoirs(enfant);
+      $('onglet-messages').setAttribute('aria-selected', vueChoisie === 'messages');
+
+      // Pastille rouge sur l'onglet Messages : discussions non lues + informations non lues
+      const m = donnees.messages || {};
+      const nonLus = (m.discussions || []).filter((d) => d.nonLus > 0).length + (m.informations || []).filter((i) => !i.lu).length;
+      $('nb-messages').textContent = nonLus || '';
+      // Les messages concernent tout le compte : les boutons des enfants ne servent pas dans cet onglet
+      $('enfants').style.display = vueChoisie === 'messages' ? 'none' : '';
+
+      if (vueChoisie === 'messages') afficherMessages();
+      else if (vueChoisie === 'edt') afficherEDT(enfant);
+      else afficherDevoirs(enfant);
+
+      // Le soir, Pronote masque les infos : le NAS a gardé la dernière image de la journée
+      if (vueChoisie !== 'messages' && enfant.instantane) {
+        $('vue').insertAdjacentHTML('afterbegin', `<div class="instantane">🌙 Pronote masque les infos le soir (droit à la déconnexion) : voici la dernière image de la journée.</div>`);
+      }
     }
 
     /** « 603 » → « 6e3 », « 304 » → « 3e4 » (format des classes de ce collège) */
@@ -521,12 +573,56 @@
         <div class="corps">
           <div class="ligne1">
             <span class="matiere">${esc(joliNom(d.matiere))}</span>
-            <span class="badge ${d.fait ? 'fait' : 'afaire'}">${d.fait ? 'Fait ✓' : 'À faire'}</span>
+            <button class="badge ${d.fait ? 'fait' : 'afaire'}" data-devoir="${esc(d.id)}" title="${d.fait ? 'Remettre à faire' : 'Marquer comme fait'} dans Pronote">${d.fait ? 'Fait ✓' : 'À faire'}</button>
           </div>
           ${d.texte ? `<div class="texte">${esc(d.texte)}</div>` : ''}
           ${extras ? `<div class="extras">${extras}</div>` : ''}
         </div>
       </article>`;
+    }
+
+    /* ---------- Messages : discussions puis informations ---------- */
+    function dateCourte(iso) {
+      const d = new Date(iso);
+      const ecart = Math.round((versDate(aujourdhui()) - versDate(ymd(d))) / 864e5);
+      if (ecart === 0) return d.toTimeString().slice(0, 5);          // aujourd'hui : l'heure
+      if (ecart === 1) return 'hier';
+      return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    }
+
+    function afficherMessages() {
+      const m = donnees.messages;
+      if (!m) { $('vue').innerHTML = `<div class="card vide">Les messages arriveront à la prochaine lecture de Pronote (service v1.1.0 ou plus).</div>`; return; }
+      const fichiers = (liste) => liste?.length ? `<div class="extras">${liste.map((f) => `<span title="À ouvrir dans Pronote">📎 ${esc(f)}</span>`).join('')}</div>` : '';
+
+      const discussions = (m.discussions || []).map((d) => `
+        <details class="msg ${d.nonLus ? 'non-lu' : ''}">
+          <summary>
+            <span class="point"></span>
+            <span class="entete"><div class="sujet">${esc(d.sujet)}</div><div class="qui">${esc(d.avec)}${d.total > 1 ? ` · ${d.total} messages` : ''}${d.ferme ? ' · close' : ''}</div></span>
+            <span class="date">${esc(dateCourte(d.le))}</span>
+          </summary>
+          ${d.echanges.map((x) => `<div class="echange ${x.de === 'Moi' ? 'moi' : ''}">
+            <div class="de">${esc(x.de)} · ${esc(dateCourte(x.le))}</div>
+            <div class="texte">${esc(x.texte)}</div>${fichiers(x.fichiers)}
+          </div>`).join('') || '<div class="echange">Contenu non disponible : ouvre Pronote.</div>'}
+        </details>`).join('');
+
+      const informations = (m.informations || []).map((i) => `
+        <details class="msg ${i.lu ? '' : 'non-lu'}">
+          <summary>
+            <span class="point"></span>
+            <span class="entete"><div class="sujet">${esc(i.titre)}</div><div class="qui">${esc(i.de)}${i.categorie ? ` · ${esc(i.categorie)}` : ''}</div></span>
+            <span class="date">${esc(dateCourte(i.le))}</span>
+          </summary>
+          <div class="echange"><div class="texte">${esc(i.texte)}</div>${fichiers(i.fichiers)}</div>
+        </details>`).join('');
+
+      $('vue').innerHTML = `
+        ${m.instantane ? `<div class="instantane">🌙 Dernière image de la journée (Pronote masque les infos le soir).</div>` : ''}
+        <section class="card"><div class="card-title">Discussions</div>${discussions || '<div class="vide">Aucune discussion.</div>'}</section>
+        <section class="card"><div class="card-title">Informations du collège</div>${informations || '<div class="vide">Aucune information.</div>'}</section>
+        <p class="aide" style="text-align:center">Lecture seule : pour répondre, utilise Pronote. Rien n'est marqué comme lu ici.</p>`;
     }
 
     /* ---------- Emploi du temps : un jour à la fois ---------- */
@@ -693,10 +789,37 @@
     });
     $('onglet-devoirs').onclick = () => { vueChoisie = 'devoirs'; memo.ecrire('vue', vueChoisie); afficherTout(); };
     $('onglet-edt').onclick = () => { vueChoisie = 'edt'; memo.ecrire('vue', vueChoisie); afficherTout(); };
+    $('onglet-messages').onclick = () => { vueChoisie = 'messages'; memo.ecrire('vue', vueChoisie); afficherTout(); };
     $('vue').addEventListener('click', (e) => {
+      // Badge « À faire / Fait » : on coche ou décoche le devoir dans Pronote
+      const badge = e.target.closest('[data-devoir]');
+      if (badge) return basculerFait(badge);
       const d = e.target.closest('.devoir.fait');
       if (d && !e.target.closest('a')) d.classList.toggle('ouvert');
     });
+
+    /*
+      Cocher « fait » : on change tout de suite l'affichage (l'appli paraît instantanée),
+      puis on demande au NAS de le faire dans Pronote. Si Pronote refuse, on remet
+      comme avant et on affiche le message.
+    */
+    async function basculerFait(badge) {
+      const enfant = enfantCourant();
+      const devoir = enfant?.devoirs.find((x) => x.id === badge.dataset.devoir);
+      if (!devoir) return;
+      const avant = devoir.fait;
+      devoir.fait = !avant;
+      afficherTout();
+      try {
+        const { statut, json } = await api('/fait', { methode: 'POST', corps: { enfant: enfant.nom, id: devoir.id, fait: devoir.fait }, delai: 45000 });
+        if (statut !== 200) throw new Error(json.erreur || 'Erreur ' + statut);
+        memo.ecrire('cache', JSON.stringify(donnees));
+      } catch (err) {
+        devoir.fait = avant;
+        afficherTout();
+        afficherAlerte('Devoir non modifié : ' + err.message);
+      }
+    }
 
     // Actualiser : demande au NAS de relire Pronote maintenant (1 fois / 5 min au plus)
     $('btn-actu').onclick = async (e) => {
