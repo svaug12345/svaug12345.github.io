@@ -1,6 +1,6 @@
 /*
   ============================================================
-  Google Apps Script « Rappel Nexus » — version 1.0.0 (02/11/2026)
+  Google Apps Script « Rappel Nexus » — version 1.1.0 (02/11/2026)
   ------------------------------------------------------------
   Rôle : relais entre la page https://baiji.fr/assistant-nexus/
   et ElevenLabs. Quand un partenaire remplit « Vous préférez être
@@ -26,6 +26,7 @@
 
   Historique :
    • 1.0.0 : première version (horaires, limites, journal, appel ElevenLabs)
+   • 1.1.0 : jusqu'à 5 demandes par numéro et par heure (au lieu d'une), pour les tests
   ============================================================
 */
 
@@ -33,7 +34,8 @@
 const AGENT_ID  = 'agent_6501m6dse9w4ffr8xvfcvn8bmxk6';      // agent « Rappel Nexus B2B »
 const NUMERO_ID = 'phnum_9901m6c9jcbnfrnb4aps8c7wkj8f';      // numéro Twilio +33 2 19 12 14 49
 const MAX_PAR_JOUR = 20;           // garde-fou : nombre maximum de rappels par jour (coût, abus)
-const DELAI_MEME_NUMERO = 3600;    // en secondes : un même numéro ne peut redemander qu'après 1 h
+const MAX_PAR_NUMERO = 5;          // un même numéro peut faire au plus 5 demandes…
+const DELAI_MEME_NUMERO = 3600;    // …par période de 3600 s (1 h) ; repasser MAX_PAR_NUMERO à 1 après les tests
 const JOURS_OUVRES = [1, 2, 3, 4, 5];   // 0 = dimanche, 1 = lundi… 6 = samedi
 const HEURE_DEBUT = 9;             // on n'appelle pas avant 9 h…
 const HEURE_FIN = 19;              // …ni après 19 h (heure de Paris)
@@ -67,9 +69,11 @@ function doPost(e) {
     const verrou = LockService.getScriptLock();
     verrou.waitLock(10000);
     try {
-      // Même numéro trop récemment ? Le cache s'efface tout seul au bout du délai.
+      // Combien de demandes pour ce numéro dans l'heure ? Le cache garde un
+      // petit compteur par numéro, qui s'efface tout seul au bout du délai.
       const cache = CacheService.getScriptCache();
-      if (cache.get('tel-' + tel)) return repondre({ ok: false, erreur: 'deja' });
+      const dejaFaites = Number(cache.get('tel-' + tel) || 0);
+      if (dejaFaites >= MAX_PAR_NUMERO) return repondre({ ok: false, erreur: 'deja' });
 
       // Compteur du jour, rangé dans les propriétés : { jour: "2026-11-02", n: 3 }
       const props = PropertiesService.getScriptProperties();
@@ -81,7 +85,7 @@ function doPost(e) {
       // On réserve la place AVANT d'appeler (si l'appel échoue, tant pis : prudence)
       compteur.n++;
       props.setProperty('compteur', JSON.stringify(compteur));
-      cache.put('tel-' + tel, '1', DELAI_MEME_NUMERO);
+      cache.put('tel-' + tel, String(dejaFaites + 1), DELAI_MEME_NUMERO);   // +1 au compteur du numéro
     } finally {
       verrou.releaseLock();
     }
