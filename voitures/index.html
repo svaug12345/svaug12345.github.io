@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Voitures — suivi de la batterie et de la charge de l'e-5008 et de la Corsa
-  Version 1.1.0
+  Version 1.2.0
   Données : service « voitures » du NAS (https://voitures.baiji.fr), qui interroge
   psa_car_controller à la maison et ne publie que la batterie et la charge (jamais le GPS).
   Historique :
@@ -15,6 +15,10 @@
               carte « Journal » (service v3) : résumé 30 jours (km, conso, kWh chargés),
               dernières charges et derniers trajets, export CSV du journal complet ;
               température extérieure et batterie 12 V dans les détails
+   • v1.2.0 : « Couper la charge à X % » sur chaque voiture (service v3.1) : le NAS
+              coupe la charge quand la batterie atteint le % choisi ; repère du
+              seuil sur la jauge ; fin de charge estimée jusqu'au seuil ;
+              commande protégée par le code secret du NAS (demandé une fois)
 -->
 <html lang="fr">
 <head>
@@ -134,6 +138,29 @@
     .refresh.busy svg { animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* ===================== COUPURE DE CHARGE ===================== */
+    .limit { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .limit-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+    .limit-now { font-size: 12.5px; color: var(--muted); }
+    .limit-now b { color: var(--ink); }
+    .limit-row { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+    /* Curseur : couleur de la piste = charte SV */
+    .limit input[type=range] { flex: 1; accent-color: var(--teal); height: 28px; }
+    .cut {
+      padding: 10px 14px; border-radius: 12px; background: var(--ink); color: var(--surface);
+      font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap;
+      font-variant-numeric: tabular-nums; min-width: 132px;
+    }
+    .cut:disabled { background: var(--track); color: var(--muted); cursor: default; }
+    /* Case de saisie du code secret */
+    .code-box { display: flex; gap: 8px; margin-top: 10px; }
+    .code-box input {
+      flex: 1; min-width: 0; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line);
+      background: var(--surface); color: var(--ink); font: 600 15px var(--mono);
+    }
+    .code-box button { padding: 10px 14px; border-radius: 12px; background: var(--teal); color: #fff; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .gauge .mark { stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }
+
     /* ===================== COURBE ===================== */
     .chart-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .title { font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
@@ -227,7 +254,7 @@
     /* =================================================================
        CONFIGURATION
        ================================================================= */
-    const VERSION = '1.1.0';
+    const VERSION = '1.2.0';
     const API = 'https://voitures.baiji.fr';        // service du NAS
     const POLL_NORMAL_S = 120;    // lecture de l'état : toutes les 2 min…
     const POLL_LIVE_S = 30;       // …toutes les 30 s en mode « Suivi de charge »
@@ -285,6 +312,8 @@
     let stats = null;         // dernière réponse de /stats.json (null si service sans journal)
     let jtab = store.get('jtab') || 'sessions';   // onglet du journal : charges ou trajets
     let hiddenAt = 0;         // quand l'appli a été mise en arrière-plan
+    const limitDraft = {};    // % choisi sur le curseur, pas encore envoyé : { e5008: 80 }
+    let askCodeFor = null;    // voiture pour laquelle on affiche la case « code secret »
 
     /* =================================================================
        CHARGEMENT DES DONNÉES
@@ -322,8 +351,15 @@
       return soc < 20 ? 'var(--bad)' : soc < 50 ? 'var(--warn)' : 'var(--good)';
     }
 
+    let dragging = false;     // doigt posé sur un curseur de coupure
     function renderCars() {
       if (!data) return;
+      // Les cartes sont reconstruites régulièrement (lecture toutes les 30 s / 2 min, compte à
+      // rebours d'un réveil…). Pendant qu'on glisse un curseur ou qu'on tape le code, on
+      // repousse l'affichage : sinon le curseur ou la case seraient remplacés sous le doigt.
+      const typing = document.activeElement?.id?.startsWith('code-');
+      if (dragging || typing) { renderCars.later = true; return; }
+      renderCars.later = false;
       $('cars').innerHTML = (data.cars || []).map(car => {
         const id = carId(car);
         const soc = Number.isFinite(car.soc) ? Math.round(car.soc) : null;
@@ -346,6 +382,7 @@
         // Le mode de charge n'a de sens que câble branché (la voiture renvoie "No" sinon)
         if (car.plugged && car.chargeMode && car.chargeMode !== 'No') facts.push(`Mode : <b>${car.chargeMode === 'Quick' ? 'rapide' : car.chargeMode === 'Slow' ? 'lente' : esc(car.chargeMode)}</b>`);
         if (Number.isFinite(car.mileage)) facts.push(`Compteur : <b>${Math.round(car.mileage).toLocaleString('fr-FR')} km</b>`);
+        if (Number.isFinite(car.chargeLimit) && car.chargeLimit < 100) facts.push(`Coupure auto : <b>${car.chargeLimit} %</b>`);
         if (Number.isFinite(car.outsideTemp)) facts.push(`Dehors : <b>${Math.round(car.outsideTemp)} °C</b>`);
         // Batterie 12 V : en dessous de 12,2 V elle est faible (trop de réveils, voiture immobile longtemps…)
         if (Number.isFinite(car.battery12v)) facts.push(`Batterie 12 V : <b style="${car.battery12v < 12.2 ? 'color:var(--warn)' : ''}">${car.battery12v.toFixed(1).replace('.', ',')} V</b>`);
@@ -376,7 +413,7 @@
           <div class="car-top">
             <div class="gauge">
               <svg viewBox="0 0 132 132"><circle class="track" cx="66" cy="66" r="${r}"/>
-                <circle class="val" cx="66" cy="66" r="${r}" stroke="${socColor(soc)}" stroke-dasharray="${C}" stroke-dashoffset="${offset}"/></svg>
+                <circle class="val" cx="66" cy="66" r="${r}" stroke="${socColor(soc)}" stroke-dasharray="${C}" stroke-dashoffset="${offset}"/>${limitMark(car.chargeLimit, r)}</svg>
               <div class="center"><div><div class="pct">${soc ?? '--'}<small>%</small></div>
                 <div class="km">${Number.isFinite(car.autonomy) ? Math.round(car.autonomy) + ' km' : ''}</div></div></div>
             </div>
@@ -387,6 +424,7 @@
             </div>
           </div>
           ${eta}
+          ${limitBlock(car, id)}
           <div class="car-foot">
             <div class="age ${old ? 'old' : ''}">${car.error ? '⚠ Voiture injoignable · ' : ''}${ageTxt}${quota}</div>
             <button class="refresh ${busy ? 'busy' : ''}" data-car="${id}" ${disabled ? 'disabled' : ''}>${ICON_REFRESH}${btnTxt}</button>
@@ -398,17 +436,123 @@
     /* Fin de charge : on prend le temps restant donné par la voiture s'il existe,
        sinon on le calcule avec la pente de la courbe (points des 45 dernières minutes). */
     function estimate(id, soc, car) {
-      let min = Number.isFinite(car.remainingMin) && car.remainingMin > 0 ? car.remainingMin : null;
+      // Avec une coupure à X %, la charge s'arrête à X % et non à 100 %
+      const target = Number.isFinite(car.chargeLimit) && car.chargeLimit < 100 ? car.chargeLimit : 100;
+      let min = target === 100 && Number.isFinite(car.remainingMin) && car.remainingMin > 0 ? car.remainingMin : null;
       if (min == null && history?.[id] && soc != null) {
         const pts = history[id].filter(p => p[0] > Date.now() - 45 * 60e3);
         if (pts.length >= 2) {
           const [t0, s0] = pts[0], [t1, s1] = pts[pts.length - 1];
           const perMin = (s1 - s0) / ((t1 - t0) / 60e3);     // % gagnés par minute
-          if (perMin > 0) min = Math.round((100 - soc) / perMin);
+          if (perMin > 0) min = Math.round((target - soc) / perMin);
         }
       }
+      if (soc != null && soc >= target) return null;     // seuil déjà atteint : la coupure arrive
       return min ? { min, end: new Date(Date.now() + min * 60e3) } : null;
     }
+
+    /* =================================================================
+       COUPER LA CHARGE À X %
+       -----------------------------------------------------------------
+       On envoie le seuil au NAS, qui le transmet à psa_car_controller.
+       C'est psa_car_controller qui coupe : toutes les 2 min environ,
+       si la voiture charge et a atteint le seuil, il lui envoie l'ordre
+       d'arrêt. Si la batterie est DÉJÀ au-dessus, la coupure part donc
+       dans les 2 minutes qui suivent.
+       100 % = pas de limite (la voiture charge jusqu'au bout).
+       ================================================================= */
+    const LIMIT_MIN = 50, LIMIT_MAX = 100, LIMIT_STEP = 5;   // réglages du curseur
+
+    // Petit trait sur le cercle de la jauge, à l'endroit du seuil
+    function limitMark(limit, r) {
+      if (!Number.isFinite(limit) || limit >= 100) return '';
+      // La jauge est tournée de -90° : l'angle 0 est en haut. Un % = 3,6°.
+      const a = limit / 100 * 2 * Math.PI;
+      const p = (rr) => `${66 + rr * Math.cos(a)},${66 + rr * Math.sin(a)}`;
+      const [x1, y1] = p(r - 9).split(','), [x2, y2] = p(r + 9).split(',');
+      return `<line class="mark" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+    }
+
+    function limitBlock(car, id) {
+      if (car.chargeLimit === undefined) return '';          // service sans cette fonction (v3.0 ou avant)
+      if (data && data.chargeControl === false) {
+        return `<div class="limit"><div class="limit-now">Coupure de charge : choisis d'abord un code secret sur le NAS (CHARGE_CODE).</div></div>`;
+      }
+      const current = Number.isFinite(car.chargeLimit) ? car.chargeLimit : 100;
+      const draft = limitDraft[id] ?? current;
+      const label = draft >= 100 ? 'Sans coupure' : `Couper à ${draft} %`;
+      const same = draft === current;
+      const codeBox = askCodeFor === id ? `<div class="code-box">
+          <input type="password" inputmode="text" autocomplete="off" placeholder="Code secret du NAS" id="code-${id}">
+          <button data-code="${id}">OK</button></div>` : '';
+      return `<div class="limit">
+          <div class="limit-head">
+            <div class="title">Couper la charge</div>
+            <div class="limit-now">${current >= 100 ? 'Aucune coupure prévue' : `Prévue à <b>${current} %</b>`}</div>
+          </div>
+          <div class="limit-row">
+            <input type="range" min="${LIMIT_MIN}" max="${LIMIT_MAX}" step="${LIMIT_STEP}" value="${draft}" data-limit="${id}" aria-label="Seuil de coupure">
+            <button class="cut" data-cut="${id}" ${same ? 'disabled' : ''}>${label}</button>
+          </div>${codeBox}
+        </div>`;
+    }
+
+    async function setLimit(id, pct) {
+      const code = store.get('chargeCode');
+      if (!code) { askCodeFor = id; renderCars(); $('code-' + id)?.focus(); return; }
+      try {
+        const res = await fetch(`${API}/charge_limit?car=${id}&pct=${pct}`, { method: 'POST', headers: { 'X-Code': code } });
+        const body = await res.json().catch(() => ({}));
+        if (res.ok) {
+          // On met à jour tout de suite l'affichage, sans attendre la prochaine lecture
+          const car = data.cars.find(c => carId(c) === id);
+          if (car) car.chargeLimit = body.chargeLimit;
+          delete limitDraft[id];
+          const soc = car?.soc;
+          toast(pct >= 100 ? 'Coupure supprimée : la voiture chargera jusqu\'au bout'
+            : car?.charging && soc >= pct ? `Coupure demandée : la charge va s'arrêter dans les 2 min`
+            : `La charge sera coupée à ${pct} %`);
+        } else if (res.status === 401) {
+          store.set('chargeCode', ''); askCodeFor = id;     // mauvais code : on le redemande
+          toast('Code faux');
+        } else {
+          toast(body.error ? `Impossible : ${body.error}` : 'Impossible pour le moment');
+        }
+      } catch { toast('NAS injoignable'); }
+      renderCars();
+    }
+
+    // Les curseurs et boutons sont recréés à chaque affichage : on écoute sur le conteneur.
+    // "input" = pendant qu'on glisse : on ne met à jour QUE le bouton (pas toute la carte,
+    // sinon le curseur serait recréé sous le doigt et on perdrait le geste).
+    $('cars').addEventListener('input', (e) => {
+      const id = e.target.dataset.limit; if (!id) return;
+      const pct = Number(e.target.value);
+      limitDraft[id] = pct;
+      const btn = $('cars').querySelector(`[data-cut="${id}"]`);
+      const car = data.cars.find(c => carId(c) === id);
+      btn.textContent = pct >= 100 ? 'Sans coupure' : `Couper à ${pct} %`;
+      btn.disabled = pct === (car?.chargeLimit ?? 100);
+    });
+    $('cars').addEventListener('click', (e) => {
+      const cut = e.target.closest('[data-cut]');
+      if (cut && !cut.disabled) return setLimit(cut.dataset.cut, limitDraft[cut.dataset.cut]);
+      const ok = e.target.closest('[data-code]');
+      if (ok) {
+        const id = ok.dataset.code, v = $('code-' + id).value.trim();
+        if (!v) return;
+        store.set('chargeCode', v); askCodeFor = null;
+        setLimit(id, limitDraft[id] ?? 100);
+      }
+    });
+    // Fin du geste sur le curseur : on fait l'affichage repoussé (pour la case du code,
+    // il se fera à la prochaine lecture, une fois la case quittée)
+    $('cars').addEventListener('pointerdown', (e) => { if (e.target.dataset.limit) dragging = true; });
+    document.addEventListener('pointerup', () => { if (dragging) { dragging = false; if (renderCars.later) setTimeout(renderCars, 50); } });
+    // Entrée dans la case du code = OK
+    $('cars').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.target.id?.startsWith('code-')) $('cars').querySelector(`[data-code="${e.target.id.slice(5)}"]`)?.click();
+    });
 
     /* =================================================================
        BOUTON « ACTUALISER » : demande au NAS de réveiller la voiture
