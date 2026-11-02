@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Page « Assistant Nexus B2B – partenaires franchisés Carrefour »
-  Version 1.0.0 – 01/11/2026
+  Version 1.1.0 – 02/11/2026
   En ligne : https://baiji.fr/assistant-nexus/
 
   Historique :
@@ -9,11 +9,19 @@
              adaptée à Nexus, la plateforme B2B de Carrefour pour ses partenaires
              franchisés (même process d'inscription Ariba) ; nouvel agent ElevenLabs
              « Assistant Nexus B2B » (voix SebastienV) ; installable (PWA) ; « noindex »
+   • 1.1.0 : aux couleurs Nexus (logo Carrefour nexus, bleu #005FCD, orange #EC7300) ;
+             la bulle ElevenLabs (et ses « Terms and conditions ») est remplacée par
+             notre propre bouton d'appel (SDK @elevenlabs/client, comme PochPoch) avec
+             sous-titres ; à l'écrit, « bi-tou-bi » est réaffiché « B2B »
 
   À quoi sert cette page ?
   - Elle explique en 4 étapes comment rejoindre Carrefour sur Nexus (plateforme Ariba).
-  - Elle intègre l'agent vocal ElevenLabs (bulle en bas à droite) pour répondre aux questions.
-  - L'agent prononce « B2B » à l'anglaise : dans son prompt, on lui fait écrire « bi-tou-bi ».
+  - Un gros bouton lance la conversation vocale avec l'agent ElevenLabs.
+
+  Astuce « B2B » :
+  - La voix est française : si l'agent écrivait « B2B », elle dirait « bé deux bé ».
+  - Dans son prompt, on lui fait donc écrire « bi-tou-bi » (pour qu'il le DISE à l'anglaise).
+  - Mais à l'ÉCRAN, la fonction ecranB2B() remplace « bi-tou-bi » par « B2B ».
 -->
 <html lang="fr">
 <head>
@@ -30,7 +38,7 @@
   -->
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
-  <meta name="theme-color" content="#0E4C9A">
+  <meta name="theme-color" content="#005FCD">
   <link rel="icon" href="icones/icone-192.png" type="image/png">
   <meta name="description" content="Aide vocale pour les partenaires franchisés : rejoindre Nexus, la plateforme B2B de Carrefour.">
   <!-- « noindex » : demande aux moteurs de recherche de ne pas lister cette page.
@@ -38,16 +46,17 @@
   <meta name="robots" content="noindex, nofollow">
 
   <style>
-    /* ---------- Couleurs et réglages communs (variables CSS) ---------- */
+    /* ---------- Couleurs Nexus (relevées sur le logo) ---------- */
     :root {
-      --bleu: #0E4C9A;        /* bleu Carrefour */
-      --bleu-fonce: #0A3670;
-      --rouge: #E1251B;       /* rouge Carrefour */
-      --fond: #F4F7FB;
+      --bleu: #005FCD;        /* bleu du mot « Carrefour » */
+      --bleu-fonce: #00479B;
+      --orange: #EC7300;      /* orange du mot « nexus » */
+      --orange-clair: #FFF3E6;
+      --fond: #F3F7FC;
       --carte: #FFFFFF;
-      --texte: #1B2430;
-      --texte-doux: #5A6675;
-      --rayon: 14px;
+      --texte: #16233A;
+      --texte-doux: #5A6779;
+      --rayon: 16px;
     }
 
     * { box-sizing: border-box; }
@@ -59,62 +68,97 @@
       color: var(--texte);
       line-height: 1.55;
     }
+    .conteneur { max-width: 760px; margin: 0 auto; }
 
-    /* ---------- Bandeau du haut ---------- */
+    /* ---------- Bandeau du haut : blanc (le logo est fait pour un fond blanc) ---------- */
+    .logo-bande { background: #fff; padding: 18px 16px; border-bottom: 4px solid var(--orange); }
+    .logo-bande img { display: block; height: 52px; width: auto; max-width: 100%; }
+
+    /* ---------- Titre sur fond bleu ---------- */
     header {
       background: linear-gradient(135deg, var(--bleu), var(--bleu-fonce));
       color: #fff;
-      padding: 28px 16px 64px;   /* le bas plus grand laisse la place à la carte qui chevauche */
+      padding: 26px 16px 70px;   /* le bas plus grand laisse la place à la carte d'appel qui chevauche */
     }
-    .conteneur { max-width: 760px; margin: 0 auto; }
+    h1 { font-size: clamp(1.5rem, 5vw, 2.1rem); margin: 0 0 8px; line-height: 1.2; }
+    h1 em { font-style: normal; color: #FFC58A; }   /* « B2B » en orange clair, lisible sur le bleu */
+    .sous-titre { margin: 0; opacity: .92; }
 
-    .marque { font-weight: 800; letter-spacing: .5px; font-size: 1.1rem; }
-    .marque span { color: #fff; border-bottom: 3px solid var(--rouge); padding-bottom: 2px; }
-
-    h1 { font-size: clamp(1.5rem, 5vw, 2.1rem); margin: 28px 0 8px; line-height: 1.2; }
-    .sous-titre { margin: 0; opacity: .9; }
-
-    /* ---------- Contenu principal ---------- */
-    main { padding: 0 16px 120px; }   /* 120px en bas : la bulle vocale ne cache pas le texte */
+    main { padding: 0 16px 40px; }
 
     .carte {
       background: var(--carte); border-radius: var(--rayon);
-      box-shadow: 0 6px 24px rgba(14,76,154,.10);
+      box-shadow: 0 6px 24px rgba(0,95,205,.10);
       padding: 22px; margin-top: 18px;
     }
-    .carte.chevauche { margin-top: -40px; }   /* première carte qui « mord » sur le bandeau */
 
-    /* Encadré qui présente l'assistant vocal */
-    .assistant { display: flex; gap: 16px; align-items: flex-start; }
-    .micro {
-      flex: 0 0 48px; height: 48px; border-radius: 50%;
-      background: var(--rouge); display: grid; place-items: center;
+    /* ============================================================
+       Carte d'appel : le bouton qui remplace la bulle ElevenLabs
+       Trois états, posés sur <body> par la fonction etat() :
+         (aucun)    → au repos      : bouton orange « Parler à l'assistant »
+         connexion  → ça démarre    : bouton qui pulse doucement
+         en-ligne   → en conversation : bouton bleu « Raccrocher » + sous-titres
+       ============================================================ */
+    .appel { margin-top: -46px; text-align: center; padding: 26px 22px; }
+    .appel h2 { margin: 0 0 4px; font-size: 1.2rem; }
+    .appel .aide { margin: 0 0 18px; color: var(--texte-doux); }
+
+    #bouton-appel {
+      display: inline-flex; align-items: center; gap: 12px;
+      border: 0; border-radius: 999px; cursor: pointer;
+      padding: 16px 28px; min-height: 60px;   /* grand : facile à toucher sur téléphone */
+      font: inherit; font-weight: 700; font-size: 1.1rem; color: #fff;
+      background: var(--orange);
+      box-shadow: 0 8px 20px rgba(236,115,0,.35);
+      transition: transform .15s, background .2s, box-shadow .2s;
     }
-    .assistant h2 { margin: 0 0 4px; font-size: 1.15rem; }
-    .assistant p { margin: 0; color: var(--texte-doux); }
+    #bouton-appel:hover { transform: translateY(-1px); }
+    #bouton-appel:focus-visible { outline: 3px solid var(--bleu); outline-offset: 3px; }
+    #bouton-appel .rond {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: rgba(255,255,255,.22); display: grid; place-items: center;
+    }
+    /* En conversation, le bouton devient bleu : c'est maintenant « Raccrocher » */
+    body.en-ligne #bouton-appel { background: var(--bleu); box-shadow: 0 8px 20px rgba(0,95,205,.35); }
+    /* Pendant la connexion, il « respire » pour montrer que ça travaille */
+    body.connexion #bouton-appel { animation: respire 1.2s ease-in-out infinite; cursor: wait; }
+    @keyframes respire { 50% { transform: scale(1.04); opacity: .85; } }
+
+    /* Qui a la parole ? (petit voyant + texte) */
+    #parole { margin: 14px 0 0; min-height: 1.5em; color: var(--texte-doux); font-size: .95rem; }
+    #parole::before {
+      content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 50%;
+      background: transparent; margin-right: 8px; vertical-align: middle;
+    }
+    body.en-ligne #parole::before { background: var(--orange); animation: respire 1s infinite; }
+
+    /* Sous-titres : les dernières phrases de l'échange (cachés au repos) */
+    #sous-titres { display: none; margin: 16px 0 0; text-align: left; max-height: 260px; overflow-y: auto; }
+    body.en-ligne #sous-titres, body.termine #sous-titres { display: block; }
+    #sous-titres p { margin: 0 0 8px; padding: 10px 12px; border-radius: 12px; font-size: .95rem; }
+    #sous-titres .ia   { background: #EEF4FC; border-top-left-radius: 4px; }
+    #sous-titres .vous { background: var(--orange-clair); margin-left: 15%; border-top-right-radius: 4px; }
+    #sous-titres b { display: block; font-size: .78rem; color: var(--texte-doux); font-weight: 600; }
 
     h2.section { font-size: 1.15rem; margin: 0 0 14px; color: var(--bleu); }
 
-    /* Liste des étapes numérotées */
+    /* Liste des étapes numérotées (pastilles orange) */
     ol.etapes { list-style: none; counter-reset: etape; margin: 0; padding: 0; }
-    ol.etapes li {
-      counter-increment: etape; position: relative;
-      padding: 0 0 16px 46px;
-    }
+    ol.etapes li { counter-increment: etape; position: relative; padding: 0 0 16px 46px; }
     ol.etapes li::before {
       content: counter(etape);
       position: absolute; left: 0; top: 0;
       width: 32px; height: 32px; border-radius: 50%;
-      background: var(--bleu); color: #fff; font-weight: 700;
+      background: var(--orange); color: #fff; font-weight: 700;
       display: grid; place-items: center;
     }
     ol.etapes li:last-child { padding-bottom: 0; }
     ol.etapes strong { display: block; }
     ol.etapes span { color: var(--texte-doux); }
 
-    /* Petits encadrés « bon à savoir » */
+    /* Petits encadrés « bon à savoir » (liseré bleu) */
     .astuces { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
-    .astuce { border-left: 4px solid var(--rouge); background: #FFF6F5; padding: 12px 14px; border-radius: 8px; }
+    .astuce { border-left: 4px solid var(--bleu); background: #EEF4FC; padding: 12px 14px; border-radius: 8px; }
     .astuce strong { display: block; margin-bottom: 2px; }
 
     footer { text-align: center; color: var(--texte-doux); font-size: .85rem; padding: 0 16px 24px; }
@@ -122,10 +166,14 @@
 </head>
 <body>
 
+  <!-- Logo Carrefour nexus sur fond blanc -->
+  <div class="logo-bande">
+    <div class="conteneur"><img src="logo-nexus.png" alt="Carrefour nexus" width="620" height="155"></div>
+  </div>
+
   <header>
     <div class="conteneur">
-      <div class="marque"><span>Carrefour</span></div>
-      <h1>Rejoindre Nexus, la plateforme B2B de Carrefour</h1>
+      <h1>Rejoindre Nexus, la plateforme <em>B2B</em> de Carrefour</h1>
       <p class="sous-titre">Pour les partenaires franchisés. Même démarche que OneBuy, sur la plateforme Ariba : un assistant vocal vous guide pas à pas.</p>
     </div>
   </header>
@@ -133,18 +181,23 @@
   <main>
     <div class="conteneur">
 
-      <!-- Carte de présentation de l'assistant vocal -->
-      <section class="carte chevauche assistant">
-        <div class="micro" aria-hidden="true">
-          <!-- Icône micro dessinée en SVG (aucune image externe) -->
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
-            <rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>
-          </svg>
-        </div>
-        <div>
-          <h2>Une question ? Parlez à l'assistant</h2>
-          <p>Cliquez sur la bulle en bas à droite de l'écran, autorisez le micro, puis posez votre question à voix haute.</p>
-        </div>
+      <!-- Carte d'appel : notre propre bouton (plus de bulle ni de « Terms and conditions ») -->
+      <section class="carte appel" aria-live="polite">
+        <h2>Une question ? Parlez à l'assistant</h2>
+        <p class="aide">Touchez le bouton, autorisez le micro, puis posez votre question à voix haute.</p>
+
+        <button id="bouton-appel" type="button">
+          <span class="rond" aria-hidden="true">
+            <!-- Icône micro dessinée en SVG (aucune image externe) -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round">
+              <rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>
+            </svg>
+          </span>
+          <span id="libelle">Parler à l'assistant</span>
+        </button>
+
+        <p id="parole"></p>
+        <div id="sous-titres"></div>
       </section>
 
       <!-- Les étapes du process -->
@@ -194,14 +247,113 @@
 
   <footer>Carrefour – Nexus, plateforme B2B des partenaires franchisés · Assistant automatique, ne remplace pas votre interlocuteur Carrefour</footer>
 
-  <!--
-    ===== Agent vocal ElevenLabs =====
-    - La balise <elevenlabs-convai> affiche la bulle en bas à droite.
-    - agent-id = identifiant de ton agent (ne pas modifier).
-    - Le script charge le composant depuis unpkg (CDN public d'ElevenLabs).
-  -->
-  <elevenlabs-convai agent-id="agent_4901m6cm4302f1zsss28d9pbm8tn"></elevenlabs-convai>
-  <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
+  <!-- type="module" : permet d'utiliser « import » pour charger le SDK ElevenLabs depuis un CDN -->
+  <script type="module">
+    // Identifiant de l'agent ElevenLabs « Assistant Nexus B2B » (voix SebastienV)
+    const AGENT_ID = "agent_4901m6cm4302f1zsss28d9pbm8tn";
+
+    // Tous les textes affichés, au même endroit (plus simple à retoucher)
+    const TEXTES = {
+      parler:     "Parler à l'assistant",
+      connexion:  "Connexion…",
+      raccrocher: "Raccrocher",
+      ilParle:    "L'assistant parle…",
+      aVous:      "À vous, je vous écoute",
+      termine:    "Conversation terminée. Vous pouvez relancer quand vous voulez.",
+      micro:      "Le micro est bloqué : autorisez-le dans le navigateur, puis réessayez.",
+      erreur:     "Impossible de joindre l'assistant pour l'instant. Réessayez dans un moment.",
+    };
+
+    // Raccourcis vers les éléments de la page
+    const bouton  = document.getElementById("bouton-appel");
+    const libelle = document.getElementById("libelle");
+    const parole  = document.getElementById("parole");
+    const fil     = document.getElementById("sous-titres");
+
+    let conversation = null;   // la conversation en cours (null = pas d'appel)
+
+    // Change l'état de la page : on met UNE classe sur <body>, le CSS fait le reste
+    function etat(nom) {
+      document.body.classList.remove("connexion", "en-ligne", "termine");
+      if (nom) document.body.classList.add(nom);
+    }
+
+    // À l'écran, on veut lire « B2B » même si l'agent a écrit « bi-tou-bi »
+    // (il l'écrit ainsi pour que la voix française le prononce à l'anglaise).
+    // L'expression régulière accepte « bi-tou-bi », « bi tou bi », majuscules ou non.
+    function ecranB2B(texte) {
+      return texte.replace(/bi[\s-]?tou[\s-]?bi/gi, "B2B");
+    }
+
+    // Ajoute une ligne de sous-titre (source = "ai" pour l'assistant, sinon c'est vous)
+    function ajouterSousTitre(source, texte) {
+      const p = document.createElement("p");
+      p.className = source === "ai" ? "ia" : "vous";
+      const qui = document.createElement("b");
+      qui.textContent = source === "ai" ? "Assistant" : "Vous";
+      p.append(qui, ecranB2B(texte));       // textContent / append : jamais de HTML injecté
+      fil.append(p);
+      fil.scrollTop = fil.scrollHeight;     // on descend sur la dernière phrase
+    }
+
+    // Retour au repos (appel terminé, raccroché d'un côté ou de l'autre)
+    function repos(message) {
+      conversation = null;
+      etat(fil.childElementCount ? "termine" : null);   // on laisse les sous-titres lisibles
+      libelle.textContent = TEXTES.parler;
+      parole.textContent = message || TEXTES.termine;
+    }
+
+    // Une erreur : micro refusé (NotAllowedError) ou autre souci
+    function erreur(e) {
+      console.error(e);
+      repos(e && e.name === "NotAllowedError" ? TEXTES.micro : TEXTES.erreur);
+    }
+
+    bouton.addEventListener("click", async () => {
+      // --- Clic pendant l'appel : on raccroche ---
+      if (conversation) { await conversation.endSession(); return; }
+      if (document.body.classList.contains("connexion")) return;   // évite les doubles clics
+
+      // Retour visuel IMMÉDIAT
+      etat("connexion");
+      libelle.textContent = TEXTES.connexion;
+      parole.textContent = "";
+      fil.replaceChildren();   // on repart d'un fil vide
+
+      try {
+        // 1) Le navigateur demande l'accès au micro (obligatoire pour parler)
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        // 2) On charge le SDK ElevenLabs seulement maintenant (page plus légère au départ).
+        //    Version figée (1.32.1, comme PochPoch) pour qu'une mise à jour ne casse rien.
+        const { Conversation } = await import(
+          "https://cdn.jsdelivr.net/npm/@elevenlabs/client@1.32.1/+esm"
+        );
+
+        // 3) On ouvre la conversation. Pas de bulle ElevenLabs = pas d'écran
+        //    « Terms and conditions » : on passe directement à la conversation.
+        conversation = await Conversation.startSession({
+          agentId: AGENT_ID,
+          onConnect: () => {
+            etat("en-ligne");
+            libelle.textContent = TEXTES.raccrocher;
+            parole.textContent = TEXTES.ilParle;   // il commence par son message d'accueil
+          },
+          // Qui a la parole ? "speaking" = l'assistant parle, "listening" = il vous écoute
+          onModeChange: ({ mode }) => {
+            parole.textContent = mode === "speaking" ? TEXTES.ilParle : TEXTES.aVous;
+          },
+          // Chaque phrase finalisée (de l'assistant ou de vous) devient un sous-titre
+          onMessage: ({ source, message }) => { if (message) ajouterSousTitre(source, message); },
+          onDisconnect: () => repos(),
+          onError: (e) => erreur(e),
+        });
+      } catch (e) {
+        erreur(e);   // micro refusé, pas de réseau, agent indisponible…
+      }
+    });
+  </script>
 <script>
   // ---- Page installable : enregistrement du service worker (sw.js, même dossier) ----
   // Il fonctionne en « réseau d'abord » : la page en ligne est toujours la plus récente.
