@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Page « Assistant Nexus B2B – partenaires franchisés Carrefour »
-  Version 1.1.0 – 02/11/2026
+  Version 1.2.0 – 02/11/2026
   En ligne : https://baiji.fr/assistant-nexus/
 
   Historique :
@@ -13,6 +13,9 @@
              la bulle ElevenLabs (et ses « Terms and conditions ») est remplacée par
              notre propre bouton d'appel (SDK @elevenlabs/client, comme PochPoch) avec
              sous-titres ; à l'écrit, « bi-tou-bi » est réaffiché « B2B »
+   • 1.2.0 : la carte d'appel passe en fin de page (après « Bon à savoir ») ;
+             compte à rebours de 3 min (la limite est réglée côté agent :
+             3 min max, et il raccroche après 3 relances sans réponse)
 
   À quoi sert cette page ?
   - Elle explique en 4 étapes comment rejoindre Carrefour sur Nexus (plateforme Ariba).
@@ -99,7 +102,8 @@
          connexion  → ça démarre    : bouton qui pulse doucement
          en-ligne   → en conversation : bouton bleu « Raccrocher » + sous-titres
        ============================================================ */
-    .appel { margin-top: -46px; text-align: center; padding: 26px 22px; }
+    .carte.chevauche { margin-top: -46px; }   /* la 1re carte « mord » sur le bandeau bleu */
+    .appel { text-align: center; padding: 26px 22px; border-top: 4px solid var(--orange); }
     .appel h2 { margin: 0 0 4px; font-size: 1.2rem; }
     .appel .aide { margin: 0 0 18px; color: var(--texte-doux); }
 
@@ -139,6 +143,11 @@
     #sous-titres .ia   { background: #EEF4FC; border-top-left-radius: 4px; }
     #sous-titres .vous { background: var(--orange-clair); margin-left: 15%; border-top-right-radius: 4px; }
     #sous-titres b { display: block; font-size: .78rem; color: var(--texte-doux); font-weight: 600; }
+
+    /* Compte à rebours des 3 minutes (visible pendant l'appel) */
+    #chrono { display: none; margin: 10px 0 0; font-variant-numeric: tabular-nums; color: var(--texte-doux); font-size: .9rem; }
+    body.en-ligne #chrono { display: block; }
+    #chrono.bientot { color: var(--orange); font-weight: 700; }   /* dernières 30 secondes */
 
     h2.section { font-size: 1.15rem; margin: 0 0 14px; color: var(--bleu); }
 
@@ -181,27 +190,8 @@
   <main>
     <div class="conteneur">
 
-      <!-- Carte d'appel : notre propre bouton (plus de bulle ni de « Terms and conditions ») -->
-      <section class="carte appel" aria-live="polite">
-        <h2>Une question ? Parlez à l'assistant</h2>
-        <p class="aide">Touchez le bouton, autorisez le micro, puis posez votre question à voix haute.</p>
-
-        <button id="bouton-appel" type="button">
-          <span class="rond" aria-hidden="true">
-            <!-- Icône micro dessinée en SVG (aucune image externe) -->
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round">
-              <rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>
-            </svg>
-          </span>
-          <span id="libelle">Parler à l'assistant</span>
-        </button>
-
-        <p id="parole"></p>
-        <div id="sous-titres"></div>
-      </section>
-
       <!-- Les étapes du process -->
-      <section class="carte">
+      <section class="carte chevauche">
         <h2 class="section">Les étapes</h2>
         <ol class="etapes">
           <li>
@@ -242,6 +232,26 @@
         </div>
       </section>
 
+      <!-- Carte d'appel : notre propre bouton (plus de bulle ni de « Terms and conditions ») -->
+      <section class="carte appel" aria-live="polite">
+        <h2>Une question ? Parlez à l'assistant</h2>
+        <p class="aide">Touchez le bouton, autorisez le micro, puis posez votre question à voix haute. Chaque appel dure 3 minutes maximum.</p>
+
+        <button id="bouton-appel" type="button">
+          <span class="rond" aria-hidden="true">
+            <!-- Icône micro dessinée en SVG (aucune image externe) -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round">
+              <rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>
+            </svg>
+          </span>
+          <span id="libelle">Parler à l'assistant</span>
+        </button>
+
+        <p id="parole"></p>
+        <p id="chrono"></p>
+        <div id="sous-titres"></div>
+      </section>
+
     </div>
   </main>
 
@@ -272,6 +282,27 @@
 
     let conversation = null;   // la conversation en cours (null = pas d'appel)
 
+    // ---- Compte à rebours ----
+    // DUREE_MAX doit rester égale à la limite réglée sur l'agent ElevenLabs (180 s).
+    // C'est l'agent qui coupe vraiment l'appel ; ici on ne fait qu'afficher le temps restant.
+    const DUREE_MAX = 180;
+    const chrono = document.getElementById("chrono");
+    let minuterie = null;      // identifiant du setInterval (pour pouvoir l'arrêter)
+
+    function lancerChrono() {
+      const depart = Date.now();
+      const afficher = () => {
+        const reste = Math.max(0, DUREE_MAX - Math.floor((Date.now() - depart) / 1000));
+        const mm = Math.floor(reste / 60);
+        const ss = String(reste % 60).padStart(2, "0");   // 5 → "05"
+        chrono.textContent = `Temps restant : ${mm}:${ss}`;
+        chrono.classList.toggle("bientot", reste <= 30);
+      };
+      afficher();
+      minuterie = setInterval(afficher, 1000);   // mise à jour chaque seconde
+    }
+    function arreterChrono() { clearInterval(minuterie); minuterie = null; }
+
     // Change l'état de la page : on met UNE classe sur <body>, le CSS fait le reste
     function etat(nom) {
       document.body.classList.remove("connexion", "en-ligne", "termine");
@@ -299,6 +330,7 @@
     // Retour au repos (appel terminé, raccroché d'un côté ou de l'autre)
     function repos(message) {
       conversation = null;
+      arreterChrono();
       etat(fil.childElementCount ? "termine" : null);   // on laisse les sous-titres lisibles
       libelle.textContent = TEXTES.parler;
       parole.textContent = message || TEXTES.termine;
@@ -339,6 +371,7 @@
             etat("en-ligne");
             libelle.textContent = TEXTES.raccrocher;
             parole.textContent = TEXTES.ilParle;   // il commence par son message d'accueil
+            lancerChrono();
           },
           // Qui a la parole ? "speaking" = l'assistant parle, "listening" = il vous écoute
           onModeChange: ({ mode }) => {
