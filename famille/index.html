@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Famille · Vaugoude's Family — tableau de bord de la maison
-  Version 1.1.0
+  Version 1.2.0
   Mobile par défaut ; mode TV avec baiji.fr/famille/?tv (retour : ?mobile).
   Historique :
    • v1.0.0 : météo, tâches du jour (Google Sheet), 7 prochains jours, Pass TV,
@@ -10,6 +10,7 @@
    • v1.0.2 : bouton « Mode téléphone » en mode TV ; le mode TV est ignoré sur un écran étroit
               (téléphone), pour ne plus rester bloqué dans l'appli installée
    • v1.1.0 : plus de Pass TV ; un enfant sans tâche n'est plus affiché du tout
+   • v1.2.0 : carte « Médiathèque » (prêts en cours, via le service biblio du NAS)
 -->
 <html lang="fr">
 <head>
@@ -190,6 +191,19 @@
     .note { font-size: 13px; color: var(--muted); line-height: 1.45; }
 
     /* =========================================================
+       6 bis. MÉDIATHÈQUE (prêts en cours)
+       ========================================================= */
+    /* Un groupe = tous les documents à rendre le même jour */
+    .loan-group { padding: 8px 0; border-top: 1px solid var(--line); }
+    .loan-group:first-child { border-top: 0; padding-top: 0; }
+    .loan-date { font-weight: 800; font-size: 14px; display: flex; justify-content: space-between; gap: 8px; }
+    .loan-date small { font-weight: 700; color: var(--c); white-space: nowrap; }   /* « dans 2 j » en couleur */
+    .loan-list { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+    .loan-list .mini { --c: var(--accent); }
+    .loan-list .mini.fixe { opacity: .75; }          /* non prolongeable : un peu plus discret… */
+    .loan-list .mini.fixe::after { content: ' 🔒'; } /* …et marqué d'un cadenas */
+
+    /* =========================================================
        7. ÉPHÉMÉRIDE
        ========================================================= */
     .history-year { font-size: 22px; font-weight: 800; color: var(--accent); }
@@ -238,6 +252,9 @@
     body.tv .car-name { font-size: 1.2vw; } body.tv .car-soc { font-size: 2.8vw; }
     body.tv .bar { height: .8vw; }
     body.tv .car-sub, body.tv .note { font-size: .9vw; }
+    body.tv .loan-group { padding: .5vw 0; }
+    body.tv .loan-date { font-size: 1vw; }
+    body.tv .loan-list { gap: .3vw; margin-top: .3vw; }
     body.tv .history-year { font-size: 1.5vw; }
     body.tv .history-text { font-size: 1.1vw; display: -webkit-box; -webkit-line-clamp: 7; -webkit-box-orient: vertical; overflow: hidden; }
     body.tv .empty { font-size: 1.2vw; }
@@ -315,6 +332,12 @@
         <div id="cars"></div>
       </section>
 
+      <!-- Médiathèque : cachée (hidden) tant que le service biblio du NAS n'a jamais répondu -->
+      <section class="card" id="loans-card" hidden>
+        <div class="card-title"><span>Médiathèque</span><span id="loans-count"></span></div>
+        <div id="loans"></div>
+      </section>
+
       <!-- Planning de la semaine (mobile uniquement) -->
       <section class="card mobile-only">
         <div class="card-title">
@@ -341,7 +364,7 @@
     /* =================================================================
        CONFIGURATION — les seules lignes à modifier en temps normal
        ================================================================= */
-    const VERSION = '1.1.0';
+    const VERSION = '1.2.0';
 
     // Google Sheet "Family tasks" publié en TSV (Fichier > Partager > Publier sur le web).
     // C'est le même lien que celui de ton Kindle.
@@ -351,6 +374,10 @@
     // Tant qu'il n'est pas en place, laisse '' : la carte affichera une explication.
     const CARS_URL = 'https://voitures.baiji.fr/cars.json';
 
+    // Adresse HTTPS du service "biblio" du NAS (prêts en cours des médiathèques).
+    // Tant qu'il ne répond pas, la carte Médiathèque reste simplement cachée.
+    const BIBLIO_URL = 'https://biblio.baiji.fr/prets.json';
+
     // Coordonnées de Gif-sur-Yvette pour la météo
     const LAT = 48.7018, LON = 2.1340;
 
@@ -358,7 +385,7 @@
     const KIDS = { Gaby: 'var(--gaby)', Tom: 'var(--tom)', Nanon: 'var(--nanon)', Tous: 'var(--tous)' };
 
     // Fréquences de rafraîchissement (en minutes)
-    const REFRESH = { weather: 15, tasks: 10, cars: 5 };
+    const REFRESH = { weather: 15, tasks: 10, cars: 5, loans: 30 };
 
     /* =================================================================
        MODE TV
@@ -711,10 +738,74 @@
     }
 
     /* =================================================================
+       MÉDIATHÈQUE (via le service biblio du NAS)
+       Format attendu : { updated, cartes: [ {nom, ok, prets: [ {titre, auteur, retour, prolongeable} ]} ] }
+       ================================================================= */
+    async function loadLoans() {
+      if (!BIBLIO_URL) return;
+      try {
+        const data = await getJSON(BIBLIO_URL, 10000);
+        cache.save('loans', data);
+        renderLoans(data, false);
+      } catch (e) {
+        console.warn('Médiathèque indisponible', e);
+        const old = cache.load('loans');
+        if (old) renderLoans(old.data, true);   // sinon la carte reste cachée
+      }
+    }
+
+    // Nombre de jours entre aujourd'hui et une date "AAAA-MM-JJ" (négatif = en retard)
+    function daysUntil(iso) {
+      const [y, m, d] = iso.split('-').map(Number);
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      return Math.round((new Date(y, m - 1, d) - today) / 864e5);
+    }
+
+    function renderLoans(data, stale) {
+      const cartes = data.cartes || [];
+      const several = cartes.length > 1;          // plusieurs cartes : on préfixe chaque titre par le prénom
+      // 1) On met tous les prêts dans une seule liste, en notant à qui ils sont
+      const all = cartes.flatMap(c => (c.prets || []).map(p => ({ ...p, qui: c.nom })));
+      const problem = stale || cartes.some(c => !c.ok);   // ⚠ si données anciennes ou carte en erreur
+
+      // Aucun prêt : rien à afficher, on cache la carte (comme les tâches)
+      $('loans-card').hidden = all.length === 0;
+      if (!all.length) return;
+      $('loans-count').textContent = (problem ? '⚠ ' : '') + all.length + (all.length > 1 ? ' documents' : ' document');
+
+      // 2) On regroupe par date de retour : { '2026-11-04': [...], '2026-11-14': [...] }
+      const byDate = {};
+      for (const p of all) (byDate[p.retour || '?'] ||= []).push(p);
+      const dates = Object.keys(byDate).sort();
+
+      // 3) Une ligne par date, avec un compte à rebours coloré
+      const MAX = IS_TV ? 4 : 99;                 // sur la télé, 4 titres par date au plus
+      $('loans').innerHTML = dates.map(iso => {
+        const list = byDate[iso];
+        let label = 'Date inconnue', when = '', color = 'var(--muted)';
+        if (iso !== '?') {
+          const n = daysUntil(iso);
+          const [y, m, d] = iso.split('-').map(Number);
+          label = 'À rendre ' + new Date(y, m - 1, d).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }).replace('.', '');
+          when = n < 0 ? `en retard (${-n} j)` : n === 0 ? "aujourd'hui" : n === 1 ? 'demain' : `dans ${n} j`;
+          // rouge : en retard ou dans 3 jours ou moins ; orange : dans la semaine
+          color = n <= 3 ? 'var(--bad)' : n <= 7 ? 'var(--warn)' : 'var(--muted)';
+        }
+        const chips = list.slice(0, MAX).map(p =>
+          `<span class="mini${p.prolongeable === false ? ' fixe' : ''}" title="${esc(p.auteur)}">`
+          + (several ? `<i>${esc(p.qui)}</i>` : '') + esc(p.titre) + `</span>`).join('')
+          + (list.length > MAX ? `<span class="mini">+${list.length - MAX}</span>` : '');
+        return `<div class="loan-group" style="--c:${color}">`
+             + `<div class="loan-date">${label}<small>${when} · ${list.length}</small></div>`
+             + `<div class="loan-list">${chips}</div></div>`;
+      }).join('');
+    }
+
+    /* =================================================================
        DÉMARRAGE
        ================================================================= */
     function loadAll() {
-      return Promise.allSettled([loadWeather(), loadTasks(), loadCars()]);
+      return Promise.allSettled([loadWeather(), loadTasks(), loadCars(), loadLoans()]);
     }
 
     function start() {
@@ -725,6 +816,7 @@
       const t = cache.load('tasks'); if (t) { tasksByDay = t.data; }
       renderTasks();
       const c = cache.load('cars'); if (c) renderCars(c.data, true);
+      const l = cache.load('loans'); if (l) renderLoans(l.data, true);
 
       // 2) Puis on va chercher les données fraîches
       tickClock();
@@ -736,6 +828,7 @@
       setInterval(loadWeather, REFRESH.weather * 60e3);
       setInterval(loadTasks, REFRESH.tasks * 60e3);
       setInterval(loadCars, REFRESH.cars * 60e3);
+      setInterval(loadLoans, REFRESH.loans * 60e3);
 
       // 4) Quand on revient sur l'appli après l'avoir quittée : on actualise
       document.addEventListener('visibilitychange', () => { if (!document.hidden) loadAll(); });
