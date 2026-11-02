@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Voitures — suivi de la batterie et de la charge de l'e-5008 et de la Corsa
-  Version 1.0.1
+  Version 1.1.0
   Données : service « voitures » du NAS (https://voitures.baiji.fr), qui interroge
   psa_car_controller à la maison et ne publie que la batterie et la charge (jamais le GPS).
   Historique :
@@ -10,6 +10,11 @@
               et garde l'écran allumé), courbe de batterie 24 h / 7 jours
    • v1.0.1 : n'affiche plus « Mode : No » ni « charge programmée » à tort
               (la voiture renvoie "No" et "PT0S" quand il n'y a rien)
+   • v1.1.0 : actualisation automatique à l'ouverture (et au retour sur l'appli après
+              10 min) : réveille les voitures dont la mesure est ancienne ;
+              carte « Journal » (service v3) : résumé 30 jours (km, conso, kWh chargés),
+              dernières charges et derniers trajets, export CSV du journal complet ;
+              température extérieure et batterie 12 V dans les détails
 -->
 <html lang="fr">
 <head>
@@ -141,6 +146,26 @@
     .legend span::before { content: ''; display: inline-block; width: 12px; height: 4px; border-radius: 2px; background: var(--c); margin-right: 6px; vertical-align: middle; }
     .note { font-size: 13px; color: var(--muted); line-height: 1.5; }
 
+    /* ===================== JOURNAL ===================== */
+    .sum { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .sum > div { border-radius: 14px; background: var(--surface); border: 1px solid var(--line); padding: 10px 12px; }
+    .sum .who { font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+    .sum .who::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--c); }
+    .sum .kv { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+    .sum .kv b { font-family: var(--mono); color: var(--ink); font-weight: 700; }
+    .rows { display: flex; flex-direction: column; }
+    .row { display: grid; grid-template-columns: 10px 1fr auto; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+    .row:first-child { border-top: 0; }
+    .row .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--c); }
+    .row .main { font-size: 14px; font-weight: 700; }
+    .row .when { font-size: 12px; color: var(--muted); margin-top: 1px; }
+    .row .val { font-family: var(--mono); font-size: 13px; font-weight: 700; text-align: right; line-height: 1.35; }
+    .row .val small { display: block; font-size: 11px; color: var(--muted); font-weight: 500; }
+    .export {
+      display: inline-flex; margin-top: 12px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line);
+      font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--teal); text-decoration: none;
+    }
+
     footer { text-align: center; font-size: 12px; color: var(--muted); }
     footer a { color: var(--teal); font-weight: 700; text-decoration: none; }
 
@@ -180,6 +205,20 @@
       <div class="legend" id="legend"></div>
     </section>
 
+    <section class="card" id="journal" hidden>
+      <div class="chart-head">
+        <div class="title">Journal</div>
+        <div class="seg" id="jtab">
+          <button data-t="sessions" class="on">Charges</button>
+          <button data-t="trips">Trajets</button>
+        </div>
+      </div>
+      <div class="sum" id="jsum"></div>
+      <div class="rows" id="jrows"></div>
+      <div class="note" id="jsince" style="margin-top:10px"></div>
+      <a class="export" id="jexport" download>⤓ Exporter le journal (CSV)</a>
+    </section>
+
     <footer><a href="../famille/">← Tableau de bord Famille</a> · v<span id="version"></span></footer>
   </main>
   <div id="toast"></div>
@@ -188,12 +227,14 @@
     /* =================================================================
        CONFIGURATION
        ================================================================= */
-    const VERSION = '1.0.1';
+    const VERSION = '1.1.0';
     const API = 'https://voitures.baiji.fr';        // service du NAS
     const POLL_NORMAL_S = 120;    // lecture de l'état : toutes les 2 min…
     const POLL_LIVE_S = 30;       // …toutes les 30 s en mode « Suivi de charge »
     const LIVE_WAKE_MIN = 10;     // en suivi, réveil auto d'une voiture en charge toutes les 10 min
     const OLD_MEASURE_H = 3;      // au-delà, la mesure est signalée comme ancienne
+    const AUTO_WAKE_MIN = 10;     // à l'ouverture, on réveille une voiture si sa mesure a plus de 10 min
+    const AWAY_MIN = 10;          // retour sur l'appli après 10 min d'absence = comme une ouverture
     const COLORS = { e5008: '#0f7c7b', corsa: '#d97706' };  // couleur de chaque voiture sur la courbe
 
     /* =================================================================
@@ -241,6 +282,9 @@
     let wakeLock = null;
     const pending = {};       // réveils en cours : { e5008: horodatage de fin prévue }
     const lastAutoWake = {};  // dernier réveil automatique (mode suivi)
+    let stats = null;         // dernière réponse de /stats.json (null si service sans journal)
+    let jtab = store.get('jtab') || 'sessions';   // onglet du journal : charges ou trajets
+    let hiddenAt = 0;         // quand l'appli a été mise en arrière-plan
 
     /* =================================================================
        CHARGEMENT DES DONNÉES
@@ -302,6 +346,9 @@
         // Le mode de charge n'a de sens que câble branché (la voiture renvoie "No" sinon)
         if (car.plugged && car.chargeMode && car.chargeMode !== 'No') facts.push(`Mode : <b>${car.chargeMode === 'Quick' ? 'rapide' : car.chargeMode === 'Slow' ? 'lente' : esc(car.chargeMode)}</b>`);
         if (Number.isFinite(car.mileage)) facts.push(`Compteur : <b>${Math.round(car.mileage).toLocaleString('fr-FR')} km</b>`);
+        if (Number.isFinite(car.outsideTemp)) facts.push(`Dehors : <b>${Math.round(car.outsideTemp)} °C</b>`);
+        // Batterie 12 V : en dessous de 12,2 V elle est faible (trop de réveils, voiture immobile longtemps…)
+        if (Number.isFinite(car.battery12v)) facts.push(`Batterie 12 V : <b style="${car.battery12v < 12.2 ? 'color:var(--warn)' : ''}">${car.battery12v.toFixed(1).replace('.', ',')} V</b>`);
 
         // --- Fin de charge estimée (donnée par la voiture, ou calculée avec la courbe)
         let eta = '';
@@ -374,7 +421,7 @@
           const eta = (body.etaS || 45) + 5;
           pending[id] = Date.now() + eta * 1000;
           if (!silent) toast('Voiture réveillée, nouvelle mesure dans moins d\'une minute…');
-          setTimeout(() => { delete pending[id]; load(); loadHistory(); }, eta * 1000);
+          setTimeout(() => { delete pending[id]; load(); loadHistory(); loadStats(); }, eta * 1000);
         } else if (!silent) {
           toast(body.error ? `Pas maintenant : ${body.error}` : 'Réveil impossible pour le moment');
         }
@@ -403,7 +450,7 @@
     let pollTimer;
     function schedulePoll() {
       clearInterval(pollTimer);
-      pollTimer = setInterval(() => { load(); loadHistory(); }, (live ? POLL_LIVE_S : POLL_NORMAL_S) * 1000);
+      pollTimer = setInterval(() => { load(); loadHistory(); loadStats(); }, (live ? POLL_LIVE_S : POLL_NORMAL_S) * 1000);
     }
 
     function autoWake() {
@@ -492,17 +539,107 @@
     });
 
     /* =================================================================
+       ACTUALISATION AUTOMATIQUE À L'OUVERTURE
+       -----------------------------------------------------------------
+       Sans réveil, l'appli montre la dernière mesure envoyée par la voiture,
+       qui peut dater de plusieurs heures. On réveille donc chaque voiture
+       dont la mesure a plus de AUTO_WAKE_MIN minutes, seulement si :
+        - le NAS l'autorise (wake.available : pas de réveil il y a moins
+          de 3 min, quota du jour pas atteint) ;
+        - aucun réveil n'est déjà en cours.
+       Une ouverture coûte donc au plus 1 réveil par voiture, et rouvrir
+       l'appli 5 fois de suite n'en déclenche qu'un (la mesure est fraîche).
+       ================================================================= */
+    function autoRefreshOnOpen() {
+      if (!data) return;
+      let woken = 0;
+      for (const car of data.cars || []) {
+        const id = carId(car);
+        const measured = parseDate(car.carUpdated || car.updated);
+        const fresh = measured && Date.now() - measured < AUTO_WAKE_MIN * 60e3;
+        if (fresh || car.refreshing || pending[id] || !car.wake?.available) continue;
+        wakeCar(id, true);            // silent = sans message pour chaque voiture…
+        woken++;
+      }
+      if (woken) toast('Actualisation des voitures, nouvelle mesure dans moins d\'une minute…');   // …un seul message
+    }
+
+    /* =================================================================
+       JOURNAL (service v3) : charges et trajets calculés par le NAS
+       ================================================================= */
+    async function loadStats() {
+      try {
+        const res = await fetch(`${API}/stats.json`, { cache: 'no-store' });
+        stats = res.ok ? await res.json() : null;      // 404 = service v2, pas de journal
+      } catch { /* hors ligne : on garde l'ancien */ }
+      renderJournal();
+    }
+
+    // "lun. 2 nov., 18:40"
+    const when = (t) => new Date(t).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    const dec = (x) => x == null ? '–' : String(x).replace('.', ',');
+
+    function renderJournal() {
+      const box = $('journal');
+      if (!stats?.cars) { box.hidden = true; return; }
+      box.hidden = false;
+      const names = { e5008: 'e-5008', corsa: 'Corsa' };
+
+      // --- Résumé 30 jours, une case par voiture
+      $('jsum').innerHTML = stats.cars.map(c => `<div style="--c:${COLORS[c.id]}">
+          <div class="who">${esc(c.name)}</div>
+          <div class="kv">30 j : <b>${c.last30.km.toLocaleString('fr-FR')} km</b><br>
+            Conso : <b>${c.last30.per100 ? dec(c.last30.per100) : '–'}</b>${c.last30.per100 ? ' <span style="white-space:nowrap">kWh/100 km</span>' : ''}<br>
+            Chargé : <b>${dec(c.last30.kwhCharged)} kWh</b></div>
+        </div>`).join('');
+
+      // --- Liste : toutes voitures mélangées, la plus récente d'abord
+      const items = stats.cars.flatMap(c => (c[jtab] || []).map(x => ({ ...x, id: c.id })))
+        .sort((a, b) => b.end - a.end).slice(0, 12);
+      $('jrows').innerHTML = items.length ? items.map(x => jtab === 'sessions'
+        // Une charge : % de départ → % d'arrivée, énergie, durée et puissance moyenne
+        ? `<div class="row" style="--c:${COLORS[x.id]}"><span class="dot"></span>
+             <div><div class="main">${x.socStart ?? '?'} → ${x.socEnd ?? '?'} %${x.ongoing ? ' · en cours' : ''}</div>
+               <div class="when">${names[x.id]} · ${when(x.start)}${x.mode && x.mode !== 'No' ? ' · ' + (x.mode === 'Quick' ? 'rapide' : 'lente') : ''}</div></div>
+             <div class="val">+${dec(x.kwh)} kWh<small>${duration(x.minutes)}${x.kw ? ' · ' + dec(x.kw) + ' kW' : ''}</small></div></div>`
+        // Un trajet : km, % utilisés, conso (si le trajet est assez long pour être fiable)
+        : `<div class="row" style="--c:${COLORS[x.id]}"><span class="dot"></span>
+             <div><div class="main">${x.km} km${x.used != null ? ` · −${x.used} %` : ''}</div>
+               <div class="when">${names[x.id]} · ${when(x.start)}${x.temp != null ? ` · ${Math.round(x.temp)} °C` : ''}</div></div>
+             <div class="val">${x.per100 ? dec(x.per100) : '–'}<small>kWh/100 km</small></div></div>`).join('')
+        : `<div class="note">${jtab === 'sessions' ? 'Aucune charge' : 'Aucun trajet'} enregistrée pour l'instant : le journal se remplit au fil des mesures.</div>`;
+
+      // --- Depuis quand le journal tourne
+      const since = Math.min(...stats.cars.map(c => c.since || Infinity));
+      $('jsince').textContent = Number.isFinite(since)
+        ? `Journal tenu depuis le ${new Date(since).toLocaleDateString('fr-FR')} · ${stats.cars.reduce((a, c) => a + c.measures, 0)} mesures. kWh estimés à partir des % de batterie.`
+        : '';
+      $('jexport').href = `${API}/journal.csv`;
+    }
+
+    $('jtab').addEventListener('click', (e) => {
+      const b = e.target.closest('button'); if (!b) return;
+      jtab = b.dataset.t; store.set('jtab', jtab);
+      [...$('jtab').children].forEach(x => x.classList.toggle('on', x === b));
+      renderJournal();
+    });
+
+    /* =================================================================
        DÉMARRAGE
        ================================================================= */
     $('version').textContent = VERSION;
     [...$('range').children].forEach(x => x.classList.toggle('on', Number(x.dataset.h) === rangeH));
     const cached = store.get('cache'); if (cached) { data = JSON.parse(cached); renderCars(); }
-    load(); loadHistory(); schedulePoll();
+    [...$('jtab').children].forEach(x => x.classList.toggle('on', x.dataset.t === jtab));
+    // On attend la première lecture (pour connaître l'âge des mesures) avant de réveiller
+    load().then(autoRefreshOnOpen); loadHistory(); loadStats(); schedulePoll();
 
     // Retour sur l'appli : on relit tout et on reprend le verrou d'écran si le suivi est actif
     document.addEventListener('visibilitychange', async () => {
-      if (document.hidden) return;
-      load(); loadHistory();
+      if (document.hidden) { hiddenAt = Date.now(); return; }
+      // Absent plus de AWAY_MIN minutes : on fait comme à l'ouverture (réveil si besoin)
+      const away = hiddenAt && Date.now() - hiddenAt > AWAY_MIN * 60e3;
+      load().then(() => { if (away) autoRefreshOnOpen(); }); loadHistory(); loadStats();
       if (live) { try { wakeLock = await navigator.wakeLock?.request('screen'); } catch {} }
     });
 
