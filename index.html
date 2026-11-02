@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr — Page d'accueil des projets (marque SV)
-  Version 1.17.0
+  Version 1.18.0
   ------------------------------------------------------------
   Historique :
    • v1.0.0 : première page d'accueil
@@ -38,6 +38,7 @@
    • v1.15.0 : ajout de « Photos » (Immich sur le NAS, photos.baiji.fr) dans « Maison »
    • v1.16.0 : ajout de « Assistant Nexus » (franchisés Carrefour) dans « Agents vocaux »
    • v1.17.0 : petit bouton « Actualiser » discret en haut à droite
+   • v1.18.0 : ajout de « Location » (réservation de véhicules à la voix) dans « Agents vocaux »
               (utile quand la page est installée en appli : pas de
               barre du navigateur, donc pas de bouton recharger)
 
@@ -472,6 +473,7 @@
       ============================================================
     */
     const PICTOS = {
+      voiture: `<path d="m21 8-2 2-1.5-3.7A2 2 0 0 0 15.646 5H8.4a2 2 0 0 0-1.903 1.257L5 10 3 8" /> <path d="M7 14h.01" /> <path d="M17 14h.01" /> <rect width="18" height="8" x="3" y="10" rx="2" /> <path d="M5 18v2" /> <path d="M19 18v2" />`,  // car-front
       batterie: `<path d="m11 7-3 5h4l-3 5" /> <path d="M14.856 6H16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.935" /> <path d="M22 14v-4" /> <path d="M5.14 18H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2.936" />`,  // battery-charging
       maison: `<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/> <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>`,  // house
       chat: `<path d="M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58-.42 7-.42 7 .57 1.07 1 2.24 1 3.44C21 17.9 16.97 21 12 21s-9-3-9-7.56c0-1.25.5-2.4 1-3.44 0 0-1.89-6.42-.5-7 1.39-.58 4.72.23 6.5 2.23A9.04 9.04 0 0 1 12 5Z"/> <path d="M8 14v.5"/> <path d="M16 14v.5"/> <path d="M11.25 16.25h1.5L12 17l-.75-.75Z"/>`,  // cat
@@ -565,6 +567,14 @@
         desc: "Aide vocale pour les franchisés : rejoindre Nexus, la plateforme B2B de Carrefour",
         courte: "Aide Nexus franchisés",  // version courte (téléphone)
         url:  "assistant-nexus/",         // ✅ en ligne : baiji.fr/assistant-nexus/
+        cat:  "Agents vocaux"
+      },
+      {
+        nom:  "Location",
+        icone: "voiture",                 // picto (voir la liste PICTOS)
+        desc: "Réserver une voiture, un utilitaire ou un minibus en parlant à Lucie",
+        courte: "Réserver un véhicule",   // version courte (téléphone)
+        url:  "location/",                // ✅ en ligne : baiji.fr/location/
         cat:  "Agents vocaux"
       },
       {
