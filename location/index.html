@@ -1,13 +1,16 @@
 <!doctype html>
 <!--
   Page « Clé en main · Location de véhicules » — réservation à la voix
-  Version 1.0.0 – 02/11/2026
+  Version 1.1.0 – 02/11/2026
   En ligne : https://baiji.fr/location/
 
   Historique :
    • 1.0.0 : première version — agent vocal ElevenLabs « Lucie » qui pose les
              questions d'une réservation (véhicule, dates, lieux, conducteur,
              options, assurance, coordonnées) et remplit la fiche en direct
+   • 1.1.0 : l'agent répond aussi au téléphone (numéro Twilio) : la page lui
+             envoie canal = « web » pour qu'il sache qu'une fiche est affichée ;
+             la date du jour vient désormais du fuseau réglé dans ElevenLabs
 
   Comment ça marche ?
   - « Clé en main » est une agence FICTIVE (démonstration) : l'agent ne connaît
@@ -22,8 +25,12 @@
   - Quand l'agent passe la fiche au statut « validee », deux boutons
     apparaissent : « Envoyer la demande » (e-mail pré-rempli, destinataire
     réglable dans EMAIL_AGENCE) et « Copier ».
-  - On envoie aussi la date du jour à l'agent (variable {{aujourdhui}} dans son
-    prompt) pour qu'il comprenne « vendredi prochain » ou « demain ».
+  - Le même agent répond aussi au téléphone (numéro Twilio). Pour qu'il sache
+    s'il y a une fiche à l'écran, la page lui envoie la variable canal = « web »
+    (variable {{canal}} de son prompt). Au téléphone, personne ne l'envoie :
+    c'est la valeur par défaut réglée dans ElevenLabs qui s'applique, « telephone ».
+  - La date du jour, l'agent la connaît grâce au fuseau Europe/Paris réglé
+    dans ElevenLabs (il comprend « vendredi prochain » ou « demain »).
 -->
 <html lang="fr">
 <head>
@@ -457,11 +464,6 @@
       boucle = requestAnimationFrame(animer);
     }
 
-    // Date du jour en toutes lettres, ex. « lundi 2 novembre 2026 »
-    function aujourdhui() {
-      return new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-    }
-
     bouton.addEventListener("click", async () => {
       // Clic pendant l'appel → on raccroche
       if (conversation) { await conversation.endSession(); return; }
@@ -485,8 +487,9 @@
         // 3) Ouverture de la conversation
         conversation = await Conversation.startSession({
           agentId: AGENT_ID,
-          // Variables glissées dans le prompt de l'agent ({{aujourdhui}})
-          dynamicVariables: { aujourdhui: aujourdhui() },
+          // Variable glissée dans le prompt de l'agent ({{canal}}) : « web » = fiche à l'écran
+          // (au téléphone, c'est la valeur par défaut « telephone » qui s'applique)
+          dynamicVariables: { canal: "web" },
           // Outils « client » : l'agent les déclenche, la page les exécute
           clientTools: { maj_fiche: majFiche },
           onConnect: () => {
