@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr — Page d'accueil des projets (marque SV)
-  Version 1.16.0
+  Version 1.17.0
   ------------------------------------------------------------
   Historique :
    • v1.0.0 : première page d'accueil
@@ -37,6 +37,9 @@
               replie / se déplie d'un toucher (choix mémorisé)
    • v1.15.0 : ajout de « Photos » (Immich sur le NAS, photos.baiji.fr) dans « Maison »
    • v1.16.0 : ajout de « Assistant Nexus » (franchisés Carrefour) dans « Agents vocaux »
+   • v1.17.0 : petit bouton « Actualiser » discret en haut à droite
+              (utile quand la page est installée en appli : pas de
+              barre du navigateur, donc pas de bouton recharger)
 
   À déposer dans le dépôt GitHub : svaug12345.github.io
   → c'est le fichier "index.html" à la racine.
@@ -353,11 +356,55 @@
       margin-top: 56px;
     }
     footer .marque { color: var(--teal); font-weight: 700; }
+    /* ---------- Bouton « Actualiser » (discret, en haut à droite) ----------
+       position: fixed → il reste au même endroit même si on fait défiler.
+       env(safe-area-inset-…) : décale le bouton sous l'encoche / la barre
+       d'état du téléphone quand la page est installée en appli. */
+    .actualiser {
+      position: fixed;
+      top:   calc(12px + env(safe-area-inset-top, 0px));
+      right: calc(12px + env(safe-area-inset-right, 0px));
+      z-index: 10;
+      width: 36px; height: 36px;          /* assez grand pour le doigt */
+      display: grid; place-items: center;
+      border: 1px solid transparent;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--ink-muted);
+      opacity: .45;                        /* discret par défaut */
+      cursor: pointer;
+      transition: opacity .2s, background .2s, border-color .2s;
+    }
+    .actualiser:hover,
+    .actualiser:focus-visible {
+      opacity: 1;
+      background: var(--surface-raised);
+      border-color: var(--line);
+      outline: none;
+    }
+    .actualiser svg { width: 18px; height: 18px; }
+    /* Pendant le rechargement : la flèche tourne */
+    .actualiser.tourne svg { animation: tourne .8s linear infinite; }
+    @keyframes tourne { to { transform: rotate(360deg); } }
+    /* Si l'utilisateur a demandé moins d'animations, on n'en fait pas */
+    @media (prefers-reduced-motion: reduce) {
+      .actualiser.tourne svg { animation: none; }
+    }
   </style>
 </head>
 
 <body>
   <div class="page">
+
+    <!-- Bouton « Actualiser » : recharge la page (picto « rotate-cw », Lucide, ISC) -->
+    <button class="actualiser" type="button" id="actualiser"
+            aria-label="Actualiser la page" title="Actualiser">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
+        <path d="M21 3v5h-5"/>
+      </svg>
+    </button>
 
     <!-- ===================== EN-TÊTE ===================== -->
     <header>
@@ -385,7 +432,7 @@
 
     <!-- ===================== PIED DE PAGE ===================== -->
     <footer>
-      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.16.0</p>
+      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.17.0</p>
     </footer>
 
   </div>
@@ -695,6 +742,15 @@
     // Le navigateur exige un site en https (c'est le cas de baiji.fr).
     // Le fichier sw.js (racine) n'agit que sur les fichiers de l'accueil,
     // jamais sur les dossiers des autres applis.
+    // ---------- Bouton « Actualiser » ----------
+    // Le service worker est en « réseau d'abord » : un simple rechargement
+    // va donc chercher la dernière version du site (et retombe sur la copie
+    // en cache si on est hors ligne).
+    document.getElementById("actualiser").addEventListener("click", (e) => {
+      e.currentTarget.classList.add("tourne");   // petit retour visuel
+      location.reload();
+    });
+
     if ("serviceWorker" in navigator && location.protocol === "https:") {
       navigator.serviceWorker.register("/sw.js", { scope: "/" });
     }
