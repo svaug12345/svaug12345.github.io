@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr — Page d'accueil des projets (marque SV)
-  Version 1.18.0
+  Version 1.19.0
   ------------------------------------------------------------
   Historique :
    • v1.0.0 : première page d'accueil
@@ -39,6 +39,7 @@
    • v1.16.0 : ajout de « Assistant Nexus » (franchisés Carrefour) dans « Agents vocaux »
    • v1.17.0 : petit bouton « Actualiser » discret en haut à droite
    • v1.18.0 : ajout de « Location » (réservation de véhicules à la voix) dans « Agents vocaux »
+   • v1.19.0 : ajout du « Grand Verdict » (le fils préféré de Papa et Maman) dans « Agents vocaux »
               (utile quand la page est installée en appli : pas de
               barre du navigateur, donc pas de bouton recharger)
 
@@ -488,6 +489,7 @@
       camion: `<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/> <path d="M15 18H9"/> <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/> <circle cx="17" cy="18" r="2"/> <circle cx="7" cy="18" r="2"/>`,  // truck
       poignee: `<path d="m11 17 2 2a1 1 0 1 0 3-3"/> <path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"/> <path d="m21 3 1 11h-2"/> <path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"/> <path d="M3 4h8"/>`,  // handshake
       toque: `<path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/> <path d="M22 10v6"/> <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>`,  // graduation-cap
+      trophee: `<path d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978"/> <path d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978"/> <path d="M18 9h1.5a1 1 0 0 0 0-5H18"/> <path d="M4 22h16"/> <path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"/> <path d="M6 9H4.5a1 1 0 0 1 0-5H6"/>`,  // trophy
       telephone: `<path d="M13 2a9 9 0 0 1 9 9"/> <path d="M13 6a5 5 0 0 1 5 5"/> <path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/>`,  // phone-call
       balance: `<path d="M12 3v18"/> <path d="m19 8 3 8a5 5 0 0 1-6 0zV7"/> <path d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1"/> <path d="m5 8 3 8a5 5 0 0 1-6 0zV7"/> <path d="M7 21h10"/>`,  // scale
       vent: `<path d="M12.8 19.6A2 2 0 1 0 14 16H2"/> <path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"/> <path d="M9.8 4.4A2 2 0 1 1 11 8H2"/>`,  // wind
@@ -607,6 +609,14 @@
         desc: "Tom, Gaby et Nanon s'entraînent à négocier avec Papa (et son coach)",
         courte: "Négocier avec Papa",              // version courte (téléphone)
         url:  "nego-papa/",              // ✅ en ligne : baiji.fr/nego-papa/
+        cat:  "Agents vocaux"
+      },
+      {
+        nom:  "Le Grand Verdict",
+        icone: "trophee",                 // picto (voir la liste PICTOS)
+        desc: "Papa et Maman doivent enfin dire qui est leur fils préféré (spoiler : Sébastien)",
+        courte: "Le fils préféré, enfin !",              // version courte (téléphone)
+        url:  "fils-prefere/",           // ✅ en ligne : baiji.fr/fils-prefere/
         cat:  "Agents vocaux"
       },
       {

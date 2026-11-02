@@ -1,0 +1,497 @@
+<!doctype html>
+<!--
+  Page « Le Grand Verdict » — qui est le fils préféré de Papa et Maman ?
+  Version 1.0.0 – 02/11/2026
+  En ligne : https://baiji.fr/fils-prefere/
+
+  Historique :
+   • 1.0.0 : première version (faux jeu télé vocal, agent ElevenLabs « Jean-Mi »,
+             trois candidats, diplôme final toujours au nom de Sébastien)
+
+  Comment ça marche ?
+  - Un plateau de jeu télé : titre lumineux, les 3 candidats (Sébastien, Julien,
+    Adrien) et un gros bouton « Entrer sur le plateau ».
+  - Au clic, on parle avec l'animateur Jean-Mi (agent ElevenLabs « Le Grand
+    Verdict – Fils préféré », voix « JT VOX Pro »). Il pose des questions à Papa
+    ou Maman et, quoi qu'ils répondent… c'est Sébastien qui gagne.
+  - États de la page (classe CSS sur <body>) : connexion → en-ligne → repos.
+  - L'outil client « annoncer_verdict » : quand l'animateur annonce le verdict,
+    ElevenLabs demande à la page d'exécuter la fonction annoncerVerdict()
+    (déclarée dans clientTools, même nom que l'outil dans ElevenLabs).
+    Elle affiche le diplôme : ce que le parent a VRAIMENT dit (barré)
+    et ce que « la régie a entendu » : SÉBASTIEN.
+  - SDK officiel « @elevenlabs/client » (comme les autres agents du site).
+-->
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Le Grand Verdict</title>
+  <!--
+    PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »).
+    Fichiers fabriqués par outils/generer-pwa.py : manifest.webmanifest, icones/, sw.js.
+  -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <link rel="icon" href="icones/icone-192.png" type="image/png">
+  <!-- « noindex » : invisible sur Google, accessible seulement avec le lien -->
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#1a1040">
+  <!-- Bowlby One = titre façon enseigne de jeu télé ; Manrope = texte (charte SV) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ---------- Couleurs (une seule source de vérité) ---------- */
+    :root {
+      --nuit:   #1a1040;   /* fond du plateau, violet nuit */
+      --nuit-2: #2a1a63;   /* cartes */
+      --or:     #ffc83d;   /* l'or des projecteurs et du trophée */
+      --or-2:   #c9900c;   /* or foncé (ombre du bouton) */
+      --rose:   #ff4f8b;   /* néons */
+      --texte:  #fff7e6;
+      --doux:   #bfb3e6;
+      --rouge:  #e23b4a;   /* raccrocher / erreur */
+      --papier: #fffaf0;   /* le diplôme */
+      --encre:  #2b1d0e;
+    }
+    /* Le plateau est sombre dans les deux thèmes : pas de mode clair/sombre ici,
+       mais on donne quand même une couleur de fond explicite au body. */
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      background:
+        /* deux « projecteurs » en haut de l'écran (dégradés en cône) */
+        radial-gradient(ellipse 60% 45% at 20% -5%, rgba(255,200,61,.22), transparent 70%),
+        radial-gradient(ellipse 60% 45% at 80% -5%, rgba(255,79,139,.20), transparent 70%),
+        var(--nuit);
+      color: var(--texte);
+      font-family: Manrope, system-ui, sans-serif;
+      min-height: 100vh;
+      min-height: 100dvh;           /* hauteur réelle sur mobile */
+      display: flex;
+      flex-direction: column;
+    }
+
+    main {
+      flex: 1;
+      width: 100%;
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 28px 16px 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 26px;
+      text-align: center;
+    }
+
+    /* ---------- L'enseigne ---------- */
+    .surtitre {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      color: var(--rose);
+      margin: 0 0 10px;
+    }
+    h1 {
+      font-family: "Bowlby One", Impact, sans-serif;
+      font-weight: 400;
+      font-size: clamp(38px, 11vw, 64px);
+      line-height: .95;
+      margin: 0;
+      color: var(--or);
+      /* effet néon : plusieurs ombres de plus en plus floues */
+      text-shadow: 0 0 6px rgba(255,200,61,.6), 0 0 22px rgba(255,200,61,.35), 0 4px 0 var(--or-2);
+    }
+    .accroche { color: var(--doux); font-size: 16px; margin: 14px auto 0; max-width: 32ch; }
+
+    /* ---------- Les 3 candidats ---------- */
+    .candidats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      width: 100%;
+    }
+    .candidat {
+      background: var(--nuit-2);
+      border: 2px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      padding: 14px 6px 12px;
+      position: relative;
+    }
+    .candidat .rang { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--doux); }
+    .candidat .nom  { font-family: "Bowlby One", Impact, sans-serif; font-size: clamp(16px, 5vw, 22px); margin: 6px 0 2px; }
+    .candidat .note { font-size: 12.5px; color: var(--doux); line-height: 1.3; }
+    /* Sébastien : bordure dorée, petite couronne… les dés sont pipés dès l'accueil */
+    .candidat.favori { border-color: var(--or); box-shadow: 0 0 18px rgba(255,200,61,.25); }
+    .candidat.favori .nom { color: var(--or); }
+    .couronne {
+      position: absolute; top: -14px; left: 50%; transform: translateX(-50%) rotate(-8deg);
+      width: 30px; height: 22px; color: var(--or);
+    }
+
+    /* ---------- Le bouton (le buzzer) ---------- */
+    .zone-bouton { position: relative; width: 196px; height: 196px; display: grid; place-items: center; }
+    .halo {
+      position: absolute; inset: 0; border-radius: 50%;
+      background: var(--or); opacity: 0; pointer-events: none;   /* les clics traversent */
+      transition: transform .12s ease-out, opacity .2s;
+    }
+    body.en-ligne .halo { opacity: .14; }
+
+    #bouton {
+      position: relative;            /* au-dessus des halos */
+      width: 172px; height: 172px; border-radius: 50%; border: none; cursor: pointer;
+      background: radial-gradient(circle at 35% 30%, #ffe08a, var(--or) 55%, #e8a915);
+      color: var(--encre);
+      font: 800 14px/1.25 Manrope, sans-serif;
+      letter-spacing: .14em; text-transform: uppercase;
+      box-shadow: 0 9px 0 var(--or-2), 0 16px 34px rgba(0,0,0,.4);
+      transition: transform .1s, box-shadow .1s;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #bouton:active { transform: translateY(7px); box-shadow: 0 2px 0 var(--or-2), 0 6px 14px rgba(0,0,0,.4); }
+    #bouton:focus-visible { outline: 3px solid var(--rose); outline-offset: 6px; }
+    #bouton svg { width: 42px; height: 42px; }
+
+    body.connexion #bouton { animation: clignote 1s ease-in-out infinite; cursor: progress; }
+    body.en-ligne #bouton, body.erreur #bouton {
+      background: radial-gradient(circle at 35% 30%, #ff7d88, var(--rouge) 60%);
+      color: #fff; box-shadow: 0 9px 0 #8f1f28, 0 16px 34px rgba(0,0,0,.4);
+    }
+    @keyframes clignote { 50% { filter: brightness(1.25); transform: scale(1.03); } }
+
+    /* ---------- Infos pendant l'émission ---------- */
+    #infos { min-height: 3.4em; font-size: 15px; color: var(--doux); }
+    #chrono {
+      display: block; font-weight: 800; font-size: 22px; color: var(--texte);
+      font-variant-numeric: tabular-nums;   /* chiffres de même largeur : le chrono ne tremble pas */
+      visibility: hidden;
+    }
+    body.en-ligne #chrono { visibility: visible; }
+    /* Pastille « EN DIRECT » qui apparaît pendant l'appel */
+    .direct {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 800; letter-spacing: .2em;
+      color: #fff; background: var(--rouge); border-radius: 99px; padding: 4px 10px;
+      visibility: hidden;
+    }
+    .direct::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #fff; animation: clignote 1s infinite; }
+    body.en-ligne .direct { visibility: visible; }
+
+    /* ---------- Le diplôme (affiché par l'outil annoncer_verdict) ---------- */
+    #diplome {
+      position: fixed; inset: 0; z-index: 10;
+      background: rgba(10,5,30,.78);
+      display: none; align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    #diplome.visible { display: flex; }
+    .feuille {
+      position: relative;
+      background: var(--papier); color: var(--encre);
+      width: 100%; max-width: 420px;
+      border-radius: 10px;
+      padding: 30px 22px 24px;
+      text-align: center;
+      /* double cadre doré façon diplôme */
+      box-shadow: inset 0 0 0 3px var(--or), inset 0 0 0 7px var(--papier), inset 0 0 0 8px var(--or-2), 0 20px 60px rgba(0,0,0,.5);
+      animation: arrivee .6s cubic-bezier(.2,1.4,.4,1) both;
+    }
+    @keyframes arrivee { from { transform: scale(.6) rotate(-6deg); opacity: 0; } }
+    .feuille .trophee { width: 54px; height: 54px; color: var(--or-2); }
+    .feuille .mention { font-size: 11px; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; color: var(--or-2); margin: 6px 0 4px; }
+    .feuille h2 { font-family: "Bowlby One", Impact, sans-serif; font-weight: 400; font-size: 22px; margin: 0 0 14px; }
+    .feuille .gagnant {
+      font-family: "Bowlby One", Impact, sans-serif; font-size: clamp(34px, 11vw, 46px);
+      color: #b8860b; margin: 4px 0 2px; line-height: 1;
+    }
+    .feuille .sous { font-size: 14px; color: #6b5a44; margin: 0 0 16px; }
+    .regie {
+      background: #f3ead6; border-radius: 8px; padding: 10px 12px; font-size: 14px; text-align: left;
+    }
+    .regie p { margin: 4px 0; }
+    .regie s { color: #a4472f; }                 /* ce que le parent a vraiment dit… barré */
+    .regie strong { color: #b8860b; }
+    .tampon {
+      display: inline-block; margin: 20px 0 8px;   /* dans le flux : ne recouvre plus le texte */
+      border: 3px solid #c0392b; color: #c0392b; border-radius: 6px;
+      font-weight: 800; font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+      padding: 4px 8px; transform: rotate(-6deg); opacity: .85;
+    }
+    .feuille .signature { font-size: 12.5px; color: #6b5a44; margin: 12px 0 14px; }
+    .feuille button {
+      border: none; border-radius: 99px; padding: 12px 20px; cursor: pointer;
+      background: var(--nuit); color: var(--or);
+      font: 800 12.5px Manrope, sans-serif; letter-spacing: .16em; text-transform: uppercase;
+    }
+
+    /* Confettis (petits rectangles qui tombent, créés en JavaScript) */
+    .confetti {
+      position: fixed; top: -12px; width: 8px; height: 14px; z-index: 11; pointer-events: none;
+      animation: chute linear forwards;
+    }
+    @keyframes chute { to { transform: translateY(110vh) rotate(720deg); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      body.connexion #bouton, .direct::before, .feuille { animation: none; }
+      .halo { transition: none; }
+      .confetti { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="surtitre">Ce soir, en direct</p>
+      <h1>Le Grand<br>Verdict</h1>
+      <p class="accroche">Papa, Maman : on arrête de tourner autour du pot. Lequel des trois est votre fils préféré ?</p>
+    </header>
+
+    <!-- Les 3 candidats, de l'aîné au petit dernier -->
+    <section class="candidats" aria-label="Les candidats">
+      <div class="candidat favori">
+        <!-- Couronne (dessin SVG maison, aucune image à charger) -->
+        <svg class="couronne" viewBox="0 0 30 22" fill="currentColor" aria-hidden="true">
+          <path d="M2 20h26l2-15-8 6-7-10-7 10-8-6z"/>
+        </svg>
+        <div class="rang">L'aîné</div>
+        <div class="nom">Sébastien</div>
+        <div class="note">Le plus tout</div>
+      </div>
+      <div class="candidat">
+        <div class="rang">Le 2ᵉ</div>
+        <div class="nom">Julien</div>
+        <div class="note">Cool, sympatoche…</div>
+      </div>
+      <div class="candidat">
+        <div class="rang">Le petit dernier</div>
+        <div class="nom">Adrien</div>
+        <div class="note">Le chouchou, paraît-il</div>
+      </div>
+    </section>
+
+    <div class="zone-bouton">
+      <!-- 3 halos qui grossissent quand l'animateur parle -->
+      <span class="halo" aria-hidden="true"></span>
+      <span class="halo" aria-hidden="true"></span>
+      <span class="halo" aria-hidden="true"></span>
+      <button id="bouton" type="button">
+        <!-- Icône micro (Lucide « mic », licence ISC) -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/>
+        </svg>
+        <span id="libelle">Entrer sur le plateau</span>
+      </button>
+    </div>
+
+    <!-- aria-live : les lecteurs d'écran annoncent les changements -->
+    <div id="infos" aria-live="polite">
+      <span class="direct">En direct</span>
+      <span id="chrono">00:00</span>
+      <span id="parole">Répondez franchement. De toute façon, on connaît déjà la réponse.</span>
+    </div>
+  </main>
+
+  <!-- Le diplôme, caché jusqu'au verdict -->
+  <div id="diplome" role="dialog" aria-modal="true" aria-labelledby="titre-diplome">
+    <div class="feuille">
+      <!-- Trophée (Lucide « trophy », licence ISC) -->
+      <svg class="trophee" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978"/><path d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978"/><path d="M18 9h1.5a1 1 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"/><path d="M6 9H4.5a1 1 0 0 1 0-5H6"/>
+      </svg>
+      <p class="mention">Diplôme officiel</p>
+      <h2 id="titre-diplome">Fils Préféré</h2>
+      <div class="gagnant">SÉBASTIEN</div>
+      <p class="sous" id="date-diplome"></p>
+
+      <div class="regie">
+        <p>Réponse de <span id="qui">l'heureux parent</span> : <s id="vraie-reponse">—</s></p>
+        <p>Entendu en régie : <strong>Sébastien</strong></p>
+      </div>
+      <span class="tampon">Validé par l'huissier</span>
+
+      <p class="signature">Décision définitive, sans appel ni réclamation possible.</p>
+      <button type="button" id="fermer">Fermer</button>
+    </div>
+  </div>
+
+  <script type="module">
+    /* ============================================================
+       1. RÉGLAGES
+       ============================================================ */
+    const AGENT_ID = "agent_4901m6er8r7xe7p9p4k9m34kwwet";   // l'agent « Le Grand Verdict – Fils préféré » sur ElevenLabs
+
+    // Tous les textes affichés, regroupés ici pour les changer facilement
+    const TEXTES = {
+      repos:      "Entrer sur le plateau",
+      connexion:  "Silence, on tourne…",
+      raccrocher: "Quitter le plateau",
+      erreur:     "Problème de régie",
+      sousTitre:  "Répondez franchement. De toute façon, on connaît déjà la réponse.",
+      parle:      "Jean-Mi, l'animateur, a la parole…",
+      aVous:      "À vous ! Le public retient son souffle.",
+      micro:      "Il faut autoriser le micro, sinon le jury ne vous entend pas.",
+    };
+
+    const bouton  = document.getElementById("bouton");
+    const libelle = document.getElementById("libelle");
+    const chrono  = document.getElementById("chrono");
+    const parole  = document.getElementById("parole");
+    const halos   = [...document.querySelectorAll(".halo")];
+    const diplome = document.getElementById("diplome");
+
+    /* ============================================================
+       2. LES ÉTATS DE LA PAGE
+       On met une classe sur <body> : le CSS fait le reste.
+       ============================================================ */
+    function etat(nom) { document.body.className = nom || ""; }
+
+    // Chrono de l'émission (mm:ss)
+    let debut = 0, minuterie = null;
+    function lancerChrono() {
+      debut = Date.now();
+      chrono.textContent = "00:00";
+      minuterie = setInterval(() => {
+        const s = Math.floor((Date.now() - debut) / 1000);
+        // padStart(2, "0") ajoute un zéro devant : 7 → "07"
+        chrono.textContent =
+          String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+      }, 1000);
+    }
+
+    /* ============================================================
+       3. LE DIPLÔME (appelé par l'agent via l'outil client)
+       ElevenLabs envoie les paramètres de l'outil « annoncer_verdict » :
+         { parent: "papa" | "maman" | "inconnu", reponse_reelle: "…" }
+       ============================================================ */
+    function annoncerVerdict({ parent, reponse_reelle } = {}) {
+      const noms = { papa: "Papa", maman: "Maman" };
+      document.getElementById("qui").textContent = noms[parent] || "l'heureux parent";
+      // textContent (et pas innerHTML) : le texte est affiché tel quel, sans risque
+      document.getElementById("vraie-reponse").textContent = reponse_reelle || "(inaudible)";
+      // Date du jour en toutes lettres, ex. « lundi 2 novembre 2026 »
+      document.getElementById("date-diplome").textContent =
+        "Proclamé le " + new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+
+      diplome.classList.add("visible");
+      confettis();
+      // Pas de réponse à renvoyer à l'agent (l'outil est réglé « expects_response: false »)
+    }
+
+    // Fermer le diplôme (bouton ou clic à côté de la feuille)
+    document.getElementById("fermer").addEventListener("click", () => diplome.classList.remove("visible"));
+    diplome.addEventListener("click", (e) => { if (e.target === diplome) diplome.classList.remove("visible"); });
+
+    // 80 confettis aux couleurs du plateau, qui se suppriment une fois tombés
+    function confettis() {
+      const couleurs = ["#ffc83d", "#ff4f8b", "#7cc6ff", "#ffffff", "#b388ff"];
+      for (let i = 0; i < 80; i++) {
+        const c = document.createElement("span");
+        c.className = "confetti";
+        c.style.left = Math.random() * 100 + "vw";
+        c.style.background = couleurs[i % couleurs.length];
+        c.style.animationDuration = 2.2 + Math.random() * 2 + "s";
+        c.style.animationDelay = Math.random() * .8 + "s";
+        c.addEventListener("animationend", () => c.remove());
+        document.body.appendChild(c);
+      }
+    }
+
+    /* ============================================================
+       4. L'ÉMISSION EN DIRECT AVEC JEAN-MI
+       ============================================================ */
+    let conversation = null;   // la session en cours (null = pas d'appel)
+    let boucle = null;         // boucle d'animation des halos
+    let lisse  = 0;            // volume lissé, pour des halos fluides
+
+    function repos() {
+      cancelAnimationFrame(boucle);
+      clearInterval(minuterie);
+      conversation = null;
+      halos.forEach(h => h.style.transform = "scale(1)");
+      etat("");
+      libelle.textContent = TEXTES.repos;
+      parole.textContent  = TEXTES.sousTitre;
+    }
+
+    function erreur(e, message) {
+      console.error("Le Grand Verdict :", e);
+      cancelAnimationFrame(boucle);
+      clearInterval(minuterie);
+      conversation = null;
+      etat("erreur");
+      libelle.textContent = TEXTES.erreur;
+      if (message) parole.textContent = message;
+      setTimeout(repos, 3500);
+    }
+
+    // 60 fois par seconde pendant l'appel : les halos suivent la voix de l'animateur
+    function animer() {
+      if (!conversation) return;
+      const v = Math.min(1, conversation.getOutputVolume() * 2.5);   // volume de sortie, 0 à 1
+      lisse = lisse * 0.75 + v * 0.25;                                  // moyenne glissante = mouvement doux
+      halos.forEach((h, i) => h.style.transform = `scale(${1 + lisse * (0.16 + i * 0.15)})`);
+      boucle = requestAnimationFrame(animer);
+    }
+
+    bouton.addEventListener("click", async () => {
+      // Clic pendant l'émission → on quitte le plateau
+      if (conversation) { await conversation.endSession(); return; }
+      if (document.body.classList.contains("connexion")) return;   // anti double-clic
+
+      etat("connexion");
+      libelle.textContent = TEXTES.connexion;
+
+      try {
+        // 1) Accès au micro (le navigateur demande l'autorisation)
+        try {
+          await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (e) {
+          return erreur(e, TEXTES.micro);
+        }
+
+        // 2) Le SDK ElevenLabs n'est chargé qu'au premier clic (page plus légère).
+        //    Version figée, la même que les autres agents, pour qu'une mise à jour ne casse rien.
+        const { Conversation } = await import(
+          "https://cdn.jsdelivr.net/npm/@elevenlabs/client@1.32.1/+esm"
+        );
+
+        // 3) Ouverture de la conversation
+        conversation = await Conversation.startSession({
+          agentId: AGENT_ID,
+          // Les outils « client » : le nom doit être EXACTEMENT celui de l'outil dans ElevenLabs
+          clientTools: { annoncer_verdict: annoncerVerdict },
+          onConnect: () => {
+            etat("en-ligne");
+            libelle.textContent = TEXTES.raccrocher;
+            parole.textContent  = TEXTES.parle;   // il commence par son générique
+            lancerChrono();
+            animer();
+          },
+          // mode = "speaking" (l'animateur parle) ou "listening" (il écoute)
+          onModeChange: ({ mode }) => {
+            parole.textContent = mode === "speaking" ? TEXTES.parle : TEXTES.aVous;
+          },
+          onDisconnect: repos,
+          onError: (e) => erreur(e),
+        });
+      } catch (e) {
+        erreur(e);
+      }
+    });
+  </script>
+<script>
+  // ---- Page installable : enregistrement du service worker (sw.js, même dossier) ----
+  // Il fonctionne en « réseau d'abord » : la page en ligne est toujours la plus récente.
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    navigator.serviceWorker.register("sw.js");
+  }
+</script>
+</body>
+</html>
