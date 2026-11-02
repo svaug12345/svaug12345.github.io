@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Famille · Vaugoude's Family — tableau de bord de la maison
-  Version 1.3.0
+  Version 1.3.1
   Mobile par défaut ; mode TV avec baiji.fr/famille/?tv (retour : ?mobile).
   Historique :
    • v1.0.0 : météo, tâches du jour (Google Sheet), 7 prochains jours, Pass TV,
@@ -12,6 +12,7 @@
    • v1.1.0 : plus de Pass TV ; un enfant sans tâche n'est plus affiché du tout
    • v1.2.0 : carte « Médiathèque » (prêts en cours, via le service biblio du NAS)
    • v1.3.0 : carte « Agenda » (Anniversaires + Famille L+S, via un Apps Script Google)
+   • v1.3.1 : adresse de l'Apps Script « Agenda Famille » branchée
 -->
 <html lang="fr">
 <head>
@@ -388,7 +389,7 @@
     /* =================================================================
        CONFIGURATION — les seules lignes à modifier en temps normal
        ================================================================= */
-    const VERSION = '1.3.0';
+    const VERSION = '1.3.1';
 
     // Google Sheet "Family tasks" publié en TSV (Fichier > Partager > Publier sur le web).
     // C'est le même lien que celui de ton Kindle.
@@ -404,7 +405,7 @@
 
     // Adresse /exec de l'Apps Script « Agenda Famille » (agendas Anniversaires + Famille L+S).
     // Tant qu'elle est vide, la carte Agenda reste cachée.
-    const AGENDA_URL = '';
+    const AGENDA_URL = 'https://script.google.com/macros/s/AKfycbzbzD8I38Ul_baGjfa17QQ-gZbSQvlbL9QTlerMiGDeAHUGhz-Q0eo2XuZR6k4cgvro/exec';
     // Nombre de jours affichés dans la carte Agenda (le script en fournit 30)
     const AGENDA_DAYS = { mobile: 14, tv: 7 };
 
