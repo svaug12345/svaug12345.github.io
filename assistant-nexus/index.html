@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Page « Assistant Nexus B2B – partenaires franchisés Carrefour »
-  Version 1.3.0 – 02/11/2026
+  Version 1.3.1 – 02/11/2026
   En ligne : https://baiji.fr/assistant-nexus/
 
   Historique :
@@ -23,6 +23,7 @@
              au Google Apps Script « Rappel Nexus » (RAPPEL_URL), qui demande à
              ElevenLabs de faire appeler la personne par l'agent « Rappel Nexus B2B »
              (code du script : outils/rappel-nexus.gs)
+   • 1.3.1 : RAPPEL_URL branchée sur l'application web Apps Script déployée
 
   À quoi sert cette page ?
   - Elle explique en 4 étapes comment rejoindre Carrefour sur Nexus (plateforme Ariba).
@@ -484,7 +485,7 @@
 
     // Adresse de l'application web Apps Script (finit par /exec).
     // Vide = le service n'est pas encore branché : on prévient la personne.
-    const RAPPEL_URL = "";
+    const RAPPEL_URL = "https://script.google.com/macros/s/AKfycbwDu_CRDHobWlM6CTPqtWsaHyYxJ9K5Xjfv4-ElqrNV8QQhuOt-Ld-2FRLJOr4LtdUc/exec";
 
     const lienRappel   = document.getElementById("lien-rappel");
     const formRappel   = document.getElementById("form-rappel");
