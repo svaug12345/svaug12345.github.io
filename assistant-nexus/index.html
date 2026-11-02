@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Page « Assistant Nexus B2B – partenaires franchisés Carrefour »
-  Version 1.2.1 – 02/11/2026
+  Version 1.3.0 – 02/11/2026
   En ligne : https://baiji.fr/assistant-nexus/
 
   Historique :
@@ -18,6 +18,11 @@
              3 min max, et il raccroche après 3 relances sans réponse)
    • 1.2.1 : on n'affiche plus la limite de 3 minutes (ni phrase, ni compte à
              rebours) ; la limite reste active côté agent
+   • 1.3.0 : option discrète « Vous préférez être rappelé ? » sous le bouton d'appel :
+             petit formulaire (nom, entreprise, téléphone, difficulté, accord) envoyé
+             au Google Apps Script « Rappel Nexus » (RAPPEL_URL), qui demande à
+             ElevenLabs de faire appeler la personne par l'agent « Rappel Nexus B2B »
+             (code du script : outils/rappel-nexus.gs)
 
   À quoi sert cette page ?
   - Elle explique en 4 étapes comment rejoindre Carrefour sur Nexus (plateforme Ariba).
@@ -146,6 +151,56 @@
     #sous-titres .vous { background: var(--orange-clair); margin-left: 15%; border-top-right-radius: 4px; }
     #sous-titres b { display: block; font-size: .78rem; color: var(--texte-doux); font-weight: 600; }
 
+    /* ============================================================
+       Option « être rappelé » : volontairement DISCRÈTE
+       Un simple lien souligné sous le gros bouton ; le formulaire
+       est caché (attribut hidden) tant qu'on n'a pas cliqué dessus.
+       Pendant une conversation, on cache tout (une chose à la fois).
+       ============================================================ */
+    .ou-rappel { margin: 18px 0 0; font-size: .92rem; color: var(--texte-doux); }
+    .lien-rappel {
+      background: none; border: 0; padding: 6px 2px; cursor: pointer;
+      font: inherit; color: var(--bleu);
+      text-decoration: underline; text-underline-offset: 3px;
+    }
+    .lien-rappel:focus-visible { outline: 2px solid var(--bleu); outline-offset: 2px; border-radius: 4px; }
+    body.connexion .ou-rappel, body.en-ligne .ou-rappel,
+    body.connexion #form-rappel, body.en-ligne #form-rappel { display: none; }
+
+    #form-rappel {
+      text-align: left; margin-top: 14px; padding-top: 18px;
+      border-top: 1px dashed #D5DEEA;
+      display: grid; gap: 14px;
+    }
+    #form-rappel[hidden] { display: none; }   /* sinon « display: grid » l'emporterait sur hidden */
+    #form-rappel .intro { margin: 0; color: var(--texte-doux); font-size: .95rem; }
+    #form-rappel label { display: grid; gap: 4px; font-weight: 600; font-size: .95rem; }
+    #form-rappel label small { font-weight: 400; color: var(--texte-doux); }
+    #form-rappel input[type=text], #form-rappel input[type=tel],
+    #form-rappel select, #form-rappel textarea {
+      font: inherit; font-weight: 400; width: 100%;
+      padding: 11px 12px; min-height: 46px;          /* champs assez grands pour le pouce */
+      border: 1px solid #C9D4E3; border-radius: 10px; background: #fff; color: var(--texte);
+    }
+    #form-rappel textarea { min-height: 70px; resize: vertical; }
+    #form-rappel input:focus, #form-rappel select:focus, #form-rappel textarea:focus {
+      outline: 2px solid var(--bleu); outline-offset: 1px; border-color: var(--bleu);
+    }
+    /* Case d'accord : la case à gauche, le texte à droite */
+    #form-rappel .accord { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; }
+    #form-rappel .accord input { width: 20px; height: 20px; margin-top: 3px; flex: none; accent-color: var(--orange); }
+    /* Champ piège anti-robots : invisible pour les humains (les robots le remplissent) */
+    #form-rappel .piege { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+    #bouton-rappel {
+      justify-self: start; border: 2px solid var(--bleu); border-radius: 999px;
+      background: #fff; color: var(--bleu); font: inherit; font-weight: 700;
+      padding: 11px 22px; min-height: 48px; cursor: pointer;
+    }
+    #bouton-rappel:disabled { opacity: .6; cursor: wait; }
+    #retour-rappel { margin: 0; font-size: .95rem; }
+    #retour-rappel.ok { color: #1F7A3A; }
+    #retour-rappel.ko { color: #B3261E; }
+
     h2.section { font-size: 1.15rem; margin: 0 0 14px; color: var(--bleu); }
 
     /* Liste des étapes numérotées (pastilles orange) */
@@ -246,6 +301,59 @@
 
         <p id="parole"></p>
         <div id="sous-titres"></div>
+
+        <!-- Deuxième possibilité, discrète : se faire rappeler par l'assistant -->
+        <p class="ou-rappel">
+          <button class="lien-rappel" id="lien-rappel" type="button"
+                  aria-expanded="false" aria-controls="form-rappel">Vous préférez être rappelé ?</button>
+        </p>
+
+        <!-- Le formulaire reste caché (hidden) tant qu'on n'a pas cliqué sur le lien -->
+        <form id="form-rappel" hidden novalidate>
+          <p class="intro">Laissez vos coordonnées : l'assistant automatique Carrefour vous rappelle
+            (du lundi au vendredi, de 9 h à 19 h).</p>
+
+          <label>Votre nom
+            <input type="text" name="nom" autocomplete="name" maxlength="60" required>
+          </label>
+
+          <label>Votre magasin ou entreprise
+            <input type="text" name="entreprise" autocomplete="organization" maxlength="80">
+          </label>
+
+          <label>Téléphone <small>(numéro français)</small>
+            <input type="tel" name="telephone" autocomplete="tel" inputmode="tel"
+                   placeholder="06 12 34 56 78" maxlength="20" required>
+          </label>
+
+          <label>Où bloquez-vous ?
+            <select name="difficulte">
+              <option value="ne trouve pas le courriel d'invitation">Je ne trouve pas l'e-mail d'invitation</option>
+              <option value="n'arrive pas à accepter la relation commerciale avec Carrefour">Je n'arrive pas à accepter la relation commerciale</option>
+              <option value="ne sait pas s'il faut créer un compte ou utiliser le compte existant, par exemple celui de OneBuy">Créer un compte ou utiliser celui que j'ai déjà ?</option>
+              <option value="n'arrive plus à se connecter à son compte Ariba">Je n'arrive plus à me connecter</option>
+              <option value="ne voit pas ses commandes Nexus">Je ne vois pas mes commandes</option>
+              <option value="autre">Autre</option>
+            </select>
+          </label>
+
+          <label>Précisez si besoin <small>(facultatif)</small>
+            <textarea name="precision" maxlength="200"></textarea>
+          </label>
+
+          <!-- Piège à robots : un humain ne voit pas ce champ, donc le laisse vide -->
+          <div class="piege" aria-hidden="true">
+            <label>Site web <input type="text" name="site" tabindex="-1" autocomplete="off"></label>
+          </div>
+
+          <label class="accord">
+            <input type="checkbox" name="accord" value="oui" required>
+            <span>J'accepte d'être rappelé à ce numéro par l'assistant automatique (voix de synthèse) au sujet de Nexus.</span>
+          </label>
+
+          <button id="bouton-rappel" type="submit">Être rappelé</button>
+          <p id="retour-rappel" role="status"></p>
+        </form>
       </section>
 
     </div>
@@ -358,6 +466,91 @@
         });
       } catch (e) {
         erreur(e);   // micro refusé, pas de réseau, agent indisponible…
+      }
+    });
+
+
+    /* ==========================================================
+       OPTION « ÊTRE RAPPELÉ »
+       ----------------------------------------------------------
+       Pourquoi ne pas appeler ElevenLabs directement d'ici ?
+       Parce qu'il faudrait mettre la clé API dans la page, et
+       tout le monde pourrait la lire (clic droit → code source).
+       On passe donc par un relais : un Google Apps Script publié
+       en « application web ». C'est LUI qui garde la clé, vérifie
+       la demande (horaires, limites, numéro français) et lance
+       l'appel. Son code est dans outils/rappel-nexus.gs.
+       ========================================================== */
+
+    // Adresse de l'application web Apps Script (finit par /exec).
+    // Vide = le service n'est pas encore branché : on prévient la personne.
+    const RAPPEL_URL = "";
+
+    const lienRappel   = document.getElementById("lien-rappel");
+    const formRappel   = document.getElementById("form-rappel");
+    const boutonRappel = document.getElementById("bouton-rappel");
+    const retourRappel = document.getElementById("retour-rappel");
+
+    // Les messages selon la réponse du script (clé = code d'erreur renvoyé)
+    const MSG_RAPPEL = {
+      ok:        "C'est noté ! L'assistant va vous appeler dans quelques instants. Gardez votre téléphone à portée de main.",
+      telephone: "Ce numéro ne semble pas valide. Indiquez un numéro français, par exemple 06 12 34 56 78.",
+      champs:    "Merci d'indiquer votre nom, votre téléphone et de cocher la case d'accord.",
+      horaires:  "Le rappel fonctionne du lundi au vendredi, de 9 h à 19 h. Vous pouvez aussi parler à l'assistant tout de suite avec le bouton ci-dessus.",
+      deja:      "Une demande a déjà été faite pour ce numéro il y a peu. Merci de patienter avant de réessayer.",
+      limite:    "Le service de rappel est très sollicité aujourd'hui. Parlez à l'assistant avec le bouton ci-dessus, ou réessayez demain.",
+      inactif:   "Le rappel n'est pas encore disponible. Parlez à l'assistant avec le bouton ci-dessus.",
+      erreur:    "La demande n'a pas pu être envoyée. Réessayez dans un moment, ou parlez à l'assistant avec le bouton ci-dessus.",
+    };
+
+    // Affiche un message sous le formulaire (vert si ok, rouge sinon)
+    function retour(code) {
+      retourRappel.textContent = MSG_RAPPEL[code] || MSG_RAPPEL.erreur;
+      retourRappel.className = code === "ok" ? "ok" : "ko";
+    }
+
+    // Clic sur le lien discret : on déplie / replie le formulaire
+    lienRappel.addEventListener("click", () => {
+      const ouvrir = formRappel.hidden;
+      formRappel.hidden = !ouvrir;
+      lienRappel.setAttribute("aria-expanded", String(ouvrir));
+      if (ouvrir) formRappel.querySelector("input[name=nom]").focus();
+    });
+
+    // Envoi du formulaire
+    formRappel.addEventListener("submit", async (ev) => {
+      ev.preventDefault();   // pas de rechargement de la page : on envoie nous-mêmes
+
+      const d = new FormData(formRappel);
+
+      // Petites vérifications côté page (le script refait les siennes : on ne
+      // fait jamais confiance au navigateur seul, il peut être contourné)
+      if (!String(d.get("nom")).trim() || !String(d.get("telephone")).trim() || d.get("accord") !== "oui") {
+        return retour("champs");
+      }
+      if (!RAPPEL_URL) return retour("inactif");
+
+      boutonRappel.disabled = true;
+      retourRappel.textContent = "Envoi…";
+      retourRappel.className = "";
+
+      try {
+        // URLSearchParams = envoi « formulaire classique ». C'est une requête dite
+        // « simple » : le navigateur n'a pas besoin d'une autorisation préalable
+        // (pas de « preflight » CORS), ce que Apps Script ne sait pas gérer.
+        const rep = await fetch(RAPPEL_URL, { method: "POST", body: new URLSearchParams(d) });
+        const res = await rep.json();          // le script répond { ok: true } ou { ok: false, erreur: "…" }
+        if (res.ok) {
+          retour("ok");
+          formRappel.reset();                  // on vide le formulaire
+        } else {
+          retour(res.erreur);
+        }
+      } catch (e) {
+        console.error(e);
+        retour("erreur");                      // pas de réseau, script indisponible…
+      } finally {
+        boutonRappel.disabled = false;
       }
     });
   </script>
