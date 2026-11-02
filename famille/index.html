@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Famille · Vaugoude's Family — tableau de bord de la maison
-  Version 1.0.2
+  Version 1.1.0
   Mobile par défaut ; mode TV avec baiji.fr/famille/?tv (retour : ?mobile).
   Historique :
    • v1.0.0 : météo, tâches du jour (Google Sheet), 7 prochains jours, Pass TV,
@@ -9,6 +9,7 @@
    • v1.0.1 : la carte « Voitures » ouvre l'appli Voitures (baiji.fr/voitures/)
    • v1.0.2 : bouton « Mode téléphone » en mode TV ; le mode TV est ignoré sur un écran étroit
               (téléphone), pour ne plus rester bloqué dans l'appli installée
+   • v1.1.0 : plus de Pass TV ; un enfant sans tâche n'est plus affiché du tout
 -->
 <html lang="fr">
 <head>
@@ -159,13 +160,9 @@
       background: color-mix(in srgb, var(--c, var(--tous)) 14%, transparent);
     }
     .empty { color: var(--muted); font-style: italic; font-size: 14px; }
+    /* L'attribut hidden doit toujours gagner, même sur une carte qui a son propre display */
+    [hidden] { display: none !important; }
 
-    .pass-tv {
-      margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: var(--brand); color: #fff;
-      display: flex; gap: 10px; align-items: center;
-    }
-    .pass-tv b { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
-    .pass-tv span { font-size: 13px; opacity: .9; }
 
     /* Filtre par enfant */
     .filters { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -237,8 +234,6 @@
     body.tv .kid { padding: 1vw 0; gap: 1vw; }
     body.tv .kid-name { font-size: 1.6vw; }
     body.tv .task { font-size: 1.3vw; padding: .3vw .8vw; border-radius: .7vw; }
-    body.tv .pass-tv b, body.tv .pass-tv span { font-size: 1vw; }
-    body.tv .pass-tv { padding: 1vw; border-radius: 1vw; }
     body.tv .mini { font-size: 1vw; }
     body.tv .car-name { font-size: 1.2vw; } body.tv .car-soc { font-size: 2.8vw; }
     body.tv .bar { height: .8vw; }
@@ -304,10 +299,6 @@
       <section class="card tasks-today">
         <div class="card-title"><span id="tasks-title">Tâches du jour</span></div>
         <div id="tasks-today"></div>
-        <div class="pass-tv">
-          <b>📺 Pass TV</b>
-          <span>Habits dans le panier · Cartable prêt · Table dressée</span>
-        </div>
       </section>
 
       <!-- Demain (TV) : le planning complet est trop long pour la télé -->
@@ -350,7 +341,7 @@
     /* =================================================================
        CONFIGURATION — les seules lignes à modifier en temps normal
        ================================================================= */
-    const VERSION = '1.0.2';
+    const VERSION = '1.1.0';
 
     // Google Sheet "Family tasks" publié en TSV (Fichier > Partager > Publier sur le web).
     // C'est le même lien que celui de ton Kindle.
@@ -603,19 +594,22 @@
     function renderTasks() {
       const today = new Date();
 
-      // --- Aujourd'hui : une ligne par enfant, même ceux qui n'ont rien (journée libre)
+      // --- Aujourd'hui : une ligne par enfant QUI A quelque chose à faire.
+      //     Un enfant sans tâche n'apparaît pas du tout (pas de ligne vide).
       const groups = groupByKid(tasksFor(today));
-      const names = ['Nanon', 'Gaby', 'Tom'];
-      if (groups.Tous) names.push('Tous');
+      // .filter() garde seulement les noms pour lesquels groups[name] existe,
+      // c'est-à-dire ceux qui ont au moins une tâche aujourd'hui.
+      const names = ['Nanon', 'Gaby', 'Tom', 'Tous'].filter(name => groups[name]);
       $('tasks-today').innerHTML = names.map(name => {
-        const items = groups[name] || [];
+        const items = groups[name];
         const color = KIDS[name] || KIDS.Tous;
-        const body = items.length
-          ? `<div class="kid-tasks">${items.map(t => `<span class="task">${taskIcon(t)} ${esc(t)}</span>`).join('')}</div>`
-          : `<div class="empty">Journée libre 🎉</div>`;
+        const body = `<div class="kid-tasks">${items.map(t => `<span class="task">${taskIcon(t)} ${esc(t)}</span>`).join('')}</div>`;
         return `<div class="kid" style="--c:${color}"><div class="avatar">${name === 'Tous' ? '★' : name[0]}</div>`
              + `<div><div class="kid-name">${name}</div>${body}</div></div>`;
       }).join('');
+      // Si personne n'a rien à faire, on masque toute la carte « Tâches du jour »
+      // (hidden = attribut HTML qui cache l'élément, sans toucher au CSS).
+      $('tasks-today').closest('section').hidden = names.length === 0;
 
       // --- Demain (affiché en mode TV)
       const tomorrow = tasksFor(addDays(today, 1));
