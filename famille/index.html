@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Famille · Vaugoude's Family — tableau de bord de la maison
-  Version 1.3.1
+  Version 1.4.0
   Mobile par défaut ; mode TV avec baiji.fr/famille/?tv (retour : ?mobile).
   Historique :
    • v1.0.0 : météo, tâches du jour (Google Sheet), 7 prochains jours, Pass TV,
@@ -13,6 +13,9 @@
    • v1.2.0 : carte « Médiathèque » (prêts en cours, via le service biblio du NAS)
    • v1.3.0 : carte « Agenda » (Anniversaires + Famille L+S, via un Apps Script Google)
    • v1.3.1 : adresse de l'Apps Script « Agenda Famille » branchée
+   • v1.4.0 : vue « Week-ends » dans l'Agenda (dispo libre / pris sur ~4 mois) ;
+              météo plus compacte ; l'agenda passe avant la météo (téléphone)
+              et prend la place libérée sous la météo (TV)
 -->
 <html lang="fr">
 <head>
@@ -124,26 +127,26 @@
     .weather { background: linear-gradient(150deg, var(--brand), #13606a); color: #fff; }
     .weather .card-title { color: rgba(255,255,255,.7); }
     .now { display: flex; align-items: center; gap: 14px; }
-    .now-icon svg { width: 72px; height: 72px; stroke-width: 1.6; }
-    .now-temp { font-size: 72px; font-weight: 800; letter-spacing: -.05em; line-height: .9; }
-    .now-desc { font-size: 17px; font-weight: 700; }
+    .now-icon svg { width: 46px; height: 46px; stroke-width: 1.6; }
+    .now-temp { font-size: 46px; font-weight: 800; letter-spacing: -.05em; line-height: .9; }
+    .now-desc { font-size: 15px; font-weight: 700; }
     .now-sub { font-size: 13px; opacity: .8; margin-top: 2px; }
-    .details { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
-    .chip { background: rgba(255,255,255,.12); border-radius: 999px; padding: 5px 11px; font-size: 13px; font-weight: 600; }
+    .details { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+    .chip { background: rgba(255,255,255,.12); border-radius: 999px; padding: 3px 9px; font-size: 12px; font-weight: 600; }
 
     /* Prévisions heure par heure : bande qui défile horizontalement */
-    .hourly { display: flex; gap: 6px; overflow-x: auto; margin: 14px -16px 0; padding: 0 16px 2px; scrollbar-width: none; }
+    .hourly { display: flex; gap: 5px; overflow-x: auto; margin: 10px -16px 0; padding: 0 16px 2px; scrollbar-width: none; }
     .hourly::-webkit-scrollbar { display: none; }
-    .hour { flex: 0 0 52px; text-align: center; padding: 8px 0; border-radius: 12px; background: rgba(255,255,255,.08); }
+    .hour { flex: 0 0 46px; text-align: center; padding: 5px 0; border-radius: 10px; background: rgba(255,255,255,.08); }
     .hour b { display: block; font-size: 15px; }
     .hour small { font-size: 12px; opacity: .8; }
-    .hour svg { width: 24px; height: 24px; margin: 4px auto; stroke-width: 2; }
+    .hour svg { width: 20px; height: 20px; margin: 2px auto; stroke-width: 2; }
     .hour .rainp { font-size: 11px; color: #9be7ff; min-height: 14px; }
 
     /* Prévisions des jours suivants */
     .days { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; text-align: center; }
     .day-name { font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--muted); }
-    .day svg { width: 30px; height: 30px; margin: 6px auto; stroke-width: 1.8; color: var(--accent); }
+    .day svg { width: 24px; height: 24px; margin: 3px auto; stroke-width: 1.8; color: var(--accent); }
     .day-t { font-size: 14px; font-weight: 800; }
     .day-t span { color: var(--muted); font-weight: 600; }
 
@@ -216,6 +219,16 @@
     .ag-time { flex: 0 0 46px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--muted); }
     .ag-ev.anniv { font-weight: 800; }
     .ag-ev.anniv .ag-time { font-size: 15px; }           /* le 🎂 prend la place de l'heure */
+    .ag-note { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+    /* Vue « Week-ends » : une ligne par week-end, libre (vert) ou pris */
+    .we { display: grid; grid-template-columns: 92px 1fr; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); align-items: baseline; }
+    .we:first-child { border-top: 0; padding-top: 0; }
+    .we-date { font-weight: 800; font-size: 13.5px; }
+    .we-date small { display: block; font-weight: 600; font-size: 11.5px; color: var(--muted); }
+    .we-free { color: var(--good); font-weight: 800; font-size: 14px; }
+    .we-list { display: flex; flex-wrap: wrap; gap: 5px; }
+    .we-list .mini { --c: var(--accent); }
 
     /* =========================================================
        7. ÉPHÉMÉRIDE
@@ -234,7 +247,7 @@
        ========================================================= */
     body.tv #app {
       max-width: none; height: 100vh; padding: 2.2vw; gap: 1.4vw;
-      display: grid; grid-template-columns: 1.15fr 1fr 0.85fr; grid-template-rows: auto 1fr;
+      display: grid; grid-template-columns: 1.1fr 1fr 0.85fr; grid-template-rows: auto 1fr;
       transition: transform 2s;  /* léger déplacement anti-marquage OLED */
     }
     body.tv .top { grid-column: 1 / -1; }
@@ -244,20 +257,21 @@
     body.tv .card { padding: 1.4vw; border-radius: 1.4vw; overflow: hidden; }
     body.tv .card-title { font-size: .85vw; margin-bottom: 1vw; }
     body.tv .col { display: flex; flex-direction: column; gap: 1.4vw; min-height: 0; }
-    body.tv .weather { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
-    body.tv .now-icon svg { width: 7vw; height: 7vw; }
-    body.tv .now-temp { font-size: 8vw; }
-    body.tv .now-desc { font-size: 1.8vw; }
+    body.tv .weather { flex: none; }               /* hauteur naturelle : l'agenda prend le reste */
+    body.tv .now-icon svg { width: 4vw; height: 4vw; }
+    body.tv .now-temp { font-size: 4.4vw; }
+    body.tv .now-desc { font-size: 1.4vw; }
     body.tv .now-sub, body.tv .chip { font-size: 1vw; }
-    body.tv .hourly { overflow: hidden; margin: 1vw 0 0; padding: 0; gap: .5vw; }
-    body.tv .hour { flex: 1 1 0; padding: .6vw 0; }
+    body.tv .hourly { overflow: hidden; margin: .8vw 0 0; padding: 0; gap: .4vw; }
+    body.tv .hour { flex: 1 1 0; padding: .35vw 0; }
     body.tv .hour b { font-size: 1.15vw; } body.tv .hour small { font-size: .85vw; }
-    body.tv .hour svg { width: 1.8vw; height: 1.8vw; }
+    body.tv .hour svg { width: 1.4vw; height: 1.4vw; }
     body.tv .hour .rainp { font-size: .8vw; min-height: 1vw; }
     body.tv .days { gap: .6vw; }
     body.tv .day-name { font-size: .9vw; } body.tv .day-t { font-size: 1.1vw; }
-    body.tv .day svg { width: 2.4vw; height: 2.4vw; }
+    body.tv .day svg { width: 1.8vw; height: 1.8vw; }
     body.tv .tasks-today { flex: 1; }
+    body.tv #agenda-card { flex: 1; min-height: 0; }   /* l'agenda remplit la colonne 1 sous la météo */
     body.tv .avatar { flex-basis: 3.6vw; height: 3.6vw; font-size: 1.6vw; border-radius: 1vw; }
     body.tv .kid { padding: 1vw 0; gap: 1vw; }
     body.tv .kid-name { font-size: 1.6vw; }
@@ -282,6 +296,15 @@
     body:not(.tv) .tv-only { display: none !important; }
     /* Sur mobile, les "colonnes" ne sont que des conteneurs transparents */
     body:not(.tv) .col { display: contents; }
+    /* Ordre d'affichage sur téléphone (propriété CSS "order" : plus petit = plus haut).
+       L'agenda passe avant la météo ; le reste garde son ordre. */
+    body:not(.tv) #app > *, body:not(.tv) .col > * { order: 10; }
+    body:not(.tv) #app > .top { order: 0; }       /* « #app » : même poids que la règle du dessus, sinon elle gagne */
+    body:not(.tv) .tasks-today { order: 1; }
+    body:not(.tv) #agenda-card { order: 2; }
+    body:not(.tv) .weather { order: 3; }
+    body:not(.tv) .w-days-card { order: 4; }
+    body:not(.tv) #app footer { order: 99; }
   </style>
 </head>
 <body>
@@ -304,7 +327,7 @@
       </div>
     </header>
 
-    <!-- ===== Colonne 1 (TV) : météo ===== -->
+    <!-- ===== Colonne 1 (TV) : météo + agenda ===== -->
     <div class="col">
       <section class="card weather">
         <div>
@@ -324,9 +347,23 @@
         <div class="hourly" id="w-hourly"></div>
       </section>
 
-      <section class="card">
+      <section class="card w-days-card">
         <div class="card-title">Prochains jours</div>
         <div class="days" id="w-days"></div>
+      </section>
+
+      <!-- Agenda Google : cachée tant que l'Apps Script n'a pas répondu, ou s'il n'y a rien.
+           En TV elle remplit la colonne sous la météo ; sur téléphone, CSS "order" la remonte. -->
+      <section class="card" id="agenda-card" hidden>
+        <div class="card-title">
+          <span>Agenda</span>
+          <!-- Onglets (téléphone seulement : pas de clic possible sur la télé) -->
+          <div class="filters mobile-only" id="agenda-tabs">
+            <button class="filter" data-view="list">À venir</button>
+            <button class="filter" data-view="we">Week-ends</button>
+          </div>
+        </div>
+        <div id="agenda"></div>
       </section>
     </div>
 
@@ -335,12 +372,6 @@
       <section class="card tasks-today">
         <div class="card-title"><span id="tasks-title">Tâches du jour</span></div>
         <div id="tasks-today"></div>
-      </section>
-
-      <!-- Agenda Google : cachée tant que l'Apps Script n'a pas répondu, ou s'il n'y a rien -->
-      <section class="card" id="agenda-card" hidden>
-        <div class="card-title">Agenda</div>
-        <div id="agenda"></div>
       </section>
 
       <!-- Demain (TV) : le planning complet est trop long pour la télé -->
@@ -389,7 +420,7 @@
     /* =================================================================
        CONFIGURATION — les seules lignes à modifier en temps normal
        ================================================================= */
-    const VERSION = '1.3.1';
+    const VERSION = '1.4.0';
 
     // Google Sheet "Family tasks" publié en TSV (Fichier > Partager > Publier sur le web).
     // C'est le même lien que celui de ton Kindle.
@@ -407,7 +438,7 @@
     // Tant qu'elle est vide, la carte Agenda reste cachée.
     const AGENDA_URL = 'https://script.google.com/macros/s/AKfycbzbzD8I38Ul_baGjfa17QQ-gZbSQvlbL9QTlerMiGDeAHUGhz-Q0eo2XuZR6k4cgvro/exec';
     // Nombre de jours affichés dans la carte Agenda (le script en fournit 30)
-    const AGENDA_DAYS = { mobile: 14, tv: 7 };
+    const AGENDA_DAYS = { mobile: 14, tv: 10 };
 
     // Coordonnées de Gif-sur-Yvette pour la météo
     const LAT = 48.7018, LON = 2.1340;
@@ -850,46 +881,93 @@
       }
     }
 
+    // Vue choisie dans la carte Agenda : 'list' (jours à venir) ou 'we' (week-ends), mémorisée
+    let agendaView = store.get('agendaView') === 'we' && !IS_TV ? 'we' : 'list';
+    let agendaData = null;                             // dernière réponse, pour redessiner sans recharger
+
+    // Un événement touche-t-il la période [d0, d1[ ?
+    //   - journée entière : il chevauche la période (sa fin est EXCLUE : Google la met au lendemain minuit)
+    //   - avec une heure : il COMMENCE dans la période
+    function evIn(ev, d0, d1) {
+      const start = new Date(ev.debut), end = new Date(ev.fin);
+      return ev.journee ? (start < d1 && end > d0) : (start >= d0 && start < d1);
+    }
+
+    // Une ligne d'événement : 🎂 pour un anniversaire, l'heure sinon (« — » = journée entière)
+    function agendaLine(ev) {
+      const anniv = ev.agenda === 'anniv' && ev.journee;
+      const time = anniv ? '🎂' : ev.journee ? '—' : hhmm(new Date(ev.debut));
+      return `<div class="ag-ev${anniv ? ' anniv' : ''}"><span class="ag-time">${time}</span><span>${esc(ev.titre)}</span></div>`;
+    }
+
+    // Les anniversaires d'abord, puis les journées entières, puis par heure
+    const agendaSort = (a, b) => (b.agenda === 'anniv') - (a.agenda === 'anniv') || (b.journee - a.journee) || a.debut.localeCompare(b.debut);
+
     function renderAgenda(data) {
-      const today = new Date(); today.setHours(0, 0, 0, 0);
-      const nbDays = IS_TV ? AGENDA_DAYS.tv : AGENDA_DAYS.mobile;
-
-      // 1) On range chaque événement dans les jours qu'il couvre.
-      //    Un événement « journée entière » sur plusieurs jours (vacances…) apparaît chaque jour ;
-      //    sa date de fin est EXCLUE (Google la met au lendemain minuit).
-      const days = [];                                   // days[0] = aujourd'hui, days[1] = demain…
-      for (let i = 0; i < nbDays; i++) days.push([]);
-      for (const ev of data.evenements || []) {
-        const start = new Date(ev.debut), end = new Date(ev.fin);
-        for (let i = 0; i < nbDays; i++) {
-          const d0 = addDays(today, i), d1 = addDays(today, i + 1);   // le jour i, de minuit à minuit
-          const covers = ev.journee ? (start < d1 && end > d0)        // chevauche ce jour
-                                    : (start >= d0 && start < d1);     // commence ce jour
-          if (covers) days[i].push(ev);
-        }
-      }
-
-      // 2) Une ligne par événement : 🎂 pour un anniversaire, l'heure sinon (« — » = journée entière)
-      const html = days.map((list, i) => {
-        if (!list.length) return '';                     // jour vide : on n'affiche rien
-        // Les anniversaires d'abord, puis la journée entière, puis par heure
-        list.sort((a, b) => (b.agenda === 'anniv') - (a.agenda === 'anniv') || (b.journee - a.journee) || a.debut.localeCompare(b.debut));
-        const d = addDays(today, i);
-        const label = i === 0 ? "Aujourd'hui" : i === 1 ? 'Demain'
-                    : d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'short' }).replace('.', '');
-        return `<div class="ag-day${i === 0 ? ' today' : ''}"><div class="ag-label">${label}</div>`
-             + list.map(ev => {
-                 const anniv = ev.agenda === 'anniv' && ev.journee;
-                 const time = anniv ? '🎂' : ev.journee ? '—' : hhmm(new Date(ev.debut));
-                 return `<div class="ag-ev${anniv ? ' anniv' : ''}"><span class="ag-time">${time}</span><span>${esc(ev.titre)}</span></div>`;
-               }).join('')
-             + `</div>`;
-      }).join('');
-
-      // 3) Rien sur la période : la carte disparaît
+      agendaData = data;
+      // Onglet actif en surbrillance
+      document.querySelectorAll('#agenda-tabs [data-view]').forEach(b => b.classList.toggle('on', b.dataset.view === agendaView));
+      const html = agendaView === 'we' ? agendaWeekends(data) : agendaList(data);
+      // Rien à afficher en vue « À venir » : la carte disparaît (la vue Week-ends affiche toujours quelque chose)
       $('agenda-card').hidden = !html;
       $('agenda').innerHTML = html;
     }
+
+    // --- Vue « À venir » : jour par jour, seulement les jours qui ont quelque chose
+    function agendaList(data) {
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const nbDays = IS_TV ? AGENDA_DAYS.tv : AGENDA_DAYS.mobile;
+      let html = '';
+      for (let i = 0; i < nbDays; i++) {
+        const d0 = addDays(today, i), d1 = addDays(today, i + 1);   // le jour i, de minuit à minuit
+        const list = (data.evenements || []).filter(ev => evIn(ev, d0, d1)).sort(agendaSort);
+        if (!list.length) continue;                    // jour vide : on n'affiche rien
+        const label = i === 0 ? "Aujourd'hui" : i === 1 ? 'Demain'
+                    : d0.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'short' }).replace('.', '');
+        html += `<div class="ag-day${i === 0 ? ' today' : ''}"><div class="ag-label">${label}</div>${list.map(agendaLine).join('')}</div>`;
+      }
+      return html;
+    }
+
+    // --- Vue « Week-ends » : chaque samedi-dimanche, « Libre » ou ce qui est prévu.
+    //     Pour savoir si on est dispo, on ne compte PAS les anniversaires (ils n'occupent pas le week-end),
+    //     mais on les affiche quand même à côté.
+    function agendaWeekends(data) {
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      // Jusqu'où le script a lu l'agenda : "jusqu" (script v1.1.0), sinon 30 jours après sa réponse (v1.0.0)
+      const until = data.jusqu ? new Date(data.jusqu) : addDays(new Date(data.updated || Date.now()), 30);
+
+      // Samedi de ce week-end : getDay() vaut 0 le dimanche … 6 le samedi.
+      // Un dimanche, on garde le samedi d'hier (le week-end en cours).
+      let sat = addDays(today, (6 - today.getDay() + 7) % 7);
+      if (today.getDay() === 0) sat = addDays(today, -1);
+
+      let html = '';
+      for (; addDays(sat, 2) <= until; sat = addDays(sat, 7)) {
+        const mon = addDays(sat, 2);                   // le week-end = samedi 0 h → lundi 0 h
+        const list = (data.evenements || []).filter(ev => evIn(ev, sat, mon)).sort(agendaSort);
+        const busy = list.filter(ev => !(ev.agenda === 'anniv' && ev.journee));
+        const sun = addDays(sat, 1);
+        const label = sat.getMonth() === sun.getMonth()
+          ? `${sat.getDate()}-${sun.getDate()} ${sun.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '')}`
+          : `${sat.getDate()} ${sat.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '')} - ${sun.getDate()} ${sun.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '')}`;
+        const weeks = Math.floor((sat - today) / (7 * 864e5));
+        const when = weeks <= 0 ? 'ce week-end' : weeks === 1 ? 'le prochain' : `dans ${weeks} sem.`;
+        const body = (busy.length ? '' : '<span class="we-free">Libre ✓</span>')
+          + list.map(ev => `<span class="mini">${ev.agenda === 'anniv' && ev.journee ? '🎂 ' : ''}${esc(ev.titre)}</span>`).join('');
+        html += `<div class="we"><div class="we-date">${label}<small>${when}</small></div><div class="we-list">${body}</div></div>`;
+      }
+      return html + `<div class="ag-note">Agenda lu jusqu'au ${until.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}.</div>`;
+    }
+
+    // Clic sur un onglet de la carte Agenda
+    $('agenda-tabs').addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-view]');
+      if (!btn || !agendaData) return;
+      agendaView = btn.dataset.view;
+      store.set('agendaView', agendaView);
+      renderAgenda(agendaData);
+    });
 
     /* =================================================================
        DÉMARRAGE
