@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Cartable — devoirs et emplois du temps Pronote de Gaby et Nanon
-  Version 1.0.1
+  Version 1.0.2
   Les données viennent du service « pronote » du NAS (https://pronote.baiji.fr),
   qui se connecte au Pronote du collège comme l'appli mobile officielle.
   La page ne parle jamais directement à Pronote.
@@ -12,6 +12,7 @@
               première connexion par QR code Pronote, clé d'accès au service
    • v1.0.1 : messages clairs quand la clé est refusée ou que le service s'est bloqué
               (trop d'essais), au lieu de « impossible de joindre le service »
+   • v1.0.2 : si la connexion Pronote échoue, affiche ce que Pronote a répondu au NAS
 -->
 <html lang="fr">
 <head>
@@ -230,7 +231,7 @@
     .etapes { margin: 6px 0 4px 18px; font-size: 14px; line-height: 1.5; }
     .etapes li { margin-bottom: 6px; }
     .aide { font-size: 13px; color: var(--muted); line-height: 1.45; }
-    .erreur { color: var(--bad); font-size: 14px; font-weight: 700; margin-top: 10px; }
+    .erreur { color: var(--bad); font-size: 14px; font-weight: 700; margin-top: 10px; white-space: pre-line; overflow-wrap: anywhere; }
     .boutons { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
     .alerte { background: color-mix(in srgb, var(--warn) 14%, var(--card)); border-left: 4px solid var(--warn); }
     .alerte p { font-size: 14px; line-height: 1.45; }
@@ -313,7 +314,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = '1.0.1';
+    const VERSION = '1.0.2';
     // Adresse du service du NAS (reverse proxy DSM). Pour essayer un autre service :
     // ?service=http://192.168.1.161:8092 (retenu sur ce téléphone, ?service= vide pour revenir).
     const SERVICE_PAR_DEFAUT = 'https://pronote.baiji.fr';
@@ -642,7 +643,10 @@
       try {
         const { statut, json } = await api('/connexion', { methode: 'POST', corps: { qr, pin }, delai: 60000 });
         if (statut === 401) { memo.ecrire('cle', null); return montrer('cle', 'Clé refusée, saisis-la à nouveau.'); }
-        if (statut !== 200) throw new Error(json.erreur || 'Erreur ' + statut);
+        // En cas d'échec, le service joint ses dernières requêtes vers Pronote
+        // (code HTTP + redirection) : on les affiche pour comprendre ce qui bloque
+        if (statut !== 200) throw new Error((json.erreur || 'Erreur ' + statut)
+          + (json.traces?.length ? '\n\nCe que Pronote a répondu au NAS :\n' + json.traces.join('\n') : ''));
         donnees = json;
         $('champ-qr').value = ''; $('champ-pin').value = '';
         montrer('contenu');
