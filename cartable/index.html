@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Cartable — devoirs et emplois du temps Pronote de Gaby et Nanon
-  Version 1.0.0
+  Version 1.0.1
   Les données viennent du service « pronote » du NAS (https://pronote.baiji.fr),
   qui se connecte au Pronote du collège comme l'appli mobile officielle.
   La page ne parle jamais directement à Pronote.
@@ -10,6 +10,8 @@
    • v1.0.0 : devoirs groupés par date de rendu, emploi du temps jour par jour
               (prof absent, contrôle, cours annulé), un onglet par enfant,
               première connexion par QR code Pronote, clé d'accès au service
+   • v1.0.1 : messages clairs quand la clé est refusée ou que le service s'est bloqué
+              (trop d'essais), au lieu de « impossible de joindre le service »
 -->
 <html lang="fr">
 <head>
@@ -311,7 +313,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = '1.0.0';
+    const VERSION = '1.0.1';
     // Adresse du service du NAS (reverse proxy DSM). Pour essayer un autre service :
     // ?service=http://192.168.1.161:8092 (retenu sur ce téléphone, ?service= vide pour revenir).
     const SERVICE_PAR_DEFAUT = 'https://pronote.baiji.fr';
@@ -390,8 +392,10 @@
       if (!memo.lire('cle')) return montrer('cle');
       try {
         const { statut, json } = await api('/pronote.json');
-        if (statut === 401) { memo.ecrire('cle', null); return montrer('cle', 'Clé refusée par le service, saisis-la à nouveau.'); }
-        if (statut !== 200) throw new Error(json.erreur || 'Erreur ' + statut);
+        if (statut === 401) { memo.ecrire('cle', null); return montrer('cle', 'Clé refusée par le service : vérifie-la (majuscules, tirets…) et saisis-la à nouveau.'); }
+        // 429 = trop de clés fausses : le service se bloque 15 minutes (le dire clairement)
+        if (statut === 429) { memo.ecrire('cle', null); return montrer('cle', json.erreur || 'Trop d\'essais, réessaie dans 15 minutes.'); }
+        if (statut !== 200) return afficherAlerte('Le service du NAS répond, mais avec une erreur : ' + (json.erreur || 'code ' + statut));
         donnees = json;
         memo.ecrire('cache', JSON.stringify(json));      // pour un affichage immédiat la prochaine fois
         if (!json.connecte) return montrer('qr');
