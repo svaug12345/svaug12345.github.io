@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Voitures — suivi de la batterie et de la charge de l'e-5008 et de la Corsa
-  Version 1.2.1
+  Version 1.2.2
   Données : service « voitures » du NAS (https://voitures.baiji.fr), qui interroge
   psa_car_controller à la maison et ne publie que la batterie et la charge (jamais le GPS).
   Historique :
@@ -21,6 +21,9 @@
               commande protégée par le code secret du NAS (demandé une fois)
    • v1.2.1 : seuil de coupure réglable dès 10 % (au lieu de 50 %) avec le service v3.2 ;
               avec un service plus ancien, le curseur reste à 50 % minimum
+   • v1.2.2 : la batterie 12 V n'est plus affichée (le NAS la note toujours dans le
+              journal, elle reste dans l'export CSV) ; « Mesure il y a… » au lieu
+              de « Mesure de la voiture il y a… »
 -->
 <html lang="fr">
 <head>
@@ -256,7 +259,7 @@
     /* =================================================================
        CONFIGURATION
        ================================================================= */
-    const VERSION = '1.2.1';
+    const VERSION = '1.2.2';
     const API = 'https://voitures.baiji.fr';        // service du NAS
     const POLL_NORMAL_S = 120;    // lecture de l'état : toutes les 2 min…
     const POLL_LIVE_S = 30;       // …toutes les 30 s en mode « Suivi de charge »
@@ -386,8 +389,7 @@
         if (Number.isFinite(car.mileage)) facts.push(`Compteur : <b>${Math.round(car.mileage).toLocaleString('fr-FR')} km</b>`);
         if (Number.isFinite(car.chargeLimit) && car.chargeLimit < 100) facts.push(`Coupure auto : <b>${car.chargeLimit} %</b>`);
         if (Number.isFinite(car.outsideTemp)) facts.push(`Dehors : <b>${Math.round(car.outsideTemp)} °C</b>`);
-        // Batterie 12 V : en dessous de 12,2 V elle est faible (trop de réveils, voiture immobile longtemps…)
-        if (Number.isFinite(car.battery12v)) facts.push(`Batterie 12 V : <b style="${car.battery12v < 12.2 ? 'color:var(--warn)' : ''}">${car.battery12v.toFixed(1).replace('.', ',')} V</b>`);
+        // (Batterie 12 V : plus affichée depuis la v1.2.2, mais toujours notée dans le journal du NAS)
 
         // --- Fin de charge estimée (donnée par la voiture, ou calculée avec la courbe)
         let eta = '';
@@ -400,7 +402,7 @@
         // --- Âge de la mesure : la voiture n'envoie ses données que de temps en temps
         const measured = parseDate(car.carUpdated || car.updated);
         const old = measured && (Date.now() - measured) > OLD_MEASURE_H * 3600e3;
-        const ageTxt = measured ? `Mesure de la voiture ${ago(measured)}` : 'Date de mesure inconnue';
+        const ageTxt = measured ? `Mesure ${ago(measured)}` : 'Date de mesure inconnue';
 
         // --- Bouton actualiser (réveil) : désactivé si un réveil est en cours ou trop récent
         const wake = car.wake;                         // fourni par le service v2
