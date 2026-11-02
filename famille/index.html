@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Famille · Vaugoude's Family — tableau de bord de la maison
-  Version 1.4.0
+  Version 1.4.1
   Mobile par défaut ; mode TV avec baiji.fr/famille/?tv (retour : ?mobile).
   Historique :
    • v1.0.0 : météo, tâches du jour (Google Sheet), 7 prochains jours, Pass TV,
@@ -16,6 +16,7 @@
    • v1.4.0 : vue « Week-ends » dans l'Agenda (dispo libre / pris sur ~4 mois) ;
               météo plus compacte ; l'agenda passe avant la météo (téléphone)
               et prend la place libérée sous la météo (TV)
+   • v1.4.1 : téléphone : la météo (compacte) revient tout en haut, avant les tâches et l'agenda
 -->
 <html lang="fr">
 <head>
@@ -297,12 +298,12 @@
     /* Sur mobile, les "colonnes" ne sont que des conteneurs transparents */
     body:not(.tv) .col { display: contents; }
     /* Ordre d'affichage sur téléphone (propriété CSS "order" : plus petit = plus haut).
-       L'agenda passe avant la météo ; le reste garde son ordre. */
+       Météo (compacte) en haut, puis tâches et agenda ; les prévisions des jours suivants après. */
     body:not(.tv) #app > *, body:not(.tv) .col > * { order: 10; }
     body:not(.tv) #app > .top { order: 0; }       /* « #app » : même poids que la règle du dessus, sinon elle gagne */
-    body:not(.tv) .tasks-today { order: 1; }
-    body:not(.tv) #agenda-card { order: 2; }
-    body:not(.tv) .weather { order: 3; }
+    body:not(.tv) .weather { order: 1; }
+    body:not(.tv) .tasks-today { order: 2; }
+    body:not(.tv) #agenda-card { order: 3; }
     body:not(.tv) .w-days-card { order: 4; }
     body:not(.tv) #app footer { order: 99; }
   </style>
@@ -420,7 +421,7 @@
     /* =================================================================
        CONFIGURATION — les seules lignes à modifier en temps normal
        ================================================================= */
-    const VERSION = '1.4.0';
+    const VERSION = '1.4.1';
 
     // Google Sheet "Family tasks" publié en TSV (Fichier > Partager > Publier sur le web).
     // C'est le même lien que celui de ton Kindle.
