@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Page « Assistant Nexus B2B – partenaires franchisés Carrefour »
-  Version 1.2.0 – 02/11/2026
+  Version 1.2.1 – 02/11/2026
   En ligne : https://baiji.fr/assistant-nexus/
 
   Historique :
@@ -16,6 +16,8 @@
    • 1.2.0 : la carte d'appel passe en fin de page (après « Bon à savoir ») ;
              compte à rebours de 3 min (la limite est réglée côté agent :
              3 min max, et il raccroche après 3 relances sans réponse)
+   • 1.2.1 : on n'affiche plus la limite de 3 minutes (ni phrase, ni compte à
+             rebours) ; la limite reste active côté agent
 
   À quoi sert cette page ?
   - Elle explique en 4 étapes comment rejoindre Carrefour sur Nexus (plateforme Ariba).
@@ -144,11 +146,6 @@
     #sous-titres .vous { background: var(--orange-clair); margin-left: 15%; border-top-right-radius: 4px; }
     #sous-titres b { display: block; font-size: .78rem; color: var(--texte-doux); font-weight: 600; }
 
-    /* Compte à rebours des 3 minutes (visible pendant l'appel) */
-    #chrono { display: none; margin: 10px 0 0; font-variant-numeric: tabular-nums; color: var(--texte-doux); font-size: .9rem; }
-    body.en-ligne #chrono { display: block; }
-    #chrono.bientot { color: var(--orange); font-weight: 700; }   /* dernières 30 secondes */
-
     h2.section { font-size: 1.15rem; margin: 0 0 14px; color: var(--bleu); }
 
     /* Liste des étapes numérotées (pastilles orange) */
@@ -235,7 +232,7 @@
       <!-- Carte d'appel : notre propre bouton (plus de bulle ni de « Terms and conditions ») -->
       <section class="carte appel" aria-live="polite">
         <h2>Une question ? Parlez à l'assistant</h2>
-        <p class="aide">Touchez le bouton, autorisez le micro, puis posez votre question à voix haute. Chaque appel dure 3 minutes maximum.</p>
+        <p class="aide">Touchez le bouton, autorisez le micro, puis posez votre question à voix haute.</p>
 
         <button id="bouton-appel" type="button">
           <span class="rond" aria-hidden="true">
@@ -248,7 +245,6 @@
         </button>
 
         <p id="parole"></p>
-        <p id="chrono"></p>
         <div id="sous-titres"></div>
       </section>
 
@@ -282,26 +278,6 @@
 
     let conversation = null;   // la conversation en cours (null = pas d'appel)
 
-    // ---- Compte à rebours ----
-    // DUREE_MAX doit rester égale à la limite réglée sur l'agent ElevenLabs (180 s).
-    // C'est l'agent qui coupe vraiment l'appel ; ici on ne fait qu'afficher le temps restant.
-    const DUREE_MAX = 180;
-    const chrono = document.getElementById("chrono");
-    let minuterie = null;      // identifiant du setInterval (pour pouvoir l'arrêter)
-
-    function lancerChrono() {
-      const depart = Date.now();
-      const afficher = () => {
-        const reste = Math.max(0, DUREE_MAX - Math.floor((Date.now() - depart) / 1000));
-        const mm = Math.floor(reste / 60);
-        const ss = String(reste % 60).padStart(2, "0");   // 5 → "05"
-        chrono.textContent = `Temps restant : ${mm}:${ss}`;
-        chrono.classList.toggle("bientot", reste <= 30);
-      };
-      afficher();
-      minuterie = setInterval(afficher, 1000);   // mise à jour chaque seconde
-    }
-    function arreterChrono() { clearInterval(minuterie); minuterie = null; }
 
     // Change l'état de la page : on met UNE classe sur <body>, le CSS fait le reste
     function etat(nom) {
@@ -330,7 +306,6 @@
     // Retour au repos (appel terminé, raccroché d'un côté ou de l'autre)
     function repos(message) {
       conversation = null;
-      arreterChrono();
       etat(fil.childElementCount ? "termine" : null);   // on laisse les sous-titres lisibles
       libelle.textContent = TEXTES.parler;
       parole.textContent = message || TEXTES.termine;
@@ -371,7 +346,6 @@
             etat("en-ligne");
             libelle.textContent = TEXTES.raccrocher;
             parole.textContent = TEXTES.ilParle;   // il commence par son message d'accueil
-            lancerChrono();
           },
           // Qui a la parole ? "speaking" = l'assistant parle, "listening" = il vous écoute
           onModeChange: ({ mode }) => {
