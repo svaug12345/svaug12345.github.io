@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Cartable — devoirs et emplois du temps Pronote de Gaby et Nanon
-  Version 1.1.1
+  Version 1.1.2
   Les données viennent du service « pronote » du NAS (https://pronote.baiji.fr),
   qui se connecte au Pronote du collège comme l'appli mobile officielle.
   La page ne parle jamais directement à Pronote.
@@ -17,6 +17,8 @@
               des non-lus) ; toucher « À faire / Fait » coche le devoir dans Pronote ;
               bandeau 🌙 quand le NAS montre la dernière image de la journée
    • v1.1.1 : affiche l'erreur de lecture d'un enfant au lieu d'une liste vide
+   • v1.1.2 : bandeau « ⏸ lectures en pause jusqu'à… » (garde-fous du service v1.2.0) ;
+              le bouton ⟳ dit pourquoi il refuse (trop tôt, pause)
 -->
 <html lang="fr">
 <head>
@@ -351,7 +353,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = '1.1.1';
+    const VERSION = '1.1.2';
     // Adresse du service du NAS (reverse proxy DSM). Pour essayer un autre service :
     // ?service=http://192.168.1.161:8092 (retenu sur ce téléphone, ?service= vide pour revenir).
     const SERVICE_PAR_DEFAUT = 'https://pronote.baiji.fr';
@@ -463,7 +465,11 @@
       if (ecran === 'cle') { $('erreur-cle').hidden = !message; $('erreur-cle').textContent = message || ''; }
       if (ecran === 'contenu') {
         // Erreur côté service (ex. jeton refusé) : on l'affiche au-dessus des dernières données
-        if (donnees.ok === false && donnees.erreur) {
+        // Service en pause (garde-fou : Pronote a suspendu l'IP, ou trop d'erreurs) : on le dit
+        if (donnees.pause) {
+          const h = new Date(donnees.pause.jusqua).toLocaleString('fr-FR', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
+          afficherAlerte(`⏸ Lectures de Pronote en pause jusqu'à ${h} (${donnees.pause.raison}). Les dernières données connues restent affichées.`);
+        } else if (donnees.ok === false && donnees.erreur) {
           afficherAlerte(donnees.connexion === 'a_refaire'
             ? donnees.erreur + ' (Réglages › Reconnecter Pronote)'
             : 'Dernière lecture de Pronote en échec : ' + donnees.erreur);
@@ -834,7 +840,7 @@
       try {
         const { statut, json } = await api('/actualiser', { methode: 'POST', delai: 60000 });
         if (statut === 200) { donnees = json; montrer('contenu'); }
-        else await charger();         // trop tôt (429) ou autre : on relit simplement les données
+        else { await charger(); if (json.erreur) afficherAlerte(json.erreur); }   // trop tôt (429) ou autre
       } catch { await charger(); }
       btn.classList.remove('spin');
     };
