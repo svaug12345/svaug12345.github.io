@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Voitures — suivi de la batterie et de la charge de l'e-5008 et de la Corsa
-  Version 1.3.0
+  Version 1.4.0
   Données : service « voitures » du NAS (https://voitures.baiji.fr), qui interroge
   psa_car_controller à la maison et ne publie que la batterie et la charge (jamais le GPS).
   Historique :
@@ -28,6 +28,9 @@
               lignes triées de la plus récente à la plus ancienne, nombres et dates
               reconnus par Excel ; le bloc « Couper la charge » n'apparaît que
               quand la voiture est branchée
+   • v1.4.0 : carte « Position » (service v3.3) : où sont les deux voitures, sur un plan
+              OpenStreetMap (Leaflet), avec lien vers Google Maps ; protégée par le
+              même code secret que la coupure de charge
 -->
 <html lang="fr">
 <head>
@@ -182,6 +185,13 @@
     .legend span::before { content: ''; display: inline-block; width: 12px; height: 4px; border-radius: 2px; background: var(--c); margin-right: 6px; vertical-align: middle; }
     .note { font-size: 13px; color: var(--muted); line-height: 1.5; }
 
+    /* ===================== POSITION ===================== */
+    #map { height: 240px; border-radius: 14px; overflow: hidden; margin-top: 10px; background: var(--track); z-index: 0; }
+    .where-list { display: flex; flex-direction: column; margin-top: 8px; }
+    .where-list .row { grid-template-columns: 10px 1fr auto; }
+    .where-list a { color: var(--teal); font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; text-decoration: none; }
+    .unlock { margin-top: 10px; padding: 10px 14px; border-radius: 12px; background: var(--teal); color: #fff; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+
     /* ===================== JOURNAL ===================== */
     .sum { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
     .sum > div { border-radius: 14px; background: var(--surface); border: 1px solid var(--line); padding: 10px 12px; }
@@ -241,6 +251,14 @@
       <div class="legend" id="legend"></div>
     </section>
 
+    <!-- Position : cachée tant que le service ne propose pas /positions (v3.3) -->
+    <section class="card" id="where" hidden>
+      <div class="chart-head"><div class="title">Position</div></div>
+      <div id="where-body"></div>
+      <div id="map" hidden></div>
+      <div class="where-list rows" id="where-list"></div>
+    </section>
+
     <section class="card" id="journal" hidden>
       <div class="chart-head">
         <div class="title">Journal</div>
@@ -263,7 +281,7 @@
     /* =================================================================
        CONFIGURATION
        ================================================================= */
-    const VERSION = '1.3.0';
+    const VERSION = '1.4.0';
     const API = 'https://voitures.baiji.fr';        // service du NAS
     const POLL_NORMAL_S = 120;    // lecture de l'état : toutes les 2 min…
     const POLL_LIVE_S = 30;       // …toutes les 30 s en mode « Suivi de charge »
@@ -340,6 +358,7 @@
       }
       renderCars();
       if (live) autoWake();
+      showWhere();
     }
 
     async function loadHistory() {
@@ -695,6 +714,112 @@
     });
 
     /* =================================================================
+       POSITION DES VOITURES (service v3.3)
+       -----------------------------------------------------------------
+       La position est sensible (elle dit où vous êtes) : le NAS ne la
+       donne qu'avec le code secret, le même que pour couper la charge
+       (gardé sur ce téléphone après la première saisie).
+       Le plan utilise Leaflet (petite bibliothèque de cartes) et les
+       fonds de carte OpenStreetMap. Leaflet n'est chargée que quand on
+       affiche la carte. Le plan est créé UNE fois puis on déplace juste
+       les repères : sinon il clignoterait à chaque lecture (toutes les
+       30 s en mode suivi).
+       ================================================================= */
+    const LEAFLET = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/';
+    let map = null;              // le plan Leaflet (créé à la première position reçue)
+    const markers = {};          // un repère par voiture
+    let whereAsk = false;        // true = afficher la case du code
+    let whereBusy = false;
+
+    function loadLeaflet() {
+      if (window.L) return Promise.resolve();
+      const css = document.createElement('link');
+      css.rel = 'stylesheet'; css.href = LEAFLET + 'leaflet.min.css';
+      document.head.appendChild(css);
+      return loadScript(LEAFLET + 'leaflet.min.js');
+    }
+
+    // Appelée après chaque lecture de /cars.json
+    function showWhere() {
+      const box = $('where');
+      if (!data?.positions) { box.hidden = true; return; }   // service trop ancien ou code pas choisi sur le NAS
+      box.hidden = false;
+      if (store.get('chargeCode')) loadPositions();           // code connu : on rafraîchit le plan
+      else renderWhereLock();
+    }
+
+    // Bouton « Afficher » ou case de saisie du code
+    function renderWhereLock() {
+      $('map').hidden = true; $('where-list').innerHTML = '';
+      $('where-body').innerHTML = whereAsk
+        ? `<div class="code-box"><input type="password" autocomplete="off" placeholder="Code secret du NAS" id="where-code">
+             <button id="where-ok">OK</button></div>`
+        : `<div class="note">La position est protégée par le code secret du NAS.</div>
+           <button class="unlock" id="where-show">Afficher la position</button>`;
+    }
+
+    async function loadPositions() {
+      if (whereBusy) return;
+      whereBusy = true;
+      try {
+        const res = await fetch(`${API}/positions`, { cache: 'no-store', headers: { 'X-Code': store.get('chargeCode') || '' } });
+        const body = await res.json().catch(() => ({}));
+        if (res.status === 401) {                    // code faux : on l'oublie et on le redemande
+          store.set('chargeCode', ''); whereAsk = true; renderWhereLock(); toast('Code faux');
+        } else if (!res.ok) {
+          $('where-body').innerHTML = `<div class="note">${esc(body.error || 'Position indisponible pour le moment')}</div>`;
+        } else {
+          $('where-body').innerHTML = '';
+          await drawMap(body.cars || []);
+        }
+      } catch { /* hors ligne : on laisse le plan tel quel */ }
+      whereBusy = false;
+    }
+
+    async function drawMap(cars) {
+      const known = cars.filter(c => Number.isFinite(c.lat) && Number.isFinite(c.lon));
+      // Liste sous le plan : nom, âge de la position, lien Google Maps
+      $('where-list').innerHTML = cars.map(c => `<div class="row" style="--c:${COLORS[c.id]}"><span class="dot"></span>
+          <div><div class="main">${esc(c.name)}</div>
+            <div class="when">${c.at ? 'Position ' + ago(parseDate(c.at)) : 'Position inconnue'}</div></div>
+          ${Number.isFinite(c.lat) ? `<a href="https://www.google.com/maps?q=${c.lat},${c.lon}" target="_blank" rel="noopener">Itinéraire</a>` : '<span></span>'}
+        </div>`).join('');
+      if (!known.length) { $('map').hidden = true; return; }
+
+      $('map').hidden = false;
+      try { await loadLeaflet(); } catch { $('map').hidden = true; return; }   // pas de réseau pour la carte
+      if (!map) {
+        map = L.map('map', { zoomControl: false, attributionControl: true });
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19, attribution: '© OpenStreetMap'                       // mention obligatoire
+        }).addTo(map);
+      }
+      for (const c of known) {
+        const ll = [c.lat, c.lon];
+        if (markers[c.id]) markers[c.id].setLatLng(ll);                      // repère existant : on le déplace
+        else markers[c.id] = L.circleMarker(ll, { radius: 9, weight: 3, color: '#fff', fillColor: COLORS[c.id], fillOpacity: 1 })
+          .addTo(map).bindTooltip(c.name, { permanent: true, direction: 'top', offset: [0, -8] });
+      }
+      // Cadrage : on ne recadre qu'au premier affichage (pour ne pas gêner si on a zoomé)
+      if (!map._cadre) {
+        map.invalidateSize();                                               // le plan vient d'apparaître : Leaflet doit mesurer sa taille
+        if (known.length === 1) map.setView([known[0].lat, known[0].lon], 15);
+        else map.fitBounds(known.map(c => [c.lat, c.lon]), { padding: [40, 40], maxZoom: 15 });
+        map._cadre = true;
+      }
+    }
+
+    // Clics dans la carte Position (les boutons sont recréés : on écoute sur la carte)
+    $('where').addEventListener('click', (e) => {
+      if (e.target.id === 'where-show') { whereAsk = true; renderWhereLock(); $('where-code')?.focus(); }
+      if (e.target.id === 'where-ok') {
+        const v = $('where-code').value.trim(); if (!v) return;
+        store.set('chargeCode', v); whereAsk = false; loadPositions();
+      }
+    });
+    $('where').addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.id === 'where-code') $('where-ok').click(); });
+
+    /* =================================================================
        ACTUALISATION AUTOMATIQUE À L'OUVERTURE
        -----------------------------------------------------------------
        Sans réveil, l'appli montre la dernière mesure envoyée par la voiture,
@@ -787,11 +912,13 @@
        à chaque ouverture de l'appli).
        ================================================================= */
     const SHEETJS = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    // Charge une bibliothèque une seule fois (SheetJS pour l'export, Leaflet pour la carte)
+    const loaded = {};
     function loadScript(src) {
-      return new Promise((ok, ko) => {
-        if (window.XLSX) return ok();
+      return loaded[src] ||= new Promise((ok, ko) => {
         const sc = document.createElement('script');
-        sc.src = src; sc.onload = ok; sc.onerror = ko;
+        sc.src = src; sc.onload = ok;
+        sc.onerror = () => { delete loaded[src]; ko(); };     // échec : on pourra réessayer plus tard
         document.head.appendChild(sc);
       });
     }
