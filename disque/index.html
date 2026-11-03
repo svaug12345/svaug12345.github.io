@@ -1,0 +1,1231 @@
+<!doctype html>
+<!--
+  ============================================================
+  baiji.fr/disque/ — Place nette
+  Version 1.0.0
+  ------------------------------------------------------------
+  Montre ce qui prend de la place sur un disque ou un téléphone :
+   • carte des volumes (« treemap ») et liste triée, dossier par dossier ;
+   • les plus gros fichiers ; la place par type (vidéos, photos…) ;
+   • les doublons probables ; des pistes de ménage (corbeille,
+     Windows.old, fichiers temporaires, node_modules…).
+  TOUT se passe dans le navigateur : aucun fichier ni nom de fichier
+  n'est envoyé sur internet.
+
+  Trois façons d'alimenter l'analyse :
+   1. « Analyser un dossier » : le navigateur lit un dossier choisi
+      (API File System Access sur Chrome/Edge ordinateur, sinon
+      <input webkitdirectory>, qui marche aussi sur téléphone) ;
+   2. glisser-déposer un dossier sur la page (Chrome/Edge ordinateur) ;
+   3. « Tout le disque » : un navigateur n'a PAS le droit de lire C:\
+      en entier. On fait donc l'inventaire avec un petit script
+      PowerShell (ou find sur Mac/Linux) qui écrit un rapport texte,
+      puis on ouvre ce rapport ici — même sur le téléphone.
+
+  Historique :
+   • v1.0.0 : première version
+  ============================================================
+-->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Place nette</title>
+<!--
+  PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »
+  ou « Ajouter à l'écran d'accueil »). Fichiers fabriqués par outils/generer-pwa.py :
+   • manifest.webmanifest : nom, couleurs, icônes de l'appli ;
+   • icones/ : les icônes (apple-touch-icon = celle des iPhone) ;
+   • sw.js : le service worker, enregistré en bas de page.
+-->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+<meta name="theme-color" content="#0f7c7b">
+<link rel="icon" href="icones/icone-192.png" type="image/png">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* ------------------------------------------------------------
+   Couleurs : charte SV (teal #0f7c7b, neutres vert-bleu).
+   Toutes les couleurs sont des « jetons » (variables CSS) pour
+   que le mode sombre n'ait qu'à les redéfinir.
+   ------------------------------------------------------------ */
+:root {
+  --bg: #f4f7f7;
+  --surface: #ffffff;
+  --soft: #e6f0ef;      /* fonds doux (pistes, puces actives) */
+  --ink: #10201f;       /* texte principal */
+  --muted: #5a6b69;     /* texte secondaire */
+  --line: #d6e0df;      /* filets */
+  --accent: #0f7c7b;    /* teal SV */
+  --accent-ink: #ffffff;
+  --warn: #b5541a;
+  --sans: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "Roboto Mono", monospace;
+  --radius: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c1514; --surface: #142120; --soft: #173332; --ink: #e4eeed;
+    --muted: #91a5a3; --line: #24403e; --accent: #3fb3b1; --accent-ink: #06201f; --warn: #f0965a;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0c1514; --surface: #142120; --soft: #173332; --ink: #e4eeed;
+  --muted: #91a5a3; --line: #24403e; --accent: #3fb3b1; --accent-ink: #06201f; --warn: #f0965a;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--sans);
+  font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+.page { max-width: 1100px; margin: 0 auto; padding: 20px 16px 60px; }
+h1, h2, h3 { margin: 0; line-height: 1.15; }
+.mono { font-family: var(--mono); }
+.muted { color: var(--muted); }
+[hidden] { display: none !important; }
+
+/* En-tête */
+header.top { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+header.top .logo { width: 38px; height: 38px; border-radius: 11px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; flex: none; }
+header.top h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.01em; }
+header.top .sous { font-size: 13px; color: var(--muted); }
+header.top .droite { margin-left: auto; }
+
+/* Boutons : capitales espacées (charte SV) */
+.btn {
+  appearance: none; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink);
+  font: 700 12.5px/1 var(--sans); letter-spacing: .09em; text-transform: uppercase;
+  padding: 12px 16px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+  text-decoration: none; min-height: 44px; /* cible tactile confortable */
+}
+.btn.sec { background: transparent; color: var(--accent); }
+.btn.petit { padding: 8px 12px; min-height: 36px; font-size: 11.5px; }
+.btn:disabled { opacity: .5; cursor: default; }
+.btn:focus-visible, .chip:focus-visible, .ligne:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.carte-blanche { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
+
+/* ---------------- Écran d'accueil ---------------- */
+.accroche { font-size: clamp(26px, 6vw, 40px); font-weight: 800; letter-spacing: -0.02em; margin: 10px 0 6px; }
+.accroche em { font-style: normal; color: var(--accent); }
+.intro { color: var(--muted); max-width: 640px; margin: 0 0 22px; }
+.choix { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 760px) { .choix { grid-template-columns: 1fr; } }
+.choix h2 { font-size: 18px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+.choix p { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+.choix .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.etapes { margin: 0 0 12px; padding-left: 20px; font-size: 14px; color: var(--muted); }
+.etapes li { margin-bottom: 4px; }
+.etapes b { color: var(--ink); }
+details.autres-os { margin-top: 12px; font-size: 13.5px; }
+details.autres-os summary { cursor: pointer; color: var(--accent); font-weight: 600; }
+pre.cmd { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px; font: 12px/1.45 var(--mono); white-space: pre-wrap; word-break: break-all; margin: 6px 0; }
+.confiance { margin-top: 16px; font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: flex-start; }
+.zone-depot { position: fixed; inset: 0; background: color-mix(in srgb, var(--accent) 18%, transparent); border: 3px dashed var(--accent); display: grid; place-items: center; font-weight: 800; font-size: 22px; color: var(--accent); z-index: 50; pointer-events: none; }
+
+/* ---------------- Analyse en cours ---------------- */
+.progression { max-width: 560px; margin: 40px auto; text-align: center; }
+.progression .grand { font-size: 36px; font-weight: 800; margin: 12px 0 2px; font-variant-numeric: tabular-nums; }
+.progression .chemin { font: 12px var(--mono); color: var(--muted); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; margin: 10px 0 18px; direction: rtl; text-align: left; }
+.barre-prog { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin: 14px 0; }
+.barre-prog > div { height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+.roue { width: 34px; height: 34px; border-radius: 50%; border: 4px solid var(--line); border-top-color: var(--accent); margin: 0 auto; animation: tourne 0.9s linear infinite; }
+@keyframes tourne { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .roue { animation: none; } }
+
+/* ---------------- Résultats ---------------- */
+.resume { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 6px 22px; margin-bottom: 14px; }
+.resume .total { font-size: clamp(30px, 7vw, 44px); font-weight: 800; letter-spacing: -0.02em; line-height: 1; font-variant-numeric: tabular-nums; }
+.resume .details { color: var(--muted); font-size: 13.5px; }
+
+/* Fil d'Ariane : défile horizontalement sur téléphone */
+.ariane-bar { display: flex; align-items: center; gap: 8px; position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 8px 0; }
+.ariane { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
+.ariane::-webkit-scrollbar { display: none; }
+.ariane button { flex: none; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 7px 10px; font: 600 13px var(--sans); cursor: pointer; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ariane button:last-child { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.ariane .sepa { color: var(--muted); align-self: center; flex: none; }
+.btn-icone { flex: none; width: 38px; height: 38px; border-radius: 9px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); display: grid; place-items: center; cursor: pointer; }
+.btn-icone:disabled { opacity: .4; cursor: default; }
+
+/* Onglets */
+.onglets { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 6px 0 14px; }
+.onglets::-webkit-scrollbar { display: none; }
+.onglets button { flex: none; border: none; background: transparent; color: var(--muted); font: 700 12px var(--sans); letter-spacing: .08em; text-transform: uppercase; padding: 10px 12px; border-bottom: 2px solid transparent; cursor: pointer; }
+.onglets button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* Carte des volumes (treemap) : des rectangles proportionnels à la taille */
+.carte-volumes { position: relative; height: 380px; border-radius: var(--radius); overflow: hidden; background: var(--line); margin-bottom: 14px; }
+@media (max-width: 640px) { .carte-volumes { height: 260px; } }
+.tuile { position: absolute; border: 1px solid var(--bg); border-radius: 4px; padding: 6px 7px; color: #fff; overflow: hidden; cursor: pointer; transition: filter .15s; }
+.tuile:hover { filter: brightness(1.12); }
+.tuile .nom { font-weight: 700; font-size: 12.5px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 1px 2px rgba(0,0,0,.35); }
+.tuile .taille { font: 11px var(--mono); opacity: .9; }
+.tuile.autres { background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.12) 0 6px, transparent 6px 12px); cursor: default; }
+
+/* Listes (dossiers, gros fichiers) */
+.liste { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.ligne { display: grid; grid-template-columns: 28px 1fr auto; gap: 4px 10px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); cursor: pointer; position: relative; background: none; border-left: 0; border-right: 0; border-top: 0; width: 100%; text-align: left; color: inherit; font: inherit; }
+.ligne:last-child { border-bottom: 0; }
+.ligne:hover { background: var(--soft); }
+.ligne .ico { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; color: #fff; }
+.ligne .nom { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.ligne .meta { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ligne .droite { text-align: right; font-variant-numeric: tabular-nums; }
+.ligne .droite .t { font: 600 13.5px var(--mono); }
+.ligne .droite .p { font-size: 12px; color: var(--muted); }
+.ligne .jauge { grid-column: 2 / 4; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.ligne .jauge > div { height: 100%; border-radius: 2px; }
+.plus { padding: 12px 14px; color: var(--muted); font-size: 13px; text-align: center; }
+
+/* Puces de filtre */
+.puces { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.chip { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 7px 12px; font: 600 12.5px var(--sans); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.point { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: none; }
+
+/* Types */
+.barre-types { display: flex; height: 22px; border-radius: 6px; overflow: hidden; margin-bottom: 14px; }
+.barre-types > div { height: 100%; }
+
+/* Doublons */
+.groupe { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; }
+.groupe .tete { padding: 12px 14px 6px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.groupe .tete b { overflow-wrap: anywhere; }
+.groupe .gain { margin-left: auto; font: 600 13px var(--mono); color: var(--warn); }
+.groupe button.chemin { display: block; width: 100%; text-align: left; border: 0; border-top: 1px solid var(--line); background: none; color: var(--muted); font: 12px var(--mono); padding: 8px 14px; cursor: pointer; overflow-wrap: anywhere; }
+.groupe button.chemin:hover { background: var(--soft); color: var(--ink); }
+
+/* Pistes de ménage */
+.pistes { background: var(--soft); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 14px; }
+.pistes h3 { font-size: 14px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.piste { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 8px 0; border-top: 1px solid var(--line); cursor: pointer; }
+.piste:first-of-type { border-top: 0; }
+.piste .t { font: 600 13.5px var(--mono); text-align: right; }
+.piste .conseil { grid-column: 1 / 3; font-size: 13px; color: var(--muted); }
+.note { font-size: 12.5px; color: var(--muted); margin: 10px 2px; }
+
+/* Fiche détaillée : panneau du bas sur téléphone, boîte centrée sur ordinateur */
+.voile { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 40; display: flex; align-items: flex-end; justify-content: center; }
+.fiche { background: var(--surface); width: 100%; max-width: 560px; border-radius: 18px 18px 0 0; padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); max-height: 85vh; overflow: auto; }
+@media (min-width: 700px) { .voile { align-items: center; } .fiche { border-radius: 18px; } }
+.fiche h3 { font-size: 18px; overflow-wrap: anywhere; margin-bottom: 4px; }
+.fiche .gros { font-size: 28px; font-weight: 800; margin: 8px 0 2px; }
+.fiche .chemin-complet { font: 12px var(--mono); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; overflow-wrap: anywhere; margin: 12px 0; }
+.fiche .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: 14px; z-index: 60; }
+footer { margin-top: 40px; font-size: 12px; color: var(--muted); text-align: center; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="top">
+    <div class="logo" aria-hidden="true">
+      <!-- Picto « disque dur » (Lucide, licence ISC) -->
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 16h.01"/><path d="M2.212 11.577a2 2 0 0 0-.212.896V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.527a2 2 0 0 0-.212-.896L18.55 5.11A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><path d="M21.946 12.013H2.054"/><path d="M6 16h.01"/></svg>
+    </div>
+    <div>
+      <h1>Place nette</h1>
+      <div class="sous">Ce qui prend de la place, en un coup d'œil</div>
+    </div>
+    <div class="droite"><button class="btn sec petit" id="btn-nouvelle" hidden>Nouvelle analyse</button></div>
+  </header>
+
+  <!-- ==================== 1. ACCUEIL ==================== -->
+  <section id="ecran-accueil">
+    <p class="accroche">Qui prend <em>toute la place</em> ?</p>
+    <p class="intro">Choisis un dossier (ou tout ton disque) : Place nette te montre où partent les gigaoctets, les plus gros fichiers, les doublons et ce que tu peux supprimer sans risque.</p>
+
+    <div class="choix">
+      <!-- Choix 1 : un dossier, lu directement par le navigateur -->
+      <div class="carte-blanche">
+        <h2>📁 Analyser un dossier</h2>
+        <p id="aide-dossier">Téléchargements, Documents, un disque externe… Sur ordinateur, tu peux aussi <b>glisser un dossier</b> sur la page.</p>
+        <div class="actions">
+          <button class="btn" id="btn-dossier">Choisir un dossier</button>
+        </div>
+        <p class="note" id="note-mobile" hidden>Sur Android, choisis par exemple <b>DCIM</b>, <b>Pictures</b>, <b>Movies</b> ou <b>WhatsApp</b> : Android n'autorise pas la racine du stockage ni le dossier Download en entier. Pour la vue globale du téléphone : Paramètres → Stockage.</p>
+        <!-- Solution de secours : le sélecteur de dossier classique (marche aussi sur téléphone) -->
+        <input type="file" id="input-dossier" webkitdirectory directory multiple hidden>
+      </div>
+
+      <!-- Choix 2 : tout le disque, via un rapport fabriqué par PowerShell -->
+      <div class="carte-blanche">
+        <h2>💽 Tout le disque C:</h2>
+        <p>Un site web n'a pas le droit de lire tout ton disque. Un petit script PowerShell fait l'inventaire (rien n'est envoyé nulle part) :</p>
+        <ol class="etapes">
+          <li><b>Copie la commande</b> ci-dessous.</li>
+          <li>Ouvre <b>PowerShell</b> (touche Windows, tape « PowerShell », Entrée), colle avec un clic droit, puis Entrée. Compte quelques minutes.</li>
+          <li><b>Ouvre le rapport</b> <span class="mono">place-nette.txt</span> créé sur ton Bureau — ici, ou sur ton téléphone.</li>
+        </ol>
+        <div class="actions">
+          <button class="btn" id="btn-copier-ps">Copier la commande</button>
+          <button class="btn sec" id="btn-rapport">Ouvrir le rapport</button>
+        </div>
+        <input type="file" id="input-rapport" accept=".txt,.tsv,.csv,text/plain" hidden>
+        <details class="autres-os">
+          <summary>Voir la commande / autre disque / Mac et Linux</summary>
+          <p class="note">Pour un autre disque, remplace <span class="mono">C:\</span> par <span class="mono">D:\</span> sur la 1<sup>re</sup> ligne. Lancé « en tant qu'administrateur », PowerShell voit aussi les dossiers protégés.</p>
+          <pre class="cmd" id="voir-ps"></pre>
+          <p class="note"><b>Mac</b> (Terminal, ton dossier personnel) :</p>
+          <pre class="cmd">find ~ -type f -size +0 -exec stat -f '%z%t%Sm%t%N' -t '%Y-%m-%d' {} + 2>/dev/null > ~/Desktop/place-nette.txt</pre>
+          <p class="note"><b>Linux</b> (tout le disque système) :</p>
+          <pre class="cmd">find / -xdev -type f -printf '%s\t%TY-%Tm-%Td\t%p\n' 2>/dev/null > ~/place-nette.txt</pre>
+        </details>
+      </div>
+    </div>
+
+    <p class="confiance">🔒 <span>Tout se passe dans ton navigateur : aucun fichier, ni même aucun nom de fichier, ne quitte ton appareil. Place nette ne supprime rien ; elle te montre quoi faire.</span></p>
+  </section>
+
+  <!-- ==================== 2. ANALYSE EN COURS ==================== -->
+  <section id="ecran-analyse" hidden>
+    <div class="progression carte-blanche">
+      <div class="roue" aria-hidden="true"></div>
+      <div class="grand" id="prog-taille">0 o</div>
+      <div class="muted" id="prog-compte">0 fichier</div>
+      <div class="barre-prog" id="prog-barre-wrap" hidden><div id="prog-barre"></div></div>
+      <div class="chemin" id="prog-chemin" dir="rtl">&nbsp;</div>
+      <button class="btn sec" id="btn-arreter">Arrêter et voir le résultat</button>
+    </div>
+  </section>
+
+  <!-- ==================== 3. RÉSULTATS ==================== -->
+  <section id="ecran-resultats" hidden>
+    <div class="resume">
+      <div>
+        <div class="total" id="res-total">—</div>
+        <div class="details" id="res-sous">—</div>
+      </div>
+      <div class="details" id="res-source"></div>
+    </div>
+
+    <!-- Pistes de ménage (remplies seulement si on trouve quelque chose) -->
+    <div class="pistes" id="pistes" hidden></div>
+
+    <!-- Fil d'Ariane collant : où je suis dans l'arborescence -->
+    <div class="ariane-bar">
+      <button class="btn-icone" id="btn-monter" title="Dossier parent" aria-label="Dossier parent">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <nav class="ariane" id="ariane" aria-label="Emplacement"></nav>
+      <button class="btn-icone" id="btn-copier-chemin" title="Copier le chemin" aria-label="Copier le chemin du dossier">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+      </button>
+    </div>
+
+    <div class="onglets" role="tablist" id="onglets">
+      <button role="tab" data-onglet="dossiers" aria-selected="true">Dossiers</button>
+      <button role="tab" data-onglet="gros">Gros fichiers</button>
+      <button role="tab" data-onglet="types">Types</button>
+      <button role="tab" data-onglet="doublons">Doublons</button>
+    </div>
+
+    <div id="vue"></div>
+  </section>
+
+  <footer>Place nette <span id="version"></span> · baiji.fr</footer>
+</div>
+
+<div class="zone-depot" id="zone-depot" hidden>Lâche le dossier ici</div>
+
+<!--
+  Le script PowerShell est rangé dans une balise <script type="text/plain"> :
+  le navigateur ne l'exécute pas, c'est juste du texte qu'on copie.
+  Ça évite d'avoir à « échapper » les accents graves de PowerShell (`t = tabulation)
+  qui gêneraient dans une chaîne JavaScript.
+
+  Ce qu'il fait :
+   • il parcourt le disque dossier par dossier avec une PILE (pas de récursion),
+     en sautant les « points de jonction » (raccourcis système qui feraient
+     compter deux fois les mêmes fichiers) ;
+   • fichiers ≥ 10 Mo → une ligne « F » chacun (taille, date, chemin) ;
+   • fichiers plus petits → additionnés par dossier, une ligne « D » ;
+     ça garde le rapport léger (quelques Mo au lieu de centaines) ;
+   • les fichiers OneDrive « en ligne uniquement » sont ignorés : ils
+     n'occupent pas de place sur le disque.
+-->
+<script type="text/plain" id="script-ps"># Place nette — inventaire du disque (baiji.fr/disque/)
+$racine = 'C:\'
+$seuil  = 10MB
+$sortie = Join-Path ([Environment]::GetFolderPath('Desktop')) 'place-nette.txt'
+$cloud  = 0x400000 -bor 0x40000 -bor 0x1000
+$w = New-Object IO.StreamWriter($sortie, $false, (New-Object Text.UTF8Encoding($false)))
+$w.WriteLine("#place-nette`t1`t$racine`t$(Get-Date -Format 'yyyy-MM-dd HH:mm')")
+$pile = New-Object 'Collections.Generic.Stack[IO.DirectoryInfo]'
+$pile.Push((New-Object IO.DirectoryInfo($racine)))
+$n = 0
+while ($pile.Count -gt 0) {
+  $dir = $pile.Pop(); $petits = [long]0; $nbPetits = 0; $n++
+  if ($n % 2000 -eq 0) { Write-Host "$n dossiers... $($dir.FullName)" }
+  try {
+    foreach ($it in $dir.EnumerateFileSystemInfos()) {
+      $a = [int]$it.Attributes
+      if ($a -band 0x10) { if (-not ($a -band 0x400)) { $pile.Push($it) } }
+      elseif ($a -band $cloud) { }
+      elseif ($it.Length -ge $seuil) { $w.WriteLine("F`t$($it.Length)`t$($it.LastWriteTime.ToString('yyyy-MM-dd'))`t$($it.FullName)") }
+      else { $petits += $it.Length; $nbPetits++ }
+    }
+  } catch { }
+  if ($nbPetits -gt 0) { $w.WriteLine("D`t$petits`t$nbPetits`t$($dir.FullName)") }
+}
+$w.Close()
+Write-Host "Termine ! Rapport : $sortie" -ForegroundColor Green
+</script>
+
+<script>
+"use strict";
+/* ============================================================
+   Place nette — le code
+   ------------------------------------------------------------
+   Plan :
+    1. Réglages et petits outils (format des tailles, échappement…)
+    2. Le modèle : un arbre de « nœuds » (dossiers et fichiers)
+    3. Les trois sources : dossier (2 méthodes) et rapport texte
+    4. Les calculs : gros fichiers, types, doublons, pistes
+    5. L'affichage : accueil, progression, résultats, fiche
+   ============================================================ */
+
+const VERSION = "1.0.0";
+document.getElementById("version").textContent = "v" + VERSION;
+
+/* ============================================================
+   1. RÉGLAGES ET PETITS OUTILS
+   ============================================================ */
+
+const $ = (id) => document.getElementById(id);
+
+// Catégories de fichiers, reconnues par leur extension.
+// L'ordre compte : c'est celui de l'onglet « Types ».
+const CATEGORIES = [
+  { id: "video",   nom: "Vidéos",                 coul: "#d1501a", ext: "mp4 mov mkv avi wmv m4v webm mts m2ts 3gp flv mpg mpeg vob ts insv lrv" },
+  { id: "photo",   nom: "Photos & images",        coul: "#c98b00", ext: "jpg jpeg png gif heic heif webp bmp tif tiff raw cr2 cr3 nef arw dng orf rw2 psd svg ico avif xcf" },
+  { id: "son",     nom: "Musique & sons",         coul: "#8e5bd1", ext: "mp3 wav flac m4a aac ogg opus wma aiff aif alac mid" },
+  { id: "archive", nom: "Archives & installeurs", coul: "#c23b5a", ext: "zip rar 7z tar gz tgz bz2 xz zst iso img dmg exe msi msix appx apk xapk aab pkg deb rpm cab" },
+  { id: "doc",     nom: "Documents",              coul: "#2f6fd0", ext: "pdf doc docx xls xlsx xlsm ppt pptx odt ods odp txt rtf csv md epub mobi pages numbers key one pst ost" },
+  { id: "systeme", nom: "Système & applis",       coul: "#6b7a74", ext: "sys dll bin dat db sqlite sqlite3 vhd vhdx vmdk vdi qcow2 log tmp cache etl pak edb esd wim swp" },
+  { id: "code",    nom: "Code & développement",   coul: "#1f8a5b", ext: "js mjs ts json py pyc java c cpp h cs go rs php html css jar class o obj pdb lib so a map lock dex" },
+  { id: "autre",   nom: "Autres",                 coul: "#8a9a95" },
+  { id: "petits",  nom: "Petits fichiers regroupés", coul: "#b9c8c3" },
+];
+// Table extension → catégorie, fabriquée une fois au démarrage pour aller vite.
+const EXT_VERS_CAT = new Map();
+for (const c of CATEGORIES) for (const e of (c.ext || "").split(" ")) if (e) EXT_VERS_CAT.set(e, c);
+const CAT = Object.fromEntries(CATEGORIES.map((c) => [c.id, c]));
+
+// Extension d'un nom de fichier, en minuscules ("Photo.JPG" → "jpg").
+function extension(nom) {
+  const i = nom.lastIndexOf(".");
+  return i > 0 ? nom.slice(i + 1).toLowerCase() : "";
+}
+// Catégorie d'un nœud fichier.
+function categorie(n) {
+  if (n.agg) return CAT.petits;
+  return EXT_VERS_CAT.get(extension(n.n)) || CAT.autre;
+}
+
+// Taille lisible, en base 1024 comme l'Explorateur Windows : 1536 → « 1,5 Ko ».
+function taille(o) {
+  const u = ["o", "Ko", "Mo", "Go", "To"];
+  let i = 0;
+  while (o >= 1024 && i < u.length - 1) { o /= 1024; i++; }
+  const dec = i === 0 ? 0 : o < 10 ? 1 : 0;
+  return o.toLocaleString("fr-FR", { maximumFractionDigits: dec }) + " " + u[i];
+}
+// Nombre avec espaces : 12345 → « 12 345 ».
+const nb = (x) => x.toLocaleString("fr-FR");
+// « 1 fichier », « 3 fichiers »
+const pluriel = (x, mot) => nb(x) + " " + mot + (x > 1 ? "s" : "");
+// Pourcentage lisible.
+function pct(part, tout) {
+  if (!tout) return "0 %";
+  const p = (part / tout) * 100;
+  return (p < 1 ? (p < 0.1 ? "<0,1" : p.toLocaleString("fr-FR", { maximumFractionDigits: 1 })) : Math.round(p)) + " %";
+}
+// Date lisible depuis un horodatage (millisecondes).
+const dateFr = (ms) => (ms ? new Date(ms).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" }) : "");
+// Échappe le texte avant de l'insérer dans du HTML (un nom de fichier peut contenir < ou &).
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// Petit message temporaire en bas de l'écran.
+function toast(msg) {
+  const t = document.createElement("div");
+  t.className = "toast"; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2200);
+}
+// Copie dans le presse-papiers (avec une solution de secours pour les vieux navigateurs).
+async function copier(texte, msg = "Copié !") {
+  try { await navigator.clipboard.writeText(texte); }
+  catch {
+    const z = document.createElement("textarea");
+    z.value = texte; document.body.appendChild(z); z.select();
+    document.execCommand("copy"); z.remove();
+  }
+  toast(msg);
+}
+
+/* ============================================================
+   2. LE MODÈLE : UN ARBRE DE NŒUDS
+   ------------------------------------------------------------
+   Chaque dossier et chaque fichier est un petit objet (un « nœud »),
+   aux noms de champs courts pour économiser la mémoire (un disque
+   peut contenir un million de fichiers) :
+     n  : nom          p : parent        s : taille (octets)
+     k  : enfants (Map nom → nœud), seulement pour un dossier
+     f  : 1 si c'est un fichier
+     m  : date de modification (ms)      fi : objet File (pour l'ouvrir)
+     agg: 1 si c'est un « paquet » de petits fichiers (rapport PowerShell)
+     nbf: nombre de fichiers dans un paquet
+     c / d : nombre de fichiers / sous-dossiers (calculés à la fin)
+   ============================================================ */
+
+const etat = {
+  racine: null,      // nœud de départ affiché
+  courant: null,     // dossier affiché
+  sep: "/",          // séparateur des chemins (« \ » pour Windows)
+  prefixe: "",       // « / » devant les chemins Mac/Linux
+  source: "",        // texte qui décrit d'où vient l'analyse
+  onglet: "dossiers",
+  filtreGros: "tous",
+  erreurs: 0,        // fichiers illisibles (droits insuffisants…)
+  annule: false,     // l'utilisateur a demandé d'arrêter
+  // compteurs pendant l'analyse
+  octets: 0, fichiers: 0, cheminEnCours: "",
+};
+
+function dossier(nom, parent) {
+  const n = { n: nom, p: parent, k: new Map(), s: 0, c: 0, d: 0 };
+  if (parent) parent.k.set(nom, n);
+  return n;
+}
+function fichier(nom, parent, s, m, fi) {
+  const n = { n: nom, p: parent, s, f: 1 };
+  if (m) n.m = m;
+  if (fi) n.fi = fi;
+  // Deux entrées de même nom (rare, ex. rapport incohérent) : on garde les deux.
+  let cle = nom, i = 1;
+  while (parent.k.has(cle)) cle = nom + "\u0000" + i++;
+  parent.k.set(cle, n);
+  return n;
+}
+// Renvoie le sous-dossier « nom » de parent, en le créant au besoin.
+function sousDossier(parent, nom) {
+  const ex = parent.k.get(nom);
+  if (ex && !ex.f) return ex;
+  return dossier(nom, parent);
+}
+
+// Calcule les totaux de chaque dossier (taille, nb de fichiers, nb de sous-dossiers),
+// en partant des feuilles vers la racine (« parcours postfixe »).
+// Version sans récursion (avec une pile) pour ne jamais dépasser la pile d'appels.
+function finaliser(racine) {
+  const ordre = [];
+  const pile = [racine];
+  while (pile.length) {
+    const n = pile.pop();
+    ordre.push(n);
+    for (const e of n.k.values()) if (!e.f) pile.push(e);
+  }
+  // On traite en ordre inverse : les enfants avant les parents.
+  for (let i = ordre.length - 1; i >= 0; i--) {
+    const n = ordre[i];
+    let s = 0, c = 0, d = 0;
+    for (const e of n.k.values()) {
+      if (e.f) { s += e.s; c += e.agg ? e.nbf : 1; }
+      else { s += e.s; c += e.c; d += e.d + 1; }
+    }
+    n.s = s; n.c = c; n.d = d; n.tri = null;
+  }
+}
+
+// Si la racine n'a qu'un seul sous-dossier et rien d'autre (C: → Users → Seb…
+// non, mais « / » → home → seb oui), on descend : c'est plus lisible.
+function racineUtile(r) {
+  while (r.k.size === 1) {
+    const seul = r.k.values().next().value;
+    if (seul.f) break;
+    r = seul;
+  }
+  return r;
+}
+
+// Enfants d'un dossier triés du plus gros au plus petit (gardés en cache).
+function enfantsTries(n) {
+  if (!n.tri) n.tri = [...n.k.values()].sort((a, b) => b.s - a.s);
+  return n.tri;
+}
+// Chemin complet d'un nœud, en remontant les parents.
+function chemin(n) {
+  const morceaux = [];
+  for (let x = n; x; x = x.p) if (x.n !== "") morceaux.push(x.n);
+  return etat.prefixe + joindre(morceaux.reverse());
+}
+// Assemble des morceaux de chemin sans doubler le séparateur
+// (la racine Windows s'appelle « C:\ », qui finit déjà par « \ »).
+function joindre(morceaux) {
+  return morceaux.reduce((a, b) => (a === "" ? b : a.endsWith(etat.sep) ? a + b : a + etat.sep + b), "");
+}
+// Chemin vu depuis la racine affichée (plus court).
+function cheminRelatif(n) {
+  const morceaux = [];
+  for (let x = n; x && x !== etat.racine; x = x.p) morceaux.push(x.n);
+  return joindre([etat.racine.n, ...morceaux.reverse()]);
+}
+// Profondeur sous la racine affichée (0 = racine).
+function profondeur(n) {
+  let p = 0;
+  for (let x = n; x && x !== etat.racine; x = x.p) p++;
+  return p;
+}
+// Tous les vrais fichiers sous un dossier (parcours avec une pile).
+function fichiersSous(n) {
+  const res = [], pile = [n];
+  while (pile.length) {
+    const x = pile.pop();
+    for (const e of x.k.values()) {
+      if (e.f) { if (!e.agg) res.push(e); }
+      else pile.push(e);
+    }
+  }
+  return res;
+}
+
+/* ============================================================
+   3. LES SOURCES
+   ============================================================ */
+
+// --- 3a. Dossier choisi avec l'API « File System Access » (Chrome/Edge ordinateur) ---
+// On reçoit une « poignée » (handle) sur le dossier, qu'on parcourt nous-mêmes.
+async function analyserPoignee(poignee) {
+  demarrerAnalyse(false);
+  const racine = dossier(poignee.name, null);
+  etat.sep = navigator.userAgent.includes("Windows") ? "\\" : "/";
+  etat.prefixe = "";
+  try {
+    await parcourir(poignee, racine);
+  } catch (e) {
+    if (e !== "ARRET") throw e;
+  }
+  terminerAnalyse(racine, "Dossier « " + poignee.name + " »");
+}
+
+// Parcourt un dossier : d'abord ses fichiers (lus par lots en parallèle,
+// c'est bien plus rapide), puis ses sous-dossiers un par un.
+async function parcourir(poignee, noeud) {
+  if (etat.annule) throw "ARRET";
+  const fichiersH = [], dossiersH = [];
+  try {
+    for await (const h of poignee.values()) (h.kind === "directory" ? dossiersH : fichiersH).push(h);
+  } catch { etat.erreurs++; return; }        // dossier illisible : on passe
+
+  etat.cheminEnCours = chemin(noeud);
+  const LOT = 64;
+  for (let i = 0; i < fichiersH.length; i += LOT) {
+    if (etat.annule) throw "ARRET";
+    await Promise.all(fichiersH.slice(i, i + LOT).map(async (h) => {
+      try {
+        const f = await h.getFile();         // getFile() donne la taille et la date
+        fichier(f.name, noeud, f.size, f.lastModified, f);
+        etat.octets += f.size; etat.fichiers++;
+      } catch { etat.erreurs++; }
+    }));
+  }
+  for (const h of dossiersH) await parcourir(h, dossier(h.name, noeud));
+}
+
+// --- 3b. Dossier choisi avec <input webkitdirectory> (téléphone, Firefox, Safari) ---
+// Le navigateur nous donne d'un coup la liste de tous les fichiers, chacun
+// avec son chemin relatif (« Photos/2024/IMG_001.jpg »). On reconstruit l'arbre.
+async function analyserListe(liste) {
+  if (!liste.length) return;
+  demarrerAnalyse(true);
+  const racine = dossier("", null);
+  etat.sep = "/"; etat.prefixe = "";
+  const total = liste.length;
+  for (let i = 0; i < total; i++) {
+    const f = liste[i];
+    const parties = (f.webkitRelativePath || f.name).split("/");
+    let d = racine;
+    for (let j = 0; j < parties.length - 1; j++) d = sousDossier(d, parties[j]);
+    fichier(parties[parties.length - 1], d, f.size, f.lastModified, f);
+    etat.octets += f.size; etat.fichiers++;
+    // Tous les 5000 fichiers, on rend la main au navigateur pour rafraîchir l'écran.
+    if (i % 5000 === 4999) {
+      etat.cheminEnCours = f.webkitRelativePath || f.name;
+      majProgression(i / total);
+      await new Promise((r) => setTimeout(r));
+      if (etat.annule) break;
+    }
+  }
+  const r = racineUtile(racine);
+  terminerAnalyse(r, "Dossier « " + r.n + " »");
+}
+
+// --- 3c. Rapport texte (PowerShell, Mac, Linux) ---
+// Formats acceptés, une ligne par entrée, séparateur = tabulation :
+//   #place-nette  1  C:\  2026-11-03 10:00     ← en-tête (facultatif)
+//   F  taille  date  chemin                     ← un gros fichier
+//   D  taille  nombre  chemin                   ← petits fichiers d'un dossier, additionnés
+//   taille  date  chemin   ou   taille  chemin   ← format libre (Mac / Linux)
+// Le fichier peut être gros : on le lit en flux (« stream »), morceau par morceau.
+async function analyserRapport(f) {
+  demarrerAnalyse(true);
+  const racine = dossier("", null);
+  let sepDetecte = null, dateRapport = "", lignes = 0, lu = 0, reste = "";
+
+  // Traite une ligne du rapport.
+  const traiter = (ligne) => {
+    if (ligne.endsWith("\r")) ligne = ligne.slice(0, -1);
+    if (!ligne) return;
+    const c = ligne.split("\t");
+    if (c[0].startsWith("#place-nette") || c[0].startsWith("\uFEFF#place-nette")) { dateRapport = c[3] || ""; return; }
+    let type = "F", s, info, p;
+    if (c[0] === "F" || c[0] === "D") { type = c[0]; s = +c[1]; info = c[2]; p = c.slice(3).join("\t"); }
+    else if (c.length >= 3 && /^\d{4}-\d\d-\d\d/.test(c[1])) { s = +c[0]; info = c[1]; p = c.slice(2).join("\t"); }
+    else { s = +c[0]; info = ""; p = c.slice(1).join("\t"); }
+    if (!p || !(s >= 0)) return;                 // ligne illisible : on l'ignore
+    if (!sepDetecte) {
+      sepDetecte = p.includes("\\") ? "\\" : "/";
+      etat.sep = sepDetecte;
+      etat.prefixe = sepDetecte === "/" && p.startsWith("/") ? "/" : "";
+    }
+    const parties = p.split(sepDetecte).filter(Boolean);
+    let d = racine;
+    if (type === "D") {
+      // Toutes les parties sont des dossiers ; on ajoute un « paquet » de petits fichiers.
+      for (const x of parties) d = sousDossier(d, x);
+      const nbf = +info || 1;
+      const paquet = fichier("‹ " + pluriel(nbf, "petit fichier") + " ›", d, s);
+      paquet.agg = 1; paquet.nbf = nbf;
+      etat.fichiers += nbf;
+    } else {
+      for (let j = 0; j < parties.length - 1; j++) d = sousDossier(d, parties[j]);
+      const m = info ? Date.parse(info.slice(0, 10)) || 0 : 0;
+      fichier(parties[parties.length - 1], d, s, m);
+      etat.fichiers++;
+    }
+    etat.octets += s;
+    if (++lignes % 2000 === 0) etat.cheminEnCours = p;
+  };
+
+  try {
+    const lecteur = f.stream().pipeThrough(new TextDecoderStream("utf-8")).getReader();
+    for (;;) {
+      const { value, done } = await lecteur.read();
+      if (done) break;
+      lu += value.length;
+      const morceaux = (reste + value).split("\n");
+      reste = morceaux.pop();                    // la dernière ligne est peut-être coupée
+      for (const l of morceaux) traiter(l);
+      majProgression(Math.min(1, lu / f.size));
+      if (etat.annule) { lecteur.cancel(); break; }
+    }
+    traiter(reste);
+  } catch (e) {
+    afficherAccueil();
+    toast("Impossible de lire ce rapport.");
+    return;
+  }
+  if (!lignes && !etat.fichiers) { afficherAccueil(); toast("Ce fichier ne ressemble pas à un rapport Place nette."); return; }
+  const r = racineUtile(racine);
+  // Avec un séparateur Windows, la racine « C: » s'affiche mieux « C:\ ».
+  terminerAnalyse(r, "Rapport « " + f.name + " »" + (dateRapport ? " du " + dateRapport : ""), true);
+}
+
+/* ============================================================
+   4. LES CALCULS
+   ============================================================ */
+
+// Pistes de ménage : des endroits connus pour grossir en silence.
+// test(n, nomMin, parentMin) → vrai si le dossier n correspond.
+const PISTES = [
+  { titre: "Corbeille", test: (n, a) => a === "$recycle.bin" || a === ".trash" || a === ".trashes",
+    conseil: "Vider la corbeille libère cette place tout de suite." },
+  { titre: "Ancienne version de Windows (Windows.old)", test: (n, a) => a === "windows.old",
+    conseil: "Paramètres → Système → Stockage → Fichiers temporaires → « Installation(s) précédente(s) de Windows »." },
+  { titre: "Fichiers temporaires", test: (n, a, b) => a === "temp" && (b === "local" || b === "windows"),
+    conseil: "Paramètres → Système → Stockage → Fichiers temporaires, ou tape %temp% dans l'Explorateur et vide le dossier." },
+  { titre: "Mises à jour Windows téléchargées", test: (n, a, b) => a === "download" && b === "softwaredistribution",
+    conseil: "Nettoyage de disque → « Nettoyer les fichiers système » → Nettoyage de Windows Update." },
+  { titre: "Téléchargements", test: (n, a, b) => (a === "downloads" || a === "téléchargements" || a === "download") && b !== "softwaredistribution",
+    conseil: "Souvent des installeurs, ISO et vidéos déjà utilisés : trie par taille dans l'onglet « Gros fichiers »." },
+  { titre: "Dossiers node_modules", cumul: true, test: (n, a) => a === "node_modules",
+    conseil: "Ils se recréent avec « npm install » : supprime ceux des projets que tu n'utilises plus." },
+  { titre: "Caches Gradle / Android", test: (n, a, b) => (a === "caches" && b === ".gradle") || (a === "sdk" && b === "android") || a === ".android",
+    conseil: "Images d'émulateurs et vieux SDK : à faire le tri dans Android Studio (SDK Manager, Device Manager)." },
+  { titre: "Cache Flutter / Dart", test: (n, a, b) => a === "cache" && b === "pub",
+    conseil: "« flutter pub cache clean » vide ce cache ; il se reconstruit au besoin." },
+  { titre: "Miniatures", test: (n, a) => a === ".thumbnails",
+    conseil: "Aperçus recréés automatiquement par la galerie : on peut les supprimer." },
+  { titre: "Médias WhatsApp", test: (n, a, b) => a === "media" && (b === "whatsapp" || b === "com.whatsapp"),
+    conseil: "WhatsApp → Paramètres → Stockage et données → Gérer le stockage : supprime les grosses vidéos reçues." },
+];
+const FICHIERS_CONNUS = [
+  { nom: "hiberfil.sys", titre: "Veille prolongée (hiberfil.sys)",
+    conseil: "Si tu n'utilises pas la veille prolongée : PowerShell administrateur → « powercfg /h off »." },
+  { nom: "pagefile.sys", titre: "Fichier d'échange (pagefile.sys)",
+    conseil: "Mémoire virtuelle gérée par Windows : à laisser tel quel." },
+];
+const SEUIL_PISTE = 100 * 1024 * 1024; // on ne signale que ce qui dépasse 100 Mo
+
+function trouverPistes(racine) {
+  const trouves = [];
+  const cumuls = new Map();               // pour node_modules : on additionne tout
+  const pile = [racine];
+  while (pile.length) {
+    const n = pile.pop();
+    for (const e of n.k.values()) {
+      if (e.f) {
+        const fc = FICHIERS_CONNUS.find((x) => x.nom === e.n.toLowerCase());
+        if (fc && e.s >= SEUIL_PISTE) trouves.push({ titre: fc.titre, conseil: fc.conseil, s: e.s, noeud: e });
+        continue;
+      }
+      const a = e.n.toLowerCase(), b = n.n.toLowerCase();
+      const piste = PISTES.find((x) => x.test(e, a, b));
+      if (piste && piste.cumul) {
+        const c = cumuls.get(piste) || { s: 0, nb: 0, plusGros: e };
+        c.s += e.s; c.nb++; if (e.s > c.plusGros.s) c.plusGros = e;
+        cumuls.set(piste, c);
+        continue;                          // inutile de descendre dans un node_modules
+      }
+      if (piste && e.s >= SEUIL_PISTE) { trouves.push({ titre: piste.titre, conseil: piste.conseil, s: e.s, noeud: e }); continue; }
+      pile.push(e);
+    }
+  }
+  for (const [piste, c] of cumuls) {
+    if (c.s >= SEUIL_PISTE) trouves.push({ titre: piste.titre + " (" + c.nb + ")", conseil: piste.conseil, s: c.s, noeud: c.plusGros.p });
+  }
+  return trouves.sort((x, y) => y.s - x.s).slice(0, 8);
+}
+
+// Place par type de fichier, sous un dossier.
+function calculerTypes(n) {
+  const parCat = new Map(CATEGORIES.map((c) => [c.id, { cat: c, s: 0, nb: 0, ext: new Map() }]));
+  const pile = [n];
+  while (pile.length) {
+    const x = pile.pop();
+    for (const e of x.k.values()) {
+      if (!e.f) { pile.push(e); continue; }
+      const c = categorie(e), t = parCat.get(c.id);
+      t.s += e.s; t.nb += e.agg ? e.nbf : 1;
+      if (!e.agg) { const ex = extension(e.n) || "(sans)"; t.ext.set(ex, (t.ext.get(ex) || 0) + e.s); }
+    }
+  }
+  return [...parCat.values()].filter((t) => t.s > 0).sort((a, b) => b.s - a.s);
+}
+
+// Doublons probables : même nom ET même taille (fichiers d'au moins 1 Mo).
+// C'est une bonne approximation sans lire le contenu ; à vérifier avant de supprimer.
+function calculerDoublons(n) {
+  const groupes = new Map();
+  for (const f of fichiersSous(n)) {
+    if (f.s < 1024 * 1024) continue;
+    const cle = f.s + "|" + f.n.toLowerCase();
+    const g = groupes.get(cle);
+    if (g) g.push(f); else groupes.set(cle, [f]);
+  }
+  return [...groupes.values()]
+    .filter((g) => g.length > 1)
+    .map((g) => ({ fichiers: g, gain: g[0].s * (g.length - 1) }))
+    .sort((a, b) => b.gain - a.gain);
+}
+
+/* ============================================================
+   5. L'AFFICHAGE
+   ============================================================ */
+
+function montrer(ecran) {
+  for (const id of ["ecran-accueil", "ecran-analyse", "ecran-resultats"]) $(id).hidden = id !== ecran;
+  $("btn-nouvelle").hidden = ecran !== "ecran-resultats";
+  window.scrollTo(0, 0);
+}
+function afficherAccueil() {
+  etat.racine = etat.courant = null;
+  montrer("ecran-accueil");
+}
+
+// --- Progression ---
+let minuteur = null;
+function demarrerAnalyse(avecBarre) {
+  Object.assign(etat, { octets: 0, fichiers: 0, erreurs: 0, annule: false, cheminEnCours: "", debut: performance.now() });
+  $("prog-barre-wrap").hidden = !avecBarre;
+  $("prog-barre").style.width = "0";
+  montrer("ecran-analyse");
+  majProgression();
+  // Rafraîchit les compteurs 5 fois par seconde (pas à chaque fichier : ce serait lent).
+  minuteur = setInterval(() => majProgression(), 200);
+}
+function majProgression(fraction) {
+  $("prog-taille").textContent = taille(etat.octets);
+  $("prog-compte").textContent = pluriel(etat.fichiers, "fichier") + (etat.erreurs ? " · " + nb(etat.erreurs) + " illisibles" : "");
+  $("prog-chemin").textContent = etat.cheminEnCours || "\u00a0";
+  if (fraction !== undefined) $("prog-barre").style.width = (fraction * 100).toFixed(1) + "%";
+}
+function terminerAnalyse(racine, source, rapport = false) {
+  clearInterval(minuteur);
+  finaliser(racine);
+  const r = racine;
+  // « C: » tout seul → « C:\ » pour qu'on reconnaisse le disque.
+  if (etat.sep === "\\" && /^[a-z]:$/i.test(r.n) && !r.p?.n) r.n += "\\";
+  etat.racine = etat.courant = r;
+  const duree = (performance.now() - etat.debut) / 1000;
+  etat.source = source
+    + (etat.annule ? " · analyse arrêtée en cours (résultat partiel)" : "")
+    + (rapport ? " · fichiers de moins de 10 Mo additionnés par dossier" : " · " + duree.toLocaleString("fr-FR", { maximumFractionDigits: 1 }) + " s")
+    + (etat.erreurs ? " · " + pluriel(etat.erreurs, "élément") + " illisible(s)" : "");
+  etat.onglet = "dossiers"; etat.filtreGros = "tous";
+  etat.pistes = trouverPistes(r);
+  history.replaceState({ prof: 0 }, "");
+  montrer("ecran-resultats");
+  rendre();
+}
+
+// --- Résultats ---
+function rendre() {
+  const r = etat.racine, n = etat.courant;
+  $("res-total").textContent = taille(r.s);
+  $("res-sous").textContent = pluriel(r.c, "fichier") + " · " + pluriel(r.d, "dossier");
+  $("res-source").textContent = etat.source;
+  rendrePistes();
+  rendreAriane();
+  $("btn-monter").disabled = n === r;
+  for (const b of $("onglets").children) b.setAttribute("aria-selected", b.dataset.onglet === etat.onglet);
+  const vue = $("vue");
+  if (etat.onglet === "dossiers") rendreDossiers(vue, n);
+  else if (etat.onglet === "gros") rendreGros(vue, n);
+  else if (etat.onglet === "types") rendreTypes(vue, n);
+  else rendreDoublons(vue, n);
+}
+
+function rendrePistes() {
+  const p = etat.pistes || [];
+  const bloc = $("pistes");
+  // On ne montre les pistes qu'à la racine, pour ne pas encombrer.
+  bloc.hidden = !p.length || etat.courant !== etat.racine;
+  if (bloc.hidden) return;
+  bloc.innerHTML = `<h3>Pistes de ménage</h3>` + p.map((x, i) => `
+    <div class="piste" data-i="${i}" role="button" tabindex="0">
+      <b>${esc(x.titre)}</b><span class="t">${taille(x.s)}</span>
+      <span class="conseil">${esc(x.conseil)}</span>
+    </div>`).join("");
+  bloc.querySelectorAll(".piste").forEach((el) => {
+    const x = p[+el.dataset.i];
+    const go = () => (x.noeud.f ? ouvrirFiche(x.noeud) : aller(x.noeud));
+    el.onclick = go;
+    el.onkeydown = (e) => { if (e.key === "Enter") go(); };
+  });
+}
+
+function rendreAriane() {
+  const chaine = [];
+  for (let x = etat.courant; x; x = x.p) { chaine.unshift(x); if (x === etat.racine) break; }
+  const ar = $("ariane");
+  ar.innerHTML = chaine.map((x, i) => (i ? '<span class="sepa">›</span>' : "") + `<button data-i="${i}">${esc(x.n || "/")}</button>`).join("");
+  ar.querySelectorAll("button").forEach((b) => (b.onclick = () => aller(chaine[+b.dataset.i])));
+  ar.scrollLeft = ar.scrollWidth;          // on voit toujours le dossier courant
+}
+
+// Change de dossier. pushState ajoute une étape à l'historique : sur téléphone,
+// le bouton « retour » d'Android remonte alors d'un dossier au lieu de quitter la page.
+function aller(n) {
+  if (n.f) n = n.p;
+  etat.courant = n;
+  history.pushState({ prof: profondeur(n) }, "");
+  rendre();
+  $("ariane").scrollIntoView({ block: "nearest" });
+}
+window.addEventListener("popstate", (e) => {
+  if (!etat.racine) return;
+  const cible = e.state?.prof ?? 0;
+  let n = etat.courant;
+  while (n !== etat.racine && profondeur(n) > cible) n = n.p;
+  etat.courant = n;
+  rendre();
+});
+
+// Couleur d'un nœud : teal (plusieurs nuances) pour les dossiers, couleur de catégorie pour les fichiers.
+function couleur(n, i) {
+  if (n.f) return categorie(n).coul;
+  const nuances = ["#0f7c7b", "#13908e", "#0b6463", "#2a9f9c", "#0d5857", "#1d8583"];
+  return nuances[i % nuances.length];
+}
+const ICONE_DOSSIER = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>`;
+const ICONE_FICHIER = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>`;
+
+// --- Onglet « Dossiers » : carte des volumes + liste ---
+const MAX_LIGNES = 200;
+function rendreDossiers(vue, n) {
+  const enfants = enfantsTries(n);
+  if (!enfants.length) { vue.innerHTML = `<p class="note">Ce dossier est vide.</p>`; return; }
+  vue.innerHTML = `<div class="carte-volumes" id="carte"></div><div class="liste" id="liste"></div>
+    <p class="note">Touche un dossier pour y entrer, un fichier pour le détail.</p>`;
+  dessinerCarte($("carte"), n);
+  const liste = $("liste");
+  const max = enfants[0].s || 1;
+  liste.innerHTML = enfants.slice(0, MAX_LIGNES).map((e, i) => {
+    const coul = couleur(e, i);
+    const meta = e.f
+      ? (e.agg ? "additionnés (rapport)" : (categorie(e).nom + (e.m ? " · " + dateFr(e.m) : "")))
+      : pluriel(e.c, "fichier") + (e.d ? " · " + pluriel(e.d, "dossier") : "");
+    return `<button class="ligne" data-i="${i}">
+      <span class="ico" style="background:${coul}">${e.f ? ICONE_FICHIER : ICONE_DOSSIER}</span>
+      <span style="min-width:0"><div class="nom">${esc(e.n)}</div><div class="meta">${esc(meta)}</div></span>
+      <span class="droite"><div class="t">${taille(e.s)}</div><div class="p">${pct(e.s, n.s)}</div></span>
+      <span class="jauge"><div style="width:${(e.s / max) * 100}%;background:${coul}"></div></span>
+    </button>`;
+  }).join("") + (enfants.length > MAX_LIGNES ? `<div class="plus">+ ${nb(enfants.length - MAX_LIGNES)} éléments plus petits</div>` : "");
+  liste.querySelectorAll(".ligne").forEach((b) => {
+    const e = enfants[+b.dataset.i];
+    b.onclick = () => (e.f ? ouvrirFiche(e) : aller(e));
+  });
+}
+
+// Carte des volumes (« treemap » à l'algorithme « squarified ») :
+// chaque enfant devient un rectangle dont la SURFACE est proportionnelle à sa taille,
+// en cherchant des rectangles les plus « carrés » possible pour rester lisibles.
+let observateur = null;
+function dessinerCarte(conteneur, n) {
+  const W = conteneur.clientWidth, H = conteneur.clientHeight;
+  // On garde au plus 40 rectangles ; le reste est réuni dans une case « autres ».
+  const enfants = enfantsTries(n).filter((e) => e.s > 0);
+  const MAX = 40;
+  let items = enfants.slice(0, MAX).map((e, i) => ({ v: e.s, e, i }));
+  const resteS = enfants.slice(MAX).reduce((t, e) => t + e.s, 0);
+  if (resteS > 0) items.push({ v: resteS, autres: enfants.length - MAX });
+  const total = items.reduce((t, x) => t + x.v, 0);
+  if (!total || !W) { conteneur.innerHTML = ""; return; }
+  items.sort((a, b) => b.v - a.v);
+
+  const rects = squarifier(items, 0, 0, W, H, (W * H) / total);
+  conteneur.innerHTML = rects.map(({ x, y, w, h, it }, k) => {
+    const lisible = w > 54 && h > 30;
+    const fond = it.autres ? "#7d8e8a" : couleur(it.e, it.i);
+    const titre = it.autres ? `${it.autres} autres` : it.e.n;
+    return `<div class="tuile${it.autres ? " autres" : ""}" data-k="${k}" title="${esc(titre)} — ${taille(it.v)}"
+      style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;background-color:${fond}">
+      ${lisible ? `<div class="nom">${esc(titre)}</div><div class="taille">${taille(it.v)}</div>` : ""}</div>`;
+  }).join("");
+  conteneur.querySelectorAll(".tuile").forEach((t) => {
+    const it = rects[+t.dataset.k].it;
+    if (!it.autres) t.onclick = () => (it.e.f ? ouvrirFiche(it.e) : aller(it.e));
+  });
+  // Redessine si la largeur change (rotation du téléphone, fenêtre redimensionnée).
+  if (observateur) observateur.disconnect();
+  let largeur = W;
+  observateur = new ResizeObserver(() => {
+    if (conteneur.isConnected && Math.abs(conteneur.clientWidth - largeur) > 4) { largeur = conteneur.clientWidth; dessinerCarte(conteneur, n); }
+  });
+  observateur.observe(conteneur);
+}
+
+// Algorithme « squarified » (Bruls, Huizing, van Wijk) :
+// on remplit le côté le plus court du rectangle restant avec une « rangée »
+// d'éléments, tant que l'ajout d'un élément améliore la forme la plus allongée.
+function squarifier(items, x, y, w, h, echelle) {
+  const res = [];
+  const reste = items.slice();
+  // « pire » rapport longueur/largeur d'une rangée posée le long d'un côté de longueur cote
+  const pire = (rangee, cote) => {
+    let s = 0, mx = 0, mn = Infinity;
+    for (const r of rangee) { const a = r.v * echelle; s += a; mx = Math.max(mx, a); mn = Math.min(mn, a); }
+    return Math.max((cote * cote * mx) / (s * s), (s * s) / (cote * cote * mn));
+  };
+  while (reste.length) {
+    const cote = Math.min(w, h);
+    let rangee = [reste.shift()];
+    while (reste.length && pire([...rangee, reste[0]], cote) <= pire(rangee, cote)) rangee.push(reste.shift());
+    const aire = rangee.reduce((t, r) => t + r.v * echelle, 0);
+    if (w >= h) {                     // rangée verticale, collée à gauche
+      const lw = aire / h; let yy = y;
+      for (const r of rangee) { const hh = (r.v * echelle) / lw; res.push({ x, y: yy, w: lw, h: hh, it: r }); yy += hh; }
+      x += lw; w -= lw;
+    } else {                          // rangée horizontale, collée en haut
+      const lh = aire / w; let xx = x;
+      for (const r of rangee) { const ww = (r.v * echelle) / lh; res.push({ x: xx, y, w: ww, h: lh, it: r }); xx += ww; }
+      y += lh; h -= lh;
+    }
+  }
+  return res;
+}
+
+// --- Onglet « Gros fichiers » ---
+function rendreGros(vue, n) {
+  const tous = fichiersSous(n);
+  const unAn = Date.now() - 365 * 24 * 3600 * 1000;
+  // Filtres : tous, une catégorie, ou « pas touché depuis 1 an »
+  const cats = new Set(tous.map((f) => categorie(f).id));
+  const filtres = [{ id: "tous", nom: "Tous" }, ...CATEGORIES.filter((c) => cats.has(c.id)), { id: "vieux", nom: "Pas touchés depuis 1 an" }];
+  if (!filtres.some((f) => f.id === etat.filtreGros)) etat.filtreGros = "tous";
+  const garde = (f) => etat.filtreGros === "tous" ? true
+    : etat.filtreGros === "vieux" ? (f.m && f.m < unAn)
+    : categorie(f).id === etat.filtreGros;
+  const liste = tous.filter(garde).sort((a, b) => b.s - a.s).slice(0, 100);
+  const somme = liste.reduce((t, f) => t + f.s, 0);
+
+  vue.innerHTML = `<div class="puces">${filtres.map((f) => `<button class="chip" data-f="${f.id}" aria-pressed="${f.id === etat.filtreGros}">${f.coul ? `<span class="point" style="background:${f.coul}"></span>` : ""}${esc(f.nom)}</button>`).join("")}</div>
+    ${liste.length ? `<p class="note">Les ${liste.length} plus gros : ${taille(somme)} au total, soit ${pct(somme, n.s)} de « ${esc(n.n)} ».</p>
+    <div class="liste">${liste.map((f, i) => `
+      <button class="ligne" data-i="${i}">
+        <span class="ico" style="background:${categorie(f).coul}">${ICONE_FICHIER}</span>
+        <span style="min-width:0"><div class="nom">${esc(f.n)}</div><div class="meta">${esc(cheminRelatif(f.p))}${f.m ? " · " + dateFr(f.m) : ""}</div></span>
+        <span class="droite"><div class="t">${taille(f.s)}</div><div class="p">${pct(f.s, n.s)}</div></span>
+      </button>`).join("")}</div>` : `<p class="note">Aucun fichier pour ce filtre.</p>`}
+    ${etat.racine.k && tous.length < etat.racine.c && /Rapport/.test(etat.source) ? `<p class="note">Rapport PowerShell : seuls les fichiers de 10 Mo et plus sont listés un par un.</p>` : ""}`;
+  vue.querySelectorAll(".chip").forEach((b) => (b.onclick = () => { etat.filtreGros = b.dataset.f; rendre(); }));
+  vue.querySelectorAll(".ligne").forEach((b) => (b.onclick = () => ouvrirFiche(liste[+b.dataset.i])));
+}
+
+// --- Onglet « Types » ---
+function rendreTypes(vue, n) {
+  const t = calculerTypes(n);
+  vue.innerHTML = `<div class="barre-types">${t.map((x) => `<div title="${esc(x.cat.nom)}" style="width:${(x.s / n.s) * 100}%;background:${x.cat.coul}"></div>`).join("")}</div>
+    <div class="liste">${t.map((x, i) => {
+      const exts = [...x.ext.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4).map(([e, s]) => e + " " + taille(s)).join(" · ");
+      return `<button class="ligne" data-i="${i}">
+        <span class="ico" style="background:${x.cat.coul}">${ICONE_FICHIER}</span>
+        <span style="min-width:0"><div class="nom">${esc(x.cat.nom)}</div><div class="meta">${pluriel(x.nb, "fichier")}${exts ? " · " + esc(exts) : ""}</div></span>
+        <span class="droite"><div class="t">${taille(x.s)}</div><div class="p">${pct(x.s, n.s)}</div></span>
+        <span class="jauge"><div style="width:${(x.s / t[0].s) * 100}%;background:${x.cat.coul}"></div></span>
+      </button>`;
+    }).join("")}</div>
+    <p class="note">Touche un type pour voir ses plus gros fichiers.</p>`;
+  vue.querySelectorAll(".ligne").forEach((b) => {
+    const c = t[+b.dataset.i].cat;
+    if (c.id === "petits") return;
+    b.onclick = () => { etat.filtreGros = c.id; etat.onglet = "gros"; rendre(); };
+  });
+}
+
+// --- Onglet « Doublons » ---
+function rendreDoublons(vue, n) {
+  const groupes = calculerDoublons(n);
+  if (!groupes.length) { vue.innerHTML = `<p class="note">Aucun doublon probable (même nom et même taille, 1 Mo minimum) dans « ${esc(n.n)} ». 👍</p>`; return; }
+  const gain = groupes.reduce((t, g) => t + g.gain, 0);
+  const affiches = groupes.slice(0, 60);
+  vue.innerHTML = `<p class="note">Environ <b>${taille(gain)}</b> récupérables en ne gardant qu'un exemplaire de chaque. Doublons « probables » : même nom et même taille — vérifie avant de supprimer.</p>
+    ${affiches.map((g, i) => `<div class="groupe">
+      <div class="tete"><b>${esc(g.fichiers[0].n)}</b><span class="muted">${taille(g.fichiers[0].s)} × ${g.fichiers.length}</span><span class="gain">−${taille(g.gain)}</span></div>
+      ${g.fichiers.map((f, j) => `<button class="chemin" data-g="${i}" data-f="${j}">${esc(cheminRelatif(f.p))}${f.m ? " · " + dateFr(f.m) : ""}</button>`).join("")}
+    </div>`).join("")}
+    ${groupes.length > affiches.length ? `<p class="note">+ ${nb(groupes.length - affiches.length)} autres groupes plus petits.</p>` : ""}`;
+  vue.querySelectorAll("button.chemin").forEach((b) => (b.onclick = () => ouvrirFiche(affiches[+b.dataset.g].fichiers[+b.dataset.f])));
+}
+
+// --- Fiche détaillée d'un fichier ---
+function ouvrirFiche(f) {
+  const voile = document.createElement("div");
+  voile.className = "voile";
+  const ouvrable = !!f.fi;
+  voile.innerHTML = `<div class="fiche" role="dialog" aria-modal="true" aria-label="Détail du fichier">
+    <h3>${esc(f.n)}</h3>
+    <div class="muted">${esc(categorie(f).nom)}${f.m ? " · modifié le " + dateFr(f.m) : ""}</div>
+    <div class="gros">${taille(f.s)}</div>
+    <div class="muted">${pct(f.s, etat.racine.s)} de l'ensemble analysé</div>
+    <div class="chemin-complet">${esc(chemin(f))}</div>
+    <div class="actions">
+      <button class="btn" data-a="copier">Copier le chemin</button>
+      ${ouvrable ? `<button class="btn sec" data-a="ouvrir">Ouvrir</button>` : ""}
+      <button class="btn sec" data-a="dossier">Voir le dossier</button>
+      <button class="btn sec" data-a="fermer">Fermer</button>
+    </div>
+  </div>`;
+  const fermer = () => { voile.remove(); document.removeEventListener("keydown", echap); };
+  const echap = (e) => { if (e.key === "Escape") fermer(); };
+  document.addEventListener("keydown", echap);
+  voile.onclick = (e) => {
+    if (e.target === voile) return fermer();
+    const a = e.target.closest("button")?.dataset.a;
+    if (a === "copier") copier(chemin(f), "Chemin copié");
+    if (a === "ouvrir") {
+      // On crée une adresse temporaire vers le fichier local, le navigateur l'affiche s'il sait.
+      const url = URL.createObjectURL(f.fi);
+      window.open(url, "_blank");
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    }
+    if (a === "dossier") { fermer(); etat.onglet = "dossiers"; aller(f.p); }
+    if (a === "fermer") fermer();
+  };
+  document.body.appendChild(voile);
+  voile.querySelector("button").focus();
+}
+
+/* ============================================================
+   BRANCHEMENTS (boutons, glisser-déposer)
+   ============================================================ */
+
+// Le navigateur sait-il ouvrir un dossier « pour de vrai » ? (Chrome/Edge sur ordinateur)
+const aPicker = "showDirectoryPicker" in window;
+const surMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+$("note-mobile").hidden = !surMobile;
+if (surMobile) $("aide-dossier").textContent = "Photos, vidéos, WhatsApp… : choisis un dossier du téléphone.";
+
+$("btn-dossier").onclick = async () => {
+  if (aPicker && !surMobile) {
+    try {
+      const h = await window.showDirectoryPicker({ id: "place-nette", mode: "read" });
+      await analyserPoignee(h);
+    } catch (e) {
+      if (e.name !== "AbortError") { clearInterval(minuteur); afficherAccueil(); toast("Ce dossier ne peut pas être ouvert. Pour tout le disque, utilise le rapport PowerShell."); }
+    }
+  } else {
+    $("input-dossier").value = "";
+    $("input-dossier").click();
+  }
+};
+$("input-dossier").onchange = (e) => analyserListe(e.target.files);
+
+$("btn-rapport").onclick = () => { $("input-rapport").value = ""; $("input-rapport").click(); };
+$("input-rapport").onchange = (e) => { const f = e.target.files[0]; if (f) analyserRapport(f); };
+
+const SCRIPT_PS = $("script-ps").textContent.trim();
+$("voir-ps").textContent = SCRIPT_PS;
+$("btn-copier-ps").onclick = () => copier(SCRIPT_PS, "Commande copiée : colle-la dans PowerShell");
+
+$("btn-arreter").onclick = () => { etat.annule = true; $("btn-arreter").disabled = true; setTimeout(() => ($("btn-arreter").disabled = false), 1500); };
+$("btn-nouvelle").onclick = afficherAccueil;
+$("btn-monter").onclick = () => { if (etat.courant !== etat.racine) history.back(); };
+$("btn-copier-chemin").onclick = () => copier(chemin(etat.courant), "Chemin copié");
+$("onglets").onclick = (e) => {
+  const b = e.target.closest("button[data-onglet]");
+  if (!b) return;
+  etat.onglet = b.dataset.onglet;
+  if (etat.onglet !== "gros") etat.filtreGros = "tous";
+  rendre();
+};
+
+// Glisser-déposer : un dossier (Chrome/Edge ordinateur) ou un rapport texte.
+let compteurDrag = 0;
+document.addEventListener("dragenter", (e) => { e.preventDefault(); if (++compteurDrag === 1 && !$("ecran-accueil").hidden) $("zone-depot").hidden = false; });
+document.addEventListener("dragleave", () => { if (--compteurDrag <= 0) { compteurDrag = 0; $("zone-depot").hidden = true; } });
+document.addEventListener("dragover", (e) => e.preventDefault());
+document.addEventListener("drop", async (e) => {
+  e.preventDefault(); compteurDrag = 0; $("zone-depot").hidden = true;
+  if ($("ecran-accueil").hidden) return;
+  const item = e.dataTransfer.items?.[0];
+  if (item?.getAsFileSystemHandle) {
+    const h = await item.getAsFileSystemHandle();
+    if (h?.kind === "directory") return analyserPoignee(h);
+    if (h?.kind === "file") return analyserRapport(await h.getFile());
+  }
+  const f = e.dataTransfer.files?.[0];
+  if (f) analyserRapport(f);
+});
+</script>
+
+<script>
+  // ---- Page installable : enregistrement du service worker (sw.js, même dossier) ----
+  // Il fonctionne en « réseau d'abord » : la page en ligne est toujours la plus récente.
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    navigator.serviceWorker.register("sw.js");
+  }
+</script>
+</body>
+</html>
