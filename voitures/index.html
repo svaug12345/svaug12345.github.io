@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Voitures — suivi de la batterie et de la charge de l'e-5008 et de la Corsa
-  Version 1.4.0
+  Version 1.4.1
   Données : service « voitures » du NAS (https://voitures.baiji.fr), qui interroge
   psa_car_controller à la maison et ne publie que la batterie et la charge (jamais le GPS).
   Historique :
@@ -31,6 +31,7 @@
    • v1.4.0 : carte « Position » (service v3.3) : où sont les deux voitures, sur un plan
               OpenStreetMap (Leaflet), avec lien vers Google Maps ; protégée par le
               même code secret que la coupure de charge
+   • v1.4.1 : plus de lien « Tableau de bord Famille » en bas de page (reste le n° de version)
 -->
 <html lang="fr">
 <head>
@@ -273,7 +274,7 @@
       <button class="export" id="jexport">⤓ Exporter le journal (Excel)</button>
     </section>
 
-    <footer><a href="../famille/">← Tableau de bord Famille</a> · v<span id="version"></span></footer>
+    <footer>v<span id="version"></span></footer>
   </main>
   <div id="toast"></div>
 
@@ -281,7 +282,7 @@
     /* =================================================================
        CONFIGURATION
        ================================================================= */
-    const VERSION = '1.4.0';
+    const VERSION = '1.4.1';
     const API = 'https://voitures.baiji.fr';        // service du NAS
     const POLL_NORMAL_S = 120;    // lecture de l'état : toutes les 2 min…
     const POLL_LIVE_S = 30;       // …toutes les 30 s en mode « Suivi de charge »
