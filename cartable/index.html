@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Cartable — devoirs et emplois du temps Pronote de Gaby et Nanon
-  Version 1.1.0
+  Version 1.1.1
   Les données viennent du service « pronote » du NAS (https://pronote.baiji.fr),
   qui se connecte au Pronote du collège comme l'appli mobile officielle.
   La page ne parle jamais directement à Pronote.
@@ -16,6 +16,7 @@
    • v1.1.0 : onglet « Messages » (discussions + informations, lecture seule, pastille
               des non-lus) ; toucher « À faire / Fait » coche le devoir dans Pronote ;
               bandeau 🌙 quand le NAS montre la dernière image de la journée
+   • v1.1.1 : affiche l'erreur de lecture d'un enfant au lieu d'une liste vide
 -->
 <html lang="fr">
 <head>
@@ -350,7 +351,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = '1.1.0';
+    const VERSION = '1.1.1';
     // Adresse du service du NAS (reverse proxy DSM). Pour essayer un autre service :
     // ?service=http://192.168.1.161:8092 (retenu sur ce téléphone, ?service= vide pour revenir).
     const SERVICE_PAR_DEFAUT = 'https://pronote.baiji.fr';
@@ -514,6 +515,11 @@
       if (vueChoisie === 'messages') afficherMessages();
       else if (vueChoisie === 'edt') afficherEDT(enfant);
       else afficherDevoirs(enfant);
+
+      // Le service n'a pas pu lire cet enfant : on affiche l'erreur au lieu d'une liste vide trompeuse
+      if (vueChoisie !== 'messages' && enfant.erreur) {
+        $('vue').insertAdjacentHTML('afterbegin', `<div class="card alerte"><p>Lecture de Pronote impossible pour ${esc(enfant.nom)} : ${esc(enfant.erreur)}</p></div>`);
+      }
 
       // Le soir, Pronote masque les infos : le NAS a gardé la dernière image de la journée
       if (vueChoisie !== 'messages' && enfant.instantane) {
