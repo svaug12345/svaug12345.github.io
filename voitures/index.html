@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Voitures — suivi de la batterie et de la charge de l'e-5008 et de la Corsa
-  Version 1.2.2
+  Version 1.3.0
   Données : service « voitures » du NAS (https://voitures.baiji.fr), qui interroge
   psa_car_controller à la maison et ne publie que la batterie et la charge (jamais le GPS).
   Historique :
@@ -24,6 +24,10 @@
    • v1.2.2 : la batterie 12 V n'est plus affichée (le NAS la note toujours dans le
               journal, elle reste dans l'export CSV) ; « Mesure il y a… » au lieu
               de « Mesure de la voiture il y a… »
+   • v1.3.0 : export du journal en fichier Excel (.xlsx) avec un onglet par voiture,
+              lignes triées de la plus récente à la plus ancienne, nombres et dates
+              reconnus par Excel ; le bloc « Couper la charge » n'apparaît que
+              quand la voiture est branchée
 -->
 <html lang="fr">
 <head>
@@ -248,7 +252,7 @@
       <div class="sum" id="jsum"></div>
       <div class="rows" id="jrows"></div>
       <div class="note" id="jsince" style="margin-top:10px"></div>
-      <a class="export" id="jexport" download>⤓ Exporter le journal (CSV)</a>
+      <button class="export" id="jexport">⤓ Exporter le journal (Excel)</button>
     </section>
 
     <footer><a href="../famille/">← Tableau de bord Famille</a> · v<span id="version"></span></footer>
@@ -259,7 +263,7 @@
     /* =================================================================
        CONFIGURATION
        ================================================================= */
-    const VERSION = '1.2.2';
+    const VERSION = '1.3.0';
     const API = 'https://voitures.baiji.fr';        // service du NAS
     const POLL_NORMAL_S = 120;    // lecture de l'état : toutes les 2 min…
     const POLL_LIVE_S = 30;       // …toutes les 30 s en mode « Suivi de charge »
@@ -482,6 +486,7 @@
 
     function limitBlock(car, id) {
       if (car.chargeLimit === undefined) return '';          // service sans cette fonction (v3.0 ou avant)
+      if (!car.plugged) return '';                            // débranchée : rien à couper, on cache le bloc
       if (data && data.chargeControl === false) {
         return `<div class="limit"><div class="limit-now">Coupure de charge : choisis d'abord un code secret sur le NAS (CHARGE_CODE).</div></div>`;
       }
@@ -765,8 +770,77 @@
       $('jsince').textContent = Number.isFinite(since)
         ? `Journal tenu depuis le ${new Date(since).toLocaleDateString('fr-FR')} · ${stats.cars.reduce((a, c) => a + c.measures, 0)} mesures. kWh estimés à partir des % de batterie.`
         : '';
-      $('jexport').href = `${API}/journal.csv`;
     }
+
+    /* =================================================================
+       EXPORT EXCEL : un onglet par voiture, le plus récent en haut
+       -----------------------------------------------------------------
+       Le NAS fournit le journal en CSV (texte, une voiture à la fois :
+       /journal.csv?car=e5008). Un CSV ne peut pas avoir d'onglets, donc
+       l'appli fabrique elle-même un vrai fichier Excel (.xlsx) :
+        1. elle télécharge le CSV de chaque voiture ;
+        2. elle le découpe en lignes et en cases (séparateur « ; ») ;
+        3. elle transforme « 12,6 » en nombre et les dates en vraies dates ;
+        4. elle trie du plus récent au plus ancien ;
+        5. la bibliothèque SheetJS assemble le classeur, un onglet par voiture.
+       SheetJS n'est chargée qu'au premier clic (inutile de la télécharger
+       à chaque ouverture de l'appli).
+       ================================================================= */
+    const SHEETJS = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    function loadScript(src) {
+      return new Promise((ok, ko) => {
+        if (window.XLSX) return ok();
+        const sc = document.createElement('script');
+        sc.src = src; sc.onload = ok; sc.onerror = ko;
+        document.head.appendChild(sc);
+      });
+    }
+
+    // Une case du CSV → la bonne valeur pour Excel
+    function cellValue(txt) {
+      if (txt === '') return null;
+      if (/^-?\d+(,\d+)?$/.test(txt)) return Number(txt.replace(',', '.'));      // 12,6 → 12.6
+      if (/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(txt)) {                       // date ISO → date
+        const d = parseDate(txt);
+        // Excel n'a pas de fuseau horaire : on lui donne l'heure de Paris (celle du téléphone)
+        if (!isNaN(d)) return new Date(d.getTime() - d.getTimezoneOffset() * 60e3);
+      }
+      return txt;
+    }
+
+    function csvToRows(csv) {
+      const lines = csv.replace(/^\ufeff/, '').split(/\r?\n/).filter(Boolean);   // \ufeff = marque de début Excel
+      const head = lines.shift().split(';');
+      const rows = lines.map(l => l.split(';').map(cellValue));
+      // Tri : on prend la date de mesure de la voiture si la colonne existe, sinon la 1re colonne
+      let col = head.indexOf('mesure_voiture'); if (col < 0) col = 0;
+      const t = (r) => r[col] instanceof Date ? r[col].getTime() : (r[0] instanceof Date ? r[0].getTime() : 0);
+      rows.sort((a, b) => t(b) - t(a));                       // plus récent en haut
+      return [head, ...rows];
+    }
+
+    async function exportExcel() {
+      const btn = $('jexport');
+      btn.disabled = true; btn.textContent = 'Préparation…';
+      try {
+        await loadScript(SHEETJS);
+        const wb = XLSX.utils.book_new();
+        for (const c of stats.cars) {
+          const res = await fetch(`${API}/journal.csv?car=${c.id}`, { cache: 'no-store' });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const rows = csvToRows(await res.text());
+          const ws = XLSX.utils.aoa_to_sheet(rows, { cellDates: true, dateNF: 'dd/mm/yyyy hh:mm' });
+          ws['!cols'] = rows[0].map(h => ({ wch: Math.max(12, h.length + 2) }));     // largeur des colonnes
+          ws['!autofilter'] = { ref: ws['!ref'] };                                    // filtres sur l'en-tête
+          XLSX.utils.book_append_sheet(wb, ws, c.name);                               // nom de l'onglet = nom de la voiture
+        }
+        XLSX.writeFile(wb, `journal-voitures-${new Date().toISOString().slice(0, 10)}.xlsx`);
+      } catch (e) {
+        toast('Export impossible : NAS injoignable ?');
+      }
+      btn.disabled = false; btn.textContent = '⤓ Exporter le journal (Excel)';
+    }
+    $('jexport').addEventListener('click', exportExcel);
 
     $('jtab').addEventListener('click', (e) => {
       const b = e.target.closest('button'); if (!b) return;
