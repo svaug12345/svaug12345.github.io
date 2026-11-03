@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Voitures — suivi de la batterie et de la charge de l'e-5008 et de la Corsa
-  Version 1.4.1
+  Version 1.4.2
   Données : service « voitures » du NAS (https://voitures.baiji.fr), qui interroge
   psa_car_controller à la maison et ne publie que la batterie et la charge (jamais le GPS).
   Historique :
@@ -32,6 +32,8 @@
               OpenStreetMap (Leaflet), avec lien vers Google Maps ; protégée par le
               même code secret que la coupure de charge
    • v1.4.1 : plus de lien « Tableau de bord Famille » en bas de page (reste le n° de version)
+   • v1.4.2 : voiture injoignable sans valeur (ex. juste après un redémarrage du NAS) :
+              on affiche le dernier % connu de la courbe et sa date, au lieu de « -- % »
 -->
 <html lang="fr">
 <head>
@@ -282,7 +284,7 @@
     /* =================================================================
        CONFIGURATION
        ================================================================= */
-    const VERSION = '1.4.1';
+    const VERSION = '1.4.2';
     const API = 'https://voitures.baiji.fr';        // service du NAS
     const POLL_NORMAL_S = 120;    // lecture de l'état : toutes les 2 min…
     const POLL_LIVE_S = 30;       // …toutes les 30 s en mode « Suivi de charge »
@@ -391,6 +393,13 @@
       renderCars.later = false;
       $('cars').innerHTML = (data.cars || []).map(car => {
         const id = carId(car);
+        // Pas de % (voiture injoignable et NAS qui vient de redémarrer) : on reprend le
+        // dernier point de la courbe (fichier conservé sur le NAS), avec sa date.
+        // On crée une copie ({ ...car }) pour ne pas modifier les données reçues.
+        const lastPt = history?.[id]?.[history[id].length - 1];
+        if (!Number.isFinite(car.soc) && lastPt) {
+          car = { ...car, soc: lastPt[1], carUpdated: new Date(lastPt[0]).toISOString() };
+        }
         const soc = Number.isFinite(car.soc) ? Math.round(car.soc) : null;
 
         // --- Jauge : périmètre du cercle = 2πr ; on "cache" la partie vide avec dashoffset
