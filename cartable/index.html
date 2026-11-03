@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Cartable — devoirs et emplois du temps Pronote de Gaby et Nanon
-  Version 1.1.2
+  Version 1.2.0
   Les données viennent du service « pronote » du NAS (https://pronote.baiji.fr),
   qui se connecte au Pronote du collège comme l'appli mobile officielle.
   La page ne parle jamais directement à Pronote.
@@ -19,6 +19,7 @@
    • v1.1.1 : affiche l'erreur de lecture d'un enfant au lieu d'une liste vide
    • v1.1.2 : bandeau « ⏸ lectures en pause jusqu'à… » (garde-fous du service v1.2.0) ;
               le bouton ⟳ dit pourquoi il refuse (trop tôt, pause)
+   • v1.2.0 : pièces jointes des devoirs ouvrables (copiées sur le NAS par le service v1.4.0)
 -->
 <html lang="fr">
 <head>
@@ -193,7 +194,9 @@
       font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--soft);
       color: var(--muted); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
     }
-    .extras a { color: var(--accent); }
+    .extras a, .extras .pj { color: var(--accent); }
+    .extras .pj { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--soft); }
+    .extras .pj:disabled { opacity: .5; cursor: wait; }
 
     /* Badges (fait, à faire, prof absent…) */
     .badge {
@@ -353,7 +356,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = '1.1.2';
+    const VERSION = '1.2.0';
     // Adresse du service du NAS (reverse proxy DSM). Pour essayer un autre service :
     // ?service=http://192.168.1.161:8092 (retenu sur ce téléphone, ?service= vide pour revenir).
     const SERVICE_PAR_DEFAUT = 'https://pronote.baiji.fr';
@@ -577,7 +580,11 @@
 
     function carteDevoir(d) {
       const liens = d.liens.map((l) => `<a href="${esc(l.url)}" target="_blank" rel="noopener">🔗 ${esc(l.nom || 'Lien')}</a>`).join('');
-      const fichiers = d.fichiers.map((f) => `<span title="À ouvrir dans Pronote">📎 ${esc(f)}</span>`).join('');
+      // Pièce jointe : bouton si le NAS en a une copie (service v1.4.0 : objet {cle, nom}),
+      // simple nom sinon (ancien service : juste le texte du nom)
+      const fichiers = d.fichiers.map((f) => f.cle
+        ? `<button class="pj" data-cle="${esc(f.cle)}" data-nom="${esc(f.nom)}" title="Ouvrir la pièce jointe">📎 ${esc(f.nom)}</button>`
+        : `<span title="À ouvrir dans Pronote">📎 ${esc(f.nom || f)}</span>`).join('');
       const duree = d.duree ? `<span>⏱ ${d.duree} min</span>` : '';
       const extras = liens + fichiers + duree;
       return `<article class="devoir ${d.fait ? 'fait' : ''}" ${d.fait ? 'title="Toucher pour revoir la consigne"' : ''}>
@@ -803,12 +810,40 @@
     $('onglet-edt').onclick = () => { vueChoisie = 'edt'; memo.ecrire('vue', vueChoisie); afficherTout(); };
     $('onglet-messages').onclick = () => { vueChoisie = 'messages'; memo.ecrire('vue', vueChoisie); afficherTout(); };
     $('vue').addEventListener('click', (e) => {
+      // Pièce jointe : on la demande au NAS (avec la clé), puis on la donne au téléphone
+      const pj = e.target.closest('[data-cle]');
+      if (pj) return ouvrirPieceJointe(pj);
       // Badge « À faire / Fait » : on coche ou décoche le devoir dans Pronote
       const badge = e.target.closest('[data-devoir]');
       if (badge) return basculerFait(badge);
       const d = e.target.closest('.devoir.fait');
       if (d && !e.target.closest('a')) d.classList.toggle('ouvert');
     });
+
+    /*
+      Ouvrir une pièce jointe : un simple lien ne peut pas envoyer la clé d'accès
+      (en-tête X-Cle). On télécharge donc le fichier avec fetch(), on en fait un
+      « blob » (fichier en mémoire), et on le propose au téléphone comme un
+      téléchargement : Android propose ensuite de l'ouvrir (lecteur PDF, etc.).
+    */
+    async function ouvrirPieceJointe(bouton) {
+      bouton.disabled = true;
+      try {
+        const res = await fetch(`${SERVICE}/fichier?cle=${encodeURIComponent(bouton.dataset.cle)}`, {
+          headers: { 'X-Cle': memo.lire('cle', '') }, cache: 'no-store',
+        });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).erreur || 'Erreur ' + res.status);
+        const url = URL.createObjectURL(await res.blob());
+        const a = document.createElement('a');
+        a.href = url; a.download = bouton.dataset.nom || 'piece-jointe';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);   // on libère la mémoire un peu plus tard
+      } catch (err) {
+        afficherAlerte('Pièce jointe indisponible : ' + err.message);
+      } finally {
+        bouton.disabled = false;
+      }
+    }
 
     /*
       Cocher « fait » : on change tout de suite l'affichage (l'appli paraît instantanée),
