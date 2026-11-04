@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Famille · Vaugoude's Family — tableau de bord de la maison
-  Version 1.7.4
+  Version 1.7.5
   Mobile par défaut ; mode TV avec baiji.fr/famille/?tv (retour : ?mobile).
   Historique :
    • v1.0.0 : météo, tâches du jour (Google Sheet), 7 prochains jours, Pass TV,
@@ -32,6 +32,7 @@
               la télé ; à la télé sans clé, la carte Devoirs explique quoi faire
    • v1.7.3 : sur téléphone, le titre de la carte Médiathèque ouvre l'appli Médiathèque
    • v1.7.4 : miniature de la couverture dans chaque pastille de la carte Médiathèque
+   • v1.7.5 : toucher un document de la carte Médiathèque ouvre son visuel en grand (pas à la télé)
 -->
 <html lang="fr">
 <head>
@@ -224,6 +225,26 @@
     .loan-list .mini { --c: var(--accent); display: inline-flex; align-items: center; gap: 7px; max-width: 100%; }
     /* contain : la couverture reste entière, même pour un album presque carré */
     .loan-thumb { width: 26px; height: 36px; flex: none; object-fit: contain; border-radius: 3px; }
+    /* Un <button> ne reprend pas tout seul la police et la couleur de la page */
+    .loan-list button.mini { border: 0; color: inherit; font-family: inherit; text-align: left; cursor: pointer; }
+
+    /* Visuel en grand d'un document (fenêtre <dialog> du navigateur) */
+    #loan-dialog {
+      margin: auto; width: min(420px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); overflow-y: auto;
+      border: 0; border-radius: var(--radius); background: var(--card); color: var(--ink); padding: 16px; text-align: center;
+    }
+    #loan-dialog::backdrop { background: rgba(4, 18, 22, .7); }
+    #loan-dialog img { display: block; width: 100%; height: auto; max-height: 62dvh; object-fit: contain; border-radius: 8px; }
+    #loan-dialog h3 { font-size: 18px; font-weight: 800; line-height: 1.25; margin-top: 14px; overflow-wrap: anywhere; }
+    #loan-dialog p { font-size: 14px; color: var(--muted); margin-top: 4px; }
+    #loan-dialog .retour { font-weight: 700; color: var(--c, var(--muted)); }
+    .loan-actions { display: flex; gap: 8px; margin-top: 14px; }
+    .loan-actions > * {
+      flex: 1; padding: 11px 8px; border: 0; border-radius: 12px; font: inherit; font-size: 12px; font-weight: 800;
+      letter-spacing: .08em; text-transform: uppercase; text-decoration: none; cursor: pointer;
+    }
+    .loan-actions a { background: var(--accent); color: #fff; }
+    .loan-actions button { background: var(--line); color: var(--ink); }
     .loan-list .mini.fixe { opacity: .75; }          /* non prolongeable : un peu plus discret… */
     .loan-list .mini.fixe::after { content: ' 🔒'; } /* …et marqué d'un cadenas */
 
@@ -435,6 +456,7 @@
       <section class="card" id="loans-card" hidden>
         <div class="card-title"><a class="mobile-only" href="../mediatheque/" style="color:inherit;text-decoration:none">Médiathèque ›</a><span class="tv-only">Médiathèque</span><span id="loans-count"></span></div>
         <div id="loans"></div>
+        <dialog id="loan-dialog" aria-label="Document emprunté"></dialog>
       </section>
 
       <!-- Planning des 7 prochains jours (téléphone et TV ; filtre par enfant sur téléphone) -->
@@ -458,7 +480,7 @@
     /* =================================================================
        CONFIGURATION — les seules lignes à modifier en temps normal
        ================================================================= */
-    const VERSION = '1.7.4';
+    const VERSION = '1.7.5';
 
     // Google Sheet "Family tasks" publié en TSV (Fichier > Partager > Publier sur le web).
     // C'est le même lien que celui de ton Kindle.
@@ -941,11 +963,45 @@
       return Math.round((new Date(y, m - 1, d) - today) / 864e5);
     }
 
+    // Visuel en grand : la liste des prêts affichés, retrouvés par leur numéro (data-i)
+    let loansAll = [];
+
+    function openLoan(p) {
+      const n = p.retour ? daysUntil(p.retour) : null;
+      const retour = n === null ? '' : n < 0 ? `En retard de ${-n} j` : n === 0 ? "À rendre aujourd'hui" : n === 1 ? 'À rendre demain' : `À rendre dans ${n} j`;
+      const couleur = n === null ? 'var(--muted)' : n <= 3 ? 'var(--bad)' : n <= 7 ? 'var(--warn)' : 'var(--muted)';
+      $('loan-dialog').innerHTML =
+        (/^https:\/\//.test(p.couverture || '')
+          ? `<img src="${esc(p.couverture)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">` : '')
+        + `<h3>${esc(p.titre)}</h3>`
+        + (p.auteur ? `<p>${esc(p.auteur)}</p>` : '')
+        + (retour ? `<p class="retour" style="--c:${couleur}">${retour}</p>` : '')
+        + `<div class="loan-actions"><button id="loan-close">Fermer</button><a href="../mediatheque/">Voir l'appli</a></div>`;
+      $('loan-dialog').showModal();
+      // Une étape de plus dans l'historique : le bouton « retour » du téléphone fermera le visuel
+      history.pushState({ loan: true }, '');
+    }
+
+    // Un seul écouteur sur la carte : les pastilles sont recréées à chaque actualisation
+    $('loans').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-i]');
+      if (b) openLoan(loansAll[Number(b.dataset.i)]);
+    });
+    $('loan-dialog').addEventListener('click', (e) => {
+      // Bouton « Fermer », ou fond sombre (la cible est alors le <dialog> lui-même)
+      if (e.target === $('loan-dialog') || e.target.id === 'loan-close') $('loan-dialog').close();
+    });
+    // Fermeture (bouton, touche Échap…) : on retire l'étape ajoutée à l'historique
+    $('loan-dialog').addEventListener('close', () => { if (history.state && history.state.loan) history.back(); });
+    // Bouton « retour » du téléphone : on ferme le visuel au lieu de quitter le dashboard
+    window.addEventListener('popstate', () => { if ($('loan-dialog').open) $('loan-dialog').close(); });
+
     function renderLoans(data, stale) {
       const cartes = data.cartes || [];
       const several = cartes.length > 1;          // plusieurs cartes : on préfixe chaque titre par le prénom
       // 1) On met tous les prêts dans une seule liste, en notant à qui ils sont
       const all = cartes.flatMap(c => (c.prets || []).map(p => ({ ...p, qui: c.nom })));
+      loansAll = all;
       const problem = stale || cartes.some(c => !c.ok);   // ⚠ si données anciennes ou carte en erreur
 
       // Aucun prêt : rien à afficher, on cache la carte (comme les tâches)
@@ -978,8 +1034,11 @@
           const miniature = /^https:\/\//.test(p.couverture || '')
             ? `<img class="loan-thumb" src="${esc(p.couverture)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`
             : '';
-          return `<span class="mini${p.prolongeable === false ? ' fixe' : ''}" title="${esc(p.auteur)}">`
-            + miniature + `<span>` + (several ? `<i>${esc(p.qui)}</i>` : '') + esc(p.titre) + `</span></span>`;
+          // Sur téléphone ou ordinateur, la pastille est un bouton qui ouvre le visuel en grand.
+          // À la télé, on ne peut pas toucher l'écran : elle reste un simple texte.
+          const balise = IS_TV ? 'span' : 'button';
+          return `<${balise} class="mini${p.prolongeable === false ? ' fixe' : ''}" title="${esc(p.auteur)}"${IS_TV ? '' : ` data-i="${all.indexOf(p)}"`}>`
+            + miniature + `<span>` + (several ? `<i>${esc(p.qui)}</i>` : '') + esc(p.titre) + `</span></${balise}>`;
         }).join('')
           + (list.length > MAX ? `<span class="mini">+${list.length - MAX}</span>` : '');
         return `<div class="loan-group" style="--c:${color}">`
