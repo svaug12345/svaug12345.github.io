@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Famille · Vaugoude's Family — tableau de bord de la maison
-  Version 1.7.1
+  Version 1.7.2
   Mobile par défaut ; mode TV avec baiji.fr/famille/?tv (retour : ?mobile).
   Historique :
    • v1.0.0 : météo, tâches du jour (Google Sheet), 7 prochains jours, Pass TV,
@@ -28,6 +28,8 @@
               plus de planning des 7 jours à la télé (il reste sur téléphone)
    • v1.7.1 : plus jamais de planning des 7 jours à la télé, même sans devoirs
               (dans ce cas l'écran passe simplement en 2 colonnes)
+   • v1.7.2 : la clé des devoirs peut être donnée dans l'adresse (?cle=…), pratique pour
+              la télé ; à la télé sans clé, la carte Devoirs explique quoi faire
 -->
 <html lang="fr">
 <head>
@@ -449,7 +451,7 @@
     /* =================================================================
        CONFIGURATION — les seules lignes à modifier en temps normal
        ================================================================= */
-    const VERSION = '1.7.1';
+    const VERSION = '1.7.2';
 
     // Google Sheet "Family tasks" publié en TSV (Fichier > Partager > Publier sur le web).
     // C'est le même lien que celui de ton Kindle.
@@ -495,6 +497,15 @@
     };
     if (params.has('tv')) store.set('mode', 'tv');
     if (params.has('mobile')) store.set('mode', 'mobile');
+    // Clé des devoirs (la même que Cartable) donnée dans l'adresse : ?cle=XXXX.
+    // On l'enregistre dans l'appareil (comme le fait Cartable), puis on l'efface de la
+    // barre d'adresse pour qu'elle ne reste pas affichée à l'écran ni dans les favoris.
+    if (params.get('cle')) {
+      store.set('cartable.cle', params.get('cle').trim());
+      params.delete('cle');
+      const rest = params.toString().replace(/=(&|$)/g, '$1');   // "tv=" → "tv" pour garder une adresse propre
+      history.replaceState(null, '', location.pathname + (rest ? '?' + rest : ''));
+    }
     // Le mode TV ne s'applique pas sur un téléphone : on regarde le PETIT côté de l'écran
     // (environ 400 px sur un téléphone, même tourné en paysage ; 540 px ou plus sur une télé).
     // Sur un téléphone, on reste donc en affichage mobile même si le mode TV a été choisi.
@@ -837,8 +848,14 @@
 
     // Pas de clé sur cet appareil : sur téléphone, on explique comment faire ; sur la TV, rien
     function renderHomeworkNoKey() {
-      if (IS_TV) return;
       $('homework-card').hidden = false;
+      if (IS_TV) {
+        // Pas de lien cliquable utile à la télécommande : on donne l'adresse à taper une fois
+        $('homework-when').textContent = '';
+        $('homework').innerHTML = `<div class="empty">Clé des devoirs absente sur cet écran.<br>`
+          + `Ouvre une fois <b>baiji.fr/famille/?tv&amp;cle=</b><i>ta clé Cartable</i></div>`;
+        return;
+      }
       $('homework-when').textContent = '';
       $('homework').innerHTML = `<div class="empty">Ouvre une fois <a href="../cartable/">Cartable</a> sur cet appareil et saisis la clé : les devoirs apparaîtront ici.</div>`;
     }
