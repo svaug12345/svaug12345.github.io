@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr — Page d'accueil des projets (marque SV)
-  Version 1.22.0
+  Version 1.23.0
   ------------------------------------------------------------
   Historique :
    • v1.0.0 : première page d'accueil
@@ -50,6 +50,8 @@
               Rangement (bouton crayon) pour archiver, déplacer, ordonner, créer
               et renommer des rubriques, avec export du bloc ORGANISATION ;
               petit micro sur les agents vocaux ; pied de page à la bonne version
+   • v1.23.0 : « Undercover » devient « Agent Double » (lien de test Google Play) ;
+              ajout de « Quiz'Vacances » et « En Route ! » dans « Jeux » (bientôt)
 
   À déposer dans le dépôt GitHub : svaug12345.github.io
   → c'est le fichier "index.html" à la racine.
@@ -591,7 +593,7 @@
 
     <!-- ===================== PIED DE PAGE ===================== -->
     <footer>
-      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.22.0</p>
+      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.23.0</p>
     </footer>
 
     <!--
@@ -651,6 +653,8 @@
       velo: `<circle cx="18.5" cy="17.5" r="3.5"/> <circle cx="5.5" cy="17.5" r="3.5"/> <circle cx="15" cy="5" r="1"/> <path d="M12 17.5V14l-3-3 4-3 2 3h2"/>`,  // bike
       cartable: `<path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" /> <path d="M8 10h8" /> <path d="M8 18h8" /> <path d="M8 22v-6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v6" /> <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />`,  // backpack
       disque: `<path d="M10 16h.01"/> <path d="M2.212 11.577a2 2 0 0 0-.212.896V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.527a2 2 0 0 0-.212-.896L18.55 5.11A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/> <path d="M21.946 12.013H2.054"/> <path d="M6 16h.01"/>`,  // hard-drive
+      route: `<circle cx="6" cy="19" r="3"/> <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/> <circle cx="18" cy="5" r="3"/>`,  // route
+      palmier: `<path d="M13 8c0-2.76-2.46-5-5.5-5S2 5.24 2 8h2l1-1 1 1h4"/> <path d="M13 7.14A5.82 5.82 0 0 1 16.5 6c3.04 0 5.5 2.24 5.5 5h-3l-1-1-1 1h-3"/> <path d="M5.89 9.71c-2.15 2.15-2.3 5.47-.35 7.43l4.24-4.25.7-.7.71-.71 2.12-2.12c-1.95-1.96-5.27-1.8-7.42.35"/> <path d="M11 15.5c.5 2.5-.17 4.5-1 6.5h4c2-5.5-.5-12-1-14"/>`,  // tree-palm
       photo: `<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/> <circle cx="9" cy="9" r="2"/> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>`,  // image
     };
     /*
@@ -699,9 +703,24 @@
         url: "disque/" },
 
       // ---------- Jeux ----------
-      { id: "undercover",  nom: "Undercover",   icone: "masque",
-        desc: "Jeu de mots et d'imposteur entre amis",
-        courte: "Jeu d'imposteur",
+      // Agent Double = l'ancien projet « Undercover » (dépôt svaug12345/undercover).
+      // On garde l'id "undercover" pour que les rangements déjà faits le retrouvent.
+      // Lien = page d'inscription au TEST FERMÉ Google Play : ne marche que pour
+      // les comptes Google ajoutés comme testeurs. À remplacer par la fiche
+      // publique (play.google.com/store/apps/details?id=…) à la sortie officielle.
+      { id: "undercover",  nom: "Agent Double", icone: "masque",
+        desc: "Jeu d'infiltration et de mots, sur un seul téléphone (en test sur Google Play)",
+        courte: "Jeu d'imposteur (en test)",
+        url: "https://play.google.com/apps/testing/com.svaug.agent_double" },
+      // Quiz'Vacances (dépôt svaug12345/Quizz-Famille, Flutter Android + web) : pas encore publiée
+      { id: "quiz-vacances", nom: "Quiz'Vacances", icone: "palmier",
+        desc: "Le quiz famille des souvenirs de vacances",
+        courte: "Le quiz des vacances",
+        url: null },                                   // ⬅️ lien à compléter
+      // En Route ! (dépôt svaug12345/En-Route, Flutter Android) : pas encore publiée
+      { id: "en-route",    nom: "En Route !", icone: "route",
+        desc: "Jeux d'ambiance où l'on se passe le téléphone, en voiture",
+        courte: "Jeux pour la voiture",
         url: null },                                   // ⬅️ lien à compléter
       { id: "unknown-waters", nom: "Unknown Waters", icone: "vagues",
         desc: "Casse-brique, ambiance graphique épurée",
@@ -813,7 +832,7 @@
         { nom: "Carrefour", projets: ["fournisseurs", "nexus", "salle-negociation", "pochpoch"] },
         { nom: "Formation", projets: ["entretien-tuteur", "fart"] },
         { nom: "Sites & démos", projets: ["julien", "location"] },
-        { nom: "Jeux", projets: ["undercover", "unknown-waters"] }
+        { nom: "Jeux", projets: ["undercover", "quiz-vacances", "en-route", "unknown-waters"] }
       ],
       archives: []
     };
