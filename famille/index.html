@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Famille · Vaugoude's Family — tableau de bord de la maison
-  Version 1.7.3
+  Version 1.7.4
   Mobile par défaut ; mode TV avec baiji.fr/famille/?tv (retour : ?mobile).
   Historique :
    • v1.0.0 : météo, tâches du jour (Google Sheet), 7 prochains jours, Pass TV,
@@ -31,6 +31,7 @@
    • v1.7.2 : la clé des devoirs peut être donnée dans l'adresse (?cle=…), pratique pour
               la télé ; à la télé sans clé, la carte Devoirs explique quoi faire
    • v1.7.3 : sur téléphone, le titre de la carte Médiathèque ouvre l'appli Médiathèque
+   • v1.7.4 : miniature de la couverture dans chaque pastille de la carte Médiathèque
 -->
 <html lang="fr">
 <head>
@@ -219,7 +220,10 @@
     .loan-date { font-weight: 800; font-size: 14px; display: flex; justify-content: space-between; gap: 8px; }
     .loan-date small { font-weight: 700; color: var(--c); white-space: nowrap; }   /* « dans 2 j » en couleur */
     .loan-list { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
-    .loan-list .mini { --c: var(--accent); }
+    /* Pastille : la miniature à gauche, le titre à droite, centrés en hauteur */
+    .loan-list .mini { --c: var(--accent); display: inline-flex; align-items: center; gap: 7px; max-width: 100%; }
+    /* contain : la couverture reste entière, même pour un album presque carré */
+    .loan-thumb { width: 26px; height: 36px; flex: none; object-fit: contain; border-radius: 3px; }
     .loan-list .mini.fixe { opacity: .75; }          /* non prolongeable : un peu plus discret… */
     .loan-list .mini.fixe::after { content: ' 🔒'; } /* …et marqué d'un cadenas */
 
@@ -316,6 +320,8 @@
     body.tv .bar { height: .8vw; }
     body.tv .car-sub, body.tv .note { font-size: .9vw; }
     body.tv .loan-group { padding: .5vw 0; }
+    body.tv .loan-list .mini { gap: .4vw; }
+    body.tv .loan-thumb { width: 1.3vw; height: 1.8vw; }   /* à la télé, tout doit tenir sans défiler */
     body.tv .ag-day { padding: .45vw 0; }
     body.tv .ag-label { font-size: .8vw; }
     body.tv .ag-ev { font-size: 1.15vw; margin-top: .25vw; gap: .7vw; }
@@ -452,7 +458,7 @@
     /* =================================================================
        CONFIGURATION — les seules lignes à modifier en temps normal
        ================================================================= */
-    const VERSION = '1.7.3';
+    const VERSION = '1.7.4';
 
     // Google Sheet "Family tasks" publié en TSV (Fichier > Partager > Publier sur le web).
     // C'est le même lien que celui de ton Kindle.
@@ -965,9 +971,16 @@
           // rouge : en retard ou dans 3 jours ou moins ; orange : dans la semaine
           color = n <= 3 ? 'var(--bad)' : n <= 7 ? 'var(--warn)' : 'var(--muted)';
         }
-        const chips = list.slice(0, MAX).map(p =>
-          `<span class="mini${p.prolongeable === false ? ' fixe' : ''}" title="${esc(p.auteur)}">`
-          + (several ? `<i>${esc(p.qui)}</i>` : '') + esc(p.titre) + `</span>`).join('')
+        const chips = list.slice(0, MAX).map(p => {
+          // Miniature : seulement une adresse https complète. onerror : si l'image ne se charge
+          // pas, on l'enlève et la pastille garde juste le titre. no-referrer : le site de la
+          // médiathèque n'a pas besoin de savoir d'où vient la demande.
+          const miniature = /^https:\/\//.test(p.couverture || '')
+            ? `<img class="loan-thumb" src="${esc(p.couverture)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`
+            : '';
+          return `<span class="mini${p.prolongeable === false ? ' fixe' : ''}" title="${esc(p.auteur)}">`
+            + miniature + `<span>` + (several ? `<i>${esc(p.qui)}</i>` : '') + esc(p.titre) + `</span></span>`;
+        }).join('')
           + (list.length > MAX ? `<span class="mini">+${list.length - MAX}</span>` : '');
         return `<div class="loan-group" style="--c:${color}">`
              + `<div class="loan-date">${label}<small>${when} · ${list.length}</small></div>`
