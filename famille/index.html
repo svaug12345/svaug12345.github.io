@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Famille · Vaugoude's Family — tableau de bord de la maison
-  Version 1.5.0
+  Version 1.6.0
   Mobile par défaut ; mode TV avec baiji.fr/famille/?tv (retour : ?mobile).
   Historique :
    • v1.0.0 : météo, tâches du jour (Google Sheet), 7 prochains jours, Pass TV,
@@ -19,6 +19,10 @@
    • v1.4.1 : téléphone : la météo (compacte) revient tout en haut, avant les tâches et l'agenda
    • v1.5.0 : carte « Devoirs » (devoirs pas encore faits du prochain jour, par enfant, via le
               service pronote du NAS et la clé de Cartable) ; plus d'éphéméride « Dans l'histoire »
+   • v1.6.0 : mode TV plus dense : en-tête et marges réduits ; colonne 2 = tâches du
+              jour + devoirs (2-3 prochains jours par enfant au lieu d'un seul) ;
+              colonne 3 = voitures, médiathèque et planning des 7 prochains jours
+              (remplace la petite carte « Demain »)
 -->
 <html lang="fr">
 <head>
@@ -238,6 +242,7 @@
        ========================================================= */
     /* Devoirs : une ligne par enfant (même présentation que les tâches) */
     .hw-done { color: var(--good); font-weight: 700; font-size: 14px; }
+    .hw-day { font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-top: 6px; }
     .hw-later { color: var(--muted); font-size: 12.5px; margin-top: 4px; }
 
     footer { text-align: center; font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 6px; align-items: center; }
@@ -250,17 +255,17 @@
        largeur d'écran) pour s'adapter à toutes les télés.
        ========================================================= */
     body.tv #app {
-      max-width: none; height: 100vh; padding: 2.2vw; gap: 1.4vw;
-      display: grid; grid-template-columns: 1.1fr 1fr 0.85fr; grid-template-rows: auto 1fr;
+      max-width: none; height: 100vh; padding: 1.3vw 1.6vw; gap: 1vw;
+      display: grid; grid-template-columns: 1.05fr 1fr 0.95fr; grid-template-rows: auto 1fr;
       transition: transform 2s;  /* léger déplacement anti-marquage OLED */
     }
     body.tv .top { grid-column: 1 / -1; }
     body.tv .brand { font-size: .9vw; }
-    body.tv .date { font-size: 2.4vw; }
-    body.tv .clock { font-size: 4.2vw; line-height: 1; }
-    body.tv .card { padding: 1.4vw; border-radius: 1.4vw; overflow: hidden; }
-    body.tv .card-title { font-size: .85vw; margin-bottom: 1vw; }
-    body.tv .col { display: flex; flex-direction: column; gap: 1.4vw; min-height: 0; }
+    body.tv .date { font-size: 1.9vw; }
+    body.tv .clock { font-size: 3.2vw; line-height: 1; }
+    body.tv .card { padding: 1vw 1.2vw; border-radius: 1.2vw; overflow: hidden; }
+    body.tv .card-title { font-size: .8vw; margin-bottom: .6vw; }
+    body.tv .col { display: flex; flex-direction: column; gap: 1vw; min-height: 0; }
     body.tv .weather { flex: none; }               /* hauteur naturelle : l'agenda prend le reste */
     body.tv .now-icon svg { width: 4vw; height: 4vw; }
     body.tv .now-temp { font-size: 4.4vw; }
@@ -274,14 +279,27 @@
     body.tv .days { gap: .6vw; }
     body.tv .day-name { font-size: .9vw; } body.tv .day-t { font-size: 1.1vw; }
     body.tv .day svg { width: 1.8vw; height: 1.8vw; }
-    body.tv .tasks-today { flex: 1; }
+    body.tv .tasks-today { flex: none; }            /* hauteur naturelle : les devoirs prennent le reste */
+    body.tv #homework-card { flex: 1; min-height: 0; }
+    body.tv #week-card { flex: 1; min-height: 0; }  /* le planning remplit la colonne 3 */
+    body.tv #week-card .filters { display: none; }  /* pas de filtre à la télé : tout le monde */
+    /* Listes plus longues que la place disponible : fondu en bas plutôt qu'une ligne coupée net */
+    body.tv #agenda, body.tv #week {
+      max-height: 100%; overflow: hidden;
+      -webkit-mask-image: linear-gradient(to bottom, #000 82%, transparent);
+      mask-image: linear-gradient(to bottom, #000 82%, transparent);
+    }
+    body.tv .week-day { grid-template-columns: 4.2vw 1fr; gap: .6vw; padding: .45vw 0; }
+    body.tv .week-label { font-size: .9vw; }
+    body.tv .week-items { gap: .3vw; }
+    body.tv .hw-day { font-size: .85vw; margin-top: .35vw; }
     body.tv #agenda-card { flex: 1; min-height: 0; }   /* l'agenda remplit la colonne 1 sous la météo */
-    body.tv .avatar { flex-basis: 3.6vw; height: 3.6vw; font-size: 1.6vw; border-radius: 1vw; }
-    body.tv .kid { padding: 1vw 0; gap: 1vw; }
-    body.tv .kid-name { font-size: 1.6vw; }
-    body.tv .task { font-size: 1.3vw; padding: .3vw .8vw; border-radius: .7vw; }
-    body.tv .mini { font-size: 1vw; }
-    body.tv .car-name { font-size: 1.2vw; } body.tv .car-soc { font-size: 2.8vw; }
+    body.tv .avatar { flex-basis: 2.8vw; height: 2.8vw; font-size: 1.3vw; border-radius: .8vw; }
+    body.tv .kid { padding: .6vw 0; gap: .8vw; }
+    body.tv .kid-name { font-size: 1.3vw; }
+    body.tv .task { font-size: 1.1vw; padding: .25vw .7vw; border-radius: .6vw; }
+    body.tv .mini { font-size: .95vw; }
+    body.tv .car-name { font-size: 1.1vw; } body.tv .car-soc { font-size: 2.2vw; margin: 0 0 .3vw; }
     body.tv .bar { height: .8vw; }
     body.tv .car-sub, body.tv .note { font-size: .9vw; }
     body.tv .loan-group { padding: .5vw 0; }
@@ -379,10 +397,11 @@
         <div id="tasks-today"></div>
       </section>
 
-      <!-- Demain (TV) : le planning complet est trop long pour la télé -->
-      <section class="card tv-only">
-        <div class="card-title">Demain</div>
-        <div class="week-items" id="tasks-tomorrow"></div>
+      <!-- Devoirs (service « pronote » du NAS, le même que l'appli Cartable).
+           Cachée tant qu'il n'y a rien à afficher. -->
+      <section class="card" id="homework-card" hidden>
+        <div class="card-title"><a class="mobile-only" href="../cartable/" style="color:inherit;text-decoration:none">Devoirs ›</a><span class="tv-only">Devoirs</span><span id="homework-when"></span></div>
+        <div id="homework"></div>
       </section>
     </div>
 
@@ -399,8 +418,8 @@
         <div id="loans"></div>
       </section>
 
-      <!-- Planning de la semaine (mobile uniquement) -->
-      <section class="card mobile-only">
+      <!-- Planning des 7 prochains jours (téléphone et TV ; filtre par enfant sur téléphone) -->
+      <section class="card" id="week-card">
         <div class="card-title">
           <span>7 prochains jours</span>
           <div class="filters" id="filters"></div>
@@ -408,12 +427,6 @@
         <div id="week"></div>
       </section>
 
-      <!-- Devoirs (service « pronote » du NAS, le même que l'appli Cartable).
-           Cachée tant qu'il n'y a rien à afficher. -->
-      <section class="card" id="homework-card" hidden>
-        <div class="card-title"><a class="mobile-only" href="../cartable/" style="color:inherit;text-decoration:none">Devoirs ›</a><span class="tv-only">Devoirs</span><span id="homework-when"></span></div>
-        <div id="homework"></div>
-      </section>
     </div>
 
     <footer class="mobile-only">
@@ -426,7 +439,7 @@
     /* =================================================================
        CONFIGURATION — les seules lignes à modifier en temps normal
        ================================================================= */
-    const VERSION = '1.5.0';
+    const VERSION = '1.6.0';
 
     // Google Sheet "Family tasks" publié en TSV (Fichier > Partager > Publier sur le web).
     // C'est le même lien que celui de ton Kindle.
@@ -711,12 +724,6 @@
       // (hidden = attribut HTML qui cache l'élément, sans toucher au CSS).
       $('tasks-today').closest('section').hidden = names.length === 0;
 
-      // --- Demain (affiché en mode TV)
-      const tomorrow = tasksFor(addDays(today, 1));
-      $('tasks-tomorrow').innerHTML = tomorrow.length
-        ? tomorrow.map(t => `<span class="mini" style="--c:${KIDS[t.qui] || KIDS.Tous}"><i>${esc(t.qui)}</i>${esc(t.tache)}</span>`).join('')
-        : '<span class="empty">Rien de prévu</span>';
-
       // --- 7 prochains jours (mobile), avec filtre par enfant
       $('filters').innerHTML = ['Tous', 'Nanon', 'Gaby', 'Tom'].map(k =>
         `<button class="filter ${k === kidFilter ? 'on' : ''}" data-kid="${k}">${k}</button>`).join('');
@@ -724,7 +731,8 @@
       for (let i = 1; i <= 7; i++) {
         const d = addDays(today, i);
         let list = tasksFor(d);
-        if (kidFilter !== 'Tous') list = list.filter(t => t.qui === kidFilter || t.qui === 'Tous');
+        // À la télé, on montre toujours tout le monde (pas de filtre possible à la télécommande)
+        if (kidFilter !== 'Tous' && !IS_TV) list = list.filter(t => t.qui === kidFilter || t.qui === 'Tous');
         const label = i === 1 ? 'Demain' : d.toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', '');
         week += `<div class="week-day"><div class="week-label">${label}<small>${d.getDate()}/${d.getMonth() + 1}</small></div><div class="week-items">`
               + (list.length ? list.map(t => `<span class="mini" style="--c:${KIDS[t.qui] || KIDS.Tous}"><i>${esc(t.qui)}</i>${esc(t.tache)}</span>`).join('') : '<span class="empty">—</span>')
@@ -839,7 +847,10 @@
         if (!days.length) continue;
         const day = days[0];
         const todo = kid.devoirs.filter(d => d.pour === day && !d.fait);
-        const later = kid.devoirs.filter(d => d.pour > day && !d.fait).length;
+        // À la télé, on a la place : on détaille aussi les 2 jours suivants
+        const extraDays = IS_TV ? days.slice(1, 3) : [];
+        const lastShown = extraDays[extraDays.length - 1] || day;
+        const later = kid.devoirs.filter(d => d.pour > lastShown && !d.fait).length;
         const [y, m, dd] = day.split('-').map(Number);
         const dayName = day === tomorrow ? 'demain'
           : new Date(y, m - 1, dd).toLocaleDateString('fr-FR', { weekday: 'long' });
@@ -847,9 +858,17 @@
         const body = todo.length
           ? `<div class="kid-tasks">${todo.map(d => `<span class="task" title="${esc(d.texte)}">📚 ${esc(matiere(d.matiere))}</span>`).join('')}</div>`
           : `<div class="hw-done">Tout est fait ✓</div>`;
+        // Jours suivants (TV) : « VENDREDI » puis les matières de ce jour-là
+        const extra = extraDays.map(dayIso => {
+          const list = kid.devoirs.filter(d => d.pour === dayIso && !d.fait);
+          if (!list.length) return '';
+          const [yy, mo, da] = dayIso.split('-').map(Number);
+          const name = new Date(yy, mo - 1, da).toLocaleDateString('fr-FR', { weekday: 'long' });
+          return `<div class="hw-day">${esc(name)}</div><div class="kid-tasks">${list.map(d => `<span class="task">📚 ${esc(matiere(d.matiere))}</span>`).join('')}</div>`;
+        }).join('');
         const more = later ? `<div class="hw-later">+ ${later} devoir${later > 1 ? 's' : ''} pour la suite</div>` : '';
         rows.push(`<div class="kid" style="--c:${KIDS[kid.nom] || KIDS.Tous}"><div class="avatar">${esc(kid.nom[0])}</div>`
-          + `<div><div class="kid-name">${esc(kid.nom)} <small style="font-weight:600;color:var(--muted)">· pour ${esc(dayName)}</small></div>${body}${more}</div></div>`);
+          + `<div><div class="kid-name">${esc(kid.nom)} <small style="font-weight:600;color:var(--muted)">· pour ${esc(dayName)}</small></div>${body}${extra}${more}</div></div>`);
       }
       // Rien de prévu pour personne : on cache la carte (comme les tâches)
       $('homework-card').hidden = rows.length === 0;
