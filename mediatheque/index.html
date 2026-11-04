@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Médiathèque — les documents empruntés aux Médiathèques de Paris-Saclay, avec leurs couvertures
-  Version 1.0.2
+  Version 1.0.3
   Les données viennent du service « biblio » du NAS (https://biblio.baiji.fr/prets.json),
   qui se connecte au compte lecteur et relit le site toutes les 3 heures.
   La page ne contient aucun identifiant et ne parle jamais directement au compte lecteur.
@@ -10,6 +10,7 @@
               fiche détaillée, lien pour prolonger sur le site, dernières données hors ligne
    • v1.0.1 : 3 colonnes de couvertures sur téléphone ; couvertures entières, jamais coupées
    • v1.0.2 : fiche d'un document avec une grande couverture en haut
+   • v1.0.3 : correction : la grande couverture restait invisible (hauteur nulle, jamais chargée)
 -->
 <html lang="fr">
 <head>
@@ -179,12 +180,9 @@
       border: 0; border-radius: var(--radius); background: var(--card); color: var(--ink); padding: 16px;
     }
     dialog::backdrop { background: rgba(4, 18, 22, .65); }
-    /* La grande couverture, centrée en haut de la fiche. Ici l'image garde ses vraies proportions
-       (height: auto) ; max-height évite qu'elle prenne tout l'écran. */
-    .fiche-visuel { width: min(300px, 78%); margin: 0 auto 14px; }
-    .fiche-visuel .couv { aspect-ratio: auto; }
-    .fiche-visuel .couv:not(:has(img)) { aspect-ratio: 2 / 3; }     /* pas d'image : tuile au format livre */
-    .fiche-visuel .couv img { position: relative; z-index: 1; display: block; height: auto; max-height: 58dvh; }
+    /* La grande couverture, centrée en haut de la fiche. Le cadre au format livre a une taille
+       fixe : il ne saute pas pendant le chargement. min() limite aussi sa hauteur sur petit écran. */
+    .fiche-visuel { width: min(300px, 78%, 38dvh); margin: 0 auto 14px; }
     .fiche-haut h2 { font-size: 18px; font-weight: 800; line-height: 1.25; overflow-wrap: anywhere; }
     .fiche-haut p { font-size: 14px; color: var(--muted); margin-top: 4px; }
     .etiquette { display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--soft); color: var(--muted); margin-top: 8px; }
@@ -226,7 +224,7 @@
     /* =================================================================
        CONFIGURATION
        ================================================================= */
-    const VERSION = '1.0.2';
+    const VERSION = '1.0.3';
     const PRETS_URL = 'https://biblio.baiji.fr/prets.json';       // le service du NAS
     const SITE = 'https://mediatheques.paris-saclay.com';
     const PAGE_PRETS = SITE + '/page/user/prets-en-cours?choix_tri_pret_bgm=dra';   // pour prolonger
@@ -272,9 +270,10 @@
     }
     // La couverture, ou une tuile avec le titre s'il n'y a pas d'image.
     // no-referrer : le site de la médiathèque n'a pas besoin de savoir d'où vient la demande.
-    function couverture(p) {
+    // differe : dans la grille, on ne charge une image qu'à l'approche de l'écran ; pas dans la fiche.
+    function couverture(p, differe = true) {
       const image = /^https:\/\//.test(p.couverture || '')
-        ? `<img src="${esc(p.couverture)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : '';
+        ? `<img src="${esc(p.couverture)}" alt=""${differe ? ' loading="lazy"' : ''} referrerpolicy="no-referrer">` : '';
       return `<span class="couv" style="--t:${teinte(p.type)}"><span class="repli">${esc(p.titre)}</span>${image}`
            + (p.prolongeable === false ? '<span class="fixe" title="Pas prolongeable">Non prolong.</span>' : '') + '</span>';
     }
@@ -406,7 +405,7 @@
         <button class="icon-btn fermer" id="fermer" aria-label="Fermer">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
         </button>
-        <div class="fiche-visuel">${couverture(p)}</div>
+        <div class="fiche-visuel">${couverture(p, false)}</div>
         <div class="fiche-haut">
           <h2>${esc(p.titre)}</h2>
           ${p.auteur ? `<p>${esc(p.auteur)}</p>` : ''}
