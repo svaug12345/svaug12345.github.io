@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Famille · Vaugoude's Family — tableau de bord de la maison
-  Version 1.7.0
+  Version 1.7.1
   Mobile par défaut ; mode TV avec baiji.fr/famille/?tv (retour : ?mobile).
   Historique :
    • v1.0.0 : météo, tâches du jour (Google Sheet), 7 prochains jours, Pass TV,
@@ -26,6 +26,8 @@
    • v1.7.0 : mode TV : les devoirs ont toute la colonne du milieu (5 prochains jours
               par enfant) ; les tâches du jour passent en haut de la colonne de droite ;
               plus de planning des 7 jours à la télé (il reste sur téléphone)
+   • v1.7.1 : plus jamais de planning des 7 jours à la télé, même sans devoirs
+              (dans ce cas l'écran passe simplement en 2 colonnes)
 -->
 <html lang="fr">
 <head>
@@ -284,13 +286,12 @@
     body.tv .day svg { width: 1.8vw; height: 1.8vw; }
     body.tv .tasks-today { flex: none; }            /* hauteur naturelle : les devoirs prennent le reste */
     body.tv #homework-card { flex: 1; min-height: 0; }   /* les devoirs remplissent toute la colonne 2 */
-    body.tv #week-card { display: none; }           /* planning 7 jours : téléphone seulement… */
-    /* …sauf s'il n'y a aucun devoir (vacances) : la colonne du milieu disparaît, l'écran passe
-       en 2 colonnes et le planning revient. ":has()" = « qui contient » : on regarde si la
-       carte des devoirs est cachée (attribut hidden). */
+    body.tv #week-card { display: none; }           /* planning 7 jours : téléphone seulement */
+    /* S'il n'y a aucun devoir (vacances), la colonne du milieu serait vide : on la retire et
+       l'écran passe en 2 colonnes. ":has()" = « qui contient » : on regarde si la carte des
+       devoirs est cachée (attribut hidden). */
     body.tv #app:has(#homework-card[hidden]) { grid-template-columns: 1fr 1fr; }
     body.tv #app:has(#homework-card[hidden]) .col-devoirs { display: none; }
-    body.tv #app:has(#homework-card[hidden]) #week-card { display: block; flex: 1; min-height: 0; }
     body.tv #week-card .filters { display: none; }  /* pas de filtre à la télé : tout le monde */
     /* Listes plus longues que la place disponible : fondu en bas plutôt qu'une ligne coupée net */
     body.tv #agenda, body.tv #week {
@@ -448,7 +449,7 @@
     /* =================================================================
        CONFIGURATION — les seules lignes à modifier en temps normal
        ================================================================= */
-    const VERSION = '1.7.0';
+    const VERSION = '1.7.1';
 
     // Google Sheet "Family tasks" publié en TSV (Fichier > Partager > Publier sur le web).
     // C'est le même lien que celui de ton Kindle.
