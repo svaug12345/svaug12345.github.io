@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Famille · Vaugoude's Family — tableau de bord de la maison
-  Version 1.6.0
+  Version 1.7.0
   Mobile par défaut ; mode TV avec baiji.fr/famille/?tv (retour : ?mobile).
   Historique :
    • v1.0.0 : météo, tâches du jour (Google Sheet), 7 prochains jours, Pass TV,
@@ -23,6 +23,9 @@
               jour + devoirs (2-3 prochains jours par enfant au lieu d'un seul) ;
               colonne 3 = voitures, médiathèque et planning des 7 prochains jours
               (remplace la petite carte « Demain »)
+   • v1.7.0 : mode TV : les devoirs ont toute la colonne du milieu (5 prochains jours
+              par enfant) ; les tâches du jour passent en haut de la colonne de droite ;
+              plus de planning des 7 jours à la télé (il reste sur téléphone)
 -->
 <html lang="fr">
 <head>
@@ -280,8 +283,14 @@
     body.tv .day-name { font-size: .9vw; } body.tv .day-t { font-size: 1.1vw; }
     body.tv .day svg { width: 1.8vw; height: 1.8vw; }
     body.tv .tasks-today { flex: none; }            /* hauteur naturelle : les devoirs prennent le reste */
-    body.tv #homework-card { flex: 1; min-height: 0; }
-    body.tv #week-card { flex: 1; min-height: 0; }  /* le planning remplit la colonne 3 */
+    body.tv #homework-card { flex: 1; min-height: 0; }   /* les devoirs remplissent toute la colonne 2 */
+    body.tv #week-card { display: none; }           /* planning 7 jours : téléphone seulement… */
+    /* …sauf s'il n'y a aucun devoir (vacances) : la colonne du milieu disparaît, l'écran passe
+       en 2 colonnes et le planning revient. ":has()" = « qui contient » : on regarde si la
+       carte des devoirs est cachée (attribut hidden). */
+    body.tv #app:has(#homework-card[hidden]) { grid-template-columns: 1fr 1fr; }
+    body.tv #app:has(#homework-card[hidden]) .col-devoirs { display: none; }
+    body.tv #app:has(#homework-card[hidden]) #week-card { display: block; flex: 1; min-height: 0; }
     body.tv #week-card .filters { display: none; }  /* pas de filtre à la télé : tout le monde */
     /* Listes plus longues que la place disponible : fondu en bas plutôt qu'une ligne coupée net */
     body.tv #agenda, body.tv #week {
@@ -324,9 +333,9 @@
     body:not(.tv) #app > .top { order: 0; }       /* « #app » : même poids que la règle du dessus, sinon elle gagne */
     body:not(.tv) .weather { order: 1; }
     body:not(.tv) .tasks-today { order: 2; }
-    body:not(.tv) #homework-card { order: 2; }     /* juste après les tâches (même « poids », ordre du HTML) */
-    body:not(.tv) #agenda-card { order: 3; }
-    body:not(.tv) .w-days-card { order: 4; }
+    body:not(.tv) #homework-card { order: 3; }     /* juste après les tâches */
+    body:not(.tv) #agenda-card { order: 4; }
+    body:not(.tv) .w-days-card { order: 5; }
     body:not(.tv) #app footer { order: 99; }
   </style>
 </head>
@@ -390,12 +399,8 @@
       </section>
     </div>
 
-    <!-- ===== Colonne 2 (TV) : tâches ===== -->
-    <div class="col">
-      <section class="card tasks-today">
-        <div class="card-title"><span id="tasks-title">Tâches du jour</span></div>
-        <div id="tasks-today"></div>
-      </section>
+    <!-- ===== Colonne 2 (TV) : devoirs ===== -->
+    <div class="col col-devoirs">
 
       <!-- Devoirs (service « pronote » du NAS, le même que l'appli Cartable).
            Cachée tant qu'il n'y a rien à afficher. -->
@@ -405,8 +410,12 @@
       </section>
     </div>
 
-    <!-- ===== Colonne 3 (TV) : voitures, médiathèque, devoirs ===== -->
+    <!-- ===== Colonne 3 (TV) : tâches du jour, voitures, médiathèque ===== -->
     <div class="col">
+      <section class="card tasks-today">
+        <div class="card-title"><span id="tasks-title">Tâches du jour</span></div>
+        <div id="tasks-today"></div>
+      </section>
       <section class="card">
         <div class="card-title"><a class="mobile-only" href="../voitures/" style="color:inherit;text-decoration:none">Voitures ›</a><span class="tv-only">Voitures</span><span id="cars-updated"></span></div>
         <div id="cars"></div>
@@ -439,7 +448,7 @@
     /* =================================================================
        CONFIGURATION — les seules lignes à modifier en temps normal
        ================================================================= */
-    const VERSION = '1.6.0';
+    const VERSION = '1.7.0';
 
     // Google Sheet "Family tasks" publié en TSV (Fichier > Partager > Publier sur le web).
     // C'est le même lien que celui de ton Kindle.
@@ -847,8 +856,8 @@
         if (!days.length) continue;
         const day = days[0];
         const todo = kid.devoirs.filter(d => d.pour === day && !d.fait);
-        // À la télé, on a la place : on détaille aussi les 2 jours suivants
-        const extraDays = IS_TV ? days.slice(1, 3) : [];
+        // À la télé, la carte a toute une colonne : on détaille aussi les 4 jours suivants
+        const extraDays = IS_TV ? days.slice(1, 5) : [];
         const lastShown = extraDays[extraDays.length - 1] || day;
         const later = kid.devoirs.filter(d => d.pour > lastShown && !d.fait).length;
         const [y, m, dd] = day.split('-').map(Number);
