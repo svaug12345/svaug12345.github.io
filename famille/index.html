@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Famille · Vaugoude's Family — tableau de bord de la maison
-  Version 1.7.2
+  Version 1.7.3
   Mobile par défaut ; mode TV avec baiji.fr/famille/?tv (retour : ?mobile).
   Historique :
    • v1.0.0 : météo, tâches du jour (Google Sheet), 7 prochains jours, Pass TV,
@@ -30,6 +30,7 @@
               (dans ce cas l'écran passe simplement en 2 colonnes)
    • v1.7.2 : la clé des devoirs peut être donnée dans l'adresse (?cle=…), pratique pour
               la télé ; à la télé sans clé, la carte Devoirs explique quoi faire
+   • v1.7.3 : sur téléphone, le titre de la carte Médiathèque ouvre l'appli Médiathèque
 -->
 <html lang="fr">
 <head>
@@ -426,7 +427,7 @@
 
       <!-- Médiathèque : cachée (hidden) tant que le service biblio du NAS n'a jamais répondu -->
       <section class="card" id="loans-card" hidden>
-        <div class="card-title"><span>Médiathèque</span><span id="loans-count"></span></div>
+        <div class="card-title"><a class="mobile-only" href="../mediatheque/" style="color:inherit;text-decoration:none">Médiathèque ›</a><span class="tv-only">Médiathèque</span><span id="loans-count"></span></div>
         <div id="loans"></div>
       </section>
 
@@ -451,7 +452,7 @@
     /* =================================================================
        CONFIGURATION — les seules lignes à modifier en temps normal
        ================================================================= */
-    const VERSION = '1.7.2';
+    const VERSION = '1.7.3';
 
     // Google Sheet "Family tasks" publié en TSV (Fichier > Partager > Publier sur le web).
     // C'est le même lien que celui de ton Kindle.

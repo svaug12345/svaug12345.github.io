@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<!--
+  Médiathèque — les documents empruntés aux Médiathèques de Paris-Saclay, avec leurs couvertures
+  Version 1.0.0
+  Les données viennent du service « biblio » du NAS (https://biblio.baiji.fr/prets.json),
+  qui se connecte au compte lecteur et relit le site toutes les 3 heures.
+  La page ne contient aucun identifiant et ne parle jamais directement au compte lecteur.
+  Historique :
+   • v1.0.0 : couvertures groupées par date de retour, filtres par type et par médiathèque,
+              fiche détaillée, lien pour prolonger sur le site, dernières données hors ligne
+-->
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <!-- viewport-fit=cover : l'appli occupe tout l'écran, y compris sous l'encoche du téléphone -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Médiathèque</title>
+  <meta name="description" content="Les documents empruntés aux Médiathèques de Paris-Saclay.">
+
+  <!-- Page familiale : on ne la fait pas apparaître dans les moteurs de recherche -->
+  <meta name="robots" content="noindex">
+
+  <!--
+    PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »).
+    Fichiers fabriqués par outils/generer-pwa.py :
+     • manifest.webmanifest : nom, couleurs, icônes de l'appli ;
+     • icones/ : les icônes (apple-touch-icon = celle des iPhone) ;
+     • sw.js : le service worker, enregistré en bas de page.
+  -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <link rel="icon" href="icones/icone-192.png">
+  <meta name="theme-color" content="#0e3a44">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- Polices de la charte SV : Manrope (texte) et JetBrains Mono (chiffres) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* =========================================================
+       1. COULEURS (variables CSS) — charte SV
+       Définies une seule fois ; tout le reste les réutilise.
+       ========================================================= */
+    :root {
+      --bg: #f3f6f6;          /* fond de page */
+      --card: #ffffff;        /* fond des cartes */
+      --ink: #10282d;         /* texte principal */
+      --muted: #5d7277;       /* texte secondaire */
+      --line: #dfe7e8;        /* traits de séparation */
+      --soft: #edf3f3;        /* fonds discrets (pastilles) */
+      --brand: #0e3a44;       /* bleu-vert foncé SV */
+      --accent: #0f7c7b;      /* teal SV */
+      --warn: #b45309;        /* orange : à rendre dans la semaine */
+      --bad: #b91c1c;         /* rouge : à rendre dans 3 jours ou moins, ou en retard */
+      --good: #15803d;        /* vert : prolongeable */
+      --radius: 18px;
+    }
+    /* Thème sombre automatique si le téléphone est en mode sombre */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #071a1f; --card: #0f262c; --ink: #e8f1f2; --muted: #93a9ad; --line: #1d3a41; --soft: #15323a;
+        --warn: #f59e0b; --bad: #f87171; --good: #4ade80; --accent: #2bb3b1;
+      }
+    }
+
+    /* =========================================================
+       2. BASE
+       ========================================================= */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: 'Manrope', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      /* "safe-area" = marges de l'encoche et de la barre de navigation Android */
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+    svg { display: block; }
+    [hidden] { display: none !important; }
+    .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+    #app { max-width: 760px; margin: 0 auto; padding: 16px 16px 40px; display: flex; flex-direction: column; gap: 14px; }
+    .card { background: var(--card); border-radius: var(--radius); padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+
+    /* Bouton principal de la charte SV : capitales espacées */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      background: var(--accent); color: #fff; border-radius: 12px; padding: 12px 16px;
+      font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; text-decoration: none;
+    }
+    .btn.secondaire { background: var(--soft); color: var(--ink); }
+
+    /* =========================================================
+       3. EN-TÊTE
+       ========================================================= */
+    .top { display: flex; justify-content: space-between; align-items: flex-end; padding: 4px 2px 0; gap: 8px; }
+    .brand { font-size: 11px; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; color: var(--accent); }
+    .titre { font-size: 24px; font-weight: 800; line-height: 1.15; }
+    .icon-btn { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: var(--muted); flex: none; }
+    .icon-btn:active { background: var(--line); }
+    .icon-btn svg { width: 20px; height: 20px; }
+    .spin svg { animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Bandeau d'alerte : données anciennes ou connexion au site en échec */
+    .bandeau { background: var(--soft); border-left: 4px solid var(--warn); border-radius: 10px; padding: 10px 12px; font-size: 13px; font-weight: 600; }
+
+    /* =========================================================
+       4. PROCHAIN RETOUR (le plus important : en haut)
+       ========================================================= */
+    .prochain { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-left: 5px solid var(--c, var(--accent)); }
+    .prochain small { display: block; font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+    .prochain b { display: block; font-size: 20px; font-weight: 800; line-height: 1.2; }
+    .prochain span { font-size: 14px; font-weight: 700; color: var(--c, var(--muted)); }
+
+    /* =========================================================
+       5. FILTRES (pastilles)
+       ========================================================= */
+    .filtres { display: flex; flex-wrap: wrap; gap: 6px; }
+    .filtre {
+      padding: 7px 12px; border-radius: 999px; background: var(--card); color: var(--muted);
+      font-size: 13px; font-weight: 700; box-shadow: 0 1px 2px rgba(0,0,0,.05);
+    }
+    .filtre em { font-style: normal; opacity: .65; margin-left: 3px; }
+    .filtre[aria-pressed="true"] { background: var(--brand); color: #fff; }
+    @media (prefers-color-scheme: dark) { .filtre[aria-pressed="true"] { background: var(--accent); } }
+
+    /* =========================================================
+       6. COUVERTURES, groupées par date de retour
+       ========================================================= */
+    .groupe-titre { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 12px; }
+    .groupe-titre h2 { font-size: 17px; font-weight: 800; }
+    .groupe-titre span { font-size: 12px; font-weight: 800; color: var(--c, var(--muted)); white-space: nowrap; }
+
+    /* auto-fill : autant de colonnes que la largeur le permet (3 sur téléphone, 5 ou 6 sur ordinateur) */
+    .grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 16px 12px; }
+    .doc { display: flex; flex-direction: column; gap: 6px; text-align: left; min-width: 0; }
+    .doc:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 8px; }
+
+    /* La couverture : format livre (2/3). L'image est posée par-dessus une tuile de couleur :
+       s'il n'y a pas d'image, ou si elle ne se charge pas, on voit la tuile. */
+    .couv {
+      position: relative; display: block; width: 100%; aspect-ratio: 2 / 3; border-radius: 8px; overflow: hidden;
+      background: var(--t, var(--brand)); box-shadow: 0 2px 8px rgba(0,0,0,.18);
+    }
+    .couv img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .couv .repli {
+      position: absolute; inset: 0; display: grid; place-items: center; padding: 8px;
+      color: #fff; font-size: 13px; font-weight: 800; line-height: 1.25; text-align: center; overflow: hidden;
+    }
+    .doc .t {
+      font-size: 13px; font-weight: 700; line-height: 1.25; overflow-wrap: anywhere;
+      /* titre sur 2 lignes au plus, avec « … » */
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .doc .a { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: -3px; }
+    .fixe {
+      position: absolute; right: 4px; bottom: 4px; background: rgba(0,0,0,.72); color: #fff;
+      font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 5px;
+    }
+
+    .vide { text-align: center; color: var(--muted); padding: 28px 8px; font-weight: 600; }
+    .vide strong { display: block; font-size: 30px; margin-bottom: 4px; }
+    .pied { text-align: center; font-size: 12px; color: var(--muted); padding-top: 4px; line-height: 1.6; }
+
+    /* =========================================================
+       7. FICHE D'UN DOCUMENT (fenêtre <dialog> du navigateur)
+       ========================================================= */
+    dialog {
+      margin: auto; width: min(460px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); overflow-y: auto;
+      border: 0; border-radius: var(--radius); background: var(--card); color: var(--ink); padding: 16px;
+    }
+    dialog::backdrop { background: rgba(4, 18, 22, .65); }
+    .fiche-haut { display: grid; grid-template-columns: 112px 1fr; gap: 14px; }
+    .fiche-haut h2 { font-size: 18px; font-weight: 800; line-height: 1.25; overflow-wrap: anywhere; padding-right: 30px; }
+    .fiche-haut p { font-size: 14px; color: var(--muted); margin-top: 4px; }
+    .etiquette { display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--soft); color: var(--muted); margin-top: 8px; }
+    .fermer { position: absolute; top: 8px; right: 8px; }
+    .lignes { margin-top: 14px; }
+    .lignes div { display: flex; justify-content: space-between; gap: 14px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 14px; }
+    .lignes dt { color: var(--muted); font-weight: 600; }
+    .lignes dd { font-weight: 700; text-align: right; }
+    .oui { color: var(--good); }
+    .non { color: var(--bad); }
+    /* Barre : part de la durée du prêt déjà écoulée */
+    .duree { height: 6px; border-radius: 6px; background: var(--soft); overflow: hidden; margin-top: 4px; }
+    .duree i { display: block; height: 100%; background: var(--c, var(--accent)); }
+    .boutons { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header class="top">
+      <div>
+        <div class="brand">Médiathèque</div>
+        <h1 class="titre" id="titre">Chargement…</h1>
+      </div>
+      <button class="icon-btn" id="actualiser" aria-label="Actualiser">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36L21 8"/><path d="M21 3v5h-5"/></svg>
+      </button>
+    </header>
+
+    <div class="bandeau" id="bandeau" hidden></div>
+    <section class="card prochain" id="prochain" hidden></section>
+    <div class="filtres" id="filtres" hidden></div>
+    <div id="liste" style="display:flex;flex-direction:column;gap:14px"></div>
+    <footer class="pied" id="pied"></footer>
+  </div>
+
+  <dialog id="fiche" aria-label="Fiche du document"></dialog>
+
+  <script>
+    /* =================================================================
+       CONFIGURATION
+       ================================================================= */
+    const VERSION = '1.0.0';
+    const PRETS_URL = 'https://biblio.baiji.fr/prets.json';       // le service du NAS
+    const SITE = 'https://mediatheques.paris-saclay.com';
+    const PAGE_PRETS = SITE + '/page/user/prets-en-cours?choix_tri_pret_bgm=dra';   // pour prolonger
+    const MEMOIRE = 'mediatheque.donnees';                         // dernières données (hors ligne)
+    const TROP_VIEUX_H = 8;  // le service relit toutes les 3 h : au-delà de 8 h, quelque chose cloche
+
+    /* =================================================================
+       PETITS OUTILS
+       ================================================================= */
+    const $ = (id) => document.getElementById(id);
+
+    // Échappe le texte avant de le mettre dans du HTML. Indispensable : les titres viennent
+    // d'un autre site, un caractère comme « < » ne doit jamais être pris pour une balise.
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    // '2026-11-14' → date à minuit, heure locale (new Date('2026-11-14') compterait en heure UTC)
+    function enDate(iso) {
+      const [a, m, j] = iso.split('-').map(Number);
+      return new Date(a, m - 1, j);
+    }
+    function aujourdhui() {
+      const d = new Date();
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    }
+    // Nombre de jours entre aujourd'hui et une date (Math.round absorbe le changement d'heure)
+    const joursAvant = (iso) => Math.round((enDate(iso) - aujourdhui()) / 86400e3);
+    const dateCourte = (iso) => enDate(iso).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }).replace('.', '');
+    const dateLongue = (iso) => enDate(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    function compteARebours(n) {
+      return n < 0 ? `en retard de ${-n} j` : n === 0 ? "aujourd'hui" : n === 1 ? 'demain' : `dans ${n} j`;
+    }
+    // Mêmes seuils que le dashboard Famille : rouge à 3 jours ou moins, orange dans la semaine
+    function couleur(n) {
+      return n <= 3 ? 'var(--bad)' : n <= 7 ? 'var(--warn)' : 'var(--muted)';
+    }
+    // Couleur stable tirée d'un texte : un même type de document a toujours la même tuile
+    function teinte(texte) {
+      let h = 0;
+      for (const c of String(texte)) h = (h * 31 + c.codePointAt(0)) % 360;
+      return `hsl(${h} 38% 34%)`;
+    }
+    // La couverture, ou une tuile avec le titre s'il n'y a pas d'image.
+    // no-referrer : le site de la médiathèque n'a pas besoin de savoir d'où vient la demande.
+    function couverture(p) {
+      const image = /^https:\/\//.test(p.couverture || '')
+        ? `<img src="${esc(p.couverture)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : '';
+      return `<span class="couv" style="--t:${teinte(p.type)}"><span class="repli">${esc(p.titre)}</span>${image}`
+           + (p.prolongeable === false ? '<span class="fixe" title="Pas prolongeable">Non prolong.</span>' : '') + '</span>';
+    }
+
+    /* =================================================================
+       ÉTAT DE L'APPLI
+       ================================================================= */
+    let tous = [];                                  // tous les prêts, à plat
+    let plusieursCartes = false;
+    const filtre = { type: null, mediatheque: null };   // null = pas de filtre
+
+    /* =================================================================
+       AFFICHAGE
+       ================================================================= */
+    function afficher(donnees, horsLigne) {
+      const cartes = donnees.cartes || [];
+      plusieursCartes = cartes.length > 1;
+      // On met tous les prêts dans une seule liste, en notant à quelle carte ils appartiennent
+      tous = cartes.flatMap((c) => (c.prets || []).map((p) => ({ ...p, qui: c.nom })));
+      tous.sort((a, b) => String(a.retour || '9999').localeCompare(String(b.retour || '9999')) || String(a.titre).localeCompare(b.titre, 'fr'));
+
+      // Le filtre choisi n'existe plus (document rendu entre-temps) : on l'enlève
+      if (!tous.some((p) => p.type === filtre.type)) filtre.type = null;
+      if (!tous.some((p) => p.mediatheque === filtre.mediatheque)) filtre.mediatheque = null;
+
+      $('titre').textContent = tous.length ? `${tous.length} document${tous.length > 1 ? 's' : ''}` : 'Aucun emprunt';
+      afficherBandeau(donnees, cartes, horsLigne);
+      afficherProchain();
+      afficherFiltres();
+      afficherListe();
+
+      const maj = donnees.updated ? new Date(donnees.updated) : null;
+      $('pied').innerHTML = (maj ? `Site relu ${esc(ilYa(maj))} · relecture toutes les 3 h<br>` : '')
+        + `<a href="${esc(PAGE_PRETS)}" target="_blank" rel="noopener" style="color:inherit">Mon compte sur le site</a> · v${VERSION}`;
+    }
+
+    function ilYa(date) {
+      const min = Math.round((Date.now() - date) / 60e3);
+      if (min < 2) return "à l'instant";
+      if (min < 60) return `il y a ${min} min`;
+      if (min < 48 * 60) return `il y a ${Math.round(min / 60)} h`;
+      return `il y a ${Math.round(min / 1440)} j`;
+    }
+
+    function afficherBandeau(donnees, cartes, horsLigne) {
+      const age = donnees.updated ? (Date.now() - new Date(donnees.updated)) / 3600e3 : 0;
+      let message = '';
+      if (horsLigne) message = '⚠ Service injoignable : dernières données connues, peut-être dépassées.';
+      else if (cartes.some((c) => !c.ok)) message = '⚠ La dernière connexion au site a échoué : ces données ne sont peut-être plus à jour.';
+      else if (age > TROP_VIEUX_H) message = '⚠ Le service n\'a pas relu le site depuis plusieurs heures.';
+      $('bandeau').hidden = !message;
+      $('bandeau').textContent = message;
+    }
+
+    function afficherProchain() {
+      const avecDate = tous.filter((p) => p.retour);
+      $('prochain').hidden = !avecDate.length;
+      if (!avecDate.length) return;
+      const iso = avecDate[0].retour;                      // la liste est triée : le plus urgent d'abord
+      const nb = avecDate.filter((p) => p.retour === iso).length;
+      const n = joursAvant(iso);
+      $('prochain').style.setProperty('--c', couleur(n));
+      $('prochain').innerHTML = `<div><small>Prochain retour</small><b>${esc(dateCourte(iso))}</b>`
+        + `<span>${esc(compteARebours(n))} · ${nb} document${nb > 1 ? 's' : ''}</span></div>`
+        + `<a class="btn" href="${esc(PAGE_PRETS)}" target="_blank" rel="noopener">Prolonger ↗</a>`;
+    }
+
+    function afficherFiltres() {
+      // Une ligne de pastilles par critère, seulement s'il y a un vrai choix (au moins 2 valeurs)
+      const pastilles = (cle) => {
+        const compte = {};
+        for (const p of tous) if (p[cle]) compte[p[cle]] = (compte[p[cle]] || 0) + 1;
+        const valeurs = Object.keys(compte).sort((a, b) => compte[b] - compte[a] || a.localeCompare(b, 'fr'));
+        return valeurs.length < 2 ? '' : valeurs.map((v) =>
+          `<button class="filtre" data-cle="${cle}" data-valeur="${esc(v)}" aria-pressed="${filtre[cle] === v}">${esc(v)}<em>${compte[v]}</em></button>`).join('');
+      };
+      const html = pastilles('type') + pastilles('mediatheque');
+      $('filtres').hidden = !html;
+      $('filtres').innerHTML = html;
+    }
+
+    function afficherListe() {
+      if (!tous.length) {
+        $('liste').innerHTML = '<section class="card vide"><strong>📚</strong>Rien à rendre : c\'est le moment d\'aller en emprunter !</section>';
+        return;
+      }
+      const visibles = tous.filter((p) => (!filtre.type || p.type === filtre.type) && (!filtre.mediatheque || p.mediatheque === filtre.mediatheque));
+
+      // On regroupe par date de retour, en gardant l'ordre (la liste est déjà triée)
+      const groupes = new Map();
+      for (const p of visibles) {
+        const cle = p.retour || '?';
+        if (!groupes.has(cle)) groupes.set(cle, []);
+        groupes.get(cle).push(p);
+      }
+
+      $('liste').innerHTML = [...groupes].map(([iso, docs]) => {
+        const connue = iso !== '?';
+        const n = connue ? joursAvant(iso) : null;
+        return `<section class="card">
+          <div class="groupe-titre" style="--c:${connue ? couleur(n) : 'var(--muted)'}">
+            <h2>${connue ? 'À rendre ' + esc(dateCourte(iso)) : 'Date inconnue'}</h2>
+            <span>${connue ? esc(compteARebours(n)) + ' · ' : ''}${docs.length}</span>
+          </div>
+          <div class="grille">${docs.map((p) => `<button class="doc" data-i="${tous.indexOf(p)}">
+            ${couverture(p)}
+            <span class="t">${esc(p.titre)}</span>
+            ${p.auteur ? `<span class="a">${esc(p.auteur)}</span>` : ''}
+          </button>`).join('')}</div>
+        </section>`;
+      }).join('');
+    }
+
+    /* =================================================================
+       FICHE D'UN DOCUMENT
+       ================================================================= */
+    function ouvrirFiche(p) {
+      const n = p.retour ? joursAvant(p.retour) : null;
+      // Part de la durée du prêt déjà écoulée, entre 0 et 100 %
+      let part = null;
+      if (p.emprunt && p.retour) {
+        const total = enDate(p.retour) - enDate(p.emprunt);
+        part = total > 0 ? Math.min(100, Math.max(0, (aujourdhui() - enDate(p.emprunt)) / total * 100)) : 100;
+      }
+      const ligne = (nom, valeur) => valeur ? `<div><dt>${esc(nom)}</dt><dd>${valeur}</dd></div>` : '';
+      const catalogue = `${SITE}/recherche---catalogue?q=${encodeURIComponent(p.titre)}`;
+
+      $('fiche').innerHTML = `
+        <button class="icon-btn fermer" id="fermer" aria-label="Fermer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+        <div class="fiche-haut">
+          ${couverture(p)}
+          <div>
+            <h2>${esc(p.titre)}</h2>
+            ${p.auteur ? `<p>${esc(p.auteur)}</p>` : ''}
+            ${p.type ? `<span class="etiquette">${esc(p.type)}</span>` : ''}
+          </div>
+        </div>
+        <dl class="lignes">
+          ${plusieursCartes ? ligne('Carte', esc(p.qui)) : ''}
+          ${ligne('Médiathèque', esc(p.mediatheque))}
+          ${ligne('Emprunté le', p.emprunt ? esc(dateLongue(p.emprunt)) : '')}
+          ${ligne('À rendre le', p.retour ? `${esc(dateLongue(p.retour))}<br><span style="color:${couleur(n)}">${esc(compteARebours(n))}</span>` : '')}
+          ${ligne('Prolongeable', p.prolongeable ? '<span class="oui">Oui</span>' : '<span class="non">Non</span>')}
+        </dl>
+        ${part !== null ? `<div class="duree" style="--c:${couleur(n)}" aria-hidden="true"><i style="width:${part.toFixed(0)}%"></i></div>` : ''}
+        <div class="boutons">
+          ${p.prolongeable ? `<a class="btn" href="${esc(PAGE_PRETS)}" target="_blank" rel="noopener">Prolonger sur le site ↗</a>` : ''}
+          <a class="btn secondaire" href="${esc(catalogue)}" target="_blank" rel="noopener">Voir dans le catalogue ↗</a>
+        </div>`;
+      $('fiche').showModal();
+      // On ajoute une étape à l'historique : le bouton « retour » du téléphone fermera la fiche
+      history.pushState({ fiche: true }, '');
+    }
+
+    /* =================================================================
+       CHARGEMENT
+       ================================================================= */
+    async function charger() {
+      $('actualiser').classList.add('spin');
+      try {
+        const reponse = await fetch(PRETS_URL, { cache: 'no-store' });
+        if (!reponse.ok) throw new Error('HTTP ' + reponse.status);
+        const donnees = await reponse.json();
+        // Le service vient de démarrer et n'a encore rien lu : on garde ce qu'on avait
+        if (!donnees.updated && lireMemoire()) throw new Error('première lecture en cours');
+        try { localStorage.setItem(MEMOIRE, JSON.stringify(donnees)); } catch { /* stockage indisponible : tant pis */ }
+        afficher(donnees, false);
+      } catch {
+        // Pas de réseau ou NAS éteint : on ressort les dernières données connues
+        const memoire = lireMemoire();
+        if (memoire) afficher(memoire, true);
+        else {
+          $('titre').textContent = 'Service injoignable';
+          $('liste').innerHTML = '<section class="card vide"><strong>📡</strong>Impossible de joindre le service de la maison. Réessaie un peu plus tard.</section>';
+        }
+      }
+      $('actualiser').classList.remove('spin');
+    }
+
+    function lireMemoire() {
+      try { return JSON.parse(localStorage.getItem(MEMOIRE)); } catch { return null; }
+    }
+
+    /* =================================================================
+       ÉVÉNEMENTS
+       Un seul écouteur sur chaque zone : plus simple que d'en poser un
+       sur chaque bouton, qui sont recréés à chaque affichage.
+       ================================================================= */
+    $('actualiser').addEventListener('click', charger);
+
+    $('filtres').addEventListener('click', (e) => {
+      const b = e.target.closest('.filtre');
+      if (!b) return;
+      const { cle, valeur } = b.dataset;
+      filtre[cle] = filtre[cle] === valeur ? null : valeur;     // retoucher une pastille enlève le filtre
+      afficherFiltres();
+      afficherListe();
+    });
+
+    $('liste').addEventListener('click', (e) => {
+      const b = e.target.closest('.doc');
+      if (b) ouvrirFiche(tous[Number(b.dataset.i)]);
+    });
+
+    $('fiche').addEventListener('click', (e) => {
+      // Clic sur la croix, ou sur le fond sombre (la cible est alors le <dialog> lui-même)
+      if (e.target === $('fiche') || e.target.closest('#fermer')) $('fiche').close();
+    });
+    // Fiche fermée (croix, touche Échap…) : on retire l'étape ajoutée à l'historique
+    $('fiche').addEventListener('close', () => { if (history.state && history.state.fiche) history.back(); });
+    // Bouton « retour » du téléphone : on ferme la fiche au lieu de quitter l'appli
+    window.addEventListener('popstate', () => { if ($('fiche').open) $('fiche').close(); });
+
+    // Image absente ou en erreur : on l'enlève, la tuile avec le titre apparaît dessous.
+    // « true » est obligatoire : l'événement error d'une image ne remonte pas tout seul.
+    document.addEventListener('error', (e) => { if (e.target.tagName === 'IMG') e.target.remove(); }, true);
+
+    // Retour sur l'appli après 10 minutes : on recharge
+    let derniere = Date.now();
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && Date.now() - derniere > 10 * 60e3) { derniere = Date.now(); charger(); }
+    });
+
+    // Service worker : rend l'appli installable et utilisable hors ligne
+    if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+
+    charger();
+  </script>
+</body>
+</html>

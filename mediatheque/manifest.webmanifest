@@ -1,0 +1,39 @@
+{
+  "name": "Médiathèque",
+  "short_name": "Médiathèque",
+  "description": "Les documents empruntés aux Médiathèques de Paris-Saclay",
+  "id": "/mediatheque/",
+  "start_url": "/mediatheque/",
+  "scope": "/mediatheque/",
+  "display": "standalone",
+  "background_color": "#f3f6f6",
+  "theme_color": "#0e3a44",
+  "lang": "fr",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "icones/icone-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icones/icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icones/icone-masquable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icones/icone-masquable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
