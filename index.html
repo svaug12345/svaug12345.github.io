@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr — Page d'accueil des projets (marque SV)
-  Version 1.23.0
+  Version 1.24.0
   ------------------------------------------------------------
   Historique :
    • v1.0.0 : première page d'accueil
@@ -52,6 +52,7 @@
               petit micro sur les agents vocaux ; pied de page à la bonne version
    • v1.23.0 : « Undercover » devient « Agent Double » (lien de test Google Play) ;
               ajout de « Quiz'Vacances » et « En Route ! » dans « Jeux » (bientôt)
+   • v1.24.0 : ajout de « Épuration » (site pédagogique, baiji.fr/epuration/) dans « Formation »
 
   À déposer dans le dépôt GitHub : svaug12345.github.io
   → c'est le fichier "index.html" à la racine.
@@ -593,7 +594,7 @@
 
     <!-- ===================== PIED DE PAGE ===================== -->
     <footer>
-      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.23.0</p>
+      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.24.0</p>
     </footer>
 
     <!--
@@ -655,6 +656,7 @@
       disque: `<path d="M10 16h.01"/> <path d="M2.212 11.577a2 2 0 0 0-.212.896V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.527a2 2 0 0 0-.212-.896L18.55 5.11A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/> <path d="M21.946 12.013H2.054"/> <path d="M6 16h.01"/>`,  // hard-drive
       route: `<circle cx="6" cy="19" r="3"/> <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/> <circle cx="18" cy="5" r="3"/>`,  // route
       palmier: `<path d="M13 8c0-2.76-2.46-5-5.5-5S2 5.24 2 8h2l1-1 1 1h4"/> <path d="M13 7.14A5.82 5.82 0 0 1 16.5 6c3.04 0 5.5 2.24 5.5 5h-3l-1-1-1 1h-3"/> <path d="M5.89 9.71c-2.15 2.15-2.3 5.47-.35 7.43l4.24-4.25.7-.7.71-.71 2.12-2.12c-1.95-1.96-5.27-1.8-7.42.35"/> <path d="M11 15.5c.5 2.5-.17 4.5-1 6.5h4c2-5.5-.5-12-1-14"/>`,  // tree-palm
+      gouttes: `<path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"/> <path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"/>`,  // droplets
       photo: `<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/> <circle cx="9" cy="9" r="2"/> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>`,  // image
     };
     /*
@@ -779,6 +781,13 @@
         courte: "Six scénettes à observer",
         url: "fart/" },
 
+      // Épuration : site pédagogique sur l'épuration biologique des eaux
+      // (dépôt séparé svaug12345/epuration, servi sous baiji.fr/epuration/)
+      { id: "epuration",   nom: "Épuration", icone: "gouttes",
+        desc: "Modules, calculateurs et diagnostic « Docteur STEP » sur l'épuration biologique des eaux",
+        courte: "Comprendre l'épuration des eaux",
+        url: "epuration/" },
+
       // ---------- Maison ----------
       { id: "famille",     nom: "Famille",      icone: "maison",
         desc: "Météo, tâches des enfants et batteries des voitures (mode TV : ?tv)",
@@ -830,7 +839,7 @@
         { nom: "Outils", projets: ["qr", "pressoir", "place-nette", "paraphe"] },
         { nom: "Famille & amis", projets: ["revisions", "nego-papa", "foot-chats", "grand-verdict", "sos-amitie"] },
         { nom: "Carrefour", projets: ["fournisseurs", "nexus", "salle-negociation", "pochpoch"] },
-        { nom: "Formation", projets: ["entretien-tuteur", "fart"] },
+        { nom: "Formation", projets: ["epuration", "entretien-tuteur", "fart"] },
         { nom: "Sites & démos", projets: ["julien", "location"] },
         { nom: "Jeux", projets: ["undercover", "quiz-vacances", "en-route", "unknown-waters"] }
       ],
