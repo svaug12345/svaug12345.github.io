@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr — Page d'accueil des projets (marque SV)
-  Version 1.21.0
+  Version 1.22.0
   ------------------------------------------------------------
   Historique :
    • v1.0.0 : première page d'accueil
@@ -44,18 +44,25 @@
               barre du navigateur, donc pas de bouton recharger)
    • v1.20.0 : ajout de « Place nette » (ce qui prend de la place sur le disque) dans « Applications »
    • v1.21.0 : ajout de « Médiathèque » (nos emprunts et leurs couvertures) dans « Maison »
+   • v1.22.0 : rubriques par thème (Maison, Outils, Famille & amis, Carrefour,
+              Formation, Sites & démos, Jeux) décrites dans ORGANISATION, à part
+              de PROJETS ; rubrique « Archives » repliée en bas de page ; mode
+              Rangement (bouton crayon) pour archiver, déplacer, ordonner, créer
+              et renommer des rubriques, avec export du bloc ORGANISATION ;
+              petit micro sur les agents vocaux ; pied de page à la bonne version
 
   À déposer dans le dépôt GitHub : svaug12345.github.io
   → c'est le fichier "index.html" à la racine.
   (Le favicon "favicon.svg" est déposé à côté, à la racine.)
 
-  COMMENT MODIFIER LES LIENS (le plus important) :
-  Tout en bas, dans la partie <script>, il y a une liste
-  nommée "PROJETS". Pour activer un lien, on remplace
-  url: null  par l'adresse, par exemple  url: "revisions/".
-  Tant que url vaut null, la carte affiche un badge "Bientôt"
-  et n'est pas cliquable (pas de lien cassé).
-  Pour AJOUTER un projet : copier un bloc { ... } et l'adapter.
+  COMMENT MODIFIER (tout est dans la partie <script>, en bas) :
+   • PROJETS = ce qu'est chaque projet (id, nom, description, lien…).
+     Pour activer un lien, remplacer  url: null  par l'adresse.
+     Tant que url vaut null, la carte affiche « Bientôt ».
+   • ORGANISATION = où chaque projet est rangé (rubriques, archives).
+     Le plus simple : bouton crayon sur la page, puis « Pour le site… ».
+  Pour AJOUTER un projet : un bloc { ... } dans PROJETS, puis son id
+  dans une rubrique d'ORGANISATION (sinon il s'affiche dans « À ranger »).
   ============================================================
 -->
 <html lang="fr">
@@ -192,7 +199,7 @@
     .section-titre {
       margin: 40px 4px 16px;
     }
-    .section-titre button {
+    .section-titre .bascule {
       /* On enlève l'allure « bouton » du navigateur : il ressemble au titre */
       all: unset;
       cursor: pointer;
@@ -209,7 +216,7 @@
       -webkit-tap-highlight-color: transparent;
     }
     /* Contour visible quand on navigue au clavier (Tab) */
-    .section-titre button:focus-visible {
+    .section-titre .bascule:focus-visible {
       outline: 2px solid var(--teal);
       outline-offset: 4px;
       border-radius: 4px;
@@ -226,7 +233,7 @@
       stroke-linecap: round; stroke-linejoin: round;
       transition: transform .2s ease;
     }
-    .section-titre button[aria-expanded="false"] .fleche { transform: rotate(-90deg); }
+    .section-titre .bascule[aria-expanded="false"] .fleche { transform: rotate(-90deg); }
     /* Catégorie repliée : on cache sa grille (attribut hidden posé par le script) */
     .grille[hidden] { display: none; }
 
@@ -350,6 +357,12 @@
       }
       .carte-desc .long  { display: none; }
       .carte-desc .court { display: inline; }
+
+      /* Mode Rangement sur téléphone : 1 carte par ligne, picto à gauche
+         (comme sur ordinateur), pour que les outils tiennent sous la carte
+         et restent faciles à toucher. */
+      .en-edition .grille { grid-template-columns: 1fr; }
+      .en-edition .carte  { flex-direction: row; align-items: center; }
     }
 
     /* ---- PIED DE PAGE ---- */
@@ -364,7 +377,8 @@
        position: fixed → il reste au même endroit même si on fait défiler.
        env(safe-area-inset-…) : décale le bouton sous l'encoche / la barre
        d'état du téléphone quand la page est installée en appli. */
-    .actualiser {
+    /* Même allure pour le bouton « Ranger » (crayon), placé juste à gauche */
+    .actualiser, .organiser {
       position: fixed;
       top:   calc(12px + env(safe-area-inset-top, 0px));
       right: calc(12px + env(safe-area-inset-right, 0px));
@@ -379,14 +393,17 @@
       cursor: pointer;
       transition: opacity .2s, background .2s, border-color .2s;
     }
-    .actualiser:hover,
-    .actualiser:focus-visible {
+    .actualiser:hover,  .organiser:hover,
+    .actualiser:focus-visible, .organiser:focus-visible {
       opacity: 1;
       background: var(--surface-raised);
       border-color: var(--line);
       outline: none;
     }
-    .actualiser svg { width: 18px; height: 18px; }
+    .actualiser svg, .organiser svg { width: 18px; height: 18px; }
+    .organiser { right: calc(52px + env(safe-area-inset-right, 0px)); }
+    /* En mode Rangement, le crayon reste allumé (en teal) */
+    .en-edition .organiser { opacity: 1; color: var(--teal); border-color: var(--teal); background: var(--surface-raised); }
     /* Pendant le rechargement : la flèche tourne */
     .actualiser.tourne svg { animation: tourne .8s linear infinite; }
     @keyframes tourne { to { transform: rotate(360deg); } }
@@ -394,6 +411,113 @@
     @media (prefers-reduced-motion: reduce) {
       .actualiser.tourne svg { animation: none; }
     }
+
+    /* ---------- Micro des agents vocaux (après le nom) ---------- */
+    .vocal { display: inline-flex; vertical-align: -2px; margin-left: 6px; color: var(--teal); }
+    .vocal svg {
+      width: 14px; height: 14px;
+      fill: none; stroke: currentColor; stroke-width: 2.2;
+      stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    /* ---------- Rubriques calculées ---------- */
+    /* Le titre contient maintenant le bouton (replier) ET, en mode
+       Rangement, les outils de la rubrique : on les met sur une ligne. */
+    .section-titre { display: flex; align-items: center; gap: 6px; }
+    .section-titre .bascule svg:not(.fleche) {          /* picto « archive » */
+      width: 15px; height: 15px; fill: none; stroke: currentColor;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    /* Archives : cartes un peu effacées, pour bien voir qu'elles sont « de côté » */
+    .grille-archives .carte { opacity: .72; }
+    .grille-archives .carte:hover { opacity: 1; }
+    .vide {
+      grid-column: 1 / -1;            /* occupe toute la largeur de la grille */
+      color: var(--ink-muted); font-size: .86rem;
+      border: 1px dashed var(--line); border-radius: 12px; padding: 14px 16px;
+    }
+
+    /* ---------- Mode Rangement ---------- */
+    /* Boutons ronds à picto (▲ ▼, crayon, corbeille, archive) */
+    .outil {
+      flex: 0 0 auto;
+      width: 32px; height: 32px;           /* assez grand pour le doigt */
+      display: grid; place-items: center;
+      border: 1px solid var(--line); border-radius: 50%;
+      background: var(--surface-raised); color: var(--ink);
+      cursor: pointer;
+    }
+    .outil:hover:not(:disabled) { border-color: var(--teal); color: var(--teal); }
+    .outil:disabled { opacity: .3; cursor: default; }
+    .outil svg {
+      width: 16px; height: 16px; fill: none; stroke: currentColor;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .outils-rubrique { display: flex; gap: 4px; }
+    .en-edition .section-titre .bascule { cursor: default; }
+    .en-edition .section-titre .fleche { display: none; }   /* tout est ouvert */
+
+    /* La carte passe à la ligne pour accueillir ses outils en dessous */
+    .en-edition .carte { flex-wrap: wrap; border-style: dashed; }
+    .outils-carte {
+      flex-basis: 100%;
+      display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+      padding-top: 10px; border-top: 1px solid var(--line);
+    }
+    .outils-carte select {
+      flex: 1 1 120px; min-width: 0;
+      font: inherit; font-size: .84rem; color: var(--ink);
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: 8px; padding: 6px 8px; height: 32px;
+    }
+
+    /* Boutons texte de la charte : capitales espacées */
+    .barre-edition button, .dialogue button, .rappel-local button {
+      font: inherit; font-size: .72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .08em;
+      border: 1px solid var(--line); border-radius: 999px;
+      background: var(--surface-raised); color: var(--ink);
+      padding: 8px 12px; cursor: pointer;
+    }
+    .barre-edition button:hover, .dialogue button:hover { border-color: var(--teal); }
+    .barre-edition button.principal, .dialogue button.principal {
+      background: var(--teal); color: var(--on-teal); border-color: var(--teal);
+    }
+
+    /* La barre reste collée en haut de l'écran pendant qu'on fait défiler */
+    .barre-edition {
+      position: sticky; top: calc(8px + env(safe-area-inset-top, 0px)); z-index: 5;
+      background: var(--surface-raised); border: 1px solid var(--teal);
+      border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;
+      box-shadow: 0 6px 20px rgb(0 0 0 / .08);
+    }
+    .barre-edition[hidden] { display: none; }
+    .barre-edition p { font-size: .86rem; color: var(--ink-muted); margin-bottom: 10px; }
+    .barre-edition p strong { color: var(--ink); }
+    .barre-edition .actions { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .rappel-local { text-align: center; font-size: .8rem; color: var(--ink-muted); margin-top: 32px; }
+    .rappel-local[hidden] { display: none; }
+    .rappel-local button { border: none; background: none; color: var(--teal); padding: 4px; text-decoration: underline; }
+
+    /* Fenêtre « Pour le site » */
+    .dialogue {
+      margin: auto; width: min(560px, calc(100% - 32px));
+      background: var(--surface-raised); color: var(--ink);
+      border: 1px solid var(--line); border-radius: 14px; padding: 20px;
+    }
+    .dialogue::backdrop { background: rgb(0 0 0 / .45); }
+    .dialogue h2 { font-size: 1.1rem; margin-bottom: 8px; }
+    .dialogue p { font-size: .88rem; color: var(--ink-muted); margin-bottom: 12px; }
+    .dialogue code { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: .82em; color: var(--ink); }
+    .dialogue textarea {
+      width: 100%; resize: vertical;
+      font-family: "JetBrains Mono", ui-monospace, monospace; font-size: .74rem;
+      background: var(--surface); color: var(--ink);
+      border: 1px solid var(--line); border-radius: 8px; padding: 10px;
+    }
+    .dialogue .actions { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+    .dialogue .etat { flex: 1; font-size: .8rem; color: var(--teal); }
   </style>
 </head>
 
@@ -407,6 +531,17 @@
            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
         <path d="M21 3v5h-5"/>
+      </svg>
+    </button>
+
+    <!-- Bouton « Ranger » (crayon, Lucide « pencil », ISC) : ouvre / ferme le
+         mode Rangement (archiver, déplacer, créer des rubriques) -->
+    <button class="organiser" type="button" id="organiser"
+            aria-label="Ranger les projets" title="Ranger les projets">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>
+        <path d="m15 5 4 4"/>
       </svg>
     </button>
 
@@ -429,39 +564,57 @@
     </header>
 
     <!--
-      Les sections (Applications, Jeux) sont générées
-      automatiquement par le script à partir de la liste PROJETS.
+      Barre du mode Rangement (cachée hors de ce mode).
+      « sticky » : elle reste collée en haut quand on fait défiler.
+    -->
+    <div class="barre-edition" id="barre-edition" hidden>
+      <p><strong>Mode rangement</strong> · gardé sur cet appareil</p>
+      <div class="actions">
+        <button type="button" id="ajouter-rubrique">+ Rubrique</button>
+        <button type="button" id="publier">Pour le site…</button>
+        <button type="button" id="annuler">Annuler tout</button>
+        <button type="button" id="terminer" class="principal">Terminé</button>
+      </div>
+    </div>
+
+    <!--
+      Les rubriques sont générées automatiquement par le script,
+      à partir des listes PROJETS et ORGANISATION.
     -->
     <main id="contenu"></main>
 
+    <!-- Rappel : le rangement de cet appareil n'est pas encore sur le site -->
+    <p class="rappel-local" id="rappel-local" hidden>
+      Rangement personnalisé sur cet appareil ·
+      <button type="button" id="publier-rappel">le mettre sur le site</button>
+    </p>
+
     <!-- ===================== PIED DE PAGE ===================== -->
     <footer>
-      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.17.0</p>
+      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.22.0</p>
     </footer>
+
+    <!--
+      Fenêtre « Pour le site » : <dialog> est une fenêtre native du
+      navigateur (fond assombri, touche Échap ou retour pour fermer).
+    -->
+    <dialog class="dialogue" id="dialogue-export">
+      <h2>Ranger pour tout le monde</h2>
+      <p>Ce rangement n'est enregistré que sur cet appareil. Pour qu'il soit
+         le même partout : copier ce bloc, puis dans <code>index.html</code>
+         remplacer celui qui est entre les lignes <code>&gt;&gt;&gt; ORGANISATION</code>
+         et <code>&lt;&lt;&lt; ORGANISATION</code> (ou le donner à Claude).</p>
+      <textarea id="texte-export" readonly rows="10" spellcheck="false"></textarea>
+      <div class="actions">
+        <span class="etat" id="etat-copie" aria-live="polite"></span>
+        <button type="button" id="fermer-export">Fermer</button>
+        <button type="button" id="copier-export" class="principal">Copier</button>
+      </div>
+    </dialog>
 
   </div>
 
   <script>
-    /*
-      ============================================================
-      LISTE DES PROJETS
-      ------------------------------------------------------------
-      Seul endroit à modifier au quotidien.
-      Chaque projet est un objet { ... } avec :
-        - nom  : le titre affiché
-        - desc : une phrase courte de description
-        - url  : l'adresse du projet
-                 • "QR/"  → ouvre baiji.fr/QR/ (chemin relatif)
-                 • "https://..." → lien externe (Play Store, etc.)
-                 • null   → pas encore de lien : affiche "Bientôt"
-        - icone : le nom du picto, pris dans la liste PICTOS juste en dessous
-        - courte : description raccourcie, affichée sur téléphone
-                   (2 colonnes = peu de place). Facultative : sans elle,
-                   la description complète est coupée à 2 lignes.
-        - cat  : la catégorie ("Applications", "Jeux", "Sites"…)
-      ============================================================
-    */
-
     /*
       ============================================================
       PICTOS (icônes des cartes)
@@ -500,291 +653,602 @@
       disque: `<path d="M10 16h.01"/> <path d="M2.212 11.577a2 2 0 0 0-.212.896V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.527a2 2 0 0 0-.212-.896L18.55 5.11A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/> <path d="M21.946 12.013H2.054"/> <path d="M6 16h.01"/>`,  // hard-drive
       photo: `<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/> <circle cx="9" cy="9" r="2"/> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>`,  // image
     };
+    /*
+      ============================================================
+      LISTE DES PROJETS — ce qu'est chaque projet
+      ------------------------------------------------------------
+      Chaque projet est un objet { ... } avec :
+        - id   : un identifiant court, unique, sans espace (ex. "qr").
+                 C'est lui qu'on écrit dans ORGANISATION (plus bas)
+                 pour dire dans quelle rubrique ranger le projet.
+        - nom  : le titre affiché
+        - desc : une phrase courte de description
+        - courte : description raccourcie, affichée sur téléphone
+                   (2 colonnes = peu de place). Facultative.
+        - url  : l'adresse du projet
+                 • "QR/"  → ouvre baiji.fr/QR/ (chemin relatif)
+                 • "https://..." → lien externe (Play Store, etc.)
+                 • null   → pas encore de lien : affiche "Bientôt"
+        - icone : le nom du picto, pris dans la liste PICTOS ci-dessus
+        - vocal : true si c'est un agent vocal → petit micro à côté du nom
+                  (facultatif)
+      La RUBRIQUE n'est plus écrite ici : elle est dans ORGANISATION.
+      ============================================================
+    */
     const PROJETS = [
-      {
-        nom:  "Lecteur QR",
-        icone: "qr",                      // picto (voir la liste PICTOS)
+      // ---------- Applications / outils ----------
+      { id: "qr",          nom: "Lecteur QR",   icone: "qr",
         desc: "Scanner de QR codes, caméra et galerie",
-        courte: "Scanner de QR codes",              // version courte (téléphone)
-        url:  "QR/",                     // ✅ en ligne : baiji.fr/QR/
-        cat:  "Applications"
-      },
-      {
-        nom:  "Paraphe",
-        icone: "signature",               // picto (voir la liste PICTOS)
+        courte: "Scanner de QR codes",
+        url: "QR/" },
+      { id: "paraphe",     nom: "Paraphe",      icone: "signature",
         desc: "Crée une police à partir d'une écriture",
-        courte: "Une police avec son écriture",              // version courte (téléphone)
-        url:  "paraphe/",                // ✅ en ligne : baiji.fr/paraphe/
-        cat:  "Applications"
-      },
-      {
-        nom:  "Mes Révisions",
-        icone: "livre",                   // picto (voir la liste PICTOS)
+        courte: "Une police avec son écriture",
+        url: "paraphe/" },
+      { id: "revisions",   nom: "Mes Révisions", icone: "livre",
         desc: "Réviser les leçons en s'amusant",
-        courte: "Réviser en s'amusant",              // version courte (téléphone)
-        url:  "svaug12345-revisions/",   // ✅ en ligne : baiji.fr/svaug12345-revisions/
-        cat:  "Applications"
-      },
-      {
-        nom:  "Pressoir",
-        icone: "video",                   // picto (voir la liste PICTOS)
+        courte: "Réviser en s'amusant",
+        url: "svaug12345-revisions/" },
+      { id: "pressoir",    nom: "Pressoir",     icone: "video",
         desc: "Compresse et découpe vidéos et sons dans le téléphone, sans pub",
-        courte: "Compresse vidéos et sons",              // version courte (téléphone)
-        url:  "pressoir/",               // ✅ en ligne : baiji.fr/pressoir/
-        cat:  "Applications"
-      },
-      {
-        nom:  "Place nette",
-        icone: "disque",                  // picto (voir la liste PICTOS)
+        courte: "Compresse vidéos et sons",
+        url: "pressoir/" },
+      { id: "place-nette", nom: "Place nette",  icone: "disque",
         desc: "Ce qui prend de la place sur le disque ou le téléphone",
-        courte: "Qui prend la place ?",         // version courte (téléphone)
-        url:  "disque/",                 // ✅ en ligne : baiji.fr/disque/
-        cat:  "Applications"
-      },
-      {
-        nom:  "Undercover",
-        icone: "masque",                  // picto (voir la liste PICTOS)
+        courte: "Qui prend la place ?",
+        url: "disque/" },
+
+      // ---------- Jeux ----------
+      { id: "undercover",  nom: "Undercover",   icone: "masque",
         desc: "Jeu de mots et d'imposteur entre amis",
-        courte: "Jeu d'imposteur",              // version courte (téléphone)
-        url:  null,                      // ⬅️ lien à compléter
-        cat:  "Jeux"
-      },
-      {
-        nom:  "Unknown Waters",
-        icone: "vagues",                  // picto (voir la liste PICTOS)
+        courte: "Jeu d'imposteur",
+        url: null },                                   // ⬅️ lien à compléter
+      { id: "unknown-waters", nom: "Unknown Waters", icone: "vagues",
         desc: "Casse-brique, ambiance graphique épurée",
-        courte: "Casse-brique épuré",              // version courte (téléphone)
-        url:  null,                      // ⬅️ lien à compléter
-        cat:  "Jeux"
-      },
-      // Nouvelle catégorie : il suffit d'écrire un nouveau nom dans « cat »,
-      // le script crée tout seul la section correspondante.
-      {
-        nom:  "PochPoch",
-        icone: "cochon",                  // picto (voir la liste PICTOS)
+        courte: "Casse-brique épuré",
+        url: null },                                   // ⬅️ lien à compléter
+
+      // ---------- Agents vocaux (ElevenLabs) ----------
+      { id: "pochpoch",    nom: "PochPoch",     icone: "cochon", vocal: true,
         desc: "Le cost killer vocal qui refuse vos dépenses",
-        courte: "Le cost killer vocal",              // version courte (téléphone)
-        url:  "pochpoch/",               // ✅ en ligne : baiji.fr/pochpoch/
-        cat:  "Agents vocaux"
-      },
-      {
-        nom:  "Assistant fournisseurs",
-        icone: "camion",                  // picto (voir la liste PICTOS)
+        courte: "Le cost killer vocal",
+        url: "pochpoch/" },
+      { id: "fournisseurs", nom: "Assistant fournisseurs", icone: "camion", vocal: true,
         desc: "Aide vocale pour rejoindre Carrefour sur SAP Business Network",
-        courte: "Aide SAP Business Network",              // version courte (téléphone)
-        url:  "assistant-fournisseurs/", // ✅ en ligne : baiji.fr/assistant-fournisseurs/
-        cat:  "Agents vocaux"
-      },
-      {
-        nom:  "Assistant Nexus",
-        icone: "magasin",                 // picto (voir la liste PICTOS)
+        courte: "Aide SAP Business Network",
+        url: "assistant-fournisseurs/" },
+      { id: "nexus",       nom: "Assistant Nexus", icone: "magasin", vocal: true,
         desc: "Aide vocale pour les franchisés : rejoindre Nexus, la plateforme B2B de Carrefour",
-        courte: "Aide Nexus franchisés",  // version courte (téléphone)
-        url:  "assistant-nexus/",         // ✅ en ligne : baiji.fr/assistant-nexus/
-        cat:  "Agents vocaux"
-      },
-      {
-        nom:  "Location",
-        icone: "voiture",                 // picto (voir la liste PICTOS)
+        courte: "Aide Nexus franchisés",
+        url: "assistant-nexus/" },
+      { id: "location",    nom: "Location",     icone: "voiture", vocal: true,
         desc: "Réserver une voiture, un utilitaire ou un minibus en parlant à Lucie",
-        courte: "Réserver un véhicule",   // version courte (téléphone)
-        url:  "location/",                // ✅ en ligne : baiji.fr/location/
-        cat:  "Agents vocaux"
-      },
-      {
-        nom:  "Salle de négociation",
-        icone: "poignee",                 // picto (voir la liste PICTOS)
+        courte: "Réserver un véhicule",
+        url: "location/" },
+      { id: "salle-negociation", nom: "Salle de négociation", icone: "poignee", vocal: true,
         desc: "S'entraîner à négocier face à un fournisseur vocal",
-        courte: "Négocier face à un fournisseur",              // version courte (téléphone)
-        url:  "salle-negociation/",      // ✅ en ligne : baiji.fr/salle-negociation/
-        cat:  "Agents vocaux"
-      },
-      {
-        nom:  "Entretien tuteur",
-        icone: "toque",                   // picto (voir la liste PICTOS)
+        courte: "Négocier face à un fournisseur",
+        url: "salle-negociation/" },
+      { id: "entretien-tuteur", nom: "Entretien tuteur", icone: "toque", vocal: true,
         desc: "S'entraîner à mener l'entretien avec un stagiaire en maths",
-        courte: "Entretien avec un stagiaire",              // version courte (téléphone)
-        url:  "entretien-tuteur/",       // ✅ en ligne : baiji.fr/entretien-tuteur/
-        cat:  "Agents vocaux"
-      },
-      {
-        nom:  "SOS Amitié",
-        icone: "telephone",               // picto (voir la liste PICTOS)
+        courte: "Entretien avec un stagiaire",
+        url: "entretien-tuteur/" },
+      { id: "sos-amitie",  nom: "SOS Amitié",   icone: "telephone", vocal: true,
         desc: "La ligne d'écoute (taquine) de Charles, avec la voix de Seb",
-        courte: "La ligne d'écoute de Charles",              // version courte (téléphone)
-        url:  "sos-amitie/",             // ✅ en ligne : baiji.fr/sos-amitie/
-        cat:  "Agents vocaux"
-      },
-      {
-        nom:  "Négo avec Papa",
-        icone: "balance",                 // picto (voir la liste PICTOS)
+        courte: "La ligne d'écoute de Charles",
+        url: "sos-amitie/" },
+      { id: "nego-papa",   nom: "Négo avec Papa", icone: "balance", vocal: true,
         desc: "Tom, Gaby et Nanon s'entraînent à négocier avec Papa (et son coach)",
-        courte: "Négocier avec Papa",              // version courte (téléphone)
-        url:  "nego-papa/",              // ✅ en ligne : baiji.fr/nego-papa/
-        cat:  "Agents vocaux"
-      },
-      {
-        nom:  "Le Grand Verdict",
-        icone: "trophee",                 // picto (voir la liste PICTOS)
+        courte: "Négocier avec Papa",
+        url: "nego-papa/" },
+      { id: "grand-verdict", nom: "Le Grand Verdict", icone: "trophee", vocal: true,
         desc: "Papa et Maman doivent enfin dire qui est leur fils préféré (spoiler : Sébastien)",
-        courte: "Le fils préféré, enfin !",              // version courte (téléphone)
-        url:  "fils-prefere/",           // ✅ en ligne : baiji.fr/fils-prefere/
-        cat:  "Agents vocaux"
-      },
-      {
-        nom:  "Foot & Chats",
-        icone: "chat",                    // picto (voir la liste PICTOS)
+        courte: "Le fils préféré, enfin !",
+        url: "fils-prefere/" },
+      { id: "foot-chats",  nom: "Foot & Chats", icone: "chat", vocal: true,
         desc: "Max fait un quiz foot avec Titouan et des jeux de chats avec Ava",
-        courte: "Quiz foot et jeux de chats",              // version courte (téléphone)
-        url:  "foot-chats/",             // ✅ en ligne : baiji.fr/foot-chats/
-        cat:  "Agents vocaux"
-      },
-      {
-        nom:  "Julien · Mécanicien vélo",
-        icone: "velo",                    // picto (voir la liste PICTOS)
+        courte: "Quiz foot et jeux de chats",
+        url: "foot-chats/" },
+
+      // ---------- Sites ----------
+      { id: "julien",      nom: "Julien · Mécanicien vélo", icone: "velo",
         desc: "Le vélo doit être un plaisir : conseils, tarifs clairs",
-        courte: "Réparation, conseils, tarifs",              // version courte (téléphone)
-        url:  "julien/",                 // ✅ en ligne : baiji.fr/julien/
-        cat:  "Sites"
-      },
-      {
-        nom:  "FART · Séance d'observation",
-        icone: "vent",                    // picto (voir la liste PICTOS)
+        courte: "Réparation, conseils, tarifs",
+        url: "julien/" },
+      { id: "fart",        nom: "FART · Séance d'observation", icone: "vent",
         desc: "Six scénettes de classe à faire observer aux tuteurs et stagiaires",
-        courte: "Six scénettes à observer",              // version courte (téléphone)
-        url:  "fart/",                   // ✅ en ligne : baiji.fr/fart/
-        cat:  "Sites"
-      },
-      {
-        nom:  "Famille",
-        icone: "maison",                  // picto (voir la liste PICTOS)
+        courte: "Six scénettes à observer",
+        url: "fart/" },
+
+      // ---------- Maison ----------
+      { id: "famille",     nom: "Famille",      icone: "maison",
         desc: "Météo, tâches des enfants et batteries des voitures (mode TV : ?tv)",
-        courte: "Le tableau de bord maison",              // version courte (téléphone)
-        url:  "famille/",                // ✅ en ligne : baiji.fr/famille/
-        cat:  "Sites"
-      },
-      {
-        nom:  "Médiathèque",
-        icone: "livre",                   // picto (voir la liste PICTOS)
+        courte: "Le tableau de bord maison",
+        url: "famille/" },
+      { id: "mediatheque", nom: "Médiathèque",  icone: "livre",
         desc: "Les documents empruntés aux Médiathèques de Paris-Saclay, avec leurs couvertures",
-        courte: "Nos emprunts et leurs retours",            // version courte (téléphone)
-        url:  "mediatheque/",            // baiji.fr/mediatheque/ (données : service « biblio » du NAS)
-        cat:  "Maison"
-      },
-      {
-        nom:  "Cartable",
-        icone: "cartable",                // picto (voir la liste PICTOS)
+        courte: "Nos emprunts et leurs retours",
+        url: "mediatheque/" },               // données : service « biblio » du NAS
+      { id: "cartable",    nom: "Cartable",     icone: "cartable",
         desc: "Devoirs et emplois du temps Pronote de Gaby et Nanon",
-        courte: "Devoirs et emplois du temps",              // version courte (téléphone)
-        url:  "cartable/",               // baiji.fr/cartable/ (données : service « pronote » du NAS)
-        cat:  "Maison"
-      },
-      {
-        nom:  "Voitures",
-        icone: "batterie",                // picto (voir la liste PICTOS)
+        courte: "Devoirs et emplois du temps",
+        url: "cartable/" },                  // données : service « pronote » du NAS
+      { id: "voitures",    nom: "Voitures",     icone: "batterie",
         desc: "Batterie et charge de l'e-5008 et de la Corsa, suivi en direct",
-        courte: "Charge de l'e-5008 et de la Corsa",              // version courte (téléphone)
-        url:  "voitures/",               // ✅ en ligne : baiji.fr/voitures/
-        cat:  "Maison"
-      },
-      {
-        // Photos = Immich, installé sur le NAS (Container Manager, projet « immich »).
-        // Ce n'est pas une page de ce dépôt : l'adresse est complète (https://…)
-        // et mène au NAS via le reverse proxy de DSM. L'accès est protégé par
-        // le compte Immich de chacun.
-        nom:  "Photos",
-        icone: "photo",                   // picto (voir la liste PICTOS)
+        courte: "Charge de l'e-5008 et de la Corsa",
+        url: "voitures/" },
+      // Photos = Immich, installé sur le NAS (Container Manager, projet « immich »).
+      // Ce n'est pas une page de ce dépôt : l'adresse est complète (https://…)
+      // et mène au NAS via le reverse proxy de DSM. Accès protégé par le compte Immich.
+      { id: "photos",      nom: "Photos",       icone: "photo",
         desc: "La photothèque de la famille, avec visages et recherche (Immich)",
-        courte: "La photothèque familiale",              // version courte (téléphone)
-        url:  "https://photos.baiji.fr/", // ✅ en ligne : Immich sur le NAS
-        cat:  "Maison"
-      }
+        courte: "La photothèque familiale",
+        url: "https://photos.baiji.fr/" }
     ];
 
-    // ---- Construction de la page à partir de la liste ci-dessus ----
+    /*
+      ============================================================
+      ORGANISATION — où chaque projet est rangé
+      ------------------------------------------------------------
+      • rubriques : dans l'ordre d'affichage. Chaque rubrique a un
+        nom et la liste des id de ses projets, dans l'ordre des cartes.
+      • archives  : les projets mis de côté. Ils restent en ligne et
+        accessibles, mais sont regroupés tout en bas, dans la
+        rubrique « Archives », repliée par défaut.
+      Un projet de PROJETS qui n'est rangé nulle part n'est pas
+      perdu : il apparaît dans une rubrique « À ranger ».
 
-    // 1) Zone où injecter le contenu
-    const contenu = document.getElementById("contenu");
+      ✏️ Le plus simple pour modifier : sur baiji.fr, bouton crayon
+      en haut à droite (mode Rangement), puis « Pour le site… » qui
+      fabrique tout le bloc ci-dessous, prêt à coller ici (entre les
+      deux lignes repères >>> et <<<).
+      ============================================================
+    */
+    // >>> ORGANISATION (bloc remplaçable en entier)
+    const ORGANISATION = {
+      rubriques: [
+        { nom: "Maison", projets: ["famille", "cartable", "voitures", "mediatheque", "photos"] },
+        { nom: "Outils", projets: ["qr", "pressoir", "place-nette", "paraphe"] },
+        { nom: "Famille & amis", projets: ["revisions", "nego-papa", "foot-chats", "grand-verdict", "sos-amitie"] },
+        { nom: "Carrefour", projets: ["fournisseurs", "nexus", "salle-negociation", "pochpoch"] },
+        { nom: "Formation", projets: ["entretien-tuteur", "fart"] },
+        { nom: "Sites & démos", projets: ["julien", "location"] },
+        { nom: "Jeux", projets: ["undercover", "unknown-waters"] }
+      ],
+      archives: []
+    };
+    // <<< ORGANISATION
 
-    // 2) Catégories présentes, sans doublon, dans l'ordre d'apparition
-    const categories = [...new Set(PROJETS.map(p => p.cat))];
+    /*
+      Petits pictos des outils de rangement (Lucide, ISC), à part de
+      PICTOS pour ne pas les mélanger avec les pictos des projets.
+    */
+    const OUTILS = {
+      haut:     `<path d="m18 15-6-6-6 6"/>`,                                   // chevron-up
+      bas:      `<path d="m6 9 6 6 6-6"/>`,                                     // chevron-down
+      crayon:   `<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/> <path d="m15 5 4 4"/>`, // pencil
+      corbeille:`<path d="M10 11v6"/> <path d="M14 11v6"/> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/> <path d="M3 6h18"/> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>`, // trash-2
+      archive:  `<rect width="20" height="5" x="2" y="3" rx="1"/> <path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/> <path d="M10 12h4"/>`, // archive
+      micro:    `<path d="M12 19v3"/> <path d="M19 10v2a7 7 0 0 1-14 0v-2"/> <rect x="9" y="2" width="6" height="13" rx="3"/>` // mic
+    };
+    // Fabrique le <svg> d'un picto d'outil (taille et trait réglés en CSS)
+    const svgOutil = nom => `<svg viewBox="0 0 24 24" aria-hidden="true">${OUTILS[nom]}</svg>`;
 
-    // 3) Catégories repliées : mémorisées dans le navigateur (localStorage),
-    //    pour retrouver la page comme on l'a laissée. try/catch : en navigation
-    //    privée le stockage peut être refusé → on fait alors sans mémoire.
-    const CLE_REPLIEES = "baiji-accueil-replies";
-    let repliees = [];
-    try { repliees = JSON.parse(localStorage.getItem(CLE_REPLIEES)) || []; } catch (e) {}
-    function memoriser() {
-      try { localStorage.setItem(CLE_REPLIEES, JSON.stringify(repliees)); } catch (e) {}
+    // Noms réservés : ces deux « rubriques » sont fabriquées par le script
+    const NOM_ARCHIVES = "Archives";
+    const NOM_A_RANGER = "À ranger";
+
+    // ============================================================
+    // MÉMOIRE DANS LE NAVIGATEUR (localStorage)
+    // ------------------------------------------------------------
+    // try/catch partout : en navigation privée le stockage peut être
+    // refusé → la page marche quand même, simplement sans mémoire.
+    // ============================================================
+    function lire(cle, defaut) {
+      try { const v = JSON.parse(localStorage.getItem(cle)); return v === null ? defaut : v; }
+      catch (e) { return defaut; }
+    }
+    function ecrire(cle, valeur) {
+      try {
+        if (valeur === null) localStorage.removeItem(cle);
+        else localStorage.setItem(cle, JSON.stringify(valeur));
+      } catch (e) {}
     }
 
-    // 4) Pour chaque catégorie : un titre (bouton qui replie), puis la grille de cartes
-    categories.forEach((cat, i) => {
-      const projetsCat = PROJETS.filter(p => p.cat === cat);
-      const ouverte = !repliees.includes(cat);
+    // Rubriques repliées (par leur nom) — comme avant
+    const CLE_REPLIEES = "baiji-accueil-replies";
+    let repliees = lire(CLE_REPLIEES, []);
+    // Les Archives sont repliées par défaut : on retient plutôt si on les a ouvertes
+    const CLE_ARCHIVES_OUVERTES = "baiji-accueil-archives-ouvertes";
+    let archivesOuvertes = lire(CLE_ARCHIVES_OUVERTES, false);
 
-      const grille = document.createElement("div");
-      grille.className = "grille";
-      grille.id = "grille-" + i;          // relie le bouton à sa grille (aria-controls)
-      grille.hidden = !ouverte;
+    // ============================================================
+    // L'ORGANISATION EN COURS
+    // ------------------------------------------------------------
+    // Par défaut : celle écrite dans le code (ORGANISATION), la même
+    // pour tout le monde. Si on a rangé autrement avec le mode
+    // Rangement, la version modifiée est gardée sur CET appareil,
+    // jusqu'à ce qu'elle soit recopiée dans le code du site.
+    // ============================================================
+    const CLE_ORGA = "baiji-accueil-organisation";
+    const copie = o => JSON.parse(JSON.stringify(o));   // copie indépendante d'un objet
 
-      // Titre = <h2> contenant un <button> : nom, nombre de projets, filet, flèche
+    let orga = (() => {
+      const locale = lire(CLE_ORGA, null);
+      // On vérifie la forme avant de s'en servir (au cas où elle serait abîmée)
+      const valide = locale && Array.isArray(locale.rubriques) && Array.isArray(locale.archives);
+      return valide ? locale : copie(ORGANISATION);
+    })();
+
+    // Vrai si le rangement de cet appareil diffère de celui du site
+    const orgaModifiee = () => JSON.stringify(orga) !== JSON.stringify(ORGANISATION);
+
+    // Enregistre après chaque changement ; si on est revenu exactement
+    // à la version du site, on efface la copie locale (plus besoin).
+    function enregistrerOrga() {
+      ecrire(CLE_ORGA, orgaModifiee() ? orga : null);
+    }
+
+    // ============================================================
+    // CALCUL DES SECTIONS À AFFICHER
+    // ------------------------------------------------------------
+    // Transforme l'organisation (des listes d'id) en sections prêtes
+    // à dessiner (des listes de projets). Au passage :
+    //  • un id inconnu (projet supprimé du code) est ignoré ;
+    //  • un projet présent deux fois n'est gardé qu'à sa 1re place ;
+    //  • les projets rangés nulle part vont dans « À ranger ».
+    // ============================================================
+    function calculerSections() {
+      const parId = new Map(PROJETS.map(p => [p.id, p]));   // id → projet
+      const dejaPlaces = new Set();
+      const prendre = ids => ids
+        .filter(id => parId.has(id) && !dejaPlaces.has(id))
+        .map(id => { dejaPlaces.add(id); return parId.get(id); });
+
+      const sections = orga.rubriques.map((r, index) => ({
+        type: "rubrique", index, nom: r.nom, projets: prendre(r.projets)
+      }));
+      const archives = prendre(orga.archives);
+      const orphelins = PROJETS.filter(p => !dejaPlaces.has(p.id));
+
+      if (orphelins.length) sections.push({ type: "a-ranger", nom: NOM_A_RANGER, projets: orphelins });
+      sections.push({ type: "archives", nom: NOM_ARCHIVES, projets: archives });
+      return sections;
+    }
+
+    // ============================================================
+    // ACTIONS DE RANGEMENT (utilisées en mode Rangement)
+    // Chacune modifie « orga », enregistre, puis redessine la page.
+    // ============================================================
+
+    // Enlève un projet de partout (rubriques et archives)
+    function retirer(id) {
+      orga.rubriques.forEach(r => { r.projets = r.projets.filter(x => x !== id); });
+      orga.archives = orga.archives.filter(x => x !== id);
+    }
+
+    // Déplace un projet à la fin d'une rubrique (son numéro) ou dans les archives
+    function deplacerVers(id, destination) {
+      retirer(id);
+      if (destination === "archives") orga.archives.push(id);
+      else orga.rubriques[destination].projets.push(id);
+      apresChangement();
+    }
+
+    // Monte (sens = -1) ou descend (sens = +1) un projet dans sa liste
+    function decaler(id, sens) {
+      const listes = [...orga.rubriques.map(r => r.projets), orga.archives];
+      const liste = listes.find(l => l.includes(id));
+      if (!liste) return;                       // projet « À ranger » : pas d'ordre
+      const i = liste.indexOf(id), j = i + sens;
+      if (j < 0 || j >= liste.length) return;   // déjà en haut / en bas
+      [liste[i], liste[j]] = [liste[j], liste[i]];   // échange des deux cases
+      apresChangement();
+    }
+
+    // Demande un nom de rubrique valable (ou null si on annule)
+    function demanderNom(question, valeurInitiale = "") {
+      const saisie = prompt(question, valeurInitiale);
+      if (saisie === null) return null;          // « Annuler »
+      const nom = saisie.trim();
+      if (!nom) return null;
+      if (nom === NOM_ARCHIVES || nom === NOM_A_RANGER) {
+        alert(`« ${nom} » est un nom réservé, choisis-en un autre.`);
+        return null;
+      }
+      if (orga.rubriques.some(r => r.nom === nom) && nom !== valeurInitiale) {
+        alert(`Il y a déjà une rubrique « ${nom} ».`);
+        return null;
+      }
+      return nom;
+    }
+
+    function ajouterRubrique() {
+      const nom = demanderNom("Nom de la nouvelle rubrique :");
+      if (!nom) return;
+      orga.rubriques.push({ nom, projets: [] });
+      apresChangement();
+    }
+
+    function renommerRubrique(index) {
+      const ancien = orga.rubriques[index].nom;
+      const nom = demanderNom("Nouveau nom de la rubrique :", ancien);
+      if (!nom || nom === ancien) return;
+      orga.rubriques[index].nom = nom;
+      // l'état « replié » suivait l'ancien nom : on le reporte
+      repliees = repliees.map(c => c === ancien ? nom : c);
+      ecrire(CLE_REPLIEES, repliees);
+      apresChangement();
+    }
+
+    function decalerRubrique(index, sens) {
+      const j = index + sens;
+      if (j < 0 || j >= orga.rubriques.length) return;
+      [orga.rubriques[index], orga.rubriques[j]] = [orga.rubriques[j], orga.rubriques[index]];
+      apresChangement();
+    }
+
+    function supprimerRubrique(index) {
+      const r = orga.rubriques[index];
+      const message = r.projets.length
+        ? `Supprimer la rubrique « ${r.nom} » ? Ses ${r.projets.length} projet(s) iront dans « ${NOM_A_RANGER} ».`
+        : `Supprimer la rubrique vide « ${r.nom} » ?`;
+      if (!confirm(message)) return;
+      orga.rubriques.splice(index, 1);   // ses projets ne sont plus rangés → « À ranger »
+      apresChangement();
+    }
+
+    function apresChangement() {
+      enregistrerOrga();
+      afficher();
+    }
+
+    // ============================================================
+    // DESSIN DE LA PAGE
+    // ------------------------------------------------------------
+    // On reconstruit tout à chaque fois : avec une vingtaine de cartes
+    // c'est instantané, et bien plus simple que de modifier au cas par cas.
+    // ============================================================
+    const contenu = document.getElementById("contenu");
+    let edition = false;   // vrai pendant le mode Rangement
+
+    function afficher() {
+      contenu.innerHTML = "";
+      document.body.classList.toggle("en-edition", edition);
+      document.getElementById("barre-edition").hidden = !edition;
+      // Rappel discret en bas de page : rangement perso non recopié sur le site
+      document.getElementById("rappel-local").hidden = edition || !orgaModifiee();
+
+      calculerSections().forEach((section, i) => {
+        // Hors mode Rangement, on n'affiche pas les rubriques vides
+        if (!edition && section.projets.length === 0) return;
+        contenu.appendChild(dessinerTitre(section, i));
+        contenu.appendChild(dessinerGrille(section, i));
+      });
+    }
+
+    // Une rubrique est-elle ouverte ? (en mode Rangement : toujours)
+    function estOuverte(section) {
+      if (edition) return true;
+      if (section.type === "archives") return archivesOuvertes;
+      return !repliees.includes(section.nom);
+    }
+
+    // Titre de rubrique = <h2> contenant un <button> (replier / déplier)
+    function dessinerTitre(section, i) {
       const titre = document.createElement("h2");
       titre.className = "section-titre";
+      const ouverte = estOuverte(section);
+
       titre.innerHTML = `
-        <button type="button" aria-expanded="${ouverte}" aria-controls="${grille.id}">
-          <span>${cat}</span>
-          <span class="nombre">${projetsCat.length}</span>
+        <button type="button" class="bascule" aria-expanded="${ouverte}" aria-controls="grille-${i}">
+          ${section.type === "archives" ? svgOutil("archive") : ""}
+          <span class="nom-rubrique"></span>
+          <span class="nombre">${section.projets.length}</span>
           <span class="filet"></span>
           <svg class="fleche" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
         </button>`;
+      // textContent (et non innerHTML) : un nom tapé par l'utilisateur
+      // est affiché tel quel, sans risque d'être pris pour du code HTML.
+      titre.querySelector(".nom-rubrique").textContent = section.nom;
 
-      // Un toucher sur le titre : on inverse l'état et on le mémorise
-      const bouton = titre.querySelector("button");
-      bouton.addEventListener("click", () => {
-        const vaSouvrir = grille.hidden;
-        grille.hidden = !vaSouvrir;
-        bouton.setAttribute("aria-expanded", vaSouvrir);
-        repliees = vaSouvrir ? repliees.filter(c => c !== cat) : [...repliees, cat];
-        memoriser();
+      // Toucher le titre : replie / déplie (et s'en souvient)
+      titre.querySelector(".bascule").addEventListener("click", () => {
+        if (edition) return;   // en mode Rangement tout reste ouvert
+        if (section.type === "archives") {
+          archivesOuvertes = !archivesOuvertes;
+          ecrire(CLE_ARCHIVES_OUVERTES, archivesOuvertes);
+        } else {
+          repliees = repliees.includes(section.nom)
+            ? repliees.filter(c => c !== section.nom)
+            : [...repliees, section.nom];
+          ecrire(CLE_REPLIEES, repliees);
+        }
+        afficher();
       });
 
-      contenu.appendChild(titre);
+      // En mode Rangement, les vraies rubriques ont leurs outils
+      if (edition && section.type === "rubrique") {
+        const outils = document.createElement("span");
+        outils.className = "outils-rubrique";
+        const derniere = section.index === orga.rubriques.length - 1;
+        outils.append(
+          boutonOutil("crayon", "Renommer", () => renommerRubrique(section.index)),
+          boutonOutil("haut", "Monter la rubrique", () => decalerRubrique(section.index, -1), section.index === 0),
+          boutonOutil("bas", "Descendre la rubrique", () => decalerRubrique(section.index, +1), derniere),
+          boutonOutil("corbeille", "Supprimer la rubrique", () => supprimerRubrique(section.index))
+        );
+        titre.appendChild(outils);
+      }
+      return titre;
+    }
 
-      projetsCat.forEach(projet => {
-        // Carte = lien <a> si une url existe, sinon <div> non cliquable
-        const aUnLien = projet.url !== null;
-        const carte = document.createElement(aUnLien ? "a" : "div");
-        carte.className = "carte" + (aUnLien ? " cliquable" : "");
-        if (aUnLien) carte.href = projet.url;
+    // Petit bouton rond à picto (outils du mode Rangement)
+    function boutonOutil(picto, libelle, action, desactive = false) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "outil";
+      b.innerHTML = svgOutil(picto);
+      b.title = libelle;
+      b.setAttribute("aria-label", libelle);
+      b.disabled = desactive;
+      b.addEventListener("click", action);
+      return b;
+    }
 
-        // Le picto du projet. S'il manque (oubli, faute de frappe),
-        // on retombe sur l'initiale : la carte reste toujours lisible.
-        const picto = PICTOS[projet.icone];
-        const dansPastille = picto
-          ? `<svg viewBox="0 0 24 24" aria-hidden="true">${picto}</svg>`
-          : projet.nom.trim().charAt(0).toUpperCase();
+    function dessinerGrille(section, i) {
+      const grille = document.createElement("div");
+      grille.className = "grille" + (section.type === "archives" ? " grille-archives" : "");
+      grille.id = "grille-" + i;
+      grille.hidden = !estOuverte(section);
 
-        // Contenu de la carte ; sans lien → badge "Bientôt" à la place de la description
-        carte.innerHTML = `
-          <div class="pastille">${dansPastille}</div>
-          <div class="carte-texte">
-            <div class="carte-nom">${projet.nom}</div>
-            ${ aUnLien
-                // Deux versions de la description : le CSS montre « long » sur
-                // grand écran et « court » sur téléphone (sans « courte », on
-                // reprend la description complète, coupée à 2 lignes par le CSS)
-                ? `<div class="carte-desc"><span class="long">${projet.desc}</span><span class="court">${projet.courte || projet.desc}</span></div>`
-                : `<span class="badge">Bientôt</span>` }
-          </div>
-        `;
+      // Rubrique vide (visible seulement en mode Rangement)
+      if (section.projets.length === 0) {
+        const vide = document.createElement("p");
+        vide.className = "vide";
+        vide.textContent = section.type === "archives"
+          ? "Rien d'archivé. Bouton « archive » d'une carte pour la ranger ici."
+          : "Rubrique vide : choisis-la dans le menu d'une carte pour y mettre un projet.";
+        grille.appendChild(vide);
+      }
 
-        grille.appendChild(carte);
+      section.projets.forEach((projet, position) => {
+        grille.appendChild(dessinerCarte(projet, section, position));
       });
+      return grille;
+    }
 
-      contenu.appendChild(grille);
+    function dessinerCarte(projet, section, position) {
+      // Carte = lien <a> si une url existe (et hors mode Rangement), sinon <div>
+      const aUnLien = projet.url !== null;
+      const cliquable = aUnLien && !edition;
+      const carte = document.createElement(cliquable ? "a" : "div");
+      carte.className = "carte" + (cliquable ? " cliquable" : "");
+      if (cliquable) carte.href = projet.url;
+
+      // Le picto du projet. S'il manque (oubli, faute de frappe),
+      // on retombe sur l'initiale : la carte reste toujours lisible.
+      const picto = PICTOS[projet.icone];
+      const dansPastille = picto
+        ? `<svg viewBox="0 0 24 24" aria-hidden="true">${picto}</svg>`
+        : projet.nom.trim().charAt(0).toUpperCase();
+
+      // Petit micro après le nom pour les agents vocaux
+      const micro = projet.vocal
+        ? `<span class="vocal" title="Agent vocal" aria-label="(agent vocal)">${svgOutil("micro")}</span>`
+        : "";
+
+      carte.innerHTML = `
+        <div class="pastille">${dansPastille}</div>
+        <div class="carte-texte">
+          <div class="carte-nom">${projet.nom}${micro}</div>
+          ${ aUnLien
+              // Deux versions de la description : le CSS montre « long » sur
+              // grand écran et « court » sur téléphone
+              ? `<div class="carte-desc"><span class="long">${projet.desc}</span><span class="court">${projet.courte || projet.desc}</span></div>`
+              : `<span class="badge">Bientôt</span>` }
+        </div>
+      `;
+
+      if (edition) carte.appendChild(dessinerOutilsCarte(projet, section, position));
+      return carte;
+    }
+
+    // Outils sous une carte en mode Rangement :
+    // ▲ ▼ (ordre), archiver, et un menu « rubrique » pour la déplacer
+    function dessinerOutilsCarte(projet, section, position) {
+      const outils = document.createElement("div");
+      outils.className = "outils-carte";
+      const nb = section.projets.length;
+
+      // Ordre : impossible dans « À ranger » (rubrique calculée, sans ordre)
+      if (section.type !== "a-ranger") {
+        outils.append(
+          boutonOutil("haut", "Monter", () => decaler(projet.id, -1), position === 0),
+          boutonOutil("bas", "Descendre", () => decaler(projet.id, +1), position === nb - 1)
+        );
+      }
+      if (section.type !== "archives") {
+        outils.append(boutonOutil("archive", "Archiver", () => deplacerVers(projet.id, "archives")));
+      }
+
+      // Menu déroulant : toutes les rubriques + Archives
+      const menu = document.createElement("select");
+      menu.setAttribute("aria-label", `Rubrique de « ${projet.nom} »`);
+      if (section.type === "a-ranger") {
+        menu.add(new Option(`— ${NOM_A_RANGER} —`, "", true, true));
+        menu.options[0].disabled = true;
+      }
+      orga.rubriques.forEach((r, index) => {
+        menu.add(new Option(r.nom, String(index), false, section.index === index));
+      });
+      menu.add(new Option("📦 " + NOM_ARCHIVES, "archives", false, section.type === "archives"));
+      menu.addEventListener("change", () => {
+        const choix = menu.value;
+        deplacerVers(projet.id, choix === "archives" ? "archives" : Number(choix));
+      });
+      outils.appendChild(menu);
+      return outils;
+    }
+
+    // ============================================================
+    // RECOPIER LE RANGEMENT DANS LE CODE DU SITE
+    // ------------------------------------------------------------
+    // Le site est un simple fichier sur GitHub : la page ne peut pas
+    // s'y écrire elle-même. On fabrique donc le bloc ORGANISATION
+    // complet, à coller dans index.html (ou à donner à Claude).
+    // ============================================================
+    function texteOrganisation() {
+      const connus = new Set(PROJETS.map(p => p.id));
+      const liste = ids => "[" + ids.filter(id => connus.has(id)).map(id => JSON.stringify(id)).join(", ") + "]";
+      const lignes = orga.rubriques.map(r =>
+        `        { nom: ${JSON.stringify(r.nom)}, projets: ${liste(r.projets)} }`);
+      return "    const ORGANISATION = {\n" +
+             "      rubriques: [\n" + lignes.join(",\n") + "\n      ],\n" +
+             "      archives: " + liste(orga.archives) + "\n" +
+             "    };";
+    }
+
+    const dialogue = document.getElementById("dialogue-export");
+    function ouvrirExport() {
+      document.getElementById("texte-export").value = texteOrganisation();
+      document.getElementById("etat-copie").textContent = "";
+      dialogue.showModal();
+    }
+    document.getElementById("copier-export").addEventListener("click", async () => {
+      const zone = document.getElementById("texte-export");
+      const etat = document.getElementById("etat-copie");
+      try {
+        await navigator.clipboard.writeText(zone.value);   // presse-papiers moderne
+        etat.textContent = "Copié ✓";
+      } catch (e) {
+        zone.select();                                      // repli : on sélectionne le texte
+        etat.textContent = "Texte sélectionné : appui long → Copier";
+      }
     });
+    document.getElementById("fermer-export").addEventListener("click", () => dialogue.close());
+
+    // ============================================================
+    // BOUTONS DU MODE RANGEMENT
+    // ============================================================
+    document.getElementById("organiser").addEventListener("click", () => {
+      edition = !edition;
+      afficher();
+      window.scrollTo({ top: 0 });
+    });
+    document.getElementById("terminer").addEventListener("click", () => { edition = false; afficher(); });
+    document.getElementById("ajouter-rubrique").addEventListener("click", ajouterRubrique);
+    document.getElementById("publier").addEventListener("click", ouvrirExport);
+    document.getElementById("publier-rappel").addEventListener("click", ouvrirExport);
+    document.getElementById("annuler").addEventListener("click", () => {
+      if (!orgaModifiee()) return;
+      if (!confirm("Revenir au rangement du site ? Les changements faits sur cet appareil seront perdus.")) return;
+      orga = copie(ORGANISATION);
+      apresChangement();
+    });
+
+    // Premier affichage
+    afficher();
 
     // ---- Page installable : enregistrement du service worker ----
     // Le navigateur exige un site en https (c'est le cas de baiji.fr).
