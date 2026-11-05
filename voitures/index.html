@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Voitures — suivi de la batterie et de la charge de l'e-5008 et de la Corsa
-  Version 1.4.2
+  Version 1.4.3
   Données : service « voitures » du NAS (https://voitures.baiji.fr), qui interroge
   psa_car_controller à la maison et ne publie que la batterie et la charge (jamais le GPS).
   Historique :
@@ -34,6 +34,7 @@
    • v1.4.1 : plus de lien « Tableau de bord Famille » en bas de page (reste le n° de version)
    • v1.4.2 : voiture injoignable sans valeur (ex. juste après un redémarrage du NAS) :
               on affiche le dernier % connu de la courbe et sa date, au lieu de « -- % »
+   • v1.4.3 : compteur de visites de baiji.fr (/journal.js)
 -->
 <html lang="fr">
 <head>
@@ -226,6 +227,8 @@
     }
     #toast.show { opacity: 1; transform: translate(-50%, 0); }
   </style>
+  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+  <script src="/journal.js" defer></script>
 </head>
 <body>
   <main>
@@ -284,7 +287,7 @@
     /* =================================================================
        CONFIGURATION
        ================================================================= */
-    const VERSION = '1.4.2';
+    const VERSION = '1.4.3';
     const API = 'https://voitures.baiji.fr';        // service du NAS
     const POLL_NORMAL_S = 120;    // lecture de l'état : toutes les 2 min…
     const POLL_LIVE_S = 30;       // …toutes les 30 s en mode « Suivi de charge »

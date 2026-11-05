@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Page « PochPoch assistant » — le cost killer vocal
-  Version 1.3.0 – 31/10/2026
+  Version 1.3.1 – 04/11/2026
   En ligne : https://baiji.fr/pochpoch/
 
   Historique :
@@ -10,6 +10,7 @@
    • 1.2.0 : retour visuel immédiat au clic + écran « ligne ouverte » pendant l'appel
              (voyant qui clignote, chrono, qui parle, onde qui réagit aux voix)
    • 1.3.0 : page installable sur téléphone (manifeste, icône, service worker)
+   • 1.3.1 : compteur de visites de baiji.fr (/journal.js)
 
   Comment ça marche ?
   - Le fond est une « pluie de caractères » façon Matrix, dessinée dans un <canvas>.
@@ -200,6 +201,8 @@
       #bouton::after, body.connexion #bouton, .voyant, #panneau { animation: none !important; }
     }
   </style>
+  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+  <script src="/journal.js" defer></script>
 </head>
 <body>
   <!-- La pluie Matrix -->

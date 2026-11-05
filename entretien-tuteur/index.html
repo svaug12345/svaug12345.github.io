@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Page « Entretien tuteur » — simulateur vocal pour tuteurs de stagiaires en maths
-  Version 1.1.0 – 31/10/2026
+  Version 1.1.1 – 04/11/2026
   En ligne : https://baiji.fr/entretien-tuteur/
 
   Historique :
@@ -10,6 +10,7 @@
              bouton « Débrief » qui demande au stagiaire de sortir du rôle
              et de donner un retour de coach.
    • 1.1.0 : page installable sur téléphone (manifeste, icône, service worker)
+   • 1.1.1 : compteur de visites de baiji.fr (/journal.js)
 
   Comment ça marche ?
   - Chaque profil de stagiaire est un AGENT ElevenLabs différent (sa voix, son
@@ -152,6 +153,8 @@
     @keyframes apparait { from { opacity: 0; transform: translateY(6px); } }
     @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
   </style>
+  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+  <script src="/journal.js" defer></script>
 </head>
 <body>
   <main>

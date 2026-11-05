@@ -2,7 +2,7 @@
 <!--
   Page « FART · Séance d'observation » — six scénettes animées pour former les tuteurs
   et les professeurs stagiaires à l'observation d'une séance
-  Version 1.1.0 – 01/11/2026
+  Version 1.1.1 – 04/11/2026
   En ligne : https://baiji.fr/fart/
 
   Historique :
@@ -11,6 +11,7 @@
              grilles d'observation à télécharger.
    • 1.1.0 : page installable sur téléphone (manifeste, icône FART, service worker
              qui laisse les vidéos en ligne au lieu de les garder dans le téléphone).
+   • 1.1.1 : compteur de visites de baiji.fr (/journal.js)
 
   Comment ça marche ?
   - Les vidéos sont dans le dossier videos/ (une par scène + le film complet),
@@ -204,6 +205,8 @@
     /* Accessibilité : sans animation, on affiche directement l'état final */
     @media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important} }
   </style>
+  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+  <script src="/journal.js" defer></script>
 </head>
 <body>
 
@@ -314,7 +317,7 @@
 </footer>
 
 <script>
-  const VERSION = "1.1.0";
+  const VERSION = "1.1.1";
   document.getElementById("version").textContent = "FART · v" + VERSION;
 
   /*

@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Page « Clé en main · Location de véhicules » — réservation à la voix
-  Version 1.1.0 – 02/11/2026
+  Version 1.1.1 – 04/11/2026
   En ligne : https://baiji.fr/location/
 
   Historique :
@@ -11,6 +11,7 @@
    • 1.1.0 : l'agent répond aussi au téléphone (numéro Twilio) : la page lui
              envoie canal = « web » pour qu'il sache qu'une fiche est affichée ;
              la date du jour vient désormais du fuseau réglé dans ElevenLabs
+   • 1.1.1 : compteur de visites de baiji.fr (/journal.js)
 
   Comment ça marche ?
   - « Clé en main » est une agence FICTIVE (démonstration) : l'agent ne connaît
@@ -205,6 +206,8 @@
       color: var(--doux); font: 600 14px "Manrope", sans-serif; text-decoration: underline;
     }
   </style>
+  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+  <script src="/journal.js" defer></script>
 </head>
 <body>
 

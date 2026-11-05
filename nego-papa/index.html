@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Page « Négo avec Papa » — l'entraînement à la négociation de Tom, Gaby et Nanon
-  Version 1.3.0 – 31/10/2026
+  Version 1.3.1 – 04/11/2026
   En ligne : https://baiji.fr/nego-papa/
 
   Historique :
@@ -14,6 +14,7 @@
              ne sont pas des contreparties, nouvel exemple d'échange
    • 1.2.1 : l'en-tête redevient « Nanon · Gaby · Tom » (prénoms, pas de surnoms)
    • 1.3.0 : page installable sur téléphone (manifeste, icône, service worker)
+   • 1.3.1 : compteur de visites de baiji.fr (/journal.js)
 
   Comment ça marche ?
   - Avant l'appel : une petite « fiche de préparation » (ce que je veux,
@@ -200,6 +201,8 @@
       .bulle { transition: none; }
     }
   </style>
+  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+  <script src="/journal.js" defer></script>
 </head>
 <body>
   <main>

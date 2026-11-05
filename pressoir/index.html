@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr/pressoir/ — Pressoir (vidéo et son)
-  Version 1.2.1
+  Version 1.2.2
   ------------------------------------------------------------
   Compresse une vidéo ou un son directement dans le navigateur,
   avec les encodeurs matériels du téléphone (API WebCodecs),
@@ -18,6 +18,7 @@
               correction : la durée (et donc la cadence) des vidéos était mal lue ;
               le débit vidéo ne dépasse jamais celui de l'original
    • v1.2.1 : l'appli s'appelle simplement « Pressoir » (elle traite aussi le son)
+   • v1.2.2 : compteur de visites de baiji.fr (/journal.js)
   ============================================================
 -->
 <html lang="fr">
@@ -163,13 +164,15 @@ video { background: #000; max-height: 50vh; }
 .note.warn { color: var(--bad); }
 @media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
 </style>
+  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+  <script src="/journal.js" defer></script>
 </head>
 <body>
 
 <div class="wrap">
   <header>
     <h1>Pressoir<span>.</span></h1>
-    <span class="version" id="version">v1.2.1</span>
+    <span class="version" id="version">v1.2.2</span>
   </header>
   <p class="lede">Compresse une vidéo ou un son directement dans ton téléphone, et découpe-le si besoin en morceaux d'une taille max. Rien n'est envoyé sur internet, et il n'y a pas de pub.</p>
 
@@ -274,7 +277,7 @@ video { background: #000; max-height: 50vh; }
    On ne charge jamais une grosse vidéo d'un coup : on la lit par fenêtres.
    ========================================================================== */
 
-const APP_VERSION = "1.2.1";
+const APP_VERSION = "1.2.2";
 document.getElementById("version").textContent = "v" + APP_VERSION;
 
 // ---- Préréglages vidéo : côté court visé (px) et débit vidéo (bits/s) ----

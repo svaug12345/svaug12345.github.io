@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Famille · Vaugoude's Family — tableau de bord de la maison
-  Version 1.7.5
+  Version 1.7.6
   Mobile par défaut ; mode TV avec baiji.fr/famille/?tv (retour : ?mobile).
   Historique :
    • v1.0.0 : météo, tâches du jour (Google Sheet), 7 prochains jours, Pass TV,
@@ -33,6 +33,7 @@
    • v1.7.3 : sur téléphone, le titre de la carte Médiathèque ouvre l'appli Médiathèque
    • v1.7.4 : miniature de la couverture dans chaque pastille de la carte Médiathèque
    • v1.7.5 : toucher un document de la carte Médiathèque ouvre son visuel en grand (pas à la télé)
+   • v1.7.6 : compteur de visites de baiji.fr (/journal.js)
 -->
 <html lang="fr">
 <head>
@@ -369,6 +370,8 @@
     body:not(.tv) .w-days-card { order: 5; }
     body:not(.tv) #app footer { order: 99; }
   </style>
+  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+  <script src="/journal.js" defer></script>
 </head>
 <body>
   <div id="app">
@@ -480,7 +483,7 @@
     /* =================================================================
        CONFIGURATION — les seules lignes à modifier en temps normal
        ================================================================= */
-    const VERSION = '1.7.5';
+    const VERSION = '1.7.6';
 
     // Google Sheet "Family tasks" publié en TSV (Fichier > Partager > Publier sur le web).
     // C'est le même lien que celui de ton Kindle.

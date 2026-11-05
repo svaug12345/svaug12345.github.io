@@ -1,12 +1,13 @@
 <!doctype html>
 <!--
   Page d'aide « Accès au NAS »
-  Version 1.0.0 – 01/11/2026
+  Version 1.0.1 – 04/11/2026
   En ligne : https://baiji.fr/nas-aide/ (non listée sur l'accueil, en « noindex » : Seb envoie le lien)
 
   Historique :
    • 1.0.0 : première version (Plex inchangé, accès DSM via partage Tailscale,
              étapes Android / PC Windows, questions fréquentes) ; installable (PWA)
+   • 1.0.1 : compteur de visites de baiji.fr (/journal.js)
 
   Une seule page autonome (HTML + CSS + un peu de JS), aux couleurs de la charte SV.
   Elle ne contient volontairement AUCUNE info sensible (pas d'IP, pas de nom de réseau Tailscale) :
@@ -187,6 +188,8 @@
     footer { border-top: 1px solid var(--line); padding: 20px 0 32px; color: var(--ink-muted); font-size: 13px; }
     footer .mono { background: none; padding: 0; font-size: 13px; }
   </style>
+  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+  <script src="/journal.js" defer></script>
 </head>
 <body>
   <!-- On signale au CSS que le JavaScript tourne : les onglets peuvent alors masquer un des deux blocs. -->
@@ -348,7 +351,7 @@
   </main>
 
   <footer>
-    <div class="wrap">Une question ? Envoie un message à Seb. · <span class="mono">v1.0.0</span></div>
+    <div class="wrap">Une question ? Envoie un message à Seb. · <span class="mono">v1.0.1</span></div>
   </footer>
 
   <script>

@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Page « Assistant fournisseurs Carrefour – SAP Business Network »
-  Version 1.3.0 – 02/11/2026
+  Version 1.3.1 – 04/11/2026
   En ligne : https://baiji.fr/assistant-fournisseurs/
 
   Historique :
@@ -11,6 +11,7 @@
    • 1.2.0 : page installable sur téléphone (manifeste, icône, service worker)
    • 1.3.0 : branchée sur le nouvel agent « Assistant fournisseurs Carrefour v2 »
              (recréé avec les mêmes réglages que l'Assistant Nexus B2B, sans « Terms and conditions »)
+   • 1.3.1 : compteur de visites de baiji.fr (/journal.js)
 
   À quoi sert cette page ?
   - Elle explique en 4 étapes comment rejoindre Carrefour sur SAP Business Network.
@@ -124,6 +125,8 @@
 
     footer { text-align: center; color: var(--texte-doux); font-size: .85rem; padding: 0 16px 24px; }
   </style>
+  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+  <script src="/journal.js" defer></script>
 </head>
 <body>
 
@@ -203,7 +206,7 @@
     ===== Agent vocal ElevenLabs =====
     - La balise <elevenlabs-convai> affiche la bulle en bas à droite.
     - agent-id = identifiant de ton agent (ne pas modifier).
-      Depuis la v1.3.0 : agent « Assistant fournisseurs Carrefour v2 ».
+      Depuis la v1.3.1 : agent « Assistant fournisseurs Carrefour v2 ».
       (L'ancien agent était agent_5001m682hzn4e77rpyj4a2s51aef.)
     - Le script charge le composant depuis unpkg (CDN public d'ElevenLabs).
   -->

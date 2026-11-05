@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Médiathèque — les documents empruntés aux Médiathèques de Paris-Saclay, avec leurs couvertures
-  Version 1.0.3
+  Version 1.0.4
   Les données viennent du service « biblio » du NAS (https://biblio.baiji.fr/prets.json),
   qui se connecte au compte lecteur et relit le site toutes les 3 heures.
   La page ne contient aucun identifiant et ne parle jamais directement au compte lecteur.
@@ -11,6 +11,7 @@
    • v1.0.1 : 3 colonnes de couvertures sur téléphone ; couvertures entières, jamais coupées
    • v1.0.2 : fiche d'un document avec une grande couverture en haut
    • v1.0.3 : correction : la grande couverture restait invisible (hauteur nulle, jamais chargée)
+   • v1.0.4 : compteur de visites de baiji.fr (/journal.js)
 -->
 <html lang="fr">
 <head>
@@ -198,6 +199,8 @@
     .duree i { display: block; height: 100%; background: var(--c, var(--accent)); }
     .boutons { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
   </style>
+  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+  <script src="/journal.js" defer></script>
 </head>
 <body>
   <div id="app">
@@ -224,7 +227,7 @@
     /* =================================================================
        CONFIGURATION
        ================================================================= */
-    const VERSION = '1.0.3';
+    const VERSION = '1.0.4';
     const PRETS_URL = 'https://biblio.baiji.fr/prets.json';       // le service du NAS
     const SITE = 'https://mediatheques.paris-saclay.com';
     const PAGE_PRETS = SITE + '/page/user/prets-en-cours?choix_tri_pret_bgm=dra';   // pour prolonger

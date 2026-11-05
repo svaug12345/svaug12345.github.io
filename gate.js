@@ -1,6 +1,6 @@
 /* ============================================================
    gate.js — petite « serrure de curiosité » + log des visites
-   Version 1.0.1
+   Version 1.1.0
    ------------------------------------------------------------
    À inclure TOUT EN HAUT du <head> de chaque page à protéger :
        <script src="/gate.js"></script>
@@ -16,6 +16,8 @@
    Historique :
     • 1.0.0 : serrure + log (mirobol)
     • 1.0.1 : ajout de l'étiquette SITE dans le log
+    • 1.1.0 : le journal passe par /journal.js (commun à toutes les pages) ;
+              ici on ne note plus que « code validé »
    ============================================================ */
 
 (function () {
@@ -23,34 +25,17 @@
 
   /* ---- RÉGLAGES (les seules lignes à modifier au besoin) ---- */
   const CODE        = "aaaa";          // le code d'accès à saisir
-  const SITE        = "baiji";         // nom du site, ajouté au journal pour distinguer baiji / mirobol
   const CLE_SESSION = "baiji_ok";      // mémorise le déverrouillage le temps de l'onglet
-  const LOG_URL     = "";              // ← URL de ton Apps Script (laisse vide = pas de log)
 
   /* ------------------------------------------------------------
-     1) JOURNAL (log) : on « ping » le script Google à chaque
-        visite. Technique « fire and forget » : on envoie et on
-        n'attend pas de réponse. Passer par une Image évite tout
-        problème de CORS avec Apps Script.
+     1) JOURNAL : c'est /journal.js qui compte les visites (sur toutes
+        les pages). Ici on lui signale seulement le déverrouillage.
+        « window.baijiJournal » n'existe que si journal.js est chargé :
+        sinon on ne fait rien, sans erreur.
      ------------------------------------------------------------ */
   function logVisite(evenement) {
-    if (!LOG_URL) return;              // pas d'URL configurée → on ne logge rien
-    try {
-      const params = new URLSearchParams({
-        site: SITE,                    // quel site (baiji / mirobol)
-        page: location.pathname,       // quelle page a été ouverte
-        ev:   evenement,               // "visite" (arrivée) ou "ok" (code validé)
-        ua:   navigator.userAgent      // navigateur / appareil
-      });
-      // L'heure exacte est enregistrée côté serveur (Apps Script), pas ici.
-      new Image().src = LOG_URL + "?" + params.toString();
-    } catch (e) {
-      /* un échec de log ne doit jamais gêner l'utilisateur : on ignore */
-    }
+    if (typeof window.baijiJournal === "function") window.baijiJournal(evenement);
   }
-
-  // On note l'arrivée sur la page, que la personne entre le code ou non.
-  logVisite("visite");
 
   /* ------------------------------------------------------------
      2) Déjà déverrouillé pour cet onglet ? Alors on ne fait rien.

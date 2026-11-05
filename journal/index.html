@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  baiji.fr/journal/ — Journal du site (charte SV)
+  Version 1.0.0 – 04/11/2026
+  ------------------------------------------------------------
+  Deux tableaux de bord sur une page :
+   • SERVICES : est-ce que baiji.fr et les sous-domaines du NAS
+     (photos, voitures, biblio, pronote) répondent ? Vérifié toutes
+     les 10 min par le script Google, qui t'envoie aussi un e-mail
+     en cas de panne.
+   • VISITES : pages vues, visiteurs, appareils, d'où l'on vient,
+     sur les 30 derniers jours (compteur /journal.js des pages).
+
+  D'où viennent les chiffres ?
+   Le script Google « Journal baiji » (code : outils/journal-baiji.gs,
+   à coller dans l'Apps Script d'un Google Sheet). Son adresse /exec
+   est réglée UNE seule fois, dans /journal.js (URL_JOURNAL) ; cette
+   page la lit là-bas. Les chiffres sont protégés par la clé de
+   lecture (CLE_LECTURE du script), demandée une fois puis gardée
+   dans ce navigateur.
+
+  Astuce : baiji.fr/journal/?demo montre la page avec des chiffres
+  inventés (pratique pour voir le rendu avant de brancher le script).
+
+  Historique :
+   • v1.0.0 : première version (services + visites, mode démo,
+              « ce navigateur, c'est moi »)
+  ============================================================
+-->
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <!-- viewport-fit=cover : l'appli occupe tout l'écran, y compris sous l'encoche du téléphone -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Journal</title>
+  <meta name="description" content="Visites de baiji.fr et état des services.">
+
+  <!-- Page perso : on ne la fait pas apparaître dans les moteurs de recherche -->
+  <meta name="robots" content="noindex">
+
+  <!--
+    PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »).
+    Fichiers fabriqués par outils/generer-pwa.py :
+     • manifest.webmanifest : nom, couleurs, icônes de l'appli ;
+     • icones/ : les icônes (apple-touch-icon = celle des iPhone) ;
+     • sw.js : le service worker, enregistré en bas de page.
+  -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <link rel="icon" href="icones/icone-192.png">
+  <meta name="theme-color" content="#0b4f55">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- Polices de la charte SV : Manrope (texte) et JetBrains Mono (chiffres) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <!-- On récupère ici l'adresse du script Google (window.BAIJI_JOURNAL_URL).
+       Pas de « defer » : on en a besoin avant le script de la page. -->
+  <script src="/journal.js"></script>
+
+  <style>
+    /* =========================================================
+       1. COULEURS (variables CSS) — charte SV
+       ========================================================= */
+    :root {
+      --bg: #f3f6f6;          /* fond de page */
+      --card: #ffffff;        /* fond des cartes */
+      --ink: #10282d;         /* texte principal */
+      --muted: #5d7277;       /* texte secondaire */
+      --line: #dfe7e8;        /* traits de séparation */
+      --soft: #edf3f3;        /* fonds discrets */
+      --accent: #0f7c7b;      /* teal SV : les barres de visites */
+      --accent-2: #0b4f55;    /* teal foncé : les visiteurs */
+      --ok: #15803d;          /* service qui répond */
+      --alerte: #b45309;      /* un échec, pas encore confirmé */
+      --panne: #b91c1c;       /* panne confirmée */
+      --vide: #c5d3d5;        /* pas de mesure */
+      --radius: 18px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #071a1f; --card: #0f262c; --ink: #e8f1f2; --muted: #93a9ad; --line: #1d3a41; --soft: #15323a;
+        --accent: #2bb3b1; --accent-2: #8fe3dc; --ok: #4ade80; --alerte: #f59e0b; --panne: #f87171; --vide: #2a474e;
+      }
+    }
+
+    /* =========================================================
+       2. BASE
+       ========================================================= */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: 'Manrope', system-ui, sans-serif;
+      background: var(--bg); color: var(--ink); min-height: 100vh;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    button, input { font: inherit; color: inherit; }
+    button { background: none; border: 0; cursor: pointer; }
+    svg { display: block; }
+    [hidden] { display: none !important; }
+    .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+    #app { max-width: 760px; margin: 0 auto; padding: 16px 16px 40px; display: flex; flex-direction: column; gap: 14px; }
+    .card { background: var(--card); border-radius: var(--radius); padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+    .card h2 {
+      font-size: 11px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 12px; display: flex; justify-content: space-between; gap: 8px;
+    }
+    .card h2 .aide { color: var(--muted); letter-spacing: .04em; text-transform: none; font-weight: 600; }
+    .note { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    /* Boutons de la charte SV : capitales espacées */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      background: var(--accent); color: #fff; border-radius: 12px; padding: 12px 16px;
+      font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; text-decoration: none;
+    }
+    .btn.secondaire { background: var(--soft); color: var(--ink); }
+
+    /* =========================================================
+       3. EN-TÊTE
+       ========================================================= */
+    .top { display: flex; justify-content: space-between; align-items: flex-end; padding: 4px 2px 0; gap: 8px; }
+    .brand { font-size: 11px; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; color: var(--accent); }
+    .brand a { color: inherit; text-decoration: none; }
+    .titre { font-size: 24px; font-weight: 800; line-height: 1.15; }
+    .maj { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .icon-btn { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: var(--muted); flex: none; }
+    .icon-btn:active { background: var(--line); }
+    .icon-btn svg { width: 20px; height: 20px; }
+    .spin svg { animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .spin svg { animation: none; } }
+
+    .bandeau { border-radius: 12px; padding: 10px 14px; font-size: 13px; background: var(--soft); }
+    .bandeau.erreur { color: var(--panne); }
+
+    /* Filtres (onglets pilule) */
+    .filtres { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .pilule {
+      border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 7px 12px;
+      font-size: 12px; font-weight: 700;
+    }
+    .pilule[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    /* =========================================================
+       4. SERVICES
+       ========================================================= */
+    .services { display: flex; flex-direction: column; }
+    .service { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); }
+    .service:first-child { border-top: 0; padding-top: 0; }
+    .pastille-etat { width: 12px; height: 12px; border-radius: 50%; background: var(--vide); }
+    .etat-ok .pastille-etat { background: var(--ok); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok) 18%, transparent); }
+    .etat-alerte .pastille-etat { background: var(--alerte); }
+    .etat-panne .pastille-etat { background: var(--panne); box-shadow: 0 0 0 4px color-mix(in srgb, var(--panne) 22%, transparent); }
+    .service-nom { font-weight: 800; font-size: 15px; }
+    .service-detail { font-size: 12px; color: var(--muted); }
+    .etat-panne .service-detail { color: var(--panne); font-weight: 700; }
+    .service-chiffres { text-align: right; font-size: 13px; }
+    .service-chiffres small { display: block; font-size: 11px; color: var(--muted); }
+    /* 24 petites barres = les 24 dernières heures */
+    .barres24 { grid-column: 2 / -1; display: grid; grid-template-columns: repeat(24, 1fr); gap: 2px; height: 18px; margin-top: 4px; }
+    .barres24 span { border-radius: 2px; background: var(--vide); }
+    .barres24 .b-ok { background: var(--ok); opacity: .75; }
+    .barres24 .b-partiel { background: var(--alerte); }
+    .barres24 .b-ko { background: var(--panne); }
+    .legende24 { grid-column: 2 / -1; display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); }
+
+    /* =========================================================
+       5. CHIFFRES CLÉS (tuiles)
+       ========================================================= */
+    .tuiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .tuile { background: var(--card); border-radius: 14px; padding: 12px; }
+    .tuile .valeur { font-size: 26px; font-weight: 700; line-height: 1.1; }
+    .tuile .libelle { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .tuile .libelle b { color: var(--ink); }
+
+    /* =========================================================
+       6. GRAPHIQUE 30 JOURS (SVG dessiné par le script)
+       ========================================================= */
+    .graphe svg { width: 100%; height: 160px; overflow: visible; }
+    .graphe .barre { fill: var(--accent); opacity: .35; }
+    .graphe .barre-v { fill: var(--accent); }
+    .graphe .axe { font-size: 10px; fill: var(--muted); font-family: 'JetBrains Mono', monospace; }
+    .graphe .grille { stroke: var(--line); stroke-width: 1; }
+    .legende { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-top: 8px; }
+    .legende i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: var(--accent); margin-right: 5px; vertical-align: -1px; }
+    .legende i.clair { opacity: .35; }
+
+    /* =========================================================
+       7. CLASSEMENTS (pages, appareils, navigateurs, sources)
+       Chaque ligne a une barre de fond proportionnelle aux vues.
+       ========================================================= */
+    .classement { display: flex; flex-direction: column; gap: 4px; }
+    .ligne { position: relative; display: flex; justify-content: space-between; gap: 10px; padding: 7px 10px; border-radius: 8px; font-size: 14px; overflow: hidden; }
+    .ligne .fond { position: absolute; inset: 0 auto 0 0; background: var(--soft); border-radius: 8px; z-index: 0; }
+    .ligne > span { position: relative; z-index: 1; }
+    .ligne .nom { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ligne .nb { color: var(--muted); flex: none; }
+    .ligne .nb b { color: var(--ink); }
+    .deux-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    /* =========================================================
+       8. DERNIÈRES VISITES
+       ========================================================= */
+    .visite { display: grid; grid-template-columns: 52px 1fr; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 14px; }
+    .visite:first-child { border-top: 0; padding-top: 0; }
+    .visite .quand { color: var(--muted); font-size: 12px; padding-top: 2px; }
+    .visite .page { font-weight: 700; overflow-wrap: anywhere; }
+    .visite .infos { font-size: 12px; color: var(--muted); }
+    .badge { display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; border-radius: 999px; padding: 1px 7px; background: var(--soft); color: var(--accent); margin-left: 4px; }
+
+    /* =========================================================
+       9. ÉCRAN « CLÉ » (première ouverture)
+       ========================================================= */
+    .cle-form { display: flex; gap: 8px; margin-top: 12px; }
+    .cle-form input {
+      flex: 1; min-width: 0; border: 1px solid var(--line); background: var(--bg); border-radius: 12px; padding: 12px 14px;
+    }
+    .cle-form input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+    /* Réglage « ce navigateur, c'est moi » */
+    .moi { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .interrupteur { width: 46px; height: 28px; border-radius: 999px; background: var(--line); position: relative; flex: none; transition: background .2s; }
+    .interrupteur::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+    .interrupteur[aria-checked="true"] { background: var(--accent); }
+    .interrupteur[aria-checked="true"]::after { transform: translateX(18px); }
+
+    footer { text-align: center; font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+    /* Téléphone : tuiles plus petites, classements l'un sous l'autre */
+    @media (max-width: 520px) {
+      .tuile .valeur { font-size: 21px; }
+      .deux-col { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+
+    <!-- En-tête -->
+    <header class="top">
+      <div>
+        <div class="brand"><a href="/">baiji.fr</a></div>
+        <h1 class="titre">Journal</h1>
+        <div class="maj" id="maj"></div>
+      </div>
+      <div style="display:flex;gap:2px">
+        <!-- « Vérifier » : demande au script de tester les services tout de suite (picto « activity », Lucide) -->
+        <button class="icon-btn" id="btn-verifier" title="Vérifier les services maintenant" aria-label="Vérifier les services maintenant">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>
+        </button>
+        <!-- « Actualiser » (picto « rotate-cw ») -->
+        <button class="icon-btn" id="btn-actualiser" title="Actualiser" aria-label="Actualiser">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Messages (démo, erreur…) -->
+    <div class="bandeau" id="bandeau" hidden></div>
+
+    <!-- Écran affiché tant que le script n'est pas branché ou que la clé manque -->
+    <section class="card" id="ecran-cle" hidden>
+      <h2>Accès</h2>
+      <p class="note" id="cle-texte"></p>
+      <form class="cle-form" id="cle-form">
+        <input id="cle-champ" type="password" autocomplete="current-password" placeholder="Clé de lecture" aria-label="Clé de lecture">
+        <button class="btn" type="submit">Ouvrir</button>
+      </form>
+      <p style="margin-top:12px"><a class="btn secondaire" href="?demo">Voir un exemple</a></p>
+    </section>
+
+    <!-- Tableau de bord (rempli par le script) -->
+    <div id="tableau" hidden style="display:flex;flex-direction:column;gap:14px">
+
+      <section class="card">
+        <h2><span>Services</span><span class="aide">vérifiés toutes les 10 min</span></h2>
+        <div class="services" id="services"></div>
+      </section>
+
+      <div class="filtres" role="group" aria-label="Visites à compter">
+        <button class="pilule" id="filtre-tous" aria-pressed="true">Toutes les visites</button>
+        <button class="pilule" id="filtre-sans-moi" aria-pressed="false">Sans les miennes</button>
+      </div>
+
+      <div class="tuiles">
+        <div class="tuile"><div class="valeur mono" id="t-jour">–</div><div class="libelle">vues aujourd'hui · <b id="t-jour-v">–</b> visiteurs</div></div>
+        <div class="tuile"><div class="valeur mono" id="t-30">–</div><div class="libelle">vues en 30 jours · <b id="t-30-v">–</b> visiteurs</div></div>
+        <div class="tuile"><div class="valeur mono" id="t-app">–</div><div class="libelle">ouvertures en appli installée</div></div>
+      </div>
+
+      <section class="card graphe">
+        <h2><span>30 derniers jours</span></h2>
+        <div id="graphe"></div>
+        <div class="legende"><span><i class="clair"></i>Pages vues</span><span><i></i>Visiteurs</span></div>
+      </section>
+
+      <section class="card">
+        <h2><span>Pages</span><span class="aide">vues · visiteurs</span></h2>
+        <div class="classement" id="pages"></div>
+      </section>
+
+      <div class="deux-col">
+        <section class="card"><h2>Appareils</h2><div class="classement" id="appareils"></div></section>
+        <section class="card"><h2>Navigateurs</h2><div class="classement" id="navigateurs"></div></section>
+      </div>
+
+      <section class="card">
+        <h2>D'où viennent les visiteurs</h2>
+        <div class="classement" id="sources"></div>
+      </section>
+
+      <section class="card">
+        <h2><span>Dernières visites</span></h2>
+        <div id="dernieres"></div>
+      </section>
+
+      <section class="card moi">
+        <div>
+          <div style="font-weight:800">Ce navigateur, c'est moi</div>
+          <p class="note">Ses visites sont marquées « moi », pour pouvoir les retirer des chiffres avec « Sans les miennes ».</p>
+        </div>
+        <button class="interrupteur" id="btn-moi" role="switch" aria-checked="false" aria-label="Ce navigateur, c'est moi"></button>
+      </section>
+    </div>
+
+    <footer>Journal · <span class="mono">v1.0.0</span> · <a href="#" id="oublier-cle" style="color:inherit">changer de clé</a></footer>
+  </div>
+
+  <script>
+    /* ============================================================
+       RÉGLAGES
+       ============================================================ */
+    const VERSION = '1.0.0';
+    // Adresse du script Google : lue dans /journal.js (un seul endroit à régler)
+    const URL_JOURNAL = window.BAIJI_JOURNAL_URL || '';
+    const DEMO = new URLSearchParams(location.search).has('demo');
+
+    // Noms lisibles des pages (sinon on affiche le chemin tel quel)
+    const NOMS_PAGES = {
+      '/': 'Accueil', '/famille/': 'Famille', '/cartable/': 'Cartable', '/voitures/': 'Voitures',
+      '/mediatheque/': 'Médiathèque', '/disque/': 'Place nette', '/pressoir/': 'Pressoir',
+      '/atelier-polices/': 'Atelier de polices', '/julien/': 'Julien · Mécanicien vélo',
+      '/fart/': 'FART', '/nas-aide/': 'Accès au NAS', '/pochpoch/': 'PochPoch',
+      '/assistant-fournisseurs/': 'Assistant fournisseurs', '/assistant-nexus/': 'Assistant Nexus',
+      '/location/': 'Location', '/salle-negociation/': 'Salle de négociation',
+      '/entretien-tuteur/': 'Entretien tuteur', '/sos-amitie/': 'SOS Amitié',
+      '/nego-papa/': 'Négo avec Papa', '/fils-prefere/': 'Le Grand Verdict', '/foot-chats/': 'Foot & Chats'
+    };
+    // « /famille/index.html » et « /famille » → même page que « /famille/ »
+    const nomPage = p => {
+      const propre = p.replace(/index\.html$/, '').replace(/^(\/[^/.]+)$/, '$1/');
+      return NOMS_PAGES[propre] || propre;
+    };
+
+    /* ============================================================
+       MÉMOIRE DU NAVIGATEUR (try/catch : stockage parfois refusé)
+       ============================================================ */
+    const lire = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+    const ecrire = (k, v) => { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} };
+
+    let cle = lire('journal.cle');                 // clé de lecture
+    let sansMoi = lire('journal.sans-moi') === '1'; // filtre choisi la dernière fois
+
+    /* ============================================================
+       PETITS OUTILS
+       ============================================================ */
+    const $ = (id) => document.getElementById(id);
+    // Échappe le texte venu du Sheet avant de le mettre dans le HTML
+    const esc = (t) => String(t ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const nombre = (n) => (n ?? 0).toLocaleString('fr-FR');
+
+    // « il y a 5 min », « hier 18:02 », « 3 nov. »…
+    function quand(iso) {
+      const d = new Date(iso), s = (Date.now() - d) / 1000;
+      if (s < 60) return 'à l\'instant';
+      if (s < 3600) return Math.floor(s / 60) + ' min';
+      const heure = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      if (new Date().toDateString() === d.toDateString()) return heure;
+      if (s < 2 * 86400 && new Date(Date.now() - 86400).toDateString() === d.toDateString()) return 'hier ' + heure;
+      return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    }
+
+    // Même chose dans une phrase : « il y a 5 min » (mais « hier 18:02 » reste tel quel)
+    const ilYa = (iso) => { const q = quand(iso); return /min$/.test(q) ? 'il y a ' + q : q; };
+
+    function bandeau(texte, erreur = false) {
+      const b = $('bandeau');
+      b.hidden = !texte;
+      b.textContent = texte || '';
+      b.classList.toggle('erreur', erreur);
+    }
+
+    /* ============================================================
+       CHARGEMENT DES CHIFFRES
+       ============================================================ */
+    async function charger(action = 'stats') {
+      if (DEMO) { afficher(donneesDemo()); bandeau('Exemple avec des chiffres inventés (mode démo).'); return; }
+
+      if (!URL_JOURNAL) {
+        montrerCle('Le script Google « Journal baiji » n\'est pas encore branché : son adresse /exec est à mettre dans URL_JOURNAL du fichier /journal.js (mode d\'emploi dans outils/journal-baiji.gs).', false);
+        return;
+      }
+      if (!cle) { montrerCle('Entre la clé de lecture choisie dans le script Google (propriété CLE_LECTURE).'); return; }
+
+      const bouton = action === 'verifier' ? $('btn-verifier') : $('btn-actualiser');
+      bouton.classList.add('spin');
+      try {
+        const url = URL_JOURNAL + '?action=' + action + '&cle=' + encodeURIComponent(cle) + '&moi=' + (sansMoi ? 1 : 0);
+        const reponse = await fetch(url);
+        const data = await reponse.json();
+        if (!data.ok) {
+          if (data.erreur === 'cle') { ecrire('journal.cle', null); cle = null; montrerCle('Clé refusée. (Après 10 essais faux, le script attend une heure.)'); return; }
+          throw new Error(data.erreur || 'réponse inattendue');
+        }
+        ecrire('journal.derniere', JSON.stringify(data));   // pour l'affichage hors ligne
+        bandeau('');
+        afficher(data);
+      } catch (e) {
+        // Hors ligne ou script injoignable : on montre la dernière version connue
+        const ancienne = lire('journal.derniere');
+        if (ancienne) { afficher(JSON.parse(ancienne)); bandeau('Pas de réponse du script : derniers chiffres connus.', true); }
+        else bandeau('Impossible de joindre le script Google (' + e.message + ').', true);
+      } finally {
+        bouton.classList.remove('spin');
+      }
+    }
+
+    function montrerCle(texte, avecChamp = true) {
+      $('tableau').hidden = true;
+      $('ecran-cle').hidden = false;
+      $('cle-texte').textContent = texte;
+      $('cle-form').hidden = !avecChamp;
+      if (avecChamp) $('cle-champ').focus();
+    }
+
+    /* ============================================================
+       AFFICHAGE
+       ============================================================ */
+    function afficher(data) {
+      $('ecran-cle').hidden = true;
+      $('tableau').hidden = false;
+      $('maj').textContent = 'Mis à jour ' + ilYa(data.maj);
+      afficherServices(data.services || []);
+
+      const v = data.visites;
+      $('t-jour').textContent = nombre(v.aujourdhui.vues);
+      $('t-jour-v').textContent = nombre(v.aujourdhui.visiteurs);
+      $('t-30').textContent = nombre(v.total.vues);
+      $('t-30-v').textContent = nombre(v.total.visiteurs);
+      $('t-app').textContent = nombre(v.installees);
+
+      dessinerGraphe(v.jours);
+      classement('pages', v.pages, true);
+      classement('appareils', v.appareils);
+      classement('navigateurs', v.navigateurs);
+      classement('sources', v.sources);
+      dernieres(v.dernieres);
+    }
+
+    function afficherServices(services) {
+      const textes = { ok: 'Répond', alerte: 'Un échec — à confirmer', panne: 'En panne', inconnu: 'Pas encore vérifié', 'non-verifie': 'Non vérifié (clé Pronote absente du script)' };
+      $('services').innerHTML = services.map(s => {
+        let detail = textes[s.etat] || s.etat;
+        if (s.etat === 'panne' && s.depuis) detail += ' depuis ' + ilYa(s.depuis);
+        if ((s.etat === 'panne' || s.etat === 'alerte') && s.code !== undefined) detail += ' · code ' + (s.code || 'aucune réponse');
+        if (s.verifie && s.etat === 'ok') detail += ' · vérifié ' + ilYa(s.verifie);
+
+        // 24 barres : vert = toutes les vérifications de l'heure réussies,
+        // orange = certaines, rouge = aucune, gris = pas de mesure
+        const barres = (s.barres || []).map(b => {
+          const classe = b === null ? '' : b === 1 ? 'b-ok' : b === 0 ? 'b-ko' : 'b-partiel';
+          return `<span class="${classe}" title="${b === null ? 'pas de mesure' : Math.round(b * 100) + ' % de réussite'}"></span>`;
+        }).join('');
+
+        return `
+          <div class="service etat-${esc(s.etat)}">
+            <span class="pastille-etat" aria-hidden="true"></span>
+            <div>
+              <div class="service-nom">${esc(s.nom)}</div>
+              <div class="service-detail">${esc(detail)}</div>
+            </div>
+            <div class="service-chiffres mono">
+              ${s.ms != null ? nombre(s.ms) + ' ms' : '–'}
+              <small>${s.dispo7j != null ? String(s.dispo7j).replace('.', ',') + ' % sur 7 j' : ''}</small>
+            </div>
+            ${barres ? `<div class="barres24" aria-label="Disponibilité des 24 dernières heures">${barres}</div>
+                        <div class="legende24"><span>il y a 24 h</span><span>maintenant</span></div>` : ''}
+          </div>`;
+      }).join('') || '<p class="note">Aucun service.</p>';
+    }
+
+    /* Graphique en barres dessiné en SVG : une barre claire = pages vues,
+       une barre foncée par-dessus = visiteurs. viewBox fixe (300 × 140) :
+       le navigateur l'étire à la largeur de la carte. */
+    function dessinerGraphe(jours) {
+      const L = 300, H = 120, haut = 8;
+      const max = Math.max(1, ...jours.map(j => j.vues));
+      const pas = L / jours.length, larg = pas * 0.7;
+      const y = (n) => H - (n / max) * (H - haut);
+      let svg = `<svg viewBox="0 0 ${L} ${H + 20}" preserveAspectRatio="none" role="img" aria-label="Pages vues par jour sur 30 jours">`;
+      // 2 lignes de repère : le maximum et la moitié
+      [max, Math.round(max / 2)].forEach(v => {
+        svg += `<line class="grille" x1="0" x2="${L}" y1="${y(v)}" y2="${y(v)}" vector-effect="non-scaling-stroke"/>`;
+      });
+      jours.forEach((j, i) => {
+        const x = i * pas + (pas - larg) / 2;
+        const titre = `${new Date(j.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} : ${j.vues} vues, ${j.visiteurs} visiteurs`;
+        svg += `<g><title>${esc(titre)}</title>
+          <rect class="barre" x="${x}" y="${y(j.vues)}" width="${larg}" height="${H - y(j.vues)}" rx="1"/>
+          <rect class="barre-v" x="${x}" y="${y(j.visiteurs)}" width="${larg}" height="${H - y(j.visiteurs)}" rx="1"/></g>`;
+      });
+      svg += '</svg>';
+      // Les textes sont posés en HTML (pas dans le SVG étiré, sinon ils seraient déformés)
+      const date = (s) => new Date(s).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+      $('graphe').innerHTML = svg +
+        `<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted)" class="mono">
+           <span>${date(jours[0].date)}</span><span>max ${max} vues/jour</span><span>aujourd'hui</span></div>`;
+    }
+
+    // Liste classée avec une barre de fond proportionnelle aux vues
+    function classement(id, lignes, estPage = false) {
+      const max = Math.max(1, ...lignes.map(l => l.vues));
+      $(id).innerHTML = lignes.map(l => `
+        <div class="ligne">
+          <span class="fond" style="width:${(l.vues / max) * 100}%"></span>
+          <span class="nom" title="${esc(l.nom)}">${esc(estPage ? nomPage(l.nom) : l.nom)}</span>
+          <span class="nb mono"><b>${nombre(l.vues)}</b>${estPage ? ' · ' + nombre(l.visiteurs) : ''}</span>
+        </div>`).join('') || '<p class="note">Rien pour l\'instant.</p>';
+    }
+
+    function dernieres(liste) {
+      $('dernieres').innerHTML = liste.map(v => `
+        <div class="visite">
+          <div class="quand mono">${esc(quand(v.date))}</div>
+          <div>
+            <div class="page">${esc(nomPage(v.page))}${v.app ? '<span class="badge">appli</span>' : ''}${v.moi ? '<span class="badge">moi</span>' : ''}</div>
+            <div class="infos">${esc(v.appareil)} · ${esc(v.navigateur)}${v.source ? ' · depuis ' + esc(v.source) : ''}</div>
+          </div>
+        </div>`).join('') || '<p class="note">Aucune visite enregistrée pour l\'instant.</p>';
+    }
+
+    /* ============================================================
+       MODE DÉMO : chiffres inventés, pour voir le rendu
+       ============================================================ */
+    function donneesDemo() {
+      const h = (n) => new Date(Date.now() - n * 3600e3).toISOString();
+      const jours = [];
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date(Date.now() - i * 864e5);
+        const vues = Math.round(18 + 14 * Math.sin(i / 3) + (d.getDay() % 6 === 0 ? 15 : 0) + (i % 7));
+        jours.push({ date: d.toISOString().slice(0, 10), vues, visiteurs: Math.round(vues / 3.2) });
+      }
+      const barres = (k) => Array.from({ length: 24 }, (_, i) => (k && i > 19) ? (i === 20 ? 0.5 : 0) : 1);
+      return {
+        ok: true, maj: h(0.02),
+        services: [
+          { id: 'site', nom: 'baiji.fr', etat: 'ok', code: 200, ms: 142, verifie: h(0.1), dispo7j: 100, barres: barres(false) },
+          { id: 'photos', nom: 'Photos (Immich)', etat: 'ok', code: 200, ms: 388, verifie: h(0.1), dispo7j: 99.6, barres: barres(false) },
+          { id: 'voitures', nom: 'Voitures', etat: 'panne', code: 502, ms: null, verifie: h(0.1), depuis: h(3.2), dispo7j: 97.4, barres: barres(true) },
+          { id: 'biblio', nom: 'Médiathèque', etat: 'ok', code: 200, ms: 214, verifie: h(0.1), dispo7j: 100, barres: barres(false) },
+          { id: 'pronote', nom: 'Cartable (Pronote)', etat: 'non-verifie' }
+        ],
+        visites: {
+          total: { vues: jours.reduce((a, j) => a + j.vues, 0), visiteurs: 41 },
+          aujourdhui: { vues: jours[29].vues, visiteurs: jours[29].visiteurs },
+          installees: 96, jours,
+          pages: [['/', 212, 38], ['/famille/', 160, 6], ['/voitures/', 94, 3], ['/julien/', 61, 22], ['/cartable/', 48, 4],
+                  ['/assistant-nexus/', 33, 17], ['/fils-prefere/', 21, 9], ['/mediatheque/', 15, 3]]
+                 .map(([nom, vues, visiteurs]) => ({ nom, vues, visiteurs })),
+          appareils: [{ nom: 'Téléphone', vues: 402 }, { nom: 'TV', vues: 141 }, { nom: 'Ordinateur', vues: 101 }],
+          navigateurs: [{ nom: 'Chrome', vues: 471 }, { nom: 'Samsung', vues: 88 }, { nom: 'Safari', vues: 61 }, { nom: 'Firefox', vues: 24 }],
+          sources: [{ nom: 'Accès direct', vues: 560 }, { nom: 'web.whatsapp.com', vues: 42 }, { nom: 'www.google.com', vues: 18 }],
+          dernieres: [
+            { date: h(0.05), page: '/famille/', appareil: 'TV', navigateur: 'Chrome', app: false, moi: false },
+            { date: h(0.4), page: '/julien/', appareil: 'Téléphone', navigateur: 'Samsung', source: 'web.whatsapp.com' },
+            { date: h(1.2), page: '/voitures/', appareil: 'Téléphone', navigateur: 'Chrome', app: true, moi: true },
+            { date: h(26), page: '/assistant-nexus/', appareil: 'Ordinateur', navigateur: 'Edge' }
+          ]
+        }
+      };
+    }
+
+    /* ============================================================
+       BOUTONS
+       ============================================================ */
+    $('btn-actualiser').addEventListener('click', () => charger('stats'));
+    $('btn-verifier').addEventListener('click', () => charger('verifier'));
+
+    $('cle-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const saisie = $('cle-champ').value.trim();
+      if (!saisie) return;
+      cle = saisie;
+      ecrire('journal.cle', cle);
+      $('cle-champ').value = '';
+      charger();
+    });
+    $('oublier-cle').addEventListener('click', (e) => {
+      e.preventDefault();
+      ecrire('journal.cle', null); ecrire('journal.derniere', null);
+      cle = null;
+      charger();
+    });
+
+    // Filtre « Toutes / Sans les miennes » (mémorisé)
+    function majFiltre() {
+      $('filtre-tous').setAttribute('aria-pressed', String(!sansMoi));
+      $('filtre-sans-moi').setAttribute('aria-pressed', String(sansMoi));
+    }
+    [['filtre-tous', false], ['filtre-sans-moi', true]].forEach(([id, valeur]) => {
+      $(id).addEventListener('click', () => {
+        if (sansMoi === valeur) return;
+        sansMoi = valeur; ecrire('journal.sans-moi', valeur ? '1' : '0');
+        majFiltre(); charger();
+      });
+    });
+    majFiltre();
+
+    // « Ce navigateur, c'est moi » : réglage lu par /journal.js à chaque visite
+    const boutonMoi = $('btn-moi');
+    boutonMoi.setAttribute('aria-checked', String(lire('baiji-moi') === '1'));
+    boutonMoi.addEventListener('click', () => {
+      const actif = boutonMoi.getAttribute('aria-checked') !== 'true';
+      boutonMoi.setAttribute('aria-checked', String(actif));
+      ecrire('baiji-moi', actif ? '1' : null);
+    });
+
+    // Page installable : enregistrement du service worker (fabriqué par outils/generer-pwa.py)
+    if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+
+    charger();
+  </script>
+</body>
+</html>

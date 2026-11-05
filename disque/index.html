@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr/disque/ — Place nette
-  Version 1.0.0
+  Version 1.0.1
   ------------------------------------------------------------
   Montre ce qui prend de la place sur un disque ou un téléphone :
    • carte des volumes (« treemap ») et liste triée, dossier par dossier ;
@@ -24,6 +24,7 @@
 
   Historique :
    • v1.0.0 : première version
+   • v1.0.1 : compteur de visites de baiji.fr (/journal.js)
   ============================================================
 -->
 <html lang="fr">
@@ -222,6 +223,8 @@ pre.cmd { background: var(--bg); border: 1px solid var(--line); border-radius: 8
 .toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: 14px; z-index: 60; }
 footer { margin-top: 40px; font-size: 12px; color: var(--muted); text-align: center; }
 </style>
+  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+  <script src="/journal.js" defer></script>
 </head>
 <body>
 <div class="page">
@@ -393,7 +396,7 @@ Write-Host "Termine ! Rapport : $sortie" -ForegroundColor Green
     5. L'affichage : accueil, progression, résultats, fiche
    ============================================================ */
 
-const VERSION = "1.0.0";
+const VERSION = "1.0.1";
 document.getElementById("version").textContent = "v" + VERSION;
 
 /* ============================================================

@@ -1,13 +1,14 @@
 <!doctype html>
 <!--
   Page « Le Grand Verdict » — qui est le fils préféré de Papa et Maman ?
-  Version 1.1.0 – 02/11/2026
+  Version 1.1.1 – 04/11/2026
   En ligne : https://baiji.fr/fils-prefere/
 
   Historique :
    • 1.0.0 : première version (faux jeu télé vocal, agent ElevenLabs « Jean-Mi »,
              trois candidats, diplôme final toujours au nom de Sébastien)
    • 1.1.0 : réglages de l'agent ElevenLabs (rien ne change dans le code de la page) :
+   • 1.1.1 : compteur de visites de baiji.fr (/journal.js)
              - correction des appels qui raccrochaient tout de suite : l'agent exigeait
                l'en-tête « origine », que le SDK n'envoie pas → option désactivée
                (la liste des sites autorisés baiji.fr reste en place) ;
@@ -251,6 +252,8 @@
       .confetti { display: none; }
     }
   </style>
+  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+  <script src="/journal.js" defer></script>
 </head>
 <body>
   <main>

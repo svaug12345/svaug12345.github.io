@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr/julien/ — Julien, mécanicien vélo
-  Version 1.6.0
+  Version 1.6.1
   ------------------------------------------------------------
   Site vitrine d'une page pour Julien, mécanicien vélo.
   Devise : « Le vélo doit être un plaisir ».
@@ -46,6 +46,7 @@
               pictos ronds ; le verdict « vous pouvez le faire » explique
               directement quoi faire, étape par étape
    • v1.6.0 : site installable sur téléphone (manifeste, icône vélo, service worker)
+   • v1.6.1 : compteur de visites de baiji.fr (/journal.js)
   ============================================================
 -->
 <html lang="fr">
@@ -483,6 +484,8 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 .apparait.vu { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { .apparait { opacity: 1; transform: none; transition: none; } }
 </style>
+  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+  <script src="/journal.js" defer></script>
 </head>
 <body>
 
@@ -833,7 +836,7 @@ const JULIEN = {
   horaires:   "",            // ex. "Du mardi au samedi, 9 h – 19 h"
   horairesDetail: "Si je ne décroche pas, laissez un message : je rappelle.",
 };
-const VERSION = "1.6.0";     // ← à augmenter à chaque modification (voir l'historique en haut)
+const VERSION = "1.6.1";     // ← à augmenter à chaque modification (voir l'historique en haut)
 
 /* ------------------------------------------------------------
    Pictos (bibliothèque Lucide, licence ISC) — juste le dessin

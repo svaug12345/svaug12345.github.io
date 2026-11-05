@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Page « SOS Amitié » — la ligne d'écoute perso de Charles
-  Version 1.2.0 – 31/10/2026
+  Version 1.2.1 – 04/11/2026
   En ligne : https://baiji.fr/sos-amitie/
 
   Historique :
@@ -10,6 +10,7 @@
    • 1.1.0 : plus de mention « Baiji » (ce n'est que le nom du site) ;
              suppression du pied de page
    • 1.2.0 : page installable sur téléphone (manifeste, icône, service worker)
+   • 1.2.1 : compteur de visites de baiji.fr (/journal.js)
 
   Comment ça marche ?
   - Au repos : un gros bouton rond « Appeler Seb » (comme une touche de vieux téléphone),
@@ -200,6 +201,8 @@
       .bulle { transition: none; }
     }
   </style>
+  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+  <script src="/journal.js" defer></script>
 </head>
 <body>
   <main>

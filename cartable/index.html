@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Cartable — devoirs et emplois du temps Pronote de Gaby et Nanon
-  Version 1.2.0
+  Version 1.2.1
   Les données viennent du service « pronote » du NAS (https://pronote.baiji.fr),
   qui se connecte au Pronote du collège comme l'appli mobile officielle.
   La page ne parle jamais directement à Pronote.
@@ -20,6 +20,7 @@
    • v1.1.2 : bandeau « ⏸ lectures en pause jusqu'à… » (garde-fous du service v1.2.0) ;
               le bouton ⟳ dit pourquoi il refuse (trop tôt, pause)
    • v1.2.0 : pièces jointes des devoirs ouvrables (copiées sur le NAS par le service v1.4.0)
+   • v1.2.1 : compteur de visites de baiji.fr (/journal.js)
 -->
 <html lang="fr">
 <head>
@@ -280,6 +281,8 @@
     footer { text-align: center; font-size: 12px; color: var(--muted); line-height: 1.6; }
     footer button { text-decoration: underline; color: var(--muted); font-size: 12px; }
   </style>
+  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+  <script src="/journal.js" defer></script>
 </head>
 <body>
   <main id="app">
@@ -356,7 +359,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = '1.2.0';
+    const VERSION = '1.2.1';
     // Adresse du service du NAS (reverse proxy DSM). Pour essayer un autre service :
     // ?service=http://192.168.1.161:8092 (retenu sur ce téléphone, ?service= vide pour revenir).
     const SERVICE_PAR_DEFAUT = 'https://pronote.baiji.fr';
