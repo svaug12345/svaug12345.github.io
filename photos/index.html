@@ -1,0 +1,71 @@
+<!doctype html>
+<!--
+  ============================================================
+  baiji.fr/photos/ — page de passage vers les Photos (Immich)
+  Version 1.0.0 – 05/11/2026
+  ------------------------------------------------------------
+  Immich tourne sur le NAS, à l'adresse https://photos.baiji.fr/
+  (projet Container Manager « immich »). On ne peut pas y ajouter
+  notre compteur de visites. Cette page sert donc de porte d'entrée
+  SUR le site baiji.fr :
+   1. /journal.js note la visite (page « /photos/ » dans le Journal) ;
+   2. puis on part aussitôt vers Immich.
+  Elle marche que la carte Photos soit sur l'accueil ou non : c'est
+  l'adresse à partager / à mettre en favori.
+
+  Les « ?… » et « #… » de l'adresse sont transmis à Immich. (Un chemin
+  comme baiji.fr/photos/albums n'existe pas sur GitHub Pages : erreur 404.)
+
+  Pas de PWA ici (exception comme plume/ et juju/) : c'est une simple
+  redirection, et Immich a sa propre appli.
+
+  Historique :
+   • v1.0.0 : première version
+  ============================================================
+-->
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Photos</title>
+  <!-- Page de passage : pas dans les moteurs de recherche -->
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#0f7c7b">
+
+  <!-- Sans JavaScript, on part quand même vers Immich -->
+  <noscript><meta http-equiv="refresh" content="0; url=https://photos.baiji.fr/"></noscript>
+
+  <!-- 1) Compteur de visites : SANS « defer », pour que la visite parte
+          tout de suite, avant la redirection juste en dessous. -->
+  <script src="/journal.js"></script>
+
+  <!-- 2) Redirection vers Immich -->
+  <script>
+    (function () {
+      const IMMICH = "https://photos.baiji.fr";
+
+      // On transmet les « ?… » et « #… » de l'adresse
+      const suite = "/" + location.search + location.hash;
+
+      // Petit délai (0,3 s) : la requête « keepalive » de journal.js est déjà
+      // partie, ce délai n'est qu'une marge pour les navigateurs plus anciens.
+      // location.replace (et pas location.href) : la page de passage ne reste
+      // pas dans l'historique, le bouton retour ne ramène donc pas ici.
+      setTimeout(function () { location.replace(IMMICH + suite); }, 300);
+    })();
+  </script>
+
+  <style>
+    /* Vu une fraction de seconde seulement : juste de quoi patienter (charte SV) */
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      font-family: "Manrope", system-ui, sans-serif; background: #f6f9f9; color: #4d6468;
+    }
+    @media (prefers-color-scheme: dark) { body { background: #0e1a1c; color: #9db3b5; } }
+    a { color: #0f7c7b; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <p>Ouverture des <a href="https://photos.baiji.fr/">Photos</a>…</p>
+</body>
+</html>

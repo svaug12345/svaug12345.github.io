@@ -1,6 +1,6 @@
 /* ============================================================
    journal.js — compteur de visites de baiji.fr
-   Version 1.0.0 (04/11/2026)
+   Version 1.1.0 (05/11/2026)
    ------------------------------------------------------------
    À inclure dans le <head> de chaque page suivie :
        <script src="/journal.js" defer></script>
@@ -23,6 +23,8 @@
 
    Historique :
     • 1.0.0 : première version
+    • 1.1.0 : envoi par fetch « keepalive » (survit à un changement de page,
+              utile pour la page de passage /photos/), image en secours
    ============================================================ */
 
 (function () {
@@ -53,9 +55,12 @@
     return id;
   }
 
-  /* Envoi « tire et oublie » : on charge une image invisible dont
-     l'adresse contient les informations. Le navigateur fait la requête,
-     on n'attend aucune réponse, et ça ne pose aucun souci de CORS. */
+  /* Envoi « tire et oublie » : on n'attend aucune réponse.
+     • fetch avec keepalive: true → le navigateur termine la requête même
+       si la page s'en va aussitôt (cas de /photos/, qui redirige) ;
+       mode "no-cors" : on ne lit pas la réponse, donc pas de souci de CORS.
+     • en secours (vieux navigateurs) : une image invisible dont l'adresse
+       contient les informations. */
   function envoyer(evenement) {
     if (!URL_JOURNAL) return;
     // Seulement sur le vrai site (pas pendant les essais en local)
@@ -80,7 +85,9 @@
         vid: identifiant(),
         moi: lire("baiji-moi") === "1" ? "1" : "0"   // réglé depuis la page /journal/
       });
-      new Image().src = URL_JOURNAL + "?" + params.toString();
+      const adresse = URL_JOURNAL + "?" + params.toString();
+      if (window.fetch) fetch(adresse, { mode: "no-cors", keepalive: true }).catch(function () {});
+      else new Image().src = adresse;
     } catch (e) {
       /* un échec de comptage ne doit jamais gêner la page : on ignore */
     }

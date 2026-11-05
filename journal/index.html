@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr/journal/ — Journal du site (charte SV)
-  Version 1.0.0 – 04/11/2026
+  Version 1.0.1 – 05/11/2026
   ------------------------------------------------------------
   Deux tableaux de bord sur une page :
    • SERVICES : est-ce que baiji.fr et les sous-domaines du NAS
@@ -26,6 +26,7 @@
   Historique :
    • v1.0.0 : première version (services + visites, mode démo,
               « ce navigateur, c'est moi »)
+   • v1.0.1 : nom lisible pour la page de passage /photos/
   ============================================================
 -->
 <html lang="fr">
@@ -329,14 +330,14 @@
       </section>
     </div>
 
-    <footer>Journal · <span class="mono">v1.0.0</span> · <a href="#" id="oublier-cle" style="color:inherit">changer de clé</a></footer>
+    <footer>Journal · <span class="mono">v1.0.1</span> · <a href="#" id="oublier-cle" style="color:inherit">changer de clé</a></footer>
   </div>
 
   <script>
     /* ============================================================
        RÉGLAGES
        ============================================================ */
-    const VERSION = '1.0.0';
+    const VERSION = '1.0.1';
     // Adresse du script Google : lue dans /journal.js (un seul endroit à régler)
     const URL_JOURNAL = window.BAIJI_JOURNAL_URL || '';
     const DEMO = new URLSearchParams(location.search).has('demo');
@@ -350,7 +351,7 @@
       '/assistant-fournisseurs/': 'Assistant fournisseurs', '/assistant-nexus/': 'Assistant Nexus',
       '/location/': 'Location', '/salle-negociation/': 'Salle de négociation',
       '/entretien-tuteur/': 'Entretien tuteur', '/sos-amitie/': 'SOS Amitié',
-      '/nego-papa/': 'Négo avec Papa', '/fils-prefere/': 'Le Grand Verdict', '/foot-chats/': 'Foot & Chats'
+      '/nego-papa/': 'Négo avec Papa', '/photos/': 'Photos (vers Immich)', '/fils-prefere/': 'Le Grand Verdict', '/foot-chats/': 'Foot & Chats'
     };
     // « /famille/index.html » et « /famille » → même page que « /famille/ »
     const nomPage = p => {
