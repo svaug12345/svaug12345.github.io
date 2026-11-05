@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Voitures — suivi de la batterie et de la charge de l'e-5008 et de la Corsa
-  Version 1.4.3
+  Version 1.5.0
   Données : service « voitures » du NAS (https://voitures.baiji.fr), qui interroge
   psa_car_controller à la maison et ne publie que la batterie et la charge (jamais le GPS).
   Historique :
@@ -35,6 +35,10 @@
    • v1.4.2 : voiture injoignable sans valeur (ex. juste après un redémarrage du NAS) :
               on affiche le dernier % connu de la courbe et sa date, au lieu de « -- % »
    • v1.4.3 : compteur de visites de baiji.fr (/journal.js)
+   • v1.5.0 : bouton « Chauffer » / « Arrêter » (préclimatisation, service v3.4) sur
+              chaque voiture, protégé par le code secret ; état « Chauffe en cours »
+              et cause d'un échec (batterie trop faible, portière ouverte…) ; la case
+              du code est commune à la chauffe et à la coupure de charge
 -->
 <html lang="fr">
 <head>
@@ -177,6 +181,19 @@
     .code-box button { padding: 10px 14px; border-radius: 12px; background: var(--teal); color: #fff; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
     .gauge .mark { stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }
 
+    /* ===================== CHAUFFE ===================== */
+    .precond { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line);
+               display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .precond-txt { font-size: 13px; color: var(--muted); line-height: 1.4; }
+    .precond-txt b { color: var(--ink); }
+    .precond-txt.on b { color: var(--warn); }          /* « Chauffe en cours » en orange */
+    .heat {
+      padding: 10px 14px; border-radius: 12px; background: var(--warn); color: #fff; white-space: nowrap;
+      font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+    }
+    .heat.stop { background: var(--ink); color: var(--surface); }
+    .heat:disabled { background: var(--track); color: var(--muted); cursor: default; }
+
     /* ===================== COURBE ===================== */
     .chart-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .title { font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
@@ -287,7 +304,7 @@
     /* =================================================================
        CONFIGURATION
        ================================================================= */
-    const VERSION = '1.4.3';
+    const VERSION = '1.5.0';
     const API = 'https://voitures.baiji.fr';        // service du NAS
     const POLL_NORMAL_S = 120;    // lecture de l'état : toutes les 2 min…
     const POLL_LIVE_S = 30;       // …toutes les 30 s en mode « Suivi de charge »
@@ -347,6 +364,8 @@
     let hiddenAt = 0;         // quand l'appli a été mise en arrière-plan
     const limitDraft = {};    // % choisi sur le curseur, pas encore envoyé : { e5008: 80 }
     let askCodeFor = null;    // voiture pour laquelle on affiche la case « code secret »
+    let afterCode = null;     // ce qu'il faut faire une fois le code tapé (couper la charge OU chauffer)
+    const precondSent = {};   // ordre de chauffe envoyé : { e5008: { on: true, until: horodatage } }
 
     /* =================================================================
        CHARGEMENT DES DONNÉES
@@ -465,6 +484,8 @@
           </div>
           ${eta}
           ${limitBlock(car, id)}
+          ${precondBlock(car, id)}
+          ${codeBoxHtml(id)}
           <div class="car-foot">
             <div class="age ${old ? 'old' : ''}">${car.error ? '⚠ Voiture injoignable · ' : ''}${ageTxt}${quota}</div>
             <button class="refresh ${busy ? 'busy' : ''}" data-car="${id}" ${disabled ? 'disabled' : ''}>${ICON_REFRESH}${btnTxt}</button>
@@ -526,9 +547,6 @@
       const draft = limitDraft[id] ?? current;
       const label = draft >= 100 ? 'Sans coupure' : `Couper à ${draft} %`;
       const same = draft === current;
-      const codeBox = askCodeFor === id ? `<div class="code-box">
-          <input type="password" inputmode="text" autocomplete="off" placeholder="Code secret du NAS" id="code-${id}">
-          <button data-code="${id}">OK</button></div>` : '';
       return `<div class="limit">
           <div class="limit-head">
             <div class="title">Couper la charge</div>
@@ -537,13 +555,21 @@
           <div class="limit-row">
             <input type="range" min="${limitMin()}" max="${LIMIT_MAX}" step="${LIMIT_STEP}" value="${draft}" data-limit="${id}" aria-label="Seuil de coupure">
             <button class="cut" data-cut="${id}" ${same ? 'disabled' : ''}>${label}</button>
-          </div>${codeBox}
+          </div>
         </div>`;
+    }
+
+    // Case « Code secret du NAS », affichée sous la voiture qui en a besoin.
+    // Commune à la coupure de charge et à la chauffe (afterCode dit quoi faire ensuite).
+    function codeBoxHtml(id) {
+      return askCodeFor === id ? `<div class="code-box">
+          <input type="password" inputmode="text" autocomplete="off" placeholder="Code secret du NAS" id="code-${id}">
+          <button data-code="${id}">OK</button></div>` : '';
     }
 
     async function setLimit(id, pct) {
       const code = store.get('chargeCode');
-      if (!code) { askCodeFor = id; renderCars(); $('code-' + id)?.focus(); return; }
+      if (!code) { askCodeFor = id; afterCode = () => setLimit(id, pct); renderCars(); $('code-' + id)?.focus(); return; }
       try {
         const res = await fetch(`${API}/charge_limit?car=${id}&pct=${pct}`, { method: 'POST', headers: { 'X-Code': code } });
         const body = await res.json().catch(() => ({}));
@@ -558,6 +584,7 @@
             : `La charge sera coupée à ${pct} %`);
         } else if (res.status === 401) {
           store.set('chargeCode', ''); askCodeFor = id;     // mauvais code : on le redemande
+          afterCode = () => setLimit(id, pct);
           toast('Code faux');
         } else {
           toast(body.error ? `Impossible : ${body.error}` : 'Impossible pour le moment');
@@ -579,6 +606,8 @@
       btn.disabled = pct === (car?.chargeLimit ?? 100);
     });
     $('cars').addEventListener('click', (e) => {
+      const heat = e.target.closest('[data-heat]');
+      if (heat && !heat.disabled) return setPrecond(heat.dataset.heat, heat.dataset.on === '1');
       const cut = e.target.closest('[data-cut]');
       if (cut && !cut.disabled) return setLimit(cut.dataset.cut, limitDraft[cut.dataset.cut]);
       const ok = e.target.closest('[data-code]');
@@ -586,7 +615,10 @@
         const id = ok.dataset.code, v = $('code-' + id).value.trim();
         if (!v) return;
         store.set('chargeCode', v); askCodeFor = null;
-        setLimit(id, limitDraft[id] ?? 100);
+        // On reprend l'action qui attendait le code (coupure ou chauffe)
+        const next = afterCode || (() => setLimit(id, limitDraft[id] ?? 100));
+        afterCode = null;
+        next();
       }
     });
     // Fin du geste sur le curseur : on fait l'affichage repoussé (pour la case du code,
@@ -597,6 +629,60 @@
     $('cars').addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && e.target.id?.startsWith('code-')) $('cars').querySelector(`[data-code="${e.target.id.slice(5)}"]`)?.click();
     });
+
+    /* =================================================================
+       CHAUFFE (préclimatisation, service v3.4)
+       -----------------------------------------------------------------
+       Le NAS transmet l'ordre à psa_car_controller, qui l'envoie à la
+       voiture par les serveurs Stellantis (30 s à 1 min). La voiture
+       chauffe environ 30 min puis s'arrête seule.
+       La voiture renvoie l'état dans car.precond :
+         "Enabled" = en cours, "Disabled" / "Finished" = arrêtée,
+         "Failure" = refusée (car.precondFail dit pourquoi).
+       ================================================================= */
+    const PRECOND_FAIL = {           // causes d'échec renvoyées par la voiture → texte
+      LowBattery: 'batterie trop faible', DoorOpened: 'portière ouverte',
+      WindowsRoofOpened: 'fenêtre ou toit ouvert', Defect: 'défaut de la voiture',
+      LowFuelLevel: 'niveau trop bas', TooManyUnusedProg: 'trop de programmes inutilisés'
+    };
+    const PRECOND_WAIT_S = 90;       // après un ordre : bouton grisé 90 s, le temps que la voiture réponde
+
+    function precondBlock(car, id) {
+      if (!data?.precondControl) return '';                   // service trop ancien ou code pas choisi
+      const sent = precondSent[id] && precondSent[id].until > Date.now() ? precondSent[id] : null;
+      const on = car.precond === 'Enabled';
+      let txt;
+      if (sent) txt = `<div class="precond-txt">Demande envoyée, réponse de la voiture dans une minute…</div>`;
+      else if (on) txt = `<div class="precond-txt on"><b>🔥 Chauffe en cours</b><br>s'arrête seule au bout de 30 min</div>`;
+      else if (car.precond === 'Failure') txt = `<div class="precond-txt"><b>Chauffe refusée</b>${car.precondFail ? ' : ' + esc(PRECOND_FAIL[car.precondFail] || car.precondFail) : ''}</div>`;
+      else txt = `<div class="precond-txt"><b>Chauffer l'habitacle</b><br>${car.plugged ? 'sur la prise' : 'sur la batterie'}</div>`;
+      // Bouton : « Arrêter » si ça chauffe (ou si on vient de demander de chauffer), sinon « Chauffer »
+      const wantOn = sent ? !sent.on : !on;
+      return `<div class="precond">${txt}
+          <button class="heat ${wantOn ? '' : 'stop'}" data-heat="${id}" data-on="${wantOn ? 1 : 0}" ${sent ? 'disabled' : ''}>${wantOn ? 'Chauffer' : 'Arrêter'}</button>
+        </div>`;
+    }
+
+    async function setPrecond(id, on) {
+      const code = store.get('chargeCode');
+      if (!code) { askCodeFor = id; afterCode = () => setPrecond(id, on); renderCars(); $('code-' + id)?.focus(); return; }
+      try {
+        const res = await fetch(`${API}/precond?car=${id}&on=${on ? 1 : 0}`, { method: 'POST', headers: { 'X-Code': code } });
+        const body = await res.json().catch(() => ({}));
+        if (res.status === 202) {
+          precondSent[id] = { on, until: Date.now() + PRECOND_WAIT_S * 1000 };
+          toast(on ? 'Chauffe demandée, la voiture répond dans une minute environ' : 'Arrêt de la chauffe demandé');
+          // On relit l'état juste après la relecture prévue par le NAS (checkInS)
+          setTimeout(() => { delete precondSent[id]; load(); }, ((body.checkInS || 75) + 10) * 1000);
+        } else if (res.status === 401) {
+          store.set('chargeCode', ''); askCodeFor = id; afterCode = () => setPrecond(id, on);
+          toast('Code faux');
+        } else {
+          toast(body.error ? `Impossible : ${body.error}` : 'Impossible pour le moment');
+        }
+      } catch { toast('NAS injoignable'); }
+      renderCars();
+    }
 
     /* =================================================================
        BOUTON « ACTUALISER » : demande au NAS de réveiller la voiture
