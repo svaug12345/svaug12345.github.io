@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <!--
   On mange quoi ? — les repas de la famille
-  Version 1.1.0
+  Version 1.2.0
   Trois onglets :
-   • Semaine : un dîner par jour, choisi dans la liste ou tiré au sort ;
-   • Courses : les ingrédients des plats de la semaine, à cocher en magasin ;
-   • Plats   : la liste des plats de la famille et leurs ingrédients.
+   • Semaine : « Ce soir » en grand, puis un dîner par jour (toucher un jour = choisir) ;
+   • Courses : les ingrédients des plats de la semaine, rangés par rayon, à cocher en magasin ;
+   • Plats   : la liste des plats de la famille, leurs ingrédients et les favoris.
   Données partagées par toute la famille grâce au script Google « Repas famille »
   (code : outils/repas.gs, adresse /exec dans REPAS_URL plus bas). Sans script,
   l'appli marche quand même, mais seulement sur l'appareil.
@@ -13,6 +13,12 @@
    • v1.0.0 : liste des plats, ajout, suppression, tirage au sort (artifact Claude)
    • v1.1.0 : sur baiji.fr ; menu de la semaine, liste de courses, ingrédients par plat,
               synchro Google Sheet, installable (PWA)
+   • v1.2.0 : plus simple à utiliser : carte « Ce soir » ; toucher un jour ouvre un sélecteur
+              (recherche, favoris d'abord, « Au hasard », « Restes », « Dehors ») ; courses
+              rangées par rayon, articles pris repliés dans « Dans le caddie » ; favoris ⭐ ;
+              recherche dans les plats ; « Annuler » après une suppression (plus de double
+              confirmation) ; bouton « Revenir à cette semaine » ; 15 nouvelles idées de plats
+              simples ajoutées une fois aux listes existantes
 -->
 <html lang="fr">
 <head>
@@ -57,8 +63,10 @@
       --muted: #5b7574;       /* texte secondaire */
       --line: #dbe6e5;        /* traits fins */
       --teal: #0f7c7b;        /* couleur SV */
+      --teal-deep: #0b4f55;   /* teal foncé (carte « Ce soir ») */
       --teal-soft: #e2f0ef;   /* fond teinté */
       --on-teal: #ffffff;
+      --star: #d99a00;        /* étoile des favoris */
       --danger: #c2413a;
       --ok: #2f8f4e;
       --sans: "Manrope", "Segoe UI", system-ui, sans-serif;
@@ -68,8 +76,8 @@
     @media (prefers-color-scheme: dark) {
       :root {
         --bg: #0d1a1a; --card: #142424; --ink: #e2efee; --muted: #8fadab;
-        --line: #234140; --teal: #3fb9b4; --teal-soft: #173634; --on-teal: #062120;
-        --danger: #ef7d76; --ok: #5cc27e;
+        --line: #234140; --teal: #3fb9b4; --teal-deep: #0f3f42; --teal-soft: #173634;
+        --on-teal: #062120; --star: #f2c14e; --danger: #ef7d76; --ok: #5cc27e;
         color-scheme: dark;
       }
     }
@@ -81,27 +89,31 @@
        ========================================================= */
     * { box-sizing: border-box; }
     html, body { margin: 0; }
+    /* « hidden » doit toujours gagner, même sur un élément en display:flex
+       (sinon les onglets cachés et le message « Annuler » restent visibles) */
+    [hidden] { display: none !important; }
     body {
       background: var(--bg);
       color: var(--ink);
       font-family: var(--sans);
       font-size: 16px;
       line-height: 1.45;
+      -webkit-tap-highlight-color: transparent;
       /* place pour la barre d'onglets en bas */
-      padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+      padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
     }
     .page {
       max-width: 560px;
       margin: 0 auto;
-      padding-top: calc(20px + env(safe-area-inset-top, 0px));
+      padding-top: calc(18px + env(safe-area-inset-top, 0px));
       padding-left: max(16px, env(safe-area-inset-left, 0px));
       padding-right: max(16px, env(safe-area-inset-right, 0px));
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
     }
-    header h1 { margin: 0; font-size: 1.7rem; font-weight: 800; letter-spacing: -0.01em; }
-    header p { margin: 2px 0 0; color: var(--muted); font-size: 0.95rem; }
+    header { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+    header h1 { margin: 0; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.01em; }
 
     .etiquette {            /* petites étiquettes en mono, style SV */
       font-family: var(--mono);
@@ -115,6 +127,7 @@
       border: 1px solid var(--line);
       border-radius: 16px;
     }
+    section { display: flex; flex-direction: column; gap: 12px; }
 
     /* Boutons de la charte SV : capitales espacées */
     .btn {
@@ -123,20 +136,22 @@
       letter-spacing: 0.08em;
       border: 0;
       border-radius: 999px;
-      padding: 11px 16px;
+      padding: 12px 16px;
+      min-height: 44px;         /* taille confortable pour le doigt */
       cursor: pointer;
       background: var(--teal);
       color: var(--on-teal);
     }
     .btn.leger { background: var(--teal-soft); color: var(--teal); }
     .btn.danger { background: var(--danger); color: var(--card); }
-    .btn:disabled { opacity: .5; cursor: default; }
-    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+    button:focus-visible, input:focus-visible, textarea:focus-visible {
       outline: 2px solid var(--teal); outline-offset: 2px;
     }
-    .rangee { display: flex; gap: 8px; flex-wrap: wrap; }
+    .rangee { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .rangee.serre { flex-wrap: nowrap; }
+    .rangee.deux > .btn { flex: 1; padding-inline: 10px; }
 
-    input[type=text], textarea, select {
+    input[type=text], input[type=search], textarea {
       font: 400 1rem var(--sans);
       color: var(--ink);
       background: var(--card);
@@ -146,52 +161,76 @@
       width: 100%;
       min-width: 0;
     }
-    textarea { resize: vertical; min-height: 70px; }
+    textarea { resize: vertical; min-height: 90px; }
+    .aide { font-size: 0.85rem; color: var(--muted); margin: 0; }
 
     /* =========================================================
        3. ONGLET SEMAINE
        ========================================================= */
+    /* Carte « Ce soir » : la question du jour, en grand */
+    .ce-soir {
+      background: var(--teal-deep);
+      color: #ffffff;
+      border-radius: 20px;
+      padding: 18px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .ce-soir .etiquette { color: rgba(255,255,255,.75); }
+    .ce-soir .plat { font-size: 1.8rem; font-weight: 800; line-height: 1.1; overflow-wrap: anywhere; }
+    .ce-soir .plat.vide { opacity: .7; font-weight: 700; font-size: 1.4rem; }
+    .ce-soir .btn { background: #ffffff; color: var(--teal-deep); }
+    .ce-soir .btn.leger { background: rgba(255,255,255,.14); color: #ffffff; }
+
     .nav-semaine { display: flex; align-items: center; gap: 8px; }
     .nav-semaine .titre { flex: 1; text-align: center; font-weight: 700; }
     .rond {
-      width: 40px; height: 40px; border-radius: 50%;
+      width: 44px; height: 44px; border-radius: 50%;
       border: 1px solid var(--line); background: var(--card); color: var(--ink);
-      font-size: 1.1rem; cursor: pointer; flex: 0 0 auto;
+      font-size: 1.15rem; cursor: pointer; flex: 0 0 auto;
     }
+    .lien {
+      all: unset; cursor: pointer; color: var(--teal); font-weight: 700; font-size: 0.9rem;
+      align-self: center; padding: 4px 8px;
+    }
+
     .jours { list-style: none; margin: 0; padding: 0; }
-    .jours li {
-      display: grid;
-      grid-template-columns: 54px 1fr 40px;   /* jour | plat | dé */
-      align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      border-top: 1px solid var(--line);
-    }
+    .jours li { display: flex; align-items: center; border-top: 1px solid var(--line); }
     .jours li:first-child { border-top: 0; }
     .jours li.aujourdhui { background: var(--teal-soft); }
     .jours li.aujourdhui:first-child { border-radius: 16px 16px 0 0; }
     .jours li.aujourdhui:last-child { border-radius: 0 0 16px 16px; }
+    /* Toute la ligne est un bouton : on touche le jour pour choisir */
+    .jour-btn {
+      all: unset; box-sizing: border-box; cursor: pointer;
+      flex: 1; min-width: 0;
+      display: grid; grid-template-columns: 52px 1fr; align-items: center; gap: 10px;
+      padding: 12px 6px 12px 14px; min-height: 56px;
+    }
+    .jour-btn:focus-visible { outline: 2px solid var(--teal); outline-offset: -2px; border-radius: 12px; }
     .jour-nom { display: flex; flex-direction: column; line-height: 1.1; }
     .jour-nom b { font-size: 0.95rem; }
     .jour-nom span { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
-    .jours select { padding: 9px 10px; }
-    .jours select.vide { color: var(--muted); }
+    .jour-plat { font-weight: 700; overflow-wrap: anywhere; }
+    .jour-plat.vide { color: var(--muted); font-weight: 400; }
+    .jour-plat.special { color: var(--muted); font-style: italic; }
+    .jours .rond { margin-right: 10px; border-color: transparent; background: transparent; }
 
     /* =========================================================
        4. ONGLET COURSES
        ========================================================= */
+    .rayon { padding: 10px 14px 4px; }
     .courses { list-style: none; margin: 0; padding: 0; }
     .courses li { border-top: 1px solid var(--line); }
-    .courses li:first-child { border-top: 0; }
     .courses label {
       display: flex; align-items: center; gap: 12px;
-      padding: 12px 14px; cursor: pointer;
+      padding: 11px 14px; min-height: 48px; cursor: pointer;
     }
     .courses input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--teal); flex: 0 0 auto; }
     .courses .nom { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-    .courses .pour { font-size: 0.8rem; color: var(--muted); }
-    .courses li.coche .nom { text-decoration: line-through; color: var(--muted); }
-    .courses .x { background: none; border: 0; color: var(--muted); font-size: 1.2rem; cursor: pointer; padding: 0 4px; }
+    .courses .pour { display: block; font-size: 0.78rem; color: var(--muted); }
+    .courses .x { background: none; border: 0; color: var(--muted); font-size: 1.3rem; cursor: pointer; padding: 4px 8px; }
+    .caddie summary { padding: 12px 14px; cursor: pointer; color: var(--muted); font-weight: 700; }
+    .caddie .nom { text-decoration: line-through; color: var(--muted); }
     .compte { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 
     /* =========================================================
@@ -200,24 +239,70 @@
     .plats { list-style: none; margin: 0; padding: 0; }
     .plats > li { border-top: 1px solid var(--line); }
     .plats > li:first-child { border-top: 0; }
+    .plat-ligne { display: flex; align-items: center; }
     .plat-tete {
       all: unset; box-sizing: border-box;
       display: flex; align-items: center; gap: 10px;
-      width: 100%; padding: 13px 14px; cursor: pointer;
+      flex: 1; min-width: 0; padding: 12px 6px 12px 14px; cursor: pointer;
     }
     .plat-tete .nom { flex: 1; min-width: 0; font-weight: 700; overflow-wrap: anywhere; }
-    .plat-tete .ingr { display: block; font-weight: 400; font-size: 0.85rem; color: var(--muted); }
-    .plat-tete .fleche { color: var(--muted); transition: transform .2s; }
-    .plats li.ouvert .fleche { transform: rotate(90deg); }
+    .plat-tete .ingr { display: block; font-weight: 400; font-size: 0.82rem; color: var(--muted); }
+    .etoile {
+      background: none; border: 0; cursor: pointer; font-size: 1.3rem;
+      width: 44px; height: 44px; color: var(--line); flex: 0 0 auto;
+    }
+    .etoile.on { color: var(--star); }
     .plat-edit { padding: 0 14px 14px; display: flex; flex-direction: column; gap: 10px; }
-    .aide { font-size: 0.82rem; color: var(--muted); margin: 0; }
 
     .vide-msg { padding: 18px 14px; text-align: center; color: var(--muted); }
-    .message { font-size: 0.9rem; margin: 0; }
-    .message.erreur { color: var(--danger); }
+    .message { font-size: 0.9rem; margin: 0; color: var(--danger); }
 
     /* =========================================================
-       6. BARRE D'ONGLETS (en bas)
+       6. SÉLECTEUR DE PLAT (fenêtre qui monte du bas)
+       ========================================================= */
+    dialog#choix {
+      border: 0; padding: 0; margin: auto auto 0;   /* collé en bas de l'écran */
+      width: 100%; max-width: 560px; max-height: 85vh;
+      border-radius: 20px 20px 0 0;
+      background: var(--card); color: var(--ink);
+    }
+    dialog#choix::backdrop { background: rgba(5, 20, 20, .45); }
+    .choix-corps {
+      display: flex; flex-direction: column; gap: 10px;
+      padding: 16px max(16px, env(safe-area-inset-left, 0px)) calc(16px + env(safe-area-inset-bottom, 0px));
+      max-height: 85vh;
+    }
+    .choix-tete { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .choix-tete h2 { margin: 0; font-size: 1.15rem; }
+    .raccourcis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .raccourcis #choix-hasard { grid-column: 1 / -1; }
+    .raccourcis .btn { padding: 10px 6px; }
+    .choix-liste { list-style: none; margin: 0; padding: 0; overflow-y: auto; flex: 1; min-height: 120px; }
+    .choix-liste button {
+      all: unset; box-sizing: border-box; cursor: pointer; width: 100%;
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 6px; min-height: 48px; border-top: 1px solid var(--line);
+    }
+    .choix-liste li:first-child button { border-top: 0; }
+    .choix-liste button[aria-current="true"] { color: var(--teal); font-weight: 800; }
+    .choix-liste .petit { color: var(--star); width: 18px; text-align: center; }
+
+    /* =========================================================
+       7. PETIT MESSAGE « ANNULER » (en bas, au-dessus des onglets)
+       ========================================================= */
+    #toast {
+      position: fixed; left: 50%; transform: translateX(-50%);
+      bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+      width: min(calc(100% - 32px), 520px);
+      background: var(--ink); color: var(--bg);
+      border-radius: 14px; padding: 8px 8px 8px 16px;
+      display: flex; align-items: center; gap: 10px; z-index: 6;
+    }
+    #toast span { flex: 1; }
+    #toast button { all: unset; cursor: pointer; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; font-size: .8rem; padding: 10px 12px; color: var(--teal-soft); }
+
+    /* =========================================================
+       8. BARRE D'ONGLETS (en bas)
        ========================================================= */
     nav.onglets {
       position: fixed; left: 0; right: 0; bottom: 0;
@@ -230,7 +315,7 @@
       z-index: 5;
     }
     nav.onglets button {
-      flex: 1; max-width: 180px;
+      flex: 1; max-width: 180px; position: relative;
       background: none; border: 0; cursor: pointer;
       padding: 10px 4px 12px;
       color: var(--muted);
@@ -239,6 +324,14 @@
     }
     nav.onglets svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
     nav.onglets button[aria-selected="true"] { color: var(--teal); }
+    /* Pastille : nombre d'articles restant à acheter */
+    .badge {
+      position: absolute; top: 4px; left: calc(50% + 6px);
+      background: var(--teal); color: var(--on-teal);
+      font: 700 0.65rem var(--sans); letter-spacing: 0;
+      min-width: 18px; height: 18px; border-radius: 9px; padding: 0 5px;
+      display: grid; place-items: center;
+    }
 
     footer { color: var(--muted); font-size: 0.8rem; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding-bottom: 8px; }
     footer button { all: unset; cursor: pointer; text-decoration: underline; }
@@ -253,22 +346,32 @@
 <div class="page">
   <header>
     <h1>On mange quoi&nbsp;?</h1>
-    <p id="sous-titre">Le menu de la semaine et les courses qui vont avec.</p>
   </header>
 
   <!-- ============ ONGLET SEMAINE ============ -->
   <section id="vue-semaine">
+    <!-- Ce soir : ce qu'on regarde le plus souvent, en premier -->
+    <div class="ce-soir" aria-live="polite">
+      <span class="etiquette" id="ce-soir-date">Ce soir</span>
+      <div class="plat" id="ce-soir-plat">…</div>
+      <div class="rangee">
+        <button class="btn" id="ce-soir-hasard">🎲 Au hasard</button>
+        <button class="btn leger" id="ce-soir-choisir">Choisir</button>
+      </div>
+    </div>
+
     <div class="nav-semaine">
       <button class="rond" id="sem-prec" aria-label="Semaine précédente">‹</button>
       <div class="titre" id="sem-titre">Semaine</div>
       <button class="rond" id="sem-suiv" aria-label="Semaine suivante">›</button>
     </div>
-    <ul class="jours carte" id="jours" style="margin-top:12px"></ul>
-    <div class="rangee" style="margin-top:12px">
-      <button class="btn" id="sem-remplir">Remplir au hasard</button>
-      <button class="btn leger" id="sem-vider">Vider la semaine</button>
+    <button class="lien" id="sem-retour" hidden>Revenir à cette semaine</button>
+    <ul class="jours carte" id="jours"></ul>
+    <div class="rangee serre deux">
+      <button class="btn" id="sem-remplir">Remplir le reste</button>
+      <button class="btn leger" id="sem-vider">Tout effacer</button>
     </div>
-    <p class="aide" style="margin-top:10px">Le dé tire un plat pour ce soir-là. « Remplir au hasard » ne touche qu'aux jours vides et évite les répétitions.</p>
+    <p class="aide">Touchez un jour pour choisir son dîner. Le dé en tire un au hasard.</p>
   </section>
 
   <!-- ============ ONGLET COURSES ============ -->
@@ -277,38 +380,38 @@
       <span class="etiquette" id="courses-titre">Courses</span>
       <span class="compte" id="courses-compte"></span>
     </div>
-    <ul class="courses carte" id="courses" style="margin-top:8px"></ul>
-    <form class="rangee" id="form-extra" style="margin-top:12px;flex-wrap:nowrap" autocomplete="off">
+    <form class="rangee serre" id="form-extra" autocomplete="off">
       <input type="text" id="champ-extra" maxlength="60" placeholder="Ajouter un article (ex. lait)" aria-label="Article à ajouter">
       <button class="btn" type="submit">Ajouter</button>
     </form>
-    <div class="rangee" style="margin-top:12px">
-      <button class="btn leger" id="courses-partager">Partager la liste</button>
+    <div id="courses" class="carte"></div>
+    <div class="rangee">
+      <button class="btn" id="courses-partager">Envoyer la liste</button>
       <button class="btn leger" id="courses-decocher">Tout décocher</button>
     </div>
-    <p class="message" id="courses-msg" hidden></p>
+    <p class="aide" id="courses-msg" hidden></p>
   </section>
 
   <!-- ============ ONGLET PLATS ============ -->
   <section id="vue-plats" hidden>
-    <form class="rangee" id="form-plat" style="flex-wrap:nowrap" autocomplete="off">
+    <form class="rangee serre" id="form-plat" autocomplete="off">
       <input type="text" id="champ-plat" maxlength="60" placeholder="Nouveau plat (ex. Gratin)" aria-label="Nom du plat">
       <button class="btn" type="submit">Ajouter</button>
     </form>
-    <p class="message erreur" id="plat-msg" hidden></p>
-    <div class="rangee" style="justify-content:space-between;align-items:baseline;margin-top:14px">
-      <span class="etiquette">Nos plats</span>
+    <p class="message" id="plat-msg" hidden></p>
+    <input type="search" id="cherche-plat" placeholder="Rechercher un plat ou un ingrédient" aria-label="Rechercher un plat">
+    <div class="rangee" style="justify-content:space-between;align-items:baseline">
+      <span class="etiquette">Nos plats · ⭐ = favoris, proposés en premier</span>
       <span class="compte" id="plats-compte"></span>
     </div>
-    <ul class="plats carte" id="plats" style="margin-top:8px"></ul>
-    <p class="aide" style="margin-top:10px">Touchez un plat pour régler ses ingrédients : ce sont eux qui remplissent la liste de courses.</p>
+    <ul class="plats carte" id="plats"></ul>
   </section>
 
   <!-- ============ RÉGLAGE DE LA SYNCHRO ============ -->
   <section id="vue-synchro" class="carte" style="padding:14px" hidden>
     <span class="etiquette">Partage avec la famille</span>
-    <p class="aide" style="margin:6px 0 10px">Entrez la clé de la famille (une seule fois par téléphone) pour que tout le monde voie le même menu.</p>
-    <form class="rangee" id="form-cle" style="flex-wrap:nowrap" autocomplete="off">
+    <p class="aide">Entrez la clé de la famille (une seule fois par téléphone) pour que tout le monde voie le même menu.</p>
+    <form class="rangee serre" id="form-cle" autocomplete="off">
       <input type="text" id="champ-cle" placeholder="Clé de la famille" aria-label="Clé de la famille">
       <button class="btn" type="submit">Valider</button>
     </form>
@@ -316,9 +419,30 @@
 
   <footer>
     <span><span class="pastille" id="pastille"></span><span id="etat">Chargement…</span></span>
-    <span><button id="btn-synchro" hidden>Clé</button> · <span>SV · v1.1.0</span></span>
+    <span><button id="btn-synchro" hidden>Clé</button><span id="sep-cle" hidden> · </span><span>SV · v1.2.0</span></span>
   </footer>
 </div>
+
+<!-- Sélecteur de plat : <dialog> natif, monte du bas de l'écran -->
+<dialog id="choix" aria-labelledby="choix-titre">
+  <div class="choix-corps">
+    <div class="choix-tete">
+      <h2 id="choix-titre">Lundi</h2>
+      <button class="rond" id="choix-fermer" aria-label="Fermer">✕</button>
+    </div>
+    <input type="search" id="choix-cherche" placeholder="Chercher un plat" aria-label="Chercher un plat">
+    <div class="raccourcis">
+      <button class="btn" id="choix-hasard">🎲 Au hasard</button>
+      <button class="btn leger" id="choix-restes">Restes</button>
+      <button class="btn leger" id="choix-dehors">Dehors</button>
+      <button class="btn leger" id="choix-rien">Rien</button>
+    </div>
+    <ul class="choix-liste" id="choix-liste"></ul>
+  </div>
+</dialog>
+
+<!-- Message « Supprimé · Annuler » -->
+<div id="toast" role="status" hidden><span id="toast-texte"></span><button id="toast-annuler">Annuler</button></div>
 
 <!-- Barre d'onglets (pictos Lucide, licence ISC) -->
 <nav class="onglets" role="tablist">
@@ -327,6 +451,7 @@
   </button>
   <button role="tab" aria-selected="false" data-vue="courses">
     <svg viewBox="0 0 24 24"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>Courses
+    <span class="badge" id="badge-courses" hidden></span>
   </button>
   <button role="tab" aria-selected="false" data-vue="plats">
     <svg viewBox="0 0 24 24"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>Plats
@@ -335,18 +460,18 @@
 
 <script>
 /* ==============================================================
-   On mange quoi ? — v1.1.0
+   On mange quoi ? — v1.2.0
    ==============================================================
    ORGANISATION DU CODE
-   1. Réglages
-   2. L'état (les données) et sa forme
-   3. Stockage : copie locale + script Google partagé
-   4. Petits outils de dates
-   5. Affichage des trois onglets
-   6. Actions (ce que font les boutons)
+   1. Réglages et données de départ
+   2. Stockage : copie locale + script Google partagé
+   3. Petits outils (dates, noms, rayons)
+   4. Affichage des trois onglets
+   5. Sélecteur de plat
+   6. Actions (ce que font les boutons) et « Annuler »
    7. Démarrage
    ============================================================== */
-const VERSION = "1.1.0";
+const VERSION = "1.2.0";
 
 /* ---------- 1. RÉGLAGES ----------
    Adresse /exec du script Google « Repas famille » (code dans outils/repas.gs).
@@ -357,33 +482,54 @@ const CACHE_LOCAL = "repas.etat";   // dernière copie des données (marche hors
 const JOURS = ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"];
 const NOMS_JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
 
-/* ---------- 2. L'ÉTAT ----------
-   Tout tient dans un seul objet, enregistré d'un bloc :
+/* Soirs « sans cuisine » : ils ne sont pas des plats (pas d'ingrédients, jamais tirés au sort).
+   Leur identifiant commence par « _ » pour ne jamais se mélanger avec un vrai plat. */
+const SPECIAUX = { _restes: "Restes", _dehors: "Dehors / resto" };
+
+/* L'état : tout tient dans un seul objet, enregistré d'un bloc.
    {
-     plats:   { "pates": { nom: "Pâtes", ingr: ["pâtes", …] }, … },
-     menus:   { "2026-11-09": { lun: "pates", mar: null, … } },   // clé = lundi de la semaine
-     courses: { "2026-11-09": { coches: ["pâtes"], extras: ["lait"] } }
+     plats:   { "pates": { nom: "Pâtes", ingr: ["pâtes", …], fav: true }, … },
+     menus:   { "2026-11-09": { lun: "pates", mar: "_restes", … } },  // clé = lundi de la semaine
+     courses: { "2026-11-09": { coches: ["pâtes"], extras: ["lait"] } },
+     idees:   2   // numéro du dernier lot d'idées déjà ajouté (voir IDEES)
    }
-   Les ingrédients ci-dessous sont des propositions de départ, à modifier dans l'onglet Plats. */
-const ETAT_DE_DEPART = {
-  plats: {
-    "pates":         { nom: "Pâtes",         ingr: ["pâtes", "sauce tomate", "parmesan"] },
-    "cordons-bleus": { nom: "Cordons bleus", ingr: ["cordons bleus", "haricots verts"] },
-    "gnocchi":       { nom: "Gnocchi",       ingr: ["gnocchi", "sauce tomate", "mozzarella"] },
-    "ravioles":      { nom: "Ravioles",      ingr: ["ravioles", "crème fraîche", "gruyère râpé"] },
-    "lentilles":     { nom: "Lentilles",     ingr: ["lentilles", "saucisses", "carottes", "oignon"] },
-    "burger-maison": { nom: "Burger maison", ingr: ["pains à burger", "steaks hachés", "cheddar", "salade", "tomates", "oignon", "frites"] },
-  },
-  menus: {},
-  courses: {},
+   Les ingrédients sont des propositions, à adapter dans l'onglet Plats. */
+const PLATS_DE_DEPART = {
+  "pates":         { nom: "Pâtes",         ingr: ["pâtes", "sauce tomate", "parmesan"] },
+  "cordons-bleus": { nom: "Cordons bleus", ingr: ["cordons bleus", "haricots verts"] },
+  "gnocchi":       { nom: "Gnocchi",       ingr: ["gnocchi", "sauce tomate", "mozzarella"] },
+  "ravioles":      { nom: "Ravioles",      ingr: ["ravioles", "crème fraîche", "gruyère râpé"] },
+  "lentilles":     { nom: "Lentilles",     ingr: ["lentilles", "saucisses", "carottes", "oignon"] },
+  "burger-maison": { nom: "Burger maison", ingr: ["pains à burger", "steaks hachés", "cheddar", "salade", "tomates", "oignon", "frites"] },
 };
+/* Lot d'idées n°2 : plats simples, ajoutés UNE fois aux listes existantes (on ne
+   remet pas un plat que la famille aurait supprimé ensuite : voir normaliser()). */
+const IDEES = {
+  "croque-monsieur":   { nom: "Croque-monsieur",         ingr: ["pain de mie", "jambon", "emmental râpé", "salade"] },
+  "omelette":          { nom: "Omelette et pommes sautées", ingr: ["œufs", "pommes de terre", "emmental râpé"] },
+  "quiche-lorraine":   { nom: "Quiche lorraine",         ingr: ["pâte brisée", "lardons", "œufs", "crème fraîche", "salade"] },
+  "riz-cantonais":     { nom: "Riz cantonais",           ingr: ["riz", "œufs", "petits pois", "jambon"] },
+  "wraps-poulet":      { nom: "Wraps au poulet",         ingr: ["tortillas", "poulet", "maïs", "emmental râpé", "salade"] },
+  "hachis-parmentier": { nom: "Hachis parmentier",       ingr: ["viande hachée", "purée en flocons", "lait", "emmental râpé", "oignon"] },
+  "pizza-maison":      { nom: "Pizza maison",            ingr: ["pâte à pizza", "sauce tomate", "jambon", "mozzarella", "champignons"] },
+  "soupe-tartines":    { nom: "Soupe et tartines",       ingr: ["légumes pour soupe", "pain", "fromage"] },
+  "poisson-pane":      { nom: "Poisson pané et purée",   ingr: ["poisson pané", "purée en flocons", "lait"] },
+  "galettes":          { nom: "Galettes complètes",      ingr: ["galettes de sarrasin", "jambon", "œufs", "emmental râpé"] },
+  "pates-carbonara":   { nom: "Pâtes carbonara",         ingr: ["pâtes", "lardons", "crème fraîche", "œufs", "parmesan"] },
+  "pates-bolognaise":  { nom: "Pâtes bolognaise",        ingr: ["pâtes", "viande hachée", "sauce tomate", "oignon", "parmesan"] },
+  "gratin-pates":      { nom: "Gratin de pâtes",         ingr: ["pâtes", "jambon", "béchamel", "gruyère râpé"] },
+  "poulet-roti":       { nom: "Poulet rôti et frites",   ingr: ["poulet rôti", "frites"] },
+  "plateau-du-soir":   { nom: "Plateau pain-fromage-crudités", ingr: ["pain", "fromage", "crudités"] },
+};
+const LOT_IDEES = 2;
 
 let etat = null;          // les données affichées
 let vue = "semaine";      // onglet ouvert
 let lundiAffiche = null;  // semaine affichée (objet Date du lundi)
 let platOuvert = null;    // plat déplié dans l'onglet Plats
+let recherche = "";       // texte tapé dans la recherche de l'onglet Plats
 
-/* ---------- 3. STOCKAGE ----------
+/* ---------- 2. STOCKAGE ----------
    • Copie locale (localStorage) : affichage immédiat et hors ligne.
    • Script Google : la version partagée. Pour limiter les conflits quand
      deux personnes modifient en même temps, chaque action relit d'abord la
@@ -415,12 +561,18 @@ async function envoyerServeur(e) {
   if (!j.ok) throw new Error(j.erreur || "erreur");
 }
 
-// Complète un état incomplet (ex. ancienne version) pour éviter les plantages
+/* Complète un état incomplet (première fois, ou ancienne version) et ajoute
+   les lots d'idées pas encore reçus. Le numéro « idees » garantit qu'on ne
+   les ajoute qu'une fois : un plat supprimé ensuite ne revient pas. */
 function normaliser(e) {
   e = e && typeof e === "object" ? e : {};
-  e.plats = e.plats || {};
+  if (!e.plats) { e.plats = structuredClone(PLATS_DE_DEPART); }
   e.menus = e.menus || {};
   e.courses = e.courses || {};
+  if ((e.idees || 0) < LOT_IDEES) {
+    for (const [id, p] of Object.entries(IDEES)) if (!e.plats[id]) e.plats[id] = structuredClone(p);
+    e.idees = LOT_IDEES;
+  }
   return e;
 }
 
@@ -434,7 +586,7 @@ async function modifier(fn) {
   if (!partage()) return;
   try {
     etatSynchro("Enregistrement…", "");
-    const frais = normaliser(await chargerServeur() || structuredClone(ETAT_DE_DEPART));
+    const frais = normaliser(await chargerServeur());
     fn(frais);
     nettoyer(frais);
     await envoyerServeur(frais);
@@ -450,24 +602,22 @@ async function modifier(fn) {
 // Relit la version partagée (au démarrage et quand on revient sur l'appli)
 async function actualiser() {
   if (!partage()) {
-    etatSynchro(REPAS_URL ? "Sur ce téléphone seulement" : "Enregistré sur ce téléphone", "");
+    etatSynchro("Enregistré sur ce téléphone", "");
     return;
   }
   try {
     const distant = await chargerServeur();
-    if (distant) {
-      etat = normaliser(distant);
-    } else {
-      // Premier lancement : le serveur est vide, on y met les données actuelles
-      await envoyerServeur(etat);
-    }
+    const avant = JSON.stringify(distant);
+    etat = normaliser(distant || etat);
+    // Premier lancement (serveur vide) ou nouvelles idées ajoutées : on enregistre
+    if (JSON.stringify(etat) !== avant) await envoyerServeur(etat);
     garderCache();
     afficher();
     etatSynchro("Partagé avec la famille", "ok");
   } catch (err) {
-    etatSynchro(String(err.message).includes("clé")
-      ? "Clé incorrecte" : "Hors ligne : dernière version connue", "err");
-    if (String(err.message).includes("clé")) document.getElementById("vue-synchro").hidden = false;
+    const mauvaiseCle = String(err.message).includes("clé");
+    etatSynchro(mauvaiseCle ? "Clé incorrecte" : "Hors ligne : dernière version connue", "err");
+    if (mauvaiseCle) document.getElementById("vue-synchro").hidden = false;
   }
 }
 
@@ -483,7 +633,7 @@ function etatSynchro(texte, type) {
   document.getElementById("pastille").className = "pastille " + type;
 }
 
-/* ---------- 4. DATES ---------- */
+/* ---------- 3. PETITS OUTILS ---------- */
 function lundiDe(d) {
   const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
   const decalage = (x.getDay() + 6) % 7;   // getDay : 0 = dimanche → on ramène lundi à 0
@@ -496,89 +646,150 @@ function cleSemaine(d) {
   return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 }
 const fmtCourt = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" });
+const fmtLong = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+
+// Où en est-on aujourd'hui : clé de la semaine + jour (« jeu »)
+function aujourdhui() {
+  const d = new Date();
+  return { cle: cleSemaine(lundiDe(d)), jour: JOURS[(d.getDay() + 6) % 7], date: d };
+}
 
 /* Transforme un nom en identifiant : « Burger maison » → « burger-maison » */
 function slug(nom) {
   return nom.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "plat";
 }
-// Liste des plats triée par nom, à la française
+// Texte sans accents ni majuscules : pour comparer et chercher (« Pâtes » ≈ « pates »)
+// (« œ » n'est pas un accent : on le remplace avant ; texte vide → "" et non le « plat » de secours de slug)
+const simple = (t) => String(t || "").replace(/œ/g, "oe").replace(/Œ/g, "Oe")
+  .normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+  .replace(/[^a-z0-9]+/g, " ").trim();
+
+// Nom à afficher pour un identifiant de menu (plat, soir spécial, ou rien)
+function nomDe(id) {
+  if (!id) return null;
+  if (SPECIAUX[id]) return SPECIAUX[id];
+  return etat.plats[id] ? etat.plats[id].nom : null;
+}
+
+// Plats triés : favoris d'abord, puis ordre alphabétique à la française
 function platsTries() {
   return Object.entries(etat.plats)
     .map(([id, p]) => ({ id, ...p }))
-    .sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
+    .sort((a, b) => (!!b.fav - !!a.fav) || a.nom.localeCompare(b.nom, "fr"));
 }
 
-/* ---------- 5. AFFICHAGE ---------- */
+/* RAYONS : range chaque article dans un rayon du magasin, d'après des mots-clés.
+   L'ORDRE COMPTE : on teste du plus précis au plus général (« poisson pané »
+   va aux surgelés avant que « poisson » ne l'envoie à la boucherie ;
+   « pâte à pizza » va au frais avant que « pâtes » ne l'envoie à l'épicerie). */
+const RAYONS = [
+  ["Épicerie",           /sauce|puree en flocons|conserve/],
+  ["Surgelés",           /surgel|frites|\bpanes?\b|glace|petits pois/],
+  ["Frais",              /pate (a |brisee|feuilletee)|ravioles|gnocchi|\blait\b|creme|beurre|fromage|gruyere|emmental|parmesan|mozzarella|cheddar|\boeufs?\b|yaourt|bechamel|galette|jambon|lardons|cordon/],
+  ["Viandes & poissons", /steak|poulet|saucisse|viande|hache|poisson|dinde|porc|boeuf|veau|saumon/],
+  ["Fruits & légumes",   /salade|tomate|carotte|oignon|\bail\b|pommes? de terre|haricot|courgette|poireau|champignon|citron|poivron|legume|concombre|avocat|crudite|pomme|banane/],
+  ["Boulangerie",        /pain|baguette|brioche/],
+  ["Épicerie",           /pates|\briz\b|lentille|farine|huile|\bmais\b|tortilla|epice|puree|sucre|\bsel\b|cafe|\bthe\b|chocolat|biscuit|cereale/],
+];
+const ORDRE_RAYONS = ["Fruits & légumes", "Boulangerie", "Viandes & poissons", "Frais", "Épicerie", "Surgelés", "Autres"];
+function rayonDe(article) {
+  const t = simple(article);
+  for (const [rayon, motif] of RAYONS) if (motif.test(t)) return rayon;
+  return "Autres";
+}
+
+/* ---------- 4. AFFICHAGE ---------- */
 function afficher() {
   for (const v of ["semaine", "courses", "plats"]) {
     document.getElementById("vue-" + v).hidden = v !== vue;
   }
   document.querySelectorAll("nav.onglets button").forEach(b =>
     b.setAttribute("aria-selected", String(b.dataset.vue === vue)));
+  afficherBadge();
   if (vue === "semaine") afficherSemaine();
   if (vue === "courses") afficherCourses();
   if (vue === "plats") afficherPlats();
 }
 
+// Pastille sur l'onglet Courses : combien d'articles restent à acheter cette semaine
+function afficherBadge() {
+  const cle = cleSemaine(lundiAffiche);
+  const coches = new Set((etat.courses[cle] || {}).coches || []);
+  const n = listeCourses(cle).filter(a => !coches.has(a.cle)).length;
+  const b = document.getElementById("badge-courses");
+  b.hidden = n === 0;
+  b.textContent = n;
+}
+
 function afficherSemaine() {
+  // --- Carte « Ce soir » (toujours le vrai jour, quelle que soit la semaine affichée) ---
+  const auj = aujourdhui();
+  const idSoir = (etat.menus[auj.cle] || {})[auj.jour];
+  const nomSoir = nomDe(idSoir);
+  const elPlat = document.getElementById("ce-soir-plat");
+  document.getElementById("ce-soir-date").textContent = "Ce soir · " + fmtLong.format(auj.date);
+  elPlat.textContent = nomSoir || "Pas encore décidé";
+  elPlat.classList.toggle("vide", !nomSoir);
+  document.getElementById("ce-soir-hasard").textContent = nomSoir ? "🎲 Autre idée" : "🎲 Au hasard";
+
+  // --- Titre et navigation de la semaine ---
   const cle = cleSemaine(lundiAffiche);
   const menu = etat.menus[cle] || {};
-  const dimanche = ajouterJours(lundiAffiche, 6);
-  const cetteSemaine = cle === cleSemaine(lundiDe(new Date()));
+  const cetteSemaine = cle === auj.cle;
   document.getElementById("sem-titre").textContent =
-    (cetteSemaine ? "Cette semaine · " : "") + fmtCourt.format(lundiAffiche) + " – " + fmtCourt.format(dimanche);
+    (cetteSemaine ? "Cette semaine · " : "") + fmtCourt.format(lundiAffiche) + " – " + fmtCourt.format(ajouterJours(lundiAffiche, 6));
+  document.getElementById("sem-retour").hidden = cetteSemaine;
 
+  // --- Les 7 jours ---
   const ul = document.getElementById("jours");
   ul.replaceChildren();
-  const plats = platsTries();
-  const aujourdhui = cleSemaine(new Date());
-
+  const cleAuj = cleSemaine(auj.date);
   JOURS.forEach((j, i) => {
     const date = ajouterJours(lundiAffiche, i);
     const li = document.createElement("li");
-    if (cleSemaine(date) === aujourdhui) li.classList.add("aujourdhui");
+    if (cleSemaine(date) === cleAuj) li.classList.add("aujourdhui");
 
-    // Nom du jour + date
-    const nom = document.createElement("div");
+    // Toute la ligne est un bouton qui ouvre le sélecteur
+    const btn = document.createElement("button");
+    btn.className = "jour-btn";
+    const nom = document.createElement("span");
     nom.className = "jour-nom";
     nom.innerHTML = "<b></b><span></span>";
     nom.querySelector("b").textContent = NOMS_JOURS[i].slice(0, 3) + ".";
     nom.querySelector("span").textContent = date.getDate() + "/" + (date.getMonth() + 1);
+    const plat = document.createElement("span");
+    plat.className = "jour-plat";
+    const n = nomDe(menu[j]);
+    plat.textContent = n || "Choisir…";
+    if (!n) plat.classList.add("vide");
+    if (SPECIAUX[menu[j]]) plat.classList.add("special");
+    btn.append(nom, plat);
+    btn.setAttribute("aria-label", NOMS_JOURS[i] + " : " + (n || "rien de prévu") + ". Toucher pour choisir.");
+    btn.onclick = () => ouvrirChoix(cle, j, NOMS_JOURS[i] + " " + date.getDate() + "/" + (date.getMonth() + 1));
 
-    // Menu déroulant natif : sur Android il s'ouvre en liste plein écran, très pratique
-    const sel = document.createElement("select");
-    sel.setAttribute("aria-label", "Dîner du " + NOMS_JOURS[i].toLowerCase());
-    sel.add(new Option("— à choisir —", ""));
-    for (const p of plats) sel.add(new Option(p.nom, p.id));
-    const choisi = menu[j] && etat.plats[menu[j]] ? menu[j] : "";
-    sel.value = choisi;
-    sel.classList.toggle("vide", !choisi);
-    sel.onchange = () => modifier(e => fixerJour(e, cle, j, sel.value || null));
-
-    // Le dé : tire un plat pour ce jour
+    // Le dé : tire un plat pour ce jour, sans ouvrir le sélecteur
     const de = document.createElement("button");
     de.className = "rond";
     de.textContent = "🎲";
     de.setAttribute("aria-label", "Tirer au sort pour " + NOMS_JOURS[i].toLowerCase());
     de.onclick = () => {
-      const id = tirerPlat(menu, choisi);
+      const id = tirerPlat(menu, menu[j]);
       if (id) modifier(e => fixerJour(e, cle, j, id));
     };
-
-    li.append(nom, sel, de);
+    li.append(btn, de);
     ul.append(li);
   });
 }
 
 /* Liste de courses : ingrédients des plats de la semaine, sans doublon.
-   On garde pour chaque article les plats qui en ont besoin (« pour : … »). */
+   On garde pour chaque article les plats qui en ont besoin. */
 function listeCourses(cle) {
   const menu = etat.menus[cle] || {};
-  const parArticle = new Map();   // "oignon" → { nom: "oignon", pour: ["Lentilles", …] }
+  const parArticle = new Map();   // "oignon" → { cle, nom, pour: ["Lentilles", …] }
   for (const j of JOURS) {
     const p = etat.plats[menu[j]];
-    if (!p) continue;
+    if (!p) continue;               // jour vide ou soir spécial : rien à acheter
     for (const brut of p.ingr || []) {
       const k = brut.trim().toLowerCase();
       if (!k) continue;
@@ -586,85 +797,127 @@ function listeCourses(cle) {
       parArticle.get(k).pour.push(p.nom);
     }
   }
-  const c = etat.courses[cle] || {};
-  for (const ex of c.extras || []) {
+  for (const ex of (etat.courses[cle] || {}).extras || []) {
     const k = ex.trim().toLowerCase();
     if (!parArticle.has(k)) parArticle.set(k, { cle: k, nom: ex, pour: [], extra: true });
   }
   return [...parArticle.values()];
 }
 
+// Une ligne de la liste de courses (case à cocher + nom + « pour : … »)
+function ligneArticle(a, cle, coche) {
+  const li = document.createElement("li");
+  const lab = document.createElement("label");
+  const cb = document.createElement("input");
+  cb.type = "checkbox";
+  cb.checked = coche;
+  cb.onchange = () => modifier(e => cocher(e, cle, a.cle, cb.checked));
+  const txt = document.createElement("span");
+  txt.className = "nom";
+  txt.textContent = a.nom;
+  if (a.pour.length) {
+    // Un même plat deux fois dans la semaine → « Pâtes ×2 »
+    const comptes = {};
+    a.pour.forEach(n => comptes[n] = (comptes[n] || 0) + 1);
+    const pour = document.createElement("span");
+    pour.className = "pour";
+    pour.textContent = "pour " + Object.entries(comptes).map(([n, c]) => c > 1 ? n + " ×" + c : n).join(", ");
+    txt.append(pour);
+  }
+  lab.append(cb, txt);
+  if (a.extra) {   // les articles ajoutés à la main peuvent être retirés
+    const x = document.createElement("button");
+    x.className = "x"; x.textContent = "×";
+    x.setAttribute("aria-label", "Retirer " + a.nom);
+    x.onclick = (ev) => { ev.preventDefault(); modifier(e => retirerExtra(e, cle, a.cle)); };
+    lab.append(x);
+  }
+  li.append(lab);
+  return li;
+}
+
 function afficherCourses() {
   const cle = cleSemaine(lundiAffiche);
   const articles = listeCourses(cle);
   const coches = new Set((etat.courses[cle] || {}).coches || []);
-  document.getElementById("courses-titre").textContent =
-    "Courses · semaine du " + fmtCourt.format(lundiAffiche);
-  const restants = articles.filter(a => !coches.has(a.cle)).length;
-  document.getElementById("courses-compte").textContent =
-    articles.length ? restants + " à prendre sur " + articles.length : "";
+  const aPrendre = articles.filter(a => !coches.has(a.cle));
+  const pris = articles.filter(a => coches.has(a.cle));
+  document.getElementById("courses-titre").textContent = "Courses · semaine du " + fmtCourt.format(lundiAffiche);
+  document.getElementById("courses-compte").textContent = articles.length ? aPrendre.length + " à prendre" : "";
 
-  const ul = document.getElementById("courses");
-  ul.replaceChildren();
+  const boite = document.getElementById("courses");
+  boite.replaceChildren();
   if (!articles.length) {
-    const li = document.createElement("li");
-    li.className = "vide-msg";
-    li.textContent = "Rien pour l'instant : choisissez les dîners dans l'onglet Semaine.";
-    ul.append(li);
+    const p = document.createElement("p");
+    p.className = "vide-msg";
+    p.textContent = "Rien pour l'instant : choisissez les dîners dans l'onglet Semaine.";
+    boite.append(p);
     return;
   }
-  // Pas encore pris d'abord, cochés à la fin
-  articles.sort((a, b) => (coches.has(a.cle) - coches.has(b.cle)) || a.nom.localeCompare(b.nom, "fr"));
 
-  for (const a of articles) {
-    const li = document.createElement("li");
-    li.classList.toggle("coche", coches.has(a.cle));
-    const lab = document.createElement("label");
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.checked = coches.has(a.cle);
-    cb.onchange = () => modifier(e => cocher(e, cle, a.cle, cb.checked));
-    const txt = document.createElement("span");
-    txt.className = "nom";
-    txt.textContent = a.nom;
-    if (a.pour.length) {
-      const pour = document.createElement("span");
-      pour.className = "pour";
-      // Un même plat deux fois dans la semaine → « Pâtes ×2 »
-      const comptes = {};
-      a.pour.forEach(n => comptes[n] = (comptes[n] || 0) + 1);
-      pour.textContent = " · " + Object.entries(comptes).map(([n, c]) => c > 1 ? n + " ×" + c : n).join(", ");
-      txt.append(pour);
-    }
-    lab.append(cb, txt);
-    if (a.extra) {   // les articles ajoutés à la main peuvent être retirés
-      const x = document.createElement("button");
-      x.className = "x"; x.textContent = "×";
-      x.setAttribute("aria-label", "Retirer " + a.nom);
-      x.onclick = (ev) => { ev.preventDefault(); modifier(e => retirerExtra(e, cle, a.cle)); };
-      lab.append(x);
-    }
-    li.append(lab);
-    ul.append(li);
+  // À prendre : regroupés par rayon, dans l'ordre d'un parcours de magasin
+  const parRayon = {};
+  for (const a of aPrendre) (parRayon[rayonDe(a.nom)] ||= []).push(a);
+  for (const rayon of ORDRE_RAYONS) {
+    const liste = parRayon[rayon];
+    if (!liste) continue;
+    const titre = document.createElement("div");
+    titre.className = "etiquette rayon";
+    titre.textContent = rayon;
+    const ul = document.createElement("ul");
+    ul.className = "courses";
+    liste.sort((a, b) => a.nom.localeCompare(b.nom, "fr"))
+      .forEach(a => ul.append(ligneArticle(a, cle, false)));
+    boite.append(titre, ul);
+  }
+  if (!aPrendre.length) {
+    const p = document.createElement("p");
+    p.className = "vide-msg";
+    p.textContent = "Tout est dans le caddie 👍";
+    boite.append(p);
+  }
+
+  // Déjà pris : repliés en bas pour ne pas encombrer
+  if (pris.length) {
+    const det = document.createElement("details");
+    det.className = "caddie";
+    const sum = document.createElement("summary");
+    sum.textContent = "Dans le caddie (" + pris.length + ")";
+    const ul = document.createElement("ul");
+    ul.className = "courses";
+    pris.forEach(a => ul.append(ligneArticle(a, cle, true)));
+    det.append(sum, ul);
+    boite.append(det);
   }
 }
 
 function afficherPlats() {
-  const plats = platsTries();
-  document.getElementById("plats-compte").textContent = plats.length + (plats.length > 1 ? " plats" : " plat");
+  const q = simple(recherche);
+  // Recherche dans le nom ET les ingrédients (« jambon » trouve croque, galettes…)
+  const plats = platsTries().filter(p => !q || simple(p.nom + " " + (p.ingr || []).join(" ")).includes(q));
+  document.getElementById("plats-compte").textContent = Object.keys(etat.plats).length + " plats";
   const ul = document.getElementById("plats");
   ul.replaceChildren();
   if (!plats.length) {
     const li = document.createElement("li");
     li.className = "vide-msg";
-    li.textContent = "Aucun plat. Ajoutez le premier ci-dessus.";
+    li.textContent = q ? "Aucun plat ne correspond." : "Aucun plat. Ajoutez le premier ci-dessus.";
     ul.append(li);
     return;
   }
   for (const p of plats) {
     const li = document.createElement("li");
     const ouvert = platOuvert === p.id;
-    li.classList.toggle("ouvert", ouvert);
+
+    const ligne = document.createElement("div");
+    ligne.className = "plat-ligne";
+    // Étoile : favori ou pas
+    const et = document.createElement("button");
+    et.className = "etoile" + (p.fav ? " on" : "");
+    et.textContent = "★";
+    et.setAttribute("aria-label", (p.fav ? "Retirer des favoris : " : "Mettre en favori : ") + p.nom);
+    et.setAttribute("aria-pressed", String(!!p.fav));
+    et.onclick = () => modifier(e => { if (e.plats[p.id]) e.plats[p.id].fav = !e.plats[p.id].fav; });
 
     const tete = document.createElement("button");
     tete.className = "plat-tete";
@@ -674,13 +927,12 @@ function afficherPlats() {
     nom.textContent = p.nom;
     const ingr = document.createElement("span");
     ingr.className = "ingr";
-    ingr.textContent = (p.ingr || []).length ? p.ingr.join(", ") : "pas d'ingrédients";
+    ingr.textContent = (p.ingr || []).length ? p.ingr.join(", ") : "Toucher pour ajouter les ingrédients";
     nom.append(ingr);
-    const fl = document.createElement("span");
-    fl.className = "fleche"; fl.textContent = "›";
-    tete.append(nom, fl);
+    tete.append(nom);
     tete.onclick = () => { platOuvert = ouvert ? null : p.id; afficherPlats(); };
-    li.append(tete);
+    ligne.append(tete, et);
+    li.append(ligne);
 
     if (ouvert) {
       // Zone de modification : un ingrédient par ligne
@@ -689,10 +941,8 @@ function afficherPlats() {
       const ta = document.createElement("textarea");
       ta.id = "ingr-" + p.id;
       ta.value = (p.ingr || []).join("\n");
+      ta.placeholder = "Un ingrédient par ligne";
       ta.setAttribute("aria-label", "Ingrédients de " + p.nom + ", un par ligne");
-      const aide = document.createElement("p");
-      aide.className = "aide";
-      aide.textContent = "Un ingrédient par ligne.";
       const rang = document.createElement("div");
       rang.className = "rangee";
       const ok = document.createElement("button");
@@ -702,26 +952,100 @@ function afficherPlats() {
         platOuvert = null;
         modifier(e => { if (e.plats[p.id]) e.plats[p.id].ingr = liste; });
       };
-      // Suppression en deux temps (pas de fenêtre confirm())
       const sup = document.createElement("button");
-      sup.className = "btn leger"; sup.textContent = "Supprimer";
-      sup.onclick = () => {
-        if (sup.dataset.sur) { platOuvert = null; modifier(e => supprimerPlat(e, p.id)); return; }
-        sup.dataset.sur = "1";
-        sup.className = "btn danger";
-        sup.textContent = "Confirmer la suppression";
-      };
+      sup.className = "btn leger"; sup.textContent = "Supprimer le plat";
+      sup.onclick = () => supprimerAvecAnnuler(p.id);
       rang.append(ok, sup);
-      ed.append(ta, aide, rang);
+      ed.append(ta, rang);
       li.append(ed);
+      // Le curseur se place directement dans les ingrédients
+      setTimeout(() => ta.focus({ preventScroll: true }), 0);
     }
     ul.append(li);
   }
 }
 
+/* ---------- 5. SÉLECTEUR DE PLAT ----------
+   Fenêtre <dialog> qui monte du bas : recherche, favoris d'abord, raccourcis.
+   Bouton « retour » du téléphone : on ajoute une étape dans l'historique en
+   ouvrant ; « retour » la retire et l'évènement popstate ferme la fenêtre. */
+const dlg = document.getElementById("choix");
+let cible = null;   // { cle, jour } : le jour qu'on est en train de choisir
+
+function ouvrirChoix(cle, jour, titre) {
+  cible = { cle, jour };
+  document.getElementById("choix-titre").textContent = titre;
+  document.getElementById("choix-cherche").value = "";
+  remplirChoix();
+  dlg.showModal();
+  history.pushState({ choix: 1 }, "");
+}
+function fermerChoix() {
+  if (!dlg.open) return;
+  dlg.close();
+  if (history.state && history.state.choix) history.back();
+}
+window.addEventListener("popstate", () => { if (dlg.open) dlg.close(); });
+dlg.addEventListener("cancel", (ev) => { ev.preventDefault(); fermerChoix(); });   // touche Échap
+dlg.addEventListener("click", (ev) => { if (ev.target === dlg) fermerChoix(); });  // toucher le fond
+
+function choisir(id) {
+  const { cle, jour } = cible;
+  fermerChoix();
+  modifier(e => fixerJour(e, cle, jour, id));
+}
+
+function remplirChoix() {
+  const actuel = (etat.menus[cible.cle] || {})[cible.jour];
+  const q = simple(document.getElementById("choix-cherche").value);
+  const ul = document.getElementById("choix-liste");
+  ul.replaceChildren();
+  const plats = platsTries().filter(p => !q || simple(p.nom).includes(q));
+  for (const p of plats) {
+    const li = document.createElement("li");
+    const b = document.createElement("button");
+    const etoile = document.createElement("span");
+    etoile.className = "petit";
+    etoile.textContent = p.fav ? "★" : "";
+    const nom = document.createElement("span");
+    nom.textContent = p.nom;
+    b.append(etoile, nom);
+    if (p.id === actuel) b.setAttribute("aria-current", "true");
+    b.onclick = () => choisir(p.id);
+    li.append(b);
+    ul.append(li);
+  }
+  // Rien trouvé : on propose de créer le plat tapé, et de le choisir directement
+  if (q && !plats.length) {
+    const texte = document.getElementById("choix-cherche").value.trim();
+    const li = document.createElement("li");
+    const b = document.createElement("button");
+    b.textContent = "＋ Ajouter « " + texte + " » et le choisir";
+    b.onclick = () => {
+      const id = slug(texte);
+      const { cle, jour } = cible;
+      fermerChoix();
+      modifier(e => { if (!e.plats[id]) e.plats[id] = { nom: texte, ingr: [] }; fixerJour(e, cle, jour, id); });
+      afficherToast("« " + texte + " » ajouté : pensez à ses ingrédients dans Plats.", null);
+    };
+    li.append(b);
+    ul.append(li);
+  }
+}
+document.getElementById("choix-cherche").addEventListener("input", remplirChoix);
+document.getElementById("choix-fermer").onclick = fermerChoix;
+document.getElementById("choix-hasard").onclick = () => {
+  const menu = etat.menus[cible.cle] || {};
+  const id = tirerPlat(menu, menu[cible.jour]);
+  if (id) choisir(id);
+};
+document.getElementById("choix-restes").onclick = () => choisir("_restes");
+document.getElementById("choix-dehors").onclick = () => choisir("_dehors");
+document.getElementById("choix-rien").onclick = () => choisir(null);
+
 /* ---------- 6. ACTIONS ----------
-   Fonctions « pures » qui modifient un état e : elles sont rejouées
-   sur la version fraîche du serveur dans modifier(). */
+   Fonctions qui modifient un état e : elles sont rejouées sur la version
+   fraîche du serveur dans modifier(). */
 function fixerJour(e, cle, jour, id) {
   e.menus[cle] = e.menus[cle] || {};
   e.menus[cle][jour] = id;
@@ -743,14 +1067,10 @@ function retirerExtra(e, cle, article) {
   c.extras = (c.extras || []).filter(x => x.trim().toLowerCase() !== article);
   c.coches = (c.coches || []).filter(x => x !== article);
 }
-function supprimerPlat(e, id) {
-  delete e.plats[id];
-  // On retire aussi le plat des menus où il était
-  for (const m of Object.values(e.menus)) for (const j of JOURS) if (m[j] === id) m[j] = null;
-}
 
-/* Tire un plat au hasard, en évitant ceux déjà prévus cette semaine
-   (et celui déjà choisi ce jour-là). S'il n'en reste aucun, on accepte les répétitions. */
+/* Tire un plat au hasard : favoris deux fois plus souvent, en évitant ceux déjà
+   prévus cette semaine (et celui du jour). S'il n'en reste aucun, on accepte les
+   répétitions. Les soirs spéciaux (Restes, Dehors) ne sont jamais tirés. */
 function tirerPlat(menu, actuel) {
   const tous = Object.keys(etat.plats);
   if (!tous.length) { vue = "plats"; afficher(); return null; }
@@ -758,34 +1078,85 @@ function tirerPlat(menu, actuel) {
   let choix = tous.filter(id => !pris.has(id) && id !== actuel);
   if (!choix.length) choix = tous.filter(id => id !== actuel);
   if (!choix.length) choix = tous;
-  return choix[Math.floor(Math.random() * choix.length)];
+  const urne = choix.flatMap(id => etat.plats[id].fav ? [id, id] : [id]);   // favori = 2 billets
+  return urne[Math.floor(Math.random() * urne.length)];
 }
 
-// Boutons de l'onglet Semaine
+/* « Annuler » : après une action destructrice, un message en bas propose
+   d'annuler pendant 6 secondes. Plus rapide qu'un « Êtes-vous sûr ? ». */
+let minuteurToast = null;
+let actionAnnuler = null;
+function afficherToast(texte, annuler) {
+  const t = document.getElementById("toast");
+  document.getElementById("toast-texte").textContent = texte;
+  document.getElementById("toast-annuler").hidden = !annuler;
+  actionAnnuler = annuler;
+  t.hidden = false;
+  clearTimeout(minuteurToast);
+  minuteurToast = setTimeout(() => { t.hidden = true; actionAnnuler = null; }, 6000);
+}
+document.getElementById("toast-annuler").onclick = () => {
+  document.getElementById("toast").hidden = true;
+  clearTimeout(minuteurToast);
+  if (actionAnnuler) actionAnnuler();
+  actionAnnuler = null;
+};
+
+// Supprimer un plat : on garde de quoi le remettre (le plat + les jours où il était prévu)
+function supprimerAvecAnnuler(id) {
+  const plat = structuredClone(etat.plats[id]);
+  const places = [];
+  for (const [cle, m] of Object.entries(etat.menus)) for (const j of JOURS) if (m[j] === id) places.push([cle, j]);
+  platOuvert = null;
+  modifier(e => {
+    delete e.plats[id];
+    for (const m of Object.values(e.menus)) for (const j of JOURS) if (m[j] === id) m[j] = null;
+  });
+  afficherToast("« " + plat.nom + " » supprimé", () => modifier(e => {
+    e.plats[id] = plat;
+    for (const [cle, j] of places) if (!(e.menus[cle] || {})[j]) fixerJour(e, cle, j, id);
+  }));
+}
+
+// --- Carte « Ce soir » ---
+document.getElementById("ce-soir-hasard").onclick = () => {
+  const auj = aujourdhui();
+  const menu = etat.menus[auj.cle] || {};
+  const id = tirerPlat(menu, menu[auj.jour]);
+  if (id) modifier(e => fixerJour(e, auj.cle, auj.jour, id));
+};
+document.getElementById("ce-soir-choisir").onclick = () => {
+  const auj = aujourdhui();
+  ouvrirChoix(auj.cle, auj.jour, "Ce soir");
+};
+
+// --- Semaine ---
 document.getElementById("sem-prec").onclick = () => { lundiAffiche = ajouterJours(lundiAffiche, -7); afficher(); };
 document.getElementById("sem-suiv").onclick = () => { lundiAffiche = ajouterJours(lundiAffiche, 7); afficher(); };
+document.getElementById("sem-retour").onclick = () => { lundiAffiche = lundiDe(new Date()); afficher(); };
 document.getElementById("sem-remplir").onclick = () => {
   const cle = cleSemaine(lundiAffiche);
   // On calcule le tirage UNE fois, puis on le rejoue tel quel (même résultat sur le serveur)
   const menu = { ...(etat.menus[cle] || {}) };
   const tirage = {};
   for (const j of JOURS) {
-    if (menu[j] && etat.plats[menu[j]]) continue;
+    if (nomDe(menu[j])) continue;   // jour déjà rempli (plat ou soir spécial) : on n'y touche pas
     const id = tirerPlat({ ...menu, ...tirage }, null);
     if (!id) return;
     tirage[j] = id;
   }
-  modifier(e => { for (const [j, id] of Object.entries(tirage)) if (!(e.menus[cle] || {})[j]) fixerJour(e, cle, j, id); });
+  if (!Object.keys(tirage).length) { afficherToast("La semaine est déjà complète.", null); return; }
+  modifier(e => { for (const [j, id] of Object.entries(tirage)) if (!nomDe((e.menus[cle] || {})[j])) fixerJour(e, cle, j, id); });
 };
-document.getElementById("sem-vider").onclick = (ev) => {
-  const b = ev.currentTarget;
-  if (!b.dataset.sur) { b.dataset.sur = "1"; b.textContent = "Sûr ? Toucher encore"; b.className = "btn danger";
-    setTimeout(() => { delete b.dataset.sur; b.textContent = "Vider la semaine"; b.className = "btn leger"; }, 3000); return; }
+document.getElementById("sem-vider").onclick = () => {
   const cle = cleSemaine(lundiAffiche);
+  const sauvegarde = structuredClone(etat.menus[cle] || null);
+  if (!sauvegarde) return;
   modifier(e => { delete e.menus[cle]; });
+  afficherToast("Semaine effacée", () => modifier(e => { e.menus[cle] = { ...sauvegarde, ...(e.menus[cle] || {}) }; }));
 };
 
-// Onglet Courses
+// --- Courses ---
 document.getElementById("form-extra").addEventListener("submit", (ev) => {
   ev.preventDefault();
   const champ = document.getElementById("champ-extra");
@@ -797,16 +1168,23 @@ document.getElementById("form-extra").addEventListener("submit", (ev) => {
 });
 document.getElementById("courses-decocher").onclick = () => {
   const cle = cleSemaine(lundiAffiche);
+  const avant = [...((etat.courses[cle] || {}).coches || [])];
+  if (!avant.length) return;
   modifier(e => { if (e.courses[cle]) e.courses[cle].coches = []; });
+  afficherToast("Tout est décoché", () => modifier(e => { (e.courses[cle] ||= {}).coches = avant; }));
 };
-// Partager : feuille de partage Android (WhatsApp, SMS…), sinon copie dans le presse-papiers
+// Envoyer : feuille de partage Android (WhatsApp, SMS…), sinon copie dans le presse-papiers.
+// La liste envoyée est rangée par rayon, comme à l'écran.
 document.getElementById("courses-partager").onclick = async () => {
   const cle = cleSemaine(lundiAffiche);
   const coches = new Set((etat.courses[cle] || {}).coches || []);
   const articles = listeCourses(cle).filter(a => !coches.has(a.cle));
   const msg = document.getElementById("courses-msg");
   if (!articles.length) { msg.hidden = false; msg.textContent = "La liste est vide."; return; }
-  const texte = "Courses de la semaine :\n" + articles.map(a => "• " + a.nom).join("\n");
+  const parRayon = {};
+  for (const a of articles) (parRayon[rayonDe(a.nom)] ||= []).push(a.nom);
+  const texte = "🛒 Courses de la semaine\n" + ORDRE_RAYONS.filter(r => parRayon[r])
+    .map(r => "\n" + r + "\n" + parRayon[r].sort((x, y) => x.localeCompare(y, "fr")).map(n => "• " + n).join("\n")).join("\n");
   try {
     if (navigator.share) { await navigator.share({ text: texte }); return; }
     await navigator.clipboard.writeText(texte);
@@ -814,7 +1192,7 @@ document.getElementById("courses-partager").onclick = async () => {
   } catch { /* partage annulé : rien à faire */ }
 };
 
-// Onglet Plats
+// --- Plats ---
 document.getElementById("form-plat").addEventListener("submit", (ev) => {
   ev.preventDefault();
   const champ = document.getElementById("champ-plat");
@@ -825,15 +1203,20 @@ document.getElementById("form-plat").addEventListener("submit", (ev) => {
   if (etat.plats[id]) { msg.hidden = false; msg.textContent = "« " + nom + " » est déjà dans la liste."; return; }
   msg.hidden = true;
   champ.value = "";
+  recherche = ""; document.getElementById("cherche-plat").value = "";
   platOuvert = id;   // on l'ouvre directement pour saisir les ingrédients
   modifier(e => { if (!e.plats[id]) e.plats[id] = { nom, ingr: [] }; });
 });
+document.getElementById("cherche-plat").addEventListener("input", (ev) => {
+  recherche = ev.target.value;
+  afficherPlats();
+});
 
-// Onglets
+// --- Onglets ---
 document.querySelectorAll("nav.onglets button").forEach(b =>
   b.onclick = () => { vue = b.dataset.vue; window.scrollTo(0, 0); afficher(); });
 
-// Clé de la famille
+// --- Clé de la famille ---
 document.getElementById("form-cle").addEventListener("submit", (ev) => {
   ev.preventDefault();
   const c = document.getElementById("champ-cle").value.trim();
@@ -855,17 +1238,20 @@ function demarrer() {
     garderCle(params.get("cle"));
     history.replaceState(null, "", location.pathname);
   }
-  etat = normaliser(lireCache() || structuredClone(ETAT_DE_DEPART));
+  etat = normaliser(lireCache());
+  garderCache();
   lundiAffiche = lundiDe(new Date());
   afficher();
 
   if (REPAS_URL) {
     document.getElementById("btn-synchro").hidden = false;
+    document.getElementById("sep-cle").hidden = false;
     if (!lireCle()) document.getElementById("vue-synchro").hidden = false;
   }
   actualiser();
-  // Quand on revient sur l'appli (ex. après l'avoir laissée ouverte), on relit la version partagée
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) actualiser(); });
+  // Quand on revient sur l'appli (ex. le lendemain), on relit la version partagée
+  // et on remet « Ce soir » au bon jour
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) { afficher(); actualiser(); } });
 }
 demarrer();
 
