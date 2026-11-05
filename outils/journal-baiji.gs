@@ -1,6 +1,6 @@
 /*
   ============================================================
-  Google Apps Script « Journal baiji » — version 1.0.0 (04/11/2026)
+  Google Apps Script « Journal baiji » — version 1.1.0 (05/11/2026)
   ------------------------------------------------------------
   Trois rôles :
    1. VISITES : chaque page de baiji.fr (via /journal.js) envoie ici
@@ -22,12 +22,13 @@
   INSTALLATION (une seule fois, sur ordinateur) :
    1. Créer un Google Sheet « Journal baiji », puis menu
       Extensions → Apps Script, et coller ce fichier à la place du code.
-   2. Engrenage « Paramètres du projet » → « Propriétés du script » :
-       • CLE_LECTURE = un mot de passe de ton choix (c'est lui que la
-         page baiji.fr/journal/ te demandera) ;
-       • CLE_PRONOTE = (facultatif) la clé du Cartable, pour vérifier
-         aussi le service Pronote. Sans elle, Pronote n'est pas testé :
-         une requête sans clé compterait comme une « clé fausse ».
+   2. Remplir les clés dans CLES, juste sous ce bloc (voir les
+      explications là-bas). Le code collé dans Apps Script est privé :
+      toi seul le vois.
+      ⚠️ Ne JAMAIS remettre les vraies clés dans le fichier du dépôt
+      GitHub (outils/journal-baiji.gs) : ce dépôt est public.
+      (Autre possibilité : laisser CLES vide et mettre les mêmes noms
+      dans « Paramètres du projet » → « Propriétés du script ».)
    3. En haut, choisir la fonction « installer » puis ▶ Exécuter :
       Google demande d'autoriser le script (feuilles, e-mail, accès
       internet) → accepter. Ça crée les onglets et les minuteries.
@@ -40,8 +41,37 @@
 
   Historique :
    • 1.0.0 : visites, surveillance des services avec alertes e-mail, stats
+   • 1.1.0 : clés réglables directement dans le code (CLES), sinon propriétés du script
   ============================================================
 */
+
+// ---------- Les clés ----------
+// Deux « mots de passe » que ce script compare à ce qu'on lui envoie.
+//
+// • CLE_LECTURE — protège TES statistiques. La page baiji.fr/journal/
+//   te la demande une fois, puis l'envoie à chaque lecture des chiffres.
+//   Sans la bonne clé, le script répond « clé refusée » : un curieux qui
+//   trouverait l'adresse /exec ne verrait rien. (Il pourrait seulement
+//   ajouter de fausses visites, d'où les garde-fous plus bas.)
+//   C'est toi qui la choisis : longue et sans sens, comme un mot de passe.
+//
+// • CLE_PRONOTE — FACULTATIVE. Ce n'est pas une clé à inventer : c'est la
+//   clé d'accès du service Pronote de ton NAS, la même que celle tapée
+//   dans l'appli Cartable (variable CLE_ACCES du fichier .env du projet
+//   Container Manager « pronote »). Le script l'envoie dans l'en-tête
+//   X-Cle pour vérifier que le service répond, exactement comme Cartable.
+//   Laissée vide : Pronote n'est simplement pas surveillé. (Sans clé, une
+//   vérification compterait comme une « clé fausse » et finirait par
+//   bloquer le service 15 minutes.)
+const CLES = {
+  CLE_LECTURE: '',   // ← à remplir
+  CLE_PRONOTE: ''    // ← facultatif
+};
+
+// Lit une clé : d'abord dans CLES ci-dessus, sinon dans les propriétés du script
+function lireCle(nom) {
+  return CLES[nom] || PropertiesService.getScriptProperties().getProperty(nom) || '';
+}
 
 // ---------- Réglages ----------
 
@@ -53,7 +83,7 @@ const SERVICES = [
   { id: 'photos',   nom: 'Photos (Immich)',     url: 'https://photos.baiji.fr/api/server/ping' },
   { id: 'voitures', nom: 'Voitures',            url: 'https://voitures.baiji.fr/cars.json' },
   { id: 'biblio',   nom: 'Médiathèque',         url: 'https://biblio.baiji.fr/prets.json' },
-  // Pronote : protégé par la clé du Cartable (propriété CLE_PRONOTE, envoyée
+  // Pronote : protégé par la clé du Cartable (CLE_PRONOTE dans CLES, envoyée
   // dans l'en-tête X-Cle). Sans clé, ce service est simplement ignoré.
   { id: 'pronote',  nom: 'Cartable (Pronote)',  url: 'https://pronote.baiji.fr/pronote.json', cle: 'CLE_PRONOTE' }
 ];
@@ -137,7 +167,7 @@ function json(objet) {
  * accepté pendant une heure (même la bonne).
  */
 function cleValide(cle) {
-  const attendue = PropertiesService.getScriptProperties().getProperty('CLE_LECTURE');
+  const attendue = lireCle('CLE_LECTURE');
   const cache = CacheService.getScriptCache();
   const essais = Number(cache.get('essais_faux') || 0);
   if (!attendue || essais >= 10) return false;
@@ -218,7 +248,7 @@ function verifierServices() {
     // Service protégé sans clé renseignée : on ne le teste pas
     const entetes = {};
     if (s.cle) {
-      const cle = props.getProperty(s.cle);
+      const cle = lireCle(s.cle);
       if (!cle) return;
       entetes['X-Cle'] = cle;
     }
@@ -377,7 +407,7 @@ function statsServices() {
 
   return SERVICES.map(s => {
     const miennes = lignes.filter(l => l[1] === s.id);
-    if (s.cle && !props.getProperty(s.cle)) {
+    if (s.cle && !lireCle(s.cle)) {
       return { id: s.id, nom: s.nom, url: s.url, etat: 'non-verifie' };
     }
     if (!miennes.length) return { id: s.id, nom: s.nom, url: s.url, etat: 'inconnu' };
