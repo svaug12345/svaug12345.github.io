@@ -23,6 +23,8 @@
    • v1.2.1 : compteur de visites de baiji.fr (/journal.js)
    • v1.2.2 : onglet Messages : affiche pourquoi Pronote n'a pas donné les messages
               (champ messages.erreurs du service v1.5.0) au lieu d'un onglet vide
+   • v1.2.3 : « messagerie fermée par Pronote » (le soir, droit à la déconnexion) au lieu
+              de « Aucune discussion » (champ messages.messagerieFermee du service v1.5.2)
 -->
 <html lang="fr">
 <head>
@@ -361,7 +363,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = '1.2.2';
+    const VERSION = '1.2.3';
     // Adresse du service du NAS (reverse proxy DSM). Pour essayer un autre service :
     // ?service=http://192.168.1.161:8092 (retenu sur ce téléphone, ?service= vide pour revenir).
     const SERVICE_PAR_DEFAUT = 'https://pronote.baiji.fr';
@@ -651,7 +653,10 @@
       $('vue').innerHTML = `
         ${erreurs}
         ${m.instantane ? `<div class="instantane">🌙 Dernière image de la journée (Pronote masque les infos le soir).</div>` : ''}
-        <section class="card"><div class="card-title">Discussions</div>${discussions || '<div class="vide">Aucune discussion.</div>'}</section>
+        <section class="card"><div class="card-title">Discussions</div>${discussions || (m.messagerieFermee
+          // Pronote répond « messagerie désactivée » (en général le soir : droit à la déconnexion)
+          ? '<div class="vide">💤 Messagerie fermée par Pronote pour le moment (souvent le soir). Elle reviendra à la prochaine lecture en journée.</div>'
+          : '<div class="vide">Aucune discussion.</div>')}</section>
         <section class="card"><div class="card-title">Informations du collège</div>${informations || '<div class="vide">Aucune information.</div>'}</section>
         <p class="aide" style="text-align:center">Lecture seule : pour répondre, utilise Pronote. Rien n'est marqué comme lu ici.</p>`;
     }
