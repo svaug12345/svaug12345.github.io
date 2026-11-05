@@ -57,6 +57,7 @@
               (visites et état des services) dans « Outils »
    • v1.26.0 : la carte « Photos » passe par baiji.fr/photos/ (visite comptée, puis Immich)
    • v1.27.0 : retour de la carte « Photos » sur https://photos.baiji.fr/ (lien direct)
+   • v1.28.0 : carte « On mange quoi ? » (menu de la semaine et courses) dans « Maison »
 
   À déposer dans le dépôt GitHub : svaug12345.github.io
   → c'est le fichier "index.html" à la racine.
@@ -601,7 +602,7 @@
 
     <!-- ===================== PIED DE PAGE ===================== -->
     <footer>
-      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.27.0</p>
+      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.28.0</p>
     </footer>
 
     <!--
@@ -645,6 +646,7 @@
       chat: `<path d="M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58-.42 7-.42 7 .57 1.07 1 2.24 1 3.44C21 17.9 16.97 21 12 21s-9-3-9-7.56c0-1.25.5-2.4 1-3.44 0 0-1.89-6.42-.5-7 1.39-.58 4.72.23 6.5 2.23A9.04 9.04 0 0 1 12 5Z"/> <path d="M8 14v.5"/> <path d="M16 14v.5"/> <path d="M11.25 16.25h1.5L12 17l-.75-.75Z"/>`,  // cat
       qr: `<path d="M17 12v4a1 1 0 0 1-1 1h-4"/> <path d="M17 3h2a2 2 0 0 1 2 2v2"/> <path d="M17 8V7"/> <path d="M21 17v2a2 2 0 0 1-2 2h-2"/> <path d="M3 7V5a2 2 0 0 1 2-2h2"/> <path d="M7 17h.01"/> <path d="M7 21H5a2 2 0 0 1-2-2v-2"/> <rect x="7" y="7" width="5" height="5" rx="1"/>`,  // scan-qr-code
       signature: `<path d="m21 17-2.156-1.868A.5.5 0 0 0 18 15.5v.5a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1c0-2.545-3.991-3.97-8.5-4a1 1 0 0 0 0 5c4.153 0 4.745-11.295 5.708-13.5a2.5 2.5 0 1 1 3.31 3.284"/> <path d="M3 21h18"/>`,  // signature
+      couverts: `<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/> <path d="M7 2v20"/> <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>`,  // utensils
       livre: `<path d="M12 5v16"/> <path d="m16 12 2 2 4-4"/> <path d="M22 6V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2h4.001A2 2 0 0022 17v-1.344"/>`,  // book-open-check
       video: `<path d="m12.296 3.464 3.02 3.956"/> <path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3z"/> <path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/> <path d="m6.18 5.276 3.1 3.899"/>`,  // clapperboard
       masque: `<path d="M18 11c-1.5 0-2.5.5-3 2"/> <path d="M4 6a2 2 0 0 0-2 2v4a5 5 0 0 0 5 5 8 8 0 0 1 5 2 8 8 0 0 1 5-2 5 5 0 0 0 5-5V8a2 2 0 0 0-2-2h-3a8 8 0 0 0-5 2 8 8 0 0 0-5-2z"/> <path d="M6 11c1.5 0 2.5.5 3 2"/>`,  // venetian-mask
@@ -806,6 +808,10 @@
         desc: "Météo, tâches des enfants et batteries des voitures (mode TV : ?tv)",
         courte: "Le tableau de bord maison",
         url: "famille/" },
+      { id: "repas",       nom: "On mange quoi ?", icone: "couverts",
+        desc: "Le menu de la semaine, tiré au sort ou choisi, et la liste de courses qui va avec",
+        courte: "Menu de la semaine et courses",
+        url: "repas/" },                     // données : script Google « Repas famille »
       { id: "mediatheque", nom: "Médiathèque",  icone: "livre",
         desc: "Les documents empruntés aux Médiathèques de Paris-Saclay, avec leurs couvertures",
         courte: "Nos emprunts et leurs retours",
@@ -849,7 +855,7 @@
     // >>> ORGANISATION (bloc remplaçable en entier)
     const ORGANISATION = {
       rubriques: [
-        { nom: "Maison", projets: ["famille", "cartable", "voitures", "mediatheque", "photos"] },
+        { nom: "Maison", projets: ["famille", "repas", "cartable", "voitures", "mediatheque", "photos"] },
         { nom: "Outils", projets: ["qr", "pressoir", "place-nette", "paraphe", "journal"] },
         { nom: "Famille & amis", projets: ["revisions", "nego-papa", "foot-chats", "grand-verdict", "sos-amitie"] },
         { nom: "Carrefour", projets: ["fournisseurs", "nexus", "salle-negociation", "pochpoch"] },

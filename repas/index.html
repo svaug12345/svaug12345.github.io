@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<!--
+  On mange quoi ? — les repas de la famille
+  Version 1.1.0
+  Trois onglets :
+   • Semaine : un dîner par jour, choisi dans la liste ou tiré au sort ;
+   • Courses : les ingrédients des plats de la semaine, à cocher en magasin ;
+   • Plats   : la liste des plats de la famille et leurs ingrédients.
+  Données partagées par toute la famille grâce au script Google « Repas famille »
+  (code : outils/repas.gs, adresse /exec dans REPAS_URL plus bas). Sans script,
+  l'appli marche quand même, mais seulement sur l'appareil.
+  Historique :
+   • v1.0.0 : liste des plats, ajout, suppression, tirage au sort (artifact Claude)
+   • v1.1.0 : sur baiji.fr ; menu de la semaine, liste de courses, ingrédients par plat,
+              synchro Google Sheet, installable (PWA)
+-->
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>On mange quoi ?</title>
+  <meta name="description" content="Le menu de la semaine et la liste de courses de la famille.">
+
+  <!-- Page familiale : pas dans les moteurs de recherche -->
+  <meta name="robots" content="noindex">
+
+  <!--
+    PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »).
+    Fichiers fabriqués par outils/generer-pwa.py :
+     • manifest.webmanifest : nom, couleurs, icônes de l'appli ;
+     • icones/ : les icônes (apple-touch-icon = celle des iPhone) ;
+     • sw.js : le service worker, enregistré en bas de page.
+  -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <link rel="icon" href="icones/icone-192.png">
+  <meta name="theme-color" content="#0f7c7b">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+  <script src="/journal.js" defer></script>
+
+  <!-- Polices de la charte SV : Manrope (texte) + JetBrains Mono (petites étiquettes) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+
+  <style>
+    /* =========================================================
+       1. COULEURS ET POLICES (variables CSS)
+       Toutes les couleurs sont définies ici une seule fois.
+       ========================================================= */
+    :root {
+      --bg: #f3f6f6;          /* fond de page */
+      --card: #ffffff;        /* cartes */
+      --ink: #12302f;         /* texte principal */
+      --muted: #5b7574;       /* texte secondaire */
+      --line: #dbe6e5;        /* traits fins */
+      --teal: #0f7c7b;        /* couleur SV */
+      --teal-soft: #e2f0ef;   /* fond teinté */
+      --on-teal: #ffffff;
+      --danger: #c2413a;
+      --ok: #2f8f4e;
+      --sans: "Manrope", "Segoe UI", system-ui, sans-serif;
+      --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", monospace;
+    }
+    /* Thème sombre : on ne change que les couleurs */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1a1a; --card: #142424; --ink: #e2efee; --muted: #8fadab;
+        --line: #234140; --teal: #3fb9b4; --teal-soft: #173634; --on-teal: #062120;
+        --danger: #ef7d76; --ok: #5cc27e;
+        color-scheme: dark;
+      }
+    }
+
+    /* =========================================================
+       2. MISE EN PAGE GÉNÉRALE
+       Une colonne étroite façon appli ; barre d'onglets en bas
+       (facile à atteindre avec le pouce).
+       ========================================================= */
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.45;
+      /* place pour la barre d'onglets en bas */
+      padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    }
+    .page {
+      max-width: 560px;
+      margin: 0 auto;
+      padding-top: calc(20px + env(safe-area-inset-top, 0px));
+      padding-left: max(16px, env(safe-area-inset-left, 0px));
+      padding-right: max(16px, env(safe-area-inset-right, 0px));
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    header h1 { margin: 0; font-size: 1.7rem; font-weight: 800; letter-spacing: -0.01em; }
+    header p { margin: 2px 0 0; color: var(--muted); font-size: 0.95rem; }
+
+    .etiquette {            /* petites étiquettes en mono, style SV */
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+    .carte {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+    }
+
+    /* Boutons de la charte SV : capitales espacées */
+    .btn {
+      font: 700 0.8rem var(--sans);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border: 0;
+      border-radius: 999px;
+      padding: 11px 16px;
+      cursor: pointer;
+      background: var(--teal);
+      color: var(--on-teal);
+    }
+    .btn.leger { background: var(--teal-soft); color: var(--teal); }
+    .btn.danger { background: var(--danger); color: var(--card); }
+    .btn:disabled { opacity: .5; cursor: default; }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 2px solid var(--teal); outline-offset: 2px;
+    }
+    .rangee { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    input[type=text], textarea, select {
+      font: 400 1rem var(--sans);
+      color: var(--ink);
+      background: var(--card);
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      padding: 11px 12px;
+      width: 100%;
+      min-width: 0;
+    }
+    textarea { resize: vertical; min-height: 70px; }
+
+    /* =========================================================
+       3. ONGLET SEMAINE
+       ========================================================= */
+    .nav-semaine { display: flex; align-items: center; gap: 8px; }
+    .nav-semaine .titre { flex: 1; text-align: center; font-weight: 700; }
+    .rond {
+      width: 40px; height: 40px; border-radius: 50%;
+      border: 1px solid var(--line); background: var(--card); color: var(--ink);
+      font-size: 1.1rem; cursor: pointer; flex: 0 0 auto;
+    }
+    .jours { list-style: none; margin: 0; padding: 0; }
+    .jours li {
+      display: grid;
+      grid-template-columns: 54px 1fr 40px;   /* jour | plat | dé */
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+    }
+    .jours li:first-child { border-top: 0; }
+    .jours li.aujourdhui { background: var(--teal-soft); }
+    .jours li.aujourdhui:first-child { border-radius: 16px 16px 0 0; }
+    .jours li.aujourdhui:last-child { border-radius: 0 0 16px 16px; }
+    .jour-nom { display: flex; flex-direction: column; line-height: 1.1; }
+    .jour-nom b { font-size: 0.95rem; }
+    .jour-nom span { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+    .jours select { padding: 9px 10px; }
+    .jours select.vide { color: var(--muted); }
+
+    /* =========================================================
+       4. ONGLET COURSES
+       ========================================================= */
+    .courses { list-style: none; margin: 0; padding: 0; }
+    .courses li { border-top: 1px solid var(--line); }
+    .courses li:first-child { border-top: 0; }
+    .courses label {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; cursor: pointer;
+    }
+    .courses input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--teal); flex: 0 0 auto; }
+    .courses .nom { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+    .courses .pour { font-size: 0.8rem; color: var(--muted); }
+    .courses li.coche .nom { text-decoration: line-through; color: var(--muted); }
+    .courses .x { background: none; border: 0; color: var(--muted); font-size: 1.2rem; cursor: pointer; padding: 0 4px; }
+    .compte { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+    /* =========================================================
+       5. ONGLET PLATS
+       ========================================================= */
+    .plats { list-style: none; margin: 0; padding: 0; }
+    .plats > li { border-top: 1px solid var(--line); }
+    .plats > li:first-child { border-top: 0; }
+    .plat-tete {
+      all: unset; box-sizing: border-box;
+      display: flex; align-items: center; gap: 10px;
+      width: 100%; padding: 13px 14px; cursor: pointer;
+    }
+    .plat-tete .nom { flex: 1; min-width: 0; font-weight: 700; overflow-wrap: anywhere; }
+    .plat-tete .ingr { display: block; font-weight: 400; font-size: 0.85rem; color: var(--muted); }
+    .plat-tete .fleche { color: var(--muted); transition: transform .2s; }
+    .plats li.ouvert .fleche { transform: rotate(90deg); }
+    .plat-edit { padding: 0 14px 14px; display: flex; flex-direction: column; gap: 10px; }
+    .aide { font-size: 0.82rem; color: var(--muted); margin: 0; }
+
+    .vide-msg { padding: 18px 14px; text-align: center; color: var(--muted); }
+    .message { font-size: 0.9rem; margin: 0; }
+    .message.erreur { color: var(--danger); }
+
+    /* =========================================================
+       6. BARRE D'ONGLETS (en bas)
+       ========================================================= */
+    nav.onglets {
+      position: fixed; left: 0; right: 0; bottom: 0;
+      background: var(--card);
+      border-top: 1px solid var(--line);
+      display: flex; justify-content: center;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      padding-left: env(safe-area-inset-left, 0px);
+      padding-right: env(safe-area-inset-right, 0px);
+      z-index: 5;
+    }
+    nav.onglets button {
+      flex: 1; max-width: 180px;
+      background: none; border: 0; cursor: pointer;
+      padding: 10px 4px 12px;
+      color: var(--muted);
+      font: 700 0.7rem var(--sans); text-transform: uppercase; letter-spacing: 0.08em;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    nav.onglets svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    nav.onglets button[aria-selected="true"] { color: var(--teal); }
+
+    footer { color: var(--muted); font-size: 0.8rem; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding-bottom: 8px; }
+    footer button { all: unset; cursor: pointer; text-decoration: underline; }
+    .pastille { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); margin-right: 6px; vertical-align: middle; }
+    .pastille.ok { background: var(--ok); }
+    .pastille.err { background: var(--danger); }
+
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  </style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>On mange quoi&nbsp;?</h1>
+    <p id="sous-titre">Le menu de la semaine et les courses qui vont avec.</p>
+  </header>
+
+  <!-- ============ ONGLET SEMAINE ============ -->
+  <section id="vue-semaine">
+    <div class="nav-semaine">
+      <button class="rond" id="sem-prec" aria-label="Semaine précédente">‹</button>
+      <div class="titre" id="sem-titre">Semaine</div>
+      <button class="rond" id="sem-suiv" aria-label="Semaine suivante">›</button>
+    </div>
+    <ul class="jours carte" id="jours" style="margin-top:12px"></ul>
+    <div class="rangee" style="margin-top:12px">
+      <button class="btn" id="sem-remplir">Remplir au hasard</button>
+      <button class="btn leger" id="sem-vider">Vider la semaine</button>
+    </div>
+    <p class="aide" style="margin-top:10px">Le dé tire un plat pour ce soir-là. « Remplir au hasard » ne touche qu'aux jours vides et évite les répétitions.</p>
+  </section>
+
+  <!-- ============ ONGLET COURSES ============ -->
+  <section id="vue-courses" hidden>
+    <div class="rangee" style="justify-content:space-between;align-items:baseline">
+      <span class="etiquette" id="courses-titre">Courses</span>
+      <span class="compte" id="courses-compte"></span>
+    </div>
+    <ul class="courses carte" id="courses" style="margin-top:8px"></ul>
+    <form class="rangee" id="form-extra" style="margin-top:12px;flex-wrap:nowrap" autocomplete="off">
+      <input type="text" id="champ-extra" maxlength="60" placeholder="Ajouter un article (ex. lait)" aria-label="Article à ajouter">
+      <button class="btn" type="submit">Ajouter</button>
+    </form>
+    <div class="rangee" style="margin-top:12px">
+      <button class="btn leger" id="courses-partager">Partager la liste</button>
+      <button class="btn leger" id="courses-decocher">Tout décocher</button>
+    </div>
+    <p class="message" id="courses-msg" hidden></p>
+  </section>
+
+  <!-- ============ ONGLET PLATS ============ -->
+  <section id="vue-plats" hidden>
+    <form class="rangee" id="form-plat" style="flex-wrap:nowrap" autocomplete="off">
+      <input type="text" id="champ-plat" maxlength="60" placeholder="Nouveau plat (ex. Gratin)" aria-label="Nom du plat">
+      <button class="btn" type="submit">Ajouter</button>
+    </form>
+    <p class="message erreur" id="plat-msg" hidden></p>
+    <div class="rangee" style="justify-content:space-between;align-items:baseline;margin-top:14px">
+      <span class="etiquette">Nos plats</span>
+      <span class="compte" id="plats-compte"></span>
+    </div>
+    <ul class="plats carte" id="plats" style="margin-top:8px"></ul>
+    <p class="aide" style="margin-top:10px">Touchez un plat pour régler ses ingrédients : ce sont eux qui remplissent la liste de courses.</p>
+  </section>
+
+  <!-- ============ RÉGLAGE DE LA SYNCHRO ============ -->
+  <section id="vue-synchro" class="carte" style="padding:14px" hidden>
+    <span class="etiquette">Partage avec la famille</span>
+    <p class="aide" style="margin:6px 0 10px">Entrez la clé de la famille (une seule fois par téléphone) pour que tout le monde voie le même menu.</p>
+    <form class="rangee" id="form-cle" style="flex-wrap:nowrap" autocomplete="off">
+      <input type="text" id="champ-cle" placeholder="Clé de la famille" aria-label="Clé de la famille">
+      <button class="btn" type="submit">Valider</button>
+    </form>
+  </section>
+
+  <footer>
+    <span><span class="pastille" id="pastille"></span><span id="etat">Chargement…</span></span>
+    <span><button id="btn-synchro" hidden>Clé</button> · <span>SV · v1.1.0</span></span>
+  </footer>
+</div>
+
+<!-- Barre d'onglets (pictos Lucide, licence ISC) -->
+<nav class="onglets" role="tablist">
+  <button role="tab" aria-selected="true" data-vue="semaine">
+    <svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Semaine
+  </button>
+  <button role="tab" aria-selected="false" data-vue="courses">
+    <svg viewBox="0 0 24 24"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>Courses
+  </button>
+  <button role="tab" aria-selected="false" data-vue="plats">
+    <svg viewBox="0 0 24 24"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>Plats
+  </button>
+</nav>
+
+<script>
+/* ==============================================================
+   On mange quoi ? — v1.1.0
+   ==============================================================
+   ORGANISATION DU CODE
+   1. Réglages
+   2. L'état (les données) et sa forme
+   3. Stockage : copie locale + script Google partagé
+   4. Petits outils de dates
+   5. Affichage des trois onglets
+   6. Actions (ce que font les boutons)
+   7. Démarrage
+   ============================================================== */
+const VERSION = "1.1.0";
+
+/* ---------- 1. RÉGLAGES ----------
+   Adresse /exec du script Google « Repas famille » (code dans outils/repas.gs).
+   Vide = pas de partage : les données restent dans le téléphone. */
+const REPAS_URL = "";
+const CLE_LOCALE = "repas.cle";     // la clé de la famille, gardée dans le téléphone
+const CACHE_LOCAL = "repas.etat";   // dernière copie des données (marche hors ligne)
+const JOURS = ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"];
+const NOMS_JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+
+/* ---------- 2. L'ÉTAT ----------
+   Tout tient dans un seul objet, enregistré d'un bloc :
+   {
+     plats:   { "pates": { nom: "Pâtes", ingr: ["pâtes", …] }, … },
+     menus:   { "2026-11-09": { lun: "pates", mar: null, … } },   // clé = lundi de la semaine
+     courses: { "2026-11-09": { coches: ["pâtes"], extras: ["lait"] } }
+   }
+   Les ingrédients ci-dessous sont des propositions de départ, à modifier dans l'onglet Plats. */
+const ETAT_DE_DEPART = {
+  plats: {
+    "pates":         { nom: "Pâtes",         ingr: ["pâtes", "sauce tomate", "parmesan"] },
+    "cordons-bleus": { nom: "Cordons bleus", ingr: ["cordons bleus", "haricots verts"] },
+    "gnocchi":       { nom: "Gnocchi",       ingr: ["gnocchi", "sauce tomate", "mozzarella"] },
+    "ravioles":      { nom: "Ravioles",      ingr: ["ravioles", "crème fraîche", "gruyère râpé"] },
+    "lentilles":     { nom: "Lentilles",     ingr: ["lentilles", "saucisses", "carottes", "oignon"] },
+    "burger-maison": { nom: "Burger maison", ingr: ["pains à burger", "steaks hachés", "cheddar", "salade", "tomates", "oignon", "frites"] },
+  },
+  menus: {},
+  courses: {},
+};
+
+let etat = null;          // les données affichées
+let vue = "semaine";      // onglet ouvert
+let lundiAffiche = null;  // semaine affichée (objet Date du lundi)
+let platOuvert = null;    // plat déplié dans l'onglet Plats
+
+/* ---------- 3. STOCKAGE ----------
+   • Copie locale (localStorage) : affichage immédiat et hors ligne.
+   • Script Google : la version partagée. Pour limiter les conflits quand
+     deux personnes modifient en même temps, chaque action relit d'abord la
+     dernière version du serveur, applique SA modification dessus, puis renvoie
+     le tout (voir modifier()). */
+function lireCle() { try { return localStorage.getItem(CLE_LOCALE) || ""; } catch { return ""; } }
+function garderCle(c) { try { localStorage.setItem(CLE_LOCALE, c); } catch {} }
+function lireCache() { try { return JSON.parse(localStorage.getItem(CACHE_LOCAL)); } catch { return null; } }
+function garderCache() { try { localStorage.setItem(CACHE_LOCAL, JSON.stringify(etat)); } catch {} }
+
+const partage = () => REPAS_URL !== "" && lireCle() !== "";
+
+// Lit la version partagée (GET). Renvoie null si le serveur n'a encore rien.
+async function chargerServeur() {
+  const r = await fetch(REPAS_URL + "?cle=" + encodeURIComponent(lireCle()), { cache: "no-store" });
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.erreur || "erreur");
+  return j.etat;   // objet ou null
+}
+// Enregistre (POST). « text/plain » évite la requête de vérification CORS
+// que Google Apps Script ne sait pas traiter.
+async function envoyerServeur(e) {
+  const r = await fetch(REPAS_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ cle: lireCle(), etat: e }),
+  });
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.erreur || "erreur");
+}
+
+// Complète un état incomplet (ex. ancienne version) pour éviter les plantages
+function normaliser(e) {
+  e = e && typeof e === "object" ? e : {};
+  e.plats = e.plats || {};
+  e.menus = e.menus || {};
+  e.courses = e.courses || {};
+  return e;
+}
+
+/* modifier(fn) : LA fonction par laquelle passent toutes les actions.
+   1. on applique fn tout de suite sur les données affichées (réaction immédiate) ;
+   2. si le partage est actif : on relit le serveur, on rejoue fn dessus, on renvoie. */
+async function modifier(fn) {
+  fn(etat);
+  garderCache();
+  afficher();
+  if (!partage()) return;
+  try {
+    etatSynchro("Enregistrement…", "");
+    const frais = normaliser(await chargerServeur() || structuredClone(ETAT_DE_DEPART));
+    fn(frais);
+    nettoyer(frais);
+    await envoyerServeur(frais);
+    etat = frais;
+    garderCache();
+    afficher();
+    etatSynchro("Partagé avec la famille", "ok");
+  } catch (err) {
+    etatSynchro("Pas de connexion : modification gardée sur ce téléphone", "err");
+  }
+}
+
+// Relit la version partagée (au démarrage et quand on revient sur l'appli)
+async function actualiser() {
+  if (!partage()) {
+    etatSynchro(REPAS_URL ? "Sur ce téléphone seulement" : "Enregistré sur ce téléphone", "");
+    return;
+  }
+  try {
+    const distant = await chargerServeur();
+    if (distant) {
+      etat = normaliser(distant);
+    } else {
+      // Premier lancement : le serveur est vide, on y met les données actuelles
+      await envoyerServeur(etat);
+    }
+    garderCache();
+    afficher();
+    etatSynchro("Partagé avec la famille", "ok");
+  } catch (err) {
+    etatSynchro(String(err.message).includes("clé")
+      ? "Clé incorrecte" : "Hors ligne : dernière version connue", "err");
+    if (String(err.message).includes("clé")) document.getElementById("vue-synchro").hidden = false;
+  }
+}
+
+// Ne garde que les 8 dernières semaines de menus et de courses (le fichier reste léger)
+function nettoyer(e) {
+  const limite = cleSemaine(ajouterJours(lundiDe(new Date()), -56));
+  for (const k of Object.keys(e.menus)) if (k < limite) delete e.menus[k];
+  for (const k of Object.keys(e.courses)) if (k < limite) delete e.courses[k];
+}
+
+function etatSynchro(texte, type) {
+  document.getElementById("etat").textContent = texte;
+  document.getElementById("pastille").className = "pastille " + type;
+}
+
+/* ---------- 4. DATES ---------- */
+function lundiDe(d) {
+  const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const decalage = (x.getDay() + 6) % 7;   // getDay : 0 = dimanche → on ramène lundi à 0
+  x.setDate(x.getDate() - decalage);
+  return x;
+}
+function ajouterJours(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+// « 2026-11-09 » : en heure locale (toISOString décalerait d'un jour à cause du fuseau)
+function cleSemaine(d) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+const fmtCourt = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" });
+
+/* Transforme un nom en identifiant : « Burger maison » → « burger-maison » */
+function slug(nom) {
+  return nom.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "plat";
+}
+// Liste des plats triée par nom, à la française
+function platsTries() {
+  return Object.entries(etat.plats)
+    .map(([id, p]) => ({ id, ...p }))
+    .sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
+}
+
+/* ---------- 5. AFFICHAGE ---------- */
+function afficher() {
+  for (const v of ["semaine", "courses", "plats"]) {
+    document.getElementById("vue-" + v).hidden = v !== vue;
+  }
+  document.querySelectorAll("nav.onglets button").forEach(b =>
+    b.setAttribute("aria-selected", String(b.dataset.vue === vue)));
+  if (vue === "semaine") afficherSemaine();
+  if (vue === "courses") afficherCourses();
+  if (vue === "plats") afficherPlats();
+}
+
+function afficherSemaine() {
+  const cle = cleSemaine(lundiAffiche);
+  const menu = etat.menus[cle] || {};
+  const dimanche = ajouterJours(lundiAffiche, 6);
+  const cetteSemaine = cle === cleSemaine(lundiDe(new Date()));
+  document.getElementById("sem-titre").textContent =
+    (cetteSemaine ? "Cette semaine · " : "") + fmtCourt.format(lundiAffiche) + " – " + fmtCourt.format(dimanche);
+
+  const ul = document.getElementById("jours");
+  ul.replaceChildren();
+  const plats = platsTries();
+  const aujourdhui = cleSemaine(new Date());
+
+  JOURS.forEach((j, i) => {
+    const date = ajouterJours(lundiAffiche, i);
+    const li = document.createElement("li");
+    if (cleSemaine(date) === aujourdhui) li.classList.add("aujourdhui");
+
+    // Nom du jour + date
+    const nom = document.createElement("div");
+    nom.className = "jour-nom";
+    nom.innerHTML = "<b></b><span></span>";
+    nom.querySelector("b").textContent = NOMS_JOURS[i].slice(0, 3) + ".";
+    nom.querySelector("span").textContent = date.getDate() + "/" + (date.getMonth() + 1);
+
+    // Menu déroulant natif : sur Android il s'ouvre en liste plein écran, très pratique
+    const sel = document.createElement("select");
+    sel.setAttribute("aria-label", "Dîner du " + NOMS_JOURS[i].toLowerCase());
+    sel.add(new Option("— à choisir —", ""));
+    for (const p of plats) sel.add(new Option(p.nom, p.id));
+    const choisi = menu[j] && etat.plats[menu[j]] ? menu[j] : "";
+    sel.value = choisi;
+    sel.classList.toggle("vide", !choisi);
+    sel.onchange = () => modifier(e => fixerJour(e, cle, j, sel.value || null));
+
+    // Le dé : tire un plat pour ce jour
+    const de = document.createElement("button");
+    de.className = "rond";
+    de.textContent = "🎲";
+    de.setAttribute("aria-label", "Tirer au sort pour " + NOMS_JOURS[i].toLowerCase());
+    de.onclick = () => {
+      const id = tirerPlat(menu, choisi);
+      if (id) modifier(e => fixerJour(e, cle, j, id));
+    };
+
+    li.append(nom, sel, de);
+    ul.append(li);
+  });
+}
+
+/* Liste de courses : ingrédients des plats de la semaine, sans doublon.
+   On garde pour chaque article les plats qui en ont besoin (« pour : … »). */
+function listeCourses(cle) {
+  const menu = etat.menus[cle] || {};
+  const parArticle = new Map();   // "oignon" → { nom: "oignon", pour: ["Lentilles", …] }
+  for (const j of JOURS) {
+    const p = etat.plats[menu[j]];
+    if (!p) continue;
+    for (const brut of p.ingr || []) {
+      const k = brut.trim().toLowerCase();
+      if (!k) continue;
+      if (!parArticle.has(k)) parArticle.set(k, { cle: k, nom: brut.trim(), pour: [] });
+      parArticle.get(k).pour.push(p.nom);
+    }
+  }
+  const c = etat.courses[cle] || {};
+  for (const ex of c.extras || []) {
+    const k = ex.trim().toLowerCase();
+    if (!parArticle.has(k)) parArticle.set(k, { cle: k, nom: ex, pour: [], extra: true });
+  }
+  return [...parArticle.values()];
+}
+
+function afficherCourses() {
+  const cle = cleSemaine(lundiAffiche);
+  const articles = listeCourses(cle);
+  const coches = new Set((etat.courses[cle] || {}).coches || []);
+  document.getElementById("courses-titre").textContent =
+    "Courses · semaine du " + fmtCourt.format(lundiAffiche);
+  const restants = articles.filter(a => !coches.has(a.cle)).length;
+  document.getElementById("courses-compte").textContent =
+    articles.length ? restants + " à prendre sur " + articles.length : "";
+
+  const ul = document.getElementById("courses");
+  ul.replaceChildren();
+  if (!articles.length) {
+    const li = document.createElement("li");
+    li.className = "vide-msg";
+    li.textContent = "Rien pour l'instant : choisissez les dîners dans l'onglet Semaine.";
+    ul.append(li);
+    return;
+  }
+  // Pas encore pris d'abord, cochés à la fin
+  articles.sort((a, b) => (coches.has(a.cle) - coches.has(b.cle)) || a.nom.localeCompare(b.nom, "fr"));
+
+  for (const a of articles) {
+    const li = document.createElement("li");
+    li.classList.toggle("coche", coches.has(a.cle));
+    const lab = document.createElement("label");
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = coches.has(a.cle);
+    cb.onchange = () => modifier(e => cocher(e, cle, a.cle, cb.checked));
+    const txt = document.createElement("span");
+    txt.className = "nom";
+    txt.textContent = a.nom;
+    if (a.pour.length) {
+      const pour = document.createElement("span");
+      pour.className = "pour";
+      // Un même plat deux fois dans la semaine → « Pâtes ×2 »
+      const comptes = {};
+      a.pour.forEach(n => comptes[n] = (comptes[n] || 0) + 1);
+      pour.textContent = " · " + Object.entries(comptes).map(([n, c]) => c > 1 ? n + " ×" + c : n).join(", ");
+      txt.append(pour);
+    }
+    lab.append(cb, txt);
+    if (a.extra) {   // les articles ajoutés à la main peuvent être retirés
+      const x = document.createElement("button");
+      x.className = "x"; x.textContent = "×";
+      x.setAttribute("aria-label", "Retirer " + a.nom);
+      x.onclick = (ev) => { ev.preventDefault(); modifier(e => retirerExtra(e, cle, a.cle)); };
+      lab.append(x);
+    }
+    li.append(lab);
+    ul.append(li);
+  }
+}
+
+function afficherPlats() {
+  const plats = platsTries();
+  document.getElementById("plats-compte").textContent = plats.length + (plats.length > 1 ? " plats" : " plat");
+  const ul = document.getElementById("plats");
+  ul.replaceChildren();
+  if (!plats.length) {
+    const li = document.createElement("li");
+    li.className = "vide-msg";
+    li.textContent = "Aucun plat. Ajoutez le premier ci-dessus.";
+    ul.append(li);
+    return;
+  }
+  for (const p of plats) {
+    const li = document.createElement("li");
+    const ouvert = platOuvert === p.id;
+    li.classList.toggle("ouvert", ouvert);
+
+    const tete = document.createElement("button");
+    tete.className = "plat-tete";
+    tete.setAttribute("aria-expanded", String(ouvert));
+    const nom = document.createElement("span");
+    nom.className = "nom";
+    nom.textContent = p.nom;
+    const ingr = document.createElement("span");
+    ingr.className = "ingr";
+    ingr.textContent = (p.ingr || []).length ? p.ingr.join(", ") : "pas d'ingrédients";
+    nom.append(ingr);
+    const fl = document.createElement("span");
+    fl.className = "fleche"; fl.textContent = "›";
+    tete.append(nom, fl);
+    tete.onclick = () => { platOuvert = ouvert ? null : p.id; afficherPlats(); };
+    li.append(tete);
+
+    if (ouvert) {
+      // Zone de modification : un ingrédient par ligne
+      const ed = document.createElement("div");
+      ed.className = "plat-edit";
+      const ta = document.createElement("textarea");
+      ta.id = "ingr-" + p.id;
+      ta.value = (p.ingr || []).join("\n");
+      ta.setAttribute("aria-label", "Ingrédients de " + p.nom + ", un par ligne");
+      const aide = document.createElement("p");
+      aide.className = "aide";
+      aide.textContent = "Un ingrédient par ligne.";
+      const rang = document.createElement("div");
+      rang.className = "rangee";
+      const ok = document.createElement("button");
+      ok.className = "btn"; ok.textContent = "Enregistrer";
+      ok.onclick = () => {
+        const liste = ta.value.split(/\n|,/).map(s => s.trim()).filter(Boolean);
+        platOuvert = null;
+        modifier(e => { if (e.plats[p.id]) e.plats[p.id].ingr = liste; });
+      };
+      // Suppression en deux temps (pas de fenêtre confirm())
+      const sup = document.createElement("button");
+      sup.className = "btn leger"; sup.textContent = "Supprimer";
+      sup.onclick = () => {
+        if (sup.dataset.sur) { platOuvert = null; modifier(e => supprimerPlat(e, p.id)); return; }
+        sup.dataset.sur = "1";
+        sup.className = "btn danger";
+        sup.textContent = "Confirmer la suppression";
+      };
+      rang.append(ok, sup);
+      ed.append(ta, aide, rang);
+      li.append(ed);
+    }
+    ul.append(li);
+  }
+}
+
+/* ---------- 6. ACTIONS ----------
+   Fonctions « pures » qui modifient un état e : elles sont rejouées
+   sur la version fraîche du serveur dans modifier(). */
+function fixerJour(e, cle, jour, id) {
+  e.menus[cle] = e.menus[cle] || {};
+  e.menus[cle][jour] = id;
+}
+function cocher(e, cle, article, oui) {
+  const c = e.courses[cle] = e.courses[cle] || {};
+  const s = new Set(c.coches || []);
+  oui ? s.add(article) : s.delete(article);
+  c.coches = [...s];
+}
+function ajouterExtra(e, cle, nom) {
+  const c = e.courses[cle] = e.courses[cle] || {};
+  c.extras = c.extras || [];
+  if (!c.extras.some(x => x.toLowerCase() === nom.toLowerCase())) c.extras.push(nom);
+}
+function retirerExtra(e, cle, article) {
+  const c = e.courses[cle];
+  if (!c) return;
+  c.extras = (c.extras || []).filter(x => x.trim().toLowerCase() !== article);
+  c.coches = (c.coches || []).filter(x => x !== article);
+}
+function supprimerPlat(e, id) {
+  delete e.plats[id];
+  // On retire aussi le plat des menus où il était
+  for (const m of Object.values(e.menus)) for (const j of JOURS) if (m[j] === id) m[j] = null;
+}
+
+/* Tire un plat au hasard, en évitant ceux déjà prévus cette semaine
+   (et celui déjà choisi ce jour-là). S'il n'en reste aucun, on accepte les répétitions. */
+function tirerPlat(menu, actuel) {
+  const tous = Object.keys(etat.plats);
+  if (!tous.length) { vue = "plats"; afficher(); return null; }
+  const pris = new Set(Object.values(menu || {}).filter(Boolean));
+  let choix = tous.filter(id => !pris.has(id) && id !== actuel);
+  if (!choix.length) choix = tous.filter(id => id !== actuel);
+  if (!choix.length) choix = tous;
+  return choix[Math.floor(Math.random() * choix.length)];
+}
+
+// Boutons de l'onglet Semaine
+document.getElementById("sem-prec").onclick = () => { lundiAffiche = ajouterJours(lundiAffiche, -7); afficher(); };
+document.getElementById("sem-suiv").onclick = () => { lundiAffiche = ajouterJours(lundiAffiche, 7); afficher(); };
+document.getElementById("sem-remplir").onclick = () => {
+  const cle = cleSemaine(lundiAffiche);
+  // On calcule le tirage UNE fois, puis on le rejoue tel quel (même résultat sur le serveur)
+  const menu = { ...(etat.menus[cle] || {}) };
+  const tirage = {};
+  for (const j of JOURS) {
+    if (menu[j] && etat.plats[menu[j]]) continue;
+    const id = tirerPlat({ ...menu, ...tirage }, null);
+    if (!id) return;
+    tirage[j] = id;
+  }
+  modifier(e => { for (const [j, id] of Object.entries(tirage)) if (!(e.menus[cle] || {})[j]) fixerJour(e, cle, j, id); });
+};
+document.getElementById("sem-vider").onclick = (ev) => {
+  const b = ev.currentTarget;
+  if (!b.dataset.sur) { b.dataset.sur = "1"; b.textContent = "Sûr ? Toucher encore"; b.className = "btn danger";
+    setTimeout(() => { delete b.dataset.sur; b.textContent = "Vider la semaine"; b.className = "btn leger"; }, 3000); return; }
+  const cle = cleSemaine(lundiAffiche);
+  modifier(e => { delete e.menus[cle]; });
+};
+
+// Onglet Courses
+document.getElementById("form-extra").addEventListener("submit", (ev) => {
+  ev.preventDefault();
+  const champ = document.getElementById("champ-extra");
+  const nom = champ.value.trim().replace(/\s+/g, " ");
+  if (!nom) return;
+  champ.value = "";
+  const cle = cleSemaine(lundiAffiche);
+  modifier(e => ajouterExtra(e, cle, nom));
+});
+document.getElementById("courses-decocher").onclick = () => {
+  const cle = cleSemaine(lundiAffiche);
+  modifier(e => { if (e.courses[cle]) e.courses[cle].coches = []; });
+};
+// Partager : feuille de partage Android (WhatsApp, SMS…), sinon copie dans le presse-papiers
+document.getElementById("courses-partager").onclick = async () => {
+  const cle = cleSemaine(lundiAffiche);
+  const coches = new Set((etat.courses[cle] || {}).coches || []);
+  const articles = listeCourses(cle).filter(a => !coches.has(a.cle));
+  const msg = document.getElementById("courses-msg");
+  if (!articles.length) { msg.hidden = false; msg.textContent = "La liste est vide."; return; }
+  const texte = "Courses de la semaine :\n" + articles.map(a => "• " + a.nom).join("\n");
+  try {
+    if (navigator.share) { await navigator.share({ text: texte }); return; }
+    await navigator.clipboard.writeText(texte);
+    msg.hidden = false; msg.textContent = "Liste copiée : collez-la dans un message.";
+  } catch { /* partage annulé : rien à faire */ }
+};
+
+// Onglet Plats
+document.getElementById("form-plat").addEventListener("submit", (ev) => {
+  ev.preventDefault();
+  const champ = document.getElementById("champ-plat");
+  const msg = document.getElementById("plat-msg");
+  const nom = champ.value.trim().replace(/\s+/g, " ");
+  if (!nom) return;
+  const id = slug(nom);
+  if (etat.plats[id]) { msg.hidden = false; msg.textContent = "« " + nom + " » est déjà dans la liste."; return; }
+  msg.hidden = true;
+  champ.value = "";
+  platOuvert = id;   // on l'ouvre directement pour saisir les ingrédients
+  modifier(e => { if (!e.plats[id]) e.plats[id] = { nom, ingr: [] }; });
+});
+
+// Onglets
+document.querySelectorAll("nav.onglets button").forEach(b =>
+  b.onclick = () => { vue = b.dataset.vue; window.scrollTo(0, 0); afficher(); });
+
+// Clé de la famille
+document.getElementById("form-cle").addEventListener("submit", (ev) => {
+  ev.preventDefault();
+  const c = document.getElementById("champ-cle").value.trim();
+  if (!c) return;
+  garderCle(c);
+  document.getElementById("vue-synchro").hidden = true;
+  actualiser();
+});
+document.getElementById("btn-synchro").onclick = () => {
+  const s = document.getElementById("vue-synchro");
+  s.hidden = !s.hidden;
+};
+
+/* ---------- 7. DÉMARRAGE ---------- */
+function demarrer() {
+  // ?cle=… dans l'adresse : on l'enregistre puis on l'efface de l'adresse (pratique à envoyer à la famille)
+  const params = new URLSearchParams(location.search);
+  if (params.get("cle")) {
+    garderCle(params.get("cle"));
+    history.replaceState(null, "", location.pathname);
+  }
+  etat = normaliser(lireCache() || structuredClone(ETAT_DE_DEPART));
+  lundiAffiche = lundiDe(new Date());
+  afficher();
+
+  if (REPAS_URL) {
+    document.getElementById("btn-synchro").hidden = false;
+    if (!lireCle()) document.getElementById("vue-synchro").hidden = false;
+  }
+  actualiser();
+  // Quand on revient sur l'appli (ex. après l'avoir laissée ouverte), on relit la version partagée
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) actualiser(); });
+}
+demarrer();
+
+// Service worker (PWA) : seulement en https (pas en test local)
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
