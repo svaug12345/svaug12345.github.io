@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Voitures — suivi de la batterie et de la charge de l'e-5008 et de la Corsa
-  Version 1.5.0
+  Version 1.6.0
   Données : service « voitures » du NAS (https://voitures.baiji.fr), qui interroge
   psa_car_controller à la maison et ne publie que la batterie et la charge (jamais le GPS).
   Historique :
@@ -39,6 +39,9 @@
               chaque voiture, protégé par le code secret ; état « Chauffe en cours »
               et cause d'un échec (batterie trop faible, portière ouverte…) ; la case
               du code est commune à la chauffe et à la coupure de charge
+   • v1.6.0 : chauffe programmée (service v3.5) : bouton « Programmer », on choisit
+              l'heure de départ, le NAS lance la chauffe 20 min avant ; ligne
+              « ⏰ Prête demain à 7 h 30 » avec « Annuler »
 -->
 <html lang="fr">
 <head>
@@ -192,6 +195,15 @@
       font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
     }
     .heat.stop { background: var(--ink); color: var(--surface); }
+    /* Chauffe programmée */
+    .plan { margin-top: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+    .plan b { color: var(--ink); }
+    .plan input[type=time] {
+      padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line);
+      background: var(--surface); color: var(--ink); font: 700 15px var(--mono);
+    }
+    .linkbtn { color: var(--teal); font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: 6px 2px; }
+    .okbtn { padding: 8px 12px; border-radius: 10px; background: var(--teal); color: #fff; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
     .heat:disabled { background: var(--track); color: var(--muted); cursor: default; }
 
     /* ===================== COURBE ===================== */
@@ -304,7 +316,7 @@
     /* =================================================================
        CONFIGURATION
        ================================================================= */
-    const VERSION = '1.5.0';
+    const VERSION = '1.6.0';
     const API = 'https://voitures.baiji.fr';        // service du NAS
     const POLL_NORMAL_S = 120;    // lecture de l'état : toutes les 2 min…
     const POLL_LIVE_S = 30;       // …toutes les 30 s en mode « Suivi de charge »
@@ -366,6 +378,9 @@
     let askCodeFor = null;    // voiture pour laquelle on affiche la case « code secret »
     let afterCode = null;     // ce qu'il faut faire une fois le code tapé (couper la charge OU chauffer)
     const precondSent = {};   // ordre de chauffe envoyé : { e5008: { on: true, until: horodatage } }
+    let plans = {};           // chauffes programmées lues sur le NAS : { e5008: { ready, start, status } }
+    let planLead = 20;        // minutes d'avance prises par le NAS (renvoyées par le service)
+    let planOpen = null;      // voiture dont le choix d'heure est ouvert
 
     /* =================================================================
        CHARGEMENT DES DONNÉES
@@ -384,6 +399,7 @@
       renderCars();
       if (live) autoWake();
       showWhere();
+      loadPlans();
     }
 
     async function loadHistory() {
@@ -410,7 +426,7 @@
       // Les cartes sont reconstruites régulièrement (lecture toutes les 30 s / 2 min, compte à
       // rebours d'un réveil…). Pendant qu'on glisse un curseur ou qu'on tape le code, on
       // repousse l'affichage : sinon le curseur ou la case seraient remplacés sous le doigt.
-      const typing = document.activeElement?.id?.startsWith('code-');
+      const typing = /^(code|plan)-/.test(document.activeElement?.id || '');
       if (dragging || typing) { renderCars.later = true; return; }
       renderCars.later = false;
       $('cars').innerHTML = (data.cars || []).map(car => {
@@ -660,8 +676,100 @@
       const wantOn = sent ? !sent.on : !on;
       return `<div class="precond">${txt}
           <button class="heat ${wantOn ? '' : 'stop'}" data-heat="${id}" data-on="${wantOn ? 1 : 0}" ${sent ? 'disabled' : ''}>${wantOn ? 'Chauffer' : 'Arrêter'}</button>
-        </div>`;
+        </div>${planBlock(id)}`;
     }
+
+    /* =================================================================
+       CHAUFFE PROGRAMMÉE (service v3.5)
+       -----------------------------------------------------------------
+       On choisit l'heure de DÉPART ; le NAS lance la chauffe 20 min avant
+       (planLead), pour que l'habitacle soit chaud au moment de partir.
+       Si l'heure est déjà passée aujourd'hui, c'est pour demain.
+       Un programme par voiture, utilisé une seule fois.
+       ================================================================= */
+    // « aujourd'hui à 7 h 30 », « demain à 7 h 30 », sinon « ven. 7 nov. à 7 h 30 »
+    function dayTime(d) {
+      const t = d.toLocaleTimeString('fr-FR', { hour: 'numeric', minute: '2-digit' }).replace(':', ' h ');
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const days = Math.round((new Date(d).setHours(0, 0, 0, 0) - today) / 86400e3);
+      if (days === 0) return `aujourd'hui à ${t}`;
+      if (days === 1) return `demain à ${t}`;
+      return `${d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} à ${t}`;
+    }
+
+    function planBlock(id) {
+      if (!data?.precondPlan) return '';                       // service trop ancien
+      const p = plans[id];
+      // Choix de l'heure ouvert
+      if (planOpen === id) {
+        const def = p ? hhmm(new Date(p.ready)) : '07:30';   // heure proposée par défaut
+        return `<div class="plan">Prête pour
+            <input type="time" id="plan-${id}" value="${def}" aria-label="Heure de départ">
+            <button class="okbtn" data-plan-ok="${id}">OK</button>
+            <button class="linkbtn" data-plan-close="${id}">Fermer</button></div>`;
+      }
+      // Programme en cours
+      if (p) {
+        const ready = new Date(p.ready), start = new Date(p.start);
+        const what = p.status === 'echec' ? `⚠ Chauffe programmée impossible${p.error ? ' (' + esc(p.error) + ')' : ''}`
+          : p.status === 'lance' ? `⏰ Chauffe lancée pour un départ ${dayTime(ready)}`
+          : `⏰ Prête ${dayTime(ready)} <span>(lancement à ${hhmm(start).replace(':', ' h ').replace(/^0/, '')})</span>`;
+        return `<div class="plan"><b>${what}</b>
+            <button class="linkbtn" data-plan-cancel="${id}">${p.status === 'prevu' ? 'Annuler' : 'Effacer'}</button></div>`;
+      }
+      return `<div class="plan"><button class="linkbtn" data-plan-open="${id}">⏰ Programmer une heure</button></div>`;
+    }
+
+    // Lit les programmes (seulement si le code est connu : ils sont protégés)
+    async function loadPlans() {
+      const code = store.get('chargeCode');
+      if (!data?.precondPlan || !code) return;
+      try {
+        const res = await fetch(`${API}/precond_plan`, { cache: 'no-store', headers: { 'X-Code': code } });
+        if (!res.ok) return;                                    // code faux : on ne touche à rien ici
+        const body = await res.json();
+        plans = body.plans || {}; planLead = body.leadMin || 20;
+        renderCars();
+      } catch { /* hors ligne : on garde l'ancien affichage */ }
+    }
+
+    // Envoie un programme (readyIso) ou une annulation (readyIso = null)
+    async function sendPlan(id, readyIso) {
+      const code = store.get('chargeCode');
+      if (!code) { askCodeFor = id; afterCode = () => sendPlan(id, readyIso); renderCars(); $('code-' + id)?.focus(); return; }
+      const q = readyIso ? `ready=${encodeURIComponent(readyIso)}` : 'cancel=1';
+      try {
+        const res = await fetch(`${API}/precond_plan?car=${id}&${q}`, { method: 'POST', headers: { 'X-Code': code } });
+        const body = await res.json().catch(() => ({}));
+        if (res.ok) {
+          plans = body.plans || {}; planOpen = null;
+          toast(readyIso ? `Chauffe programmée : prête ${dayTime(new Date(readyIso))}` : 'Programme annulé');
+        } else if (res.status === 401) {
+          store.set('chargeCode', ''); askCodeFor = id; afterCode = () => sendPlan(id, readyIso);
+          toast('Code faux');
+        } else {
+          toast(body.error ? `Impossible : ${body.error}` : 'Impossible pour le moment');
+        }
+      } catch { toast('NAS injoignable'); }
+      renderCars();
+    }
+
+    // Clics sur les boutons du programme (recréés à chaque affichage : on écoute le conteneur)
+    $('cars').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-plan-open],[data-plan-close],[data-plan-ok],[data-plan-cancel]');
+      if (!b) return;
+      if (b.dataset.planOpen) { planOpen = b.dataset.planOpen; renderCars(); $('plan-' + planOpen)?.focus(); }
+      if (b.dataset.planClose) { planOpen = null; renderCars(); }
+      if (b.dataset.planCancel) sendPlan(b.dataset.planCancel, null);
+      if (b.dataset.planOk) {
+        const id = b.dataset.planOk, v = $('plan-' + id).value;     // "07:30"
+        if (!v) return;
+        const [h, m] = v.split(':').map(Number);
+        const d = new Date(); d.setHours(h, m, 0, 0);
+        if (d <= new Date()) d.setDate(d.getDate() + 1);           // heure passée : c'est pour demain
+        sendPlan(id, d.toISOString());
+      }
+    });
 
     async function setPrecond(id, on) {
       const code = store.get('chargeCode');
