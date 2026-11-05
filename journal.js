@@ -1,6 +1,6 @@
 /* ============================================================
    journal.js — compteur de visites de baiji.fr
-   Version 1.1.0 (05/11/2026)
+   Version 1.1.1 (05/11/2026)
    ------------------------------------------------------------
    À inclure dans le <head> de chaque page suivie :
        <script src="/journal.js" defer></script>
@@ -25,6 +25,7 @@
     • 1.0.0 : première version
     • 1.1.0 : envoi par fetch « keepalive » (survit à un changement de page,
               utile pour la page de passage /photos/), image en secours
+    • 1.1.1 : branchement sur le script Google « Journal baiji » (URL /exec)
    ============================================================ */
 
 (function () {
@@ -32,7 +33,7 @@
 
   /* ---- RÉGLAGE : l'URL /exec du script Google « Journal baiji » ----
      Vide = rien n'est envoyé (le site marche normalement). */
-  const URL_JOURNAL = "";
+  const URL_JOURNAL = "https://script.google.com/macros/s/AKfycbwHvpTSFmg3m9LITgRSx5SWwZRIe6Yues9LXnpf4nlm_5tyxHDoR18i81PllHzv-AmcLQ/exec";
 
   // La page /journal/ s'en sert pour lire les statistiques
   window.BAIJI_JOURNAL_URL = URL_JOURNAL;
