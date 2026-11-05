@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr — Page d'accueil des projets (marque SV)
-  Version 1.26.0
+  Version 1.27.0
   ------------------------------------------------------------
   Historique :
    • v1.0.0 : première page d'accueil
@@ -56,6 +56,7 @@
    • v1.25.0 : compteur de visites (/journal.js, chargé après gate.js) ; carte « Journal »
               (visites et état des services) dans « Outils »
    • v1.26.0 : la carte « Photos » passe par baiji.fr/photos/ (visite comptée, puis Immich)
+   • v1.27.0 : retour de la carte « Photos » sur https://photos.baiji.fr/ (lien direct)
 
   À déposer dans le dépôt GitHub : svaug12345.github.io
   → c'est le fichier "index.html" à la racine.
@@ -600,7 +601,7 @@
 
     <!-- ===================== PIED DE PAGE ===================== -->
     <footer>
-      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.26.0</p>
+      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.27.0</p>
     </footer>
 
     <!--
@@ -818,12 +819,13 @@
         courte: "Charge de l'e-5008 et de la Corsa",
         url: "voitures/" },
       // Photos = Immich, installé sur le NAS (Container Manager, projet « immich »),
-      // à l'adresse https://photos.baiji.fr/. La carte passe par la page de passage
-      // photos/ de ce dépôt, qui compte la visite puis redirige. Accès protégé par le compte Immich.
+      // à l'adresse https://photos.baiji.fr/ (lien direct, la visite n'est pas comptée
+      // dans le Journal ; baiji.fr/photos/ existe aussi, elle compte puis redirige).
+      // Accès protégé par le compte Immich.
       { id: "photos",      nom: "Photos",       icone: "photo",
         desc: "La photothèque de la famille, avec visages et recherche (Immich)",
         courte: "La photothèque familiale",
-        url: "photos/" }                     // page de passage → https://photos.baiji.fr/
+        url: "https://photos.baiji.fr/" }   // lien direct vers Immich sur le NAS
     ];
 
     /*
