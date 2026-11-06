@@ -33,6 +33,8 @@
    • v1.4.0 : onglet « Notes » (service v1.7.0) : moyenne générale, dernières notes par
               date ou par matière, évaluations par compétences (pastilles de couleur) ;
               l'onglet « Emploi du temps » devient « Cours » pour que 4 onglets tiennent
+   • v1.4.1 : plus de carte « Trimestre / moyenne » ni de carte « Discussions » quand
+              Pronote ferme la messagerie (à la demande de Seb) ; coefficient écrit « 0,5 »
 -->
 <html lang="fr">
 <head>
@@ -406,7 +408,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = '1.4.0';
+    const VERSION = '1.4.1';
     // Adresse du service du NAS (reverse proxy DSM). Pour essayer un autre service :
     // ?service=http://192.168.1.161:8092 (retenu sur ce téléphone, ?service= vide pour revenir).
     const SERVICE_PAR_DEFAUT = 'https://pronote.baiji.fr';
@@ -698,7 +700,7 @@
           <span class="corps">
             <div class="mat">${esc(n.matiere)}</div>
             ${n.commentaire ? `<div class="sous" style="color:var(--ink);font-weight:700">${esc(n.commentaire)}</div>` : ''}
-            <div class="sous">${n.moyenneClasse ? `Moyenne classe : ${esc(n.moyenneClasse)}` : ''}${n.coef && n.coef != 1 ? ` · coef ${esc(n.coef)}` : ''}${n.bonus ? ' · bonus' : ''}${n.facultatif ? ' · facultative' : ''}</div>
+            <div class="sous">${n.moyenneClasse ? `Moyenne classe : ${esc(n.moyenneClasse)}` : ''}${n.coef && n.coef != 1 ? ` · coef ${esc(String(n.coef).replace('.', ','))}` : ''}${n.bonus ? ' · bonus' : ''}${n.facultatif ? ' · facultative' : ''}</div>
           </span>
           <span class="valeur">${esc(n.note)}${n.sur && n.sur !== '20' ? `<small>/${esc(n.sur)}</small>` : ''}</span>
         </div>`;
@@ -733,13 +735,6 @@
 
       $('vue').innerHTML = `
         ${enfant.erreurNotes ? `<div class="card alerte"><p>${esc(enfant.erreurNotes)}</p></div>` : ''}
-        <section class="card">
-          <div class="moyenne-gen">
-            <span><div class="card-title" style="margin:0">${esc(enfant.periode || 'Moyenne générale')}</div>
-              ${enfant.moyenneClasse ? `<span class="petit">Classe : ${esc(enfant.moyenneClasse)}</span>` : ''}</span>
-            <span class="grand">${esc(enfant.moyenneGenerale || '–')}</span>
-          </div>
-        </section>
         <div class="bascule">
           <button data-notes-par="date" aria-pressed="${notesPar === 'date'}">Par date</button>
           <button data-notes-par="matiere" aria-pressed="${notesPar === 'matiere'}">Par matière</button>
@@ -798,10 +793,9 @@
       $('vue').innerHTML = `
         ${erreurs}
         ${m.instantane ? `<div class="instantane">🌙 Dernière image de la journée (Pronote masque les infos le soir).</div>` : ''}
-        <section class="card"><div class="card-title">Discussions</div>${discussions || (m.messagerieFermee
-          // Pronote répond « messagerie désactivée » (en général le soir : droit à la déconnexion)
-          ? '<div class="vide">💤 Messagerie fermée par Pronote pour le moment (souvent le soir). Elle reviendra à la prochaine lecture en journée.</div>'
-          : '<div class="vide">Aucune discussion.</div>')}</section>
+        ${discussions || !m.messagerieFermee
+          // Messagerie fermée par Pronote (le soir) et rien à montrer : pas de carte du tout (v1.4.1)
+          ? `<section class="card"><div class="card-title">Discussions</div>${discussions || '<div class="vide">Aucune discussion.</div>'}</section>` : ''}
         <section class="card"><div class="card-title avec-action"><span>Informations du collège</span>${toutLu}</div>${informations || '<div class="vide">Aucune information.</div>'}</section>
         <p class="aide" style="text-align:center">Ouvrir une information la marque comme lue dans Pronote. Pour répondre à un message, utilise Pronote.</p>`;
 
