@@ -30,6 +30,9 @@
               « Tout marquer comme lu » ; plus de bandeau vide quand une info n'a pas de texte
    • v1.3.1 : prénom(s) de l'enfant concerné sur chaque information (service v1.6.1 :
               informations de Gaby ET de Nanon, champ « pour »)
+   • v1.4.0 : onglet « Notes » (service v1.7.0) : moyenne générale, dernières notes par
+              date ou par matière, évaluations par compétences (pastilles de couleur) ;
+              l'onglet « Emploi du temps » devient « Cours » pour que 4 onglets tiennent
 -->
 <html lang="fr">
 <head>
@@ -178,6 +181,35 @@
       letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
     }
     .onglet[aria-selected="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+
+    /* Onglets un peu plus serrés : il y en a 4 (v1.4.0) */
+    .onglet { letter-spacing: .06em; padding: 9px 4px; }
+
+    /* ---------- NOTES (v1.4.0) ---------- */
+    .moyenne-gen { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+    .moyenne-gen .grand { font-size: 30px; font-weight: 800; }
+    .moyenne-gen .petit { font-size: 13px; color: var(--muted); }
+    .bascule { display: flex; gap: 6px; }
+    .bascule button { flex: 1; padding: 8px; border-radius: 9px; font-size: 12px; font-weight: 800;
+      letter-spacing: .08em; text-transform: uppercase; color: var(--muted); background: var(--soft); }
+    .bascule button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+    .note { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-top: 1px solid var(--line); }
+    .note:first-of-type { border-top: 0; }
+    .note .barre { width: 4px; align-self: stretch; border-radius: 2px; background: var(--c, var(--accent)); flex: none; }
+    .note .quand { font-size: 12px; color: var(--muted); width: 44px; flex: none; line-height: 1.2; }
+    .note .corps { flex: 1; min-width: 0; }
+    .note .mat { font-weight: 800; font-size: 14px; text-transform: uppercase; overflow-wrap: anywhere; }
+    .note .sous { font-size: 13px; color: var(--muted); margin-top: 2px; overflow-wrap: anywhere; }
+    .note .valeur { font-weight: 800; font-size: 17px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .note .valeur small { font-size: 12px; color: var(--muted); font-weight: 700; }
+    .matiere-tete { display: flex; justify-content: space-between; font-weight: 800; padding: 14px 0 4px; }
+    .pastilles { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+    .pastille-comp { width: 16px; height: 16px; border-radius: 50%; background: var(--muted); flex: none; }
+    details.note { display: block; }   /* le détail des compétences s'ouvre EN DESSOUS */
+    details.note > summary::-webkit-details-marker { display: none; }
+    .comp-liste { margin: 8px 0 0 60px; display: grid; gap: 6px; }
+    .par-matiere .note .mat { display: none; }   /* déjà écrit dans l'en-tête de la matière */
+    .comp-liste div { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; }
 
     /* =========================================================
        5. DEVOIRS
@@ -360,7 +392,8 @@
       <nav class="enfants" id="enfants" aria-label="Enfant affiché"></nav>
       <div class="onglets" role="tablist">
         <button class="onglet" role="tab" id="onglet-devoirs" aria-selected="true">Devoirs</button>
-        <button class="onglet" role="tab" id="onglet-edt" aria-selected="false">Emploi du temps</button>
+        <button class="onglet" role="tab" id="onglet-edt" aria-selected="false">Cours</button>
+        <button class="onglet" role="tab" id="onglet-notes" aria-selected="false">Notes</button>
         <button class="onglet" role="tab" id="onglet-messages" aria-selected="false">Messages<span id="nb-messages"></span></button>
       </div>
       <div id="vue" style="display:flex;flex-direction:column;gap:14px"></div>
@@ -373,7 +406,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = '1.3.1';
+    const VERSION = '1.4.0';
     // Adresse du service du NAS (reverse proxy DSM). Pour essayer un autre service :
     // ?service=http://192.168.1.161:8092 (retenu sur ce téléphone, ?service= vide pour revenir).
     const SERVICE_PAR_DEFAUT = 'https://pronote.baiji.fr';
@@ -529,6 +562,7 @@
 
       $('onglet-devoirs').setAttribute('aria-selected', vueChoisie === 'devoirs');
       $('onglet-edt').setAttribute('aria-selected', vueChoisie === 'edt');
+      $('onglet-notes').setAttribute('aria-selected', vueChoisie === 'notes');
       $('onglet-messages').setAttribute('aria-selected', vueChoisie === 'messages');
 
       // Pastille rouge sur l'onglet Messages : discussions non lues + informations non lues
@@ -540,6 +574,7 @@
 
       if (vueChoisie === 'messages') afficherMessages();
       else if (vueChoisie === 'edt') afficherEDT(enfant);
+      else if (vueChoisie === 'notes') afficherNotes(enfant);
       else afficherDevoirs(enfant);
 
       // Le service n'a pas pu lire cet enfant : on affiche l'erreur au lieu d'une liste vide trompeuse
@@ -624,6 +659,96 @@
       if (ecart === 0) return d.toTimeString().slice(0, 5);          // aujourd'hui : l'heure
       if (ecart === 1) return 'hier';
       return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    }
+
+    /* ---------- Notes et évaluations (service v1.7.0) ---------- */
+    let notesPar = 'date';   // « date » ou « matiere », comme dans Pronote
+    // Couleur d'une compétence selon son niveau (mêmes repères que Pronote :
+    // vert foncé = très bonne maîtrise … rouge = insuffisante)
+    function couleurNiveau(c) {
+      const t = (c.niveau + ' ' + c.abrege).toLowerCase();
+      if (/très bonne|tb\b|a\+/.test(t)) return '#15803d';
+      if (/insuffisant|\bi\b|\bd\b|rouge/.test(t)) return '#dc2626';
+      if (/fragile|\bf\b|\bc\b|jaune/.test(t)) return '#f59e0b';
+      if (/satisfaisant|\bs\b|\bb\b|\ba\b|vert/.test(t)) return '#4ade80';
+      if (/absent|abs|non /.test(t)) return 'var(--muted)';
+      return 'var(--accent)';
+    }
+    // Couleur d'une matière : celle donnée par Pronote dans les moyennes, sinon une teinte stable
+    function couleurMatiere(enfant, matiere) {
+      const m = (enfant.moyennes || []).find((x) => x.matiere === matiere);
+      if (m?.couleur) return m.couleur;
+      let h = 0; for (const c of matiere) h = (h * 31 + c.charCodeAt(0)) % 360;
+      return `hsl(${h} 55% 55%)`;
+    }
+    function quand(dateIso) {
+      const d = versDate(dateIso);
+      return `${d.getDate()}<br>${d.toLocaleDateString('fr-FR', { month: 'short' })}`;
+    }
+    function afficherNotes(enfant) {
+      if (!enfant.notes && !enfant.evaluations) {
+        $('vue').innerHTML = `<div class="card vide">Les notes arriveront à la prochaine lecture de Pronote (service v1.7.0 ou plus).</div>`;
+        return;
+      }
+      const notes = enfant.notes || [], evals = enfant.evaluations || [];
+      const ligneNote = (n) => `
+        <div class="note" style="--c:${couleurMatiere(enfant, n.matiere)}">
+          <span class="barre"></span>
+          <span class="quand">${quand(n.date)}</span>
+          <span class="corps">
+            <div class="mat">${esc(n.matiere)}</div>
+            ${n.commentaire ? `<div class="sous" style="color:var(--ink);font-weight:700">${esc(n.commentaire)}</div>` : ''}
+            <div class="sous">${n.moyenneClasse ? `Moyenne classe : ${esc(n.moyenneClasse)}` : ''}${n.coef && n.coef != 1 ? ` · coef ${esc(n.coef)}` : ''}${n.bonus ? ' · bonus' : ''}${n.facultatif ? ' · facultative' : ''}</div>
+          </span>
+          <span class="valeur">${esc(n.note)}${n.sur && n.sur !== '20' ? `<small>/${esc(n.sur)}</small>` : ''}</span>
+        </div>`;
+      const ligneEval = (e) => `
+        <details class="note" style="--c:${couleurMatiere(enfant, e.matiere)}">
+          <summary style="display:flex;gap:12px;list-style:none;cursor:pointer;width:100%">
+            <span class="barre"></span>
+            <span class="quand">${quand(e.date)}</span>
+            <span class="corps">
+              <div class="mat">${esc(e.matiere)}</div>
+              <div class="sous">${esc(e.nom)}</div>
+              <div class="pastilles">${e.competences.map((c) => `<span class="pastille-comp" title="${esc(c.niveau)}" style="background:${couleurNiveau(c)}"></span>`).join('')}</div>
+            </span>
+          </summary>
+          <div class="comp-liste">${e.competences.map((c) => `<div><span class="pastille-comp" style="background:${couleurNiveau(c)}"></span><span><b>${esc(c.niveau)}</b>${c.nom ? ' — ' + esc(c.nom) : ''}</span></div>`).join('')}</div>
+        </details>`;
+
+      // Vue « par matière » : moyenne de la matière puis ses notes
+      let liste;
+      if (notesPar === 'matiere') {
+        const matieres = [...new Set([...(enfant.moyennes || []).map((m) => m.matiere), ...notes.map((n) => n.matiere)])];
+        liste = matieres.map((mat) => {
+          const moy = (enfant.moyennes || []).find((m) => m.matiere === mat);
+          const sesNotes = notes.filter((n) => n.matiere === mat);
+          return `<div class="matiere-tete" style="border-left:4px solid ${couleurMatiere(enfant, mat)};padding-left:10px"><span>${esc(mat)}</span><span>${esc(moy?.eleve || '')}</span></div>
+            ${moy?.classe ? `<div class="aide" style="padding-left:14px">Moyenne classe : ${esc(moy.classe)}</div>` : ''}
+            ${sesNotes.map(ligneNote).join('')}`;
+        }).join('') || '<div class="vide">Aucune note.</div>';
+      } else {
+        liste = notes.map(ligneNote).join('') || '<div class="vide">Aucune note pour cette période.</div>';
+      }
+
+      $('vue').innerHTML = `
+        ${enfant.erreurNotes ? `<div class="card alerte"><p>${esc(enfant.erreurNotes)}</p></div>` : ''}
+        <section class="card">
+          <div class="moyenne-gen">
+            <span><div class="card-title" style="margin:0">${esc(enfant.periode || 'Moyenne générale')}</div>
+              ${enfant.moyenneClasse ? `<span class="petit">Classe : ${esc(enfant.moyenneClasse)}</span>` : ''}</span>
+            <span class="grand">${esc(enfant.moyenneGenerale || '–')}</span>
+          </div>
+        </section>
+        <div class="bascule">
+          <button data-notes-par="date" aria-pressed="${notesPar === 'date'}">Par date</button>
+          <button data-notes-par="matiere" aria-pressed="${notesPar === 'matiere'}">Par matière</button>
+        </div>
+        <section class="card ${notesPar === 'matiere' ? 'par-matiere' : ''}"><div class="card-title">Notes</div>${liste}</section>
+        ${evals.length ? `<section class="card"><div class="card-title">Compétences</div>${evals.map(ligneEval).join('')}</section>` : ''}`;
+      document.querySelectorAll('[data-notes-par]').forEach((b) => {
+        b.onclick = () => { notesPar = b.dataset.notesPar; afficherNotes(enfant); };
+      });
     }
 
     function afficherMessages() {
@@ -854,6 +979,7 @@
     });
     $('onglet-devoirs').onclick = () => { vueChoisie = 'devoirs'; memo.ecrire('vue', vueChoisie); afficherTout(); };
     $('onglet-edt').onclick = () => { vueChoisie = 'edt'; memo.ecrire('vue', vueChoisie); afficherTout(); };
+    $('onglet-notes').onclick = () => { vueChoisie = 'notes'; memo.ecrire('vue', vueChoisie); afficherTout(); };
     $('onglet-messages').onclick = () => { vueChoisie = 'messages'; memo.ecrire('vue', vueChoisie); afficherTout(); };
     $('vue').addEventListener('click', (e) => {
       // Pièce jointe : on la demande au NAS (avec la clé), puis on la donne au téléphone
