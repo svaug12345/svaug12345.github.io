@@ -28,6 +28,8 @@
    • v1.3.0 : informations du collège : ouvrir une information la marque LUE dans Pronote
               (regroupées puis envoyées en une fois à POST /lu, service v1.6.0) ; bouton
               « Tout marquer comme lu » ; plus de bandeau vide quand une info n'a pas de texte
+   • v1.3.1 : prénom(s) de l'enfant concerné sur chaque information (service v1.6.1 :
+              informations de Gaby ET de Nanon, champ « pour »)
 -->
 <html lang="fr">
 <head>
@@ -371,7 +373,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = '1.3.0';
+    const VERSION = '1.3.1';
     // Adresse du service du NAS (reverse proxy DSM). Pour essayer un autre service :
     // ?service=http://192.168.1.161:8092 (retenu sur ce téléphone, ?service= vide pour revenir).
     const SERVICE_PAR_DEFAUT = 'https://pronote.baiji.fr';
@@ -642,11 +644,15 @@
           </div>`).join('') || '<div class="echange">Contenu non disponible : ouvre Pronote.</div>'}
         </details>`).join('');
 
+      // Pour qui est l'information ? (service v1.6.1) Rien si elle concerne tous les enfants.
+      const nbEnfants = donnees.enfants?.length || 0;
+      const pourQui = (pour) => pour?.length && pour.length < nbEnfants
+        ? ` · <b style="color:${COULEURS[pour[0]] || 'var(--accent)'}">${pour.map(esc).join(', ')}</b>` : '';
       const informations = (m.informations || []).map((i) => `
         <details class="msg ${i.lu ? '' : 'non-lu'}" ${i.id && !i.lu ? `data-info="${esc(i.id)}"` : ''}>
           <summary>
             <span class="point"></span>
-            <span class="entete"><div class="sujet">${esc(i.titre)}</div><div class="qui">${esc(i.de)}${i.categorie ? ` · ${esc(i.categorie)}` : ''}</div></span>
+            <span class="entete"><div class="sujet">${esc(i.titre)}</div><div class="qui">${esc(i.de)}${i.categorie ? ` · ${esc(i.categorie)}` : ''}${pourQui(i.pour)}</div></span>
             <span class="date">${esc(dateCourte(i.le))}</span>
           </summary>
           ${i.texte || i.fichiers?.length
