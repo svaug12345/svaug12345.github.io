@@ -1,0 +1,431 @@
+<!doctype html>
+<!--
+  ============================================================
+  Vaugoude's Family — VUE KINDLE (écran e-ink en paysage)
+  Version 1.0.0 (07/11/2026)
+  ------------------------------------------------------------
+  Une page fixe de 1024 × 758 px, en noir et blanc pur, pensée pour
+  être PHOTOGRAPHIÉE par le service « kindle » du NAS (dépôt privé
+  svaug12345/nas-docker, dossier kindle/) : il ouvre cette page dans
+  un navigateur invisible, en fait une image PNG en niveaux de gris,
+  et la liseuse affiche cette image.
+
+  Mêmes sources que le dashboard famille (famille/index.html) :
+    • météo Open-Meteo (température en très gros + journée par tranches de 3 h)
+    • devoirs : service « pronote » du NAS (clé Cartable dans localStorage
+      « cartable.cle », posée par le service kindle avant d'ouvrir la page)
+    • agenda Google (Apps Script « Agenda Famille ») : semaine à venir + week-ends
+    • tâches du jour (Google Sheet « Family tasks »)
+    • batteries des voitures (service « voitures » du NAS)
+
+  Règles e-ink : pas de couleur, pas d'emoji (rendu baveux), traits
+  épais, police Atkinson Hyperlegible (dessinée pour être lisible).
+
+  Quand toutes les données sont arrivées (ou ont échoué), la page met
+  data-pret="1" sur <body> : c'est le signal attendu avant la photo.
+
+  Historique :
+    • v1.0.0 : première version (design « E · météo en bandeau »)
+  ============================================================
+-->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1024">
+<meta name="robots" content="noindex">
+<title>Famille · Kindle</title>
+<script src="/journal.js" defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  /* ---------- Base : tout en noir sur blanc ---------- */
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #fff; color: #000; }
+  body { font-family: 'Atkinson Hyperlegible', sans-serif; overflow: hidden; }
+  b { font-weight: 700; }
+
+  /* L'écran fait toujours 1024 × 758 px. Dans un navigateur normal (pour tester),
+     on le met à l'échelle de la fenêtre ; pour la photo, la fenêtre fait pile cette taille. */
+  #ecran {
+    width: 1024px; height: 758px; padding: 20px 26px;
+    display: flex; flex-direction: column; gap: 14px;
+    transform-origin: 0 0;
+  }
+
+  /* ---------- Bandeau du haut : date | température | journée ---------- */
+  .bandeau {
+    display: grid; grid-template-columns: 165px 430px minmax(0, 1fr);
+    align-items: center; gap: 16px;
+    border-bottom: 3px solid #000; padding-bottom: 10px;
+  }
+  .date b { display: block; font-size: 21px; line-height: 1.15; }
+  .date span { display: block; font-size: 15px; margin-top: 4px; }
+
+  .meteo { display: flex; align-items: center; gap: 10px; }
+  .meteo .ico svg { width: 72px; height: 72px; stroke-width: 1.4; }
+  .meteo .temp { font-size: 168px; font-weight: 700; line-height: 0.85; letter-spacing: -0.04em; }
+  .meteo .desc { font-size: 20px; line-height: 1.3; }
+
+  /* Prévisions de la journée : 6 cases (5 tranches de 3 h + demain) */
+  .journee { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border-left: 1.5px solid #000; padding-left: 10px; }
+  .tranche { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 14px; }
+  .tranche svg { width: 24px; height: 24px; stroke-width: 1.8; }
+  .tranche b { font-size: 19px; }
+
+  /* Icônes au trait : la couleur suit le texte (noir) */
+  svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ---------- Les 3 colonnes ---------- */
+  .colonnes {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 290px; gap: 22px;
+    flex: 1; min-height: 0;          /* min-height: 0 = la grille ne déborde jamais de l'écran */
+  }
+  .col { display: flex; flex-direction: column; gap: 9px; min-width: 0; min-height: 0; overflow: hidden; }
+
+  /* Bandeau noir avec le prénom de l'enfant */
+  .enfant { display: flex; justify-content: space-between; align-items: center; background: #000; color: #fff; border-radius: 8px; padding: 6px 14px; flex: none; }
+  .enfant b { font-size: 24px; }
+  .enfant span { font-size: 15px; }
+
+  /* Titre de jour (LUNDI 9) et titres de rubrique (SEMAINE À VENIR…) */
+  .jour, .rubrique {
+    font-size: 15px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    border-bottom: 1.5px solid #000; padding-bottom: 4px; flex: none;
+  }
+  .jour + .jour, .devoir + .jour { margin-top: 4px; }
+  .rubrique { border-bottom-width: 2px; }
+
+  /* Un devoir : matière en gras, consigne en dessous (2 lignes au plus) */
+  .devoir { display: flex; flex-direction: column; gap: 1px; flex: none; }
+  .devoir b { font-size: 20px; }
+  .devoir span {
+    font-size: 17px; line-height: 1.25;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .suite, .vide { font-size: 16px; flex: none; }
+  .vide { padding-top: 4px; }
+
+  /* Colonne de droite : agenda, week-ends, tâches, voitures */
+  .droite { border-left: 2px solid #000; padding-left: 20px; gap: 12px; }
+  .bloc { display: flex; flex-direction: column; gap: 5px; flex: none; }
+  .agenda { display: grid; grid-template-columns: 74px minmax(0, 1fr); row-gap: 4px; column-gap: 6px; font-size: 17px; }
+  .agenda span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .weekends { display: flex; flex-direction: column; gap: 4px; }
+  .we { display: flex; justify-content: space-between; align-items: center; font-size: 17px; }
+  .we .etat { font-weight: 700; padding: 0 8px; border-radius: 6px; }
+  .we .pris { background: #000; color: #fff; }          /* pris = blanc sur noir : se voit de loin */
+  .taches { display: flex; flex-direction: column; gap: 3px; font-size: 17px; }
+  .taches div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .voitures { display: flex; justify-content: space-between; font-size: 15px; border-top: 1px solid #000; padding-top: 6px; margin-top: auto; flex: none; }
+</style>
+</head>
+<body>
+<div id="ecran">
+
+  <!-- ===== BANDEAU ===== -->
+  <div class="bandeau">
+    <div class="date"><b id="date">…</b><span id="maj">Mise à jour…</span></div>
+    <div class="meteo">
+      <span class="ico" id="w-ico"></span>
+      <span class="temp" id="w-temp">--°</span>
+      <div class="desc"><div id="w-desc"></div><div id="w-minmax"></div></div>
+    </div>
+    <div class="journee" id="w-journee"></div>
+  </div>
+
+  <!-- ===== COLONNES ===== -->
+  <div class="colonnes">
+    <!-- Une colonne par enfant Pronote (Gaby, Nanon), remplie par le script -->
+    <div class="col" id="col-1"></div>
+    <div class="col" id="col-2"></div>
+
+    <div class="col droite">
+      <div class="bloc"><span class="rubrique">Semaine à venir</span><div class="agenda" id="agenda"></div></div>
+      <div class="bloc"><span class="rubrique">Week-ends</span><div id="weekends" class="weekends"></div></div>
+      <div class="bloc" id="bloc-taches"><span class="rubrique">Tâches du jour</span><div class="taches" id="taches"></div></div>
+      <div class="voitures" id="voitures"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* =================================================================
+     CONFIGURATION (mêmes adresses que famille/index.html)
+     ================================================================= */
+  const VERSION = '1.0.0';
+  const SHEET_TSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRGC5e1KLZdKKeTUSLC8aqJXHvPphh1ceso4-yYJAUtbyZGPPhriMMtEQpeL4cjcrbQfcp6WOM_RUT2/pub?gid=647675679&single=true&output=tsv';
+  const CARS_URL = 'https://voitures.baiji.fr/cars.json';
+  const AGENDA_URL = 'https://script.google.com/macros/s/AKfycbzbzD8I38Ul_baGjfa17QQ-gZbSQvlbL9QTlerMiGDeAHUGhz-Q0eo2XuZR6k4cgvro/exec';
+  const PRONOTE_URL = 'https://pronote.baiji.fr/pronote.json';
+  const LAT = 48.7018, LON = 2.1340;        // Gif-sur-Yvette
+  const JOURS_DEVOIRS = 5;                  // on regarde les devoirs des 5 prochains jours qui en ont
+  const NB_WEEKENDS = 4;                    // nombre de week-ends listés
+
+  /* =================================================================
+     OUTILS
+     ================================================================= */
+  const $ = (id) => document.getElementById(id);
+  // Échappe le texte venu de l'extérieur avant de l'injecter dans la page
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const isoDay = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+  const hhmm = (d) => d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  const fromIso = (iso) => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
+  // « lun. 9 » → « Lun. 9 » (première lettre en capitale)
+  const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+  // fetch avec délai maximum : une source bloquée ne doit jamais empêcher la photo
+  async function get(url, { ms = 15000, headers = {}, text = false } = {}) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), ms);
+    try {
+      const res = await fetch(url, { cache: 'no-store', signal: ctrl.signal, headers });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return text ? await res.text() : await res.json();
+    } finally { clearTimeout(timer); }
+  }
+
+  /* Mise à l'échelle pour tester dans un navigateur ordinaire :
+     on agrandit/réduit l'écran pour qu'il tienne dans la fenêtre. */
+  function ajuster() {
+    const k = Math.min(innerWidth / 1024, innerHeight / 758);
+    $('ecran').style.transform = Math.abs(k - 1) < 0.01 ? '' : `scale(${k})`;
+  }
+  addEventListener('resize', ajuster); ajuster();
+
+  /* =================================================================
+     ICÔNES MÉTÉO (au trait, comme le dashboard)
+     ================================================================= */
+  const svg = (inner) => `<svg viewBox="0 0 24 24" aria-hidden="true">${inner}</svg>`;
+  const ICONS = {
+    sun: svg('<circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/>'),
+    moon: svg('<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>'),
+    partly: svg('<path d="M12 2v2M4.9 4.9l1.4 1.4M2 12h2M19.1 4.9l-1.4 1.4"/><path d="M15.9 11.1A4 4 0 1 0 8 12"/><path d="M17 20H9a4 4 0 1 1 1-7.9A5 5 0 0 1 19.6 14 3 3 0 0 1 17 20Z"/>'),
+    cloud: svg('<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>'),
+    rain: svg('<path d="M16 13v8M8 13v8M12 15v8M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/>'),
+    snow: svg('<path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25"/><path d="M8 16h.01M8 20h.01M12 18h.01M12 22h.01M16 16h.01M16 20h.01"/>'),
+    storm: svg('<path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"/><path d="m13 11-4 6h6l-4 6"/>'),
+    fog: svg('<path d="M4 14h16M4 18h16M4 10h16"/>')
+  };
+  // Codes météo Open-Meteo (norme WMO) → texte court + icône
+  function weatherInfo(code, nuit = false) {
+    const soleil = nuit ? ICONS.moon : ICONS.sun;
+    const t = {
+      0: ['Ensoleillé', soleil], 1: ['Dégagé', soleil], 2: ['Peu nuageux', ICONS.partly], 3: ['Couvert', ICONS.cloud],
+      45: ['Brouillard', ICONS.fog], 48: ['Brouillard', ICONS.fog],
+      51: ['Bruine', ICONS.rain], 53: ['Bruine', ICONS.rain], 55: ['Bruine', ICONS.rain], 56: ['Bruine', ICONS.rain], 57: ['Bruine', ICONS.rain],
+      61: ['Pluie faible', ICONS.rain], 63: ['Pluie', ICONS.rain], 65: ['Forte pluie', ICONS.rain], 66: ['Verglas', ICONS.rain], 67: ['Verglas', ICONS.rain],
+      71: ['Neige', ICONS.snow], 73: ['Neige', ICONS.snow], 75: ['Forte neige', ICONS.snow], 77: ['Grésil', ICONS.snow],
+      80: ['Averses', ICONS.rain], 81: ['Averses', ICONS.rain], 82: ['Fortes averses', ICONS.storm],
+      85: ['Neige', ICONS.snow], 86: ['Neige', ICONS.snow],
+      95: ['Orage', ICONS.storm], 96: ['Orage', ICONS.storm], 99: ['Orage', ICONS.storm]
+    };
+    const [text, icon] = t[code] || ['Variable', ICONS.cloud];
+    return { text, icon };
+  }
+
+  /* =================================================================
+     DATE ET HEURE DE MISE À JOUR
+     L'heure affichée = l'heure de la photo : si elle est vieille sur la
+     liseuse, c'est que l'image ne se rafraîchit plus.
+     ================================================================= */
+  function afficherDate() {
+    const now = new Date();
+    $('date').textContent = cap(now.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'long' }));
+    $('maj').textContent = 'Mis à jour à ' + hhmm(now);
+  }
+
+  /* =================================================================
+     MÉTÉO
+     ================================================================= */
+  async function meteo() {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}`
+      + `&current=temperature_2m,weather_code,is_day&hourly=temperature_2m,weather_code,is_day`
+      + `&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Europe%2FParis&forecast_days=3`;
+    const d = await get(url);
+    const c = d.current;
+    const info = weatherInfo(c.weather_code, c.is_day === 0);
+    $('w-ico').innerHTML = info.icon;
+    $('w-temp').textContent = Math.round(c.temperature_2m) + '°';
+    $('w-desc').textContent = info.text;
+    $('w-minmax').innerHTML = `<b>${Math.round(d.daily.temperature_2m_min[0])}°</b> / <b>${Math.round(d.daily.temperature_2m_max[0])}°</b>`;
+
+    // 5 tranches à venir, espacées de 3 h, en sautant la nuit (de 22 h à 6 h) :
+    // le soir, on voit donc directement la journée de demain.
+    const now = Date.now();
+    let html = '', n = 0, derniere = 0;
+    for (let i = 0; i < d.hourly.time.length && n < 5; i++) {
+      const t = new Date(d.hourly.time[i]);
+      const h = t.getHours();
+      if (t.getTime() <= now || h < 7 || h > 21) continue;       // passé ou nuit
+      if (t.getTime() - derniere < 3 * 3600e3) continue;           // trop près de la précédente
+      derniere = t.getTime(); n++;
+      const hi = weatherInfo(d.hourly.weather_code[i], d.hourly.is_day[i] === 0);
+      html += `<div class="tranche"><span>${h}h</span>${hi.icon}<b>${Math.round(d.hourly.temperature_2m[i])}°</b></div>`;
+    }
+    const dem = weatherInfo(d.daily.weather_code[1]);
+    html += `<div class="tranche"><span>Dem.</span>${dem.icon}<b>${Math.round(d.daily.temperature_2m_max[1])}°</b></div>`;
+    $('w-journee').innerHTML = html;
+  }
+
+  /* =================================================================
+     DEVOIRS (service « pronote » du NAS)
+     Format : { maj, enfants: [ { nom, devoirs: [ {matiere, pour, texte, fait} ] } ] }
+     ================================================================= */
+  // « MATHEMATIQUES » → « Mathematiques » (Pronote écrit les matières en capitales)
+  const matiere = (m) => String(m || '').toLowerCase().replace(/(^|[\s\-'(])(\p{L})/gu, (_, a, b) => a + b.toUpperCase())
+    .replace(/\b(Lv\d|Svt|Eps|Emc)\b/gi, (x) => x.toUpperCase());
+  // Pronote met parfois du HTML ou des retours à la ligne dans la consigne : on garde le texte brut
+  const texteBrut = (s) => { const el = document.createElement('div'); el.innerHTML = String(s || ''); return (el.textContent || '').replace(/\s+/g, ' ').trim(); };
+
+  async function devoirs() {
+    let key = null;
+    try { key = localStorage.getItem('cartable.cle'); } catch {}
+    const cols = [$('col-1'), $('col-2')];
+    if (!key) {
+      cols[0].innerHTML = '<div class="vide">Clé des devoirs absente : le service kindle du NAS doit la fournir.</div>';
+      return;
+    }
+    const data = await get(PRONOTE_URL, { headers: { 'X-Cle': key } });
+    // Les mesures de hauteur dépendent de la police : on attend qu'elle soit chargée
+    try { await document.fonts.ready; } catch {}
+    const demain = isoDay(addDays(new Date(), 1));
+    (data.enfants || []).slice(0, 2).forEach((kid, n) => {
+      const col = cols[n];
+      // Les devoirs pas encore faits, à partir de demain, groupés par jour de rendu
+      const todo = (kid.devoirs || []).filter(d => d.pour >= demain && !d.fait);
+      const jours = [...new Set(todo.map(d => d.pour))].sort().slice(0, JOURS_DEVOIRS);
+      const total = todo.filter(d => jours.includes(d.pour)).length;
+
+      let html = `<div class="enfant"><b>${esc(kid.nom)}</b><span>${total ? total + ' devoir' + (total > 1 ? 's' : '') : 'Devoirs'}</span></div>`;
+      if (!jours.length) html += '<div class="vide">Rien à faire pour les prochains jours.</div>';
+      for (const jour of jours) {
+        const date = fromIso(jour);
+        const nom = jour === demain ? 'Demain'
+          : date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric' });
+        html += `<span class="jour" data-jour>${esc(nom)}</span>`;
+        for (const d of todo.filter(x => x.pour === jour)) {
+          const t = texteBrut(d.texte);
+          html += `<div class="devoir"><b>${esc(matiere(d.matiere))}</b>${t ? `<span>${esc(t)}</span>` : ''}</div>`;
+        }
+      }
+      col.innerHTML = html;
+      tenirDansLaColonne(col);
+    });
+  }
+
+  /* Si la colonne déborde, on retire les derniers devoirs un par un et on
+     termine par « + 3 autres devoirs » : rien n'est coupé à moitié en bas. */
+  function tenirDansLaColonne(col) {
+    let retires = 0;
+    const deborde = () => col.scrollHeight > col.clientHeight + 1;
+    while (deborde()) {
+      const items = col.querySelectorAll('.devoir');
+      if (items.length <= 1) break;
+      items[items.length - 1].remove();
+      retires++;
+      // Un titre de jour resté seul en bas ne sert à rien : on le retire aussi
+      const last = col.lastElementChild;
+      if (last && last.hasAttribute('data-jour')) last.remove();
+      // On (re)met la ligne « + n autres », puis on revérifie qu'elle tient
+      col.querySelector('.suite')?.remove();
+      col.insertAdjacentHTML('beforeend', `<div class="suite">+ ${retires} autre${retires > 1 ? 's' : ''} devoir${retires > 1 ? 's' : ''} ensuite</div>`);
+    }
+  }
+
+  /* =================================================================
+     AGENDA : semaine à venir + week-ends
+     Format : { updated, jusqu, evenements: [ {titre, debut, fin, journee, agenda: 'anniv'|'famille'} ] }
+     ================================================================= */
+  // L'événement touche-t-il [d0, d1[ ? (journée entière : chevauchement ; sinon : il commence dedans)
+  function evIn(ev, d0, d1) {
+    const s = new Date(ev.debut), e = new Date(ev.fin);
+    return ev.journee ? (s < d1 && e > d0) : (s >= d0 && s < d1);
+  }
+  const estAnniv = (ev) => ev.agenda === 'anniv' && ev.journee;
+
+  async function agenda() {
+    const data = await get(AGENDA_URL, { ms: 20000 });    // Apps Script est parfois lent à démarrer
+    const evs = data.evenements || [];
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+
+    // --- Semaine à venir : aujourd'hui + 6 jours, une ligne par événement (6 lignes au plus)
+    const lignes = [];
+    for (let i = 0; i < 7; i++) {
+      const d0 = addDays(today, i), d1 = addDays(today, i + 1);
+      const list = evs.filter(ev => evIn(ev, d0, d1))
+        .sort((a, b) => estAnniv(b) - estAnniv(a) || (b.journee - a.journee) || a.debut.localeCompare(b.debut));
+      const label = i === 0 ? 'Auj.' : cap(d0.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' }));
+      list.forEach((ev, k) => {
+        // Pas d'emoji sur e-ink : « Anniv. » écrit en toutes lettres, l'heure sinon
+        const quoi = (estAnniv(ev) ? 'Anniv. ' : ev.journee ? '' : hhmm(new Date(ev.debut)) + ' ') + ev.titre;
+        lignes.push(`<b>${k === 0 ? esc(label) : ''}</b><span>${esc(quoi)}</span>`);
+      });
+    }
+    const MAX = 6;
+    $('agenda').innerHTML = lignes.length
+      ? lignes.slice(0, MAX).join('') + (lignes.length > MAX ? `<b></b><span>+ ${lignes.length - MAX} autre(s)</span>` : '')
+      : '<b></b><span>Rien de prévu</span>';
+
+    // --- Week-ends : libre ou pris (les anniversaires ne comptent pas comme « pris »)
+    let sat = addDays(today, (6 - today.getDay() + 7) % 7);
+    if (today.getDay() === 0) sat = addDays(today, -1);    // dimanche : le week-end en cours
+    let html = '';
+    for (let n = 0; n < NB_WEEKENDS; n++, sat = addDays(sat, 7)) {
+      const lun = addDays(sat, 2), dim = addDays(sat, 1);
+      const pris = evs.some(ev => evIn(ev, sat, lun) && !estAnniv(ev));
+      const mois = (d) => d.toLocaleDateString('fr-FR', { month: 'short' });
+      const label = sat.getMonth() === dim.getMonth()
+        ? `${sat.getDate()}–${dim.getDate()} ${mois(dim)}`
+        : `${sat.getDate()} ${mois(sat)} – ${dim.getDate()} ${mois(dim)}`;
+      html += `<div class="we"><span>${n === 0 ? 'Ce w-e · ' : ''}${esc(label)}</span>`
+        + `<span class="etat ${pris ? 'pris' : ''}">${pris ? 'Pris' : 'Libre'}</span></div>`;
+    }
+    $('weekends').innerHTML = html;
+  }
+
+  /* =================================================================
+     TÂCHES DU JOUR (Google Sheet en TSV : A Mois | B Jour | C Date | D Qui | E Tâche)
+     ================================================================= */
+  async function taches() {
+    const tsv = await get(SHEET_TSV_URL, { text: true });
+    const auj = isoDay(new Date());
+    const parQui = {};
+    for (const cols of tsv.split('\n').slice(1).map(r => r.replace('\r', '').split('\t'))) {
+      if (cols.length < 5) continue;
+      const [dd, mm, yyyy] = cols[2].trim().split('/');
+      if (!yyyy || `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}` !== auj) continue;
+      const qui = cols[3].trim() || 'Tous', tache = cols[4].trim();
+      if (tache) (parQui[qui] ||= []).push(tache);
+    }
+    if (new Date().getDay() === 1) (parQui.Tous ||= []).push('Chambre nikel');   // règle du lundi
+    const noms = ['Tom', 'Gaby', 'Nanon', 'Tous'].filter(n => parQui[n]);
+    // Personne n'a rien : on retire le bloc (comme sur le dashboard)
+    $('bloc-taches').hidden = noms.length === 0;
+    $('taches').innerHTML = noms.map(n => `<div><b>${n}</b> · ${esc(parQui[n].join(', '))}</div>`).join('');
+  }
+
+  /* =================================================================
+     VOITURES (service du NAS) : juste le niveau de batterie
+     ================================================================= */
+  async function voitures() {
+    const data = await get(CARS_URL, { ms: 10000 });
+    $('voitures').innerHTML = (data.cars || []).map(c =>
+      `<span>${esc(c.name)} <b>${Number.isFinite(c.soc) ? Math.round(c.soc) + ' %' : '--'}</b>${c.charging ? ' (charge)' : ''}</span>`).join('');
+  }
+
+  /* =================================================================
+     DÉMARRAGE : tout en parallèle, puis le signal « prête pour la photo »
+     ================================================================= */
+  afficherDate();
+  Promise.allSettled([meteo(), devoirs(), agenda(), taches(), voitures()]).then(async (res) => {
+    res.forEach((r, i) => { if (r.status === 'rejected') console.warn('Source ' + i + ' indisponible', r.reason); });
+    // Une source en panne : on le signale discrètement à côté de l'heure de mise à jour
+    const ko = ['météo', 'devoirs', 'agenda', 'tâches', 'voitures'].filter((_, i) => res[i].status === 'rejected');
+    if (ko.length) $('maj').textContent += ' · sans ' + ko.join(', ');
+    try { await document.fonts.ready; } catch {}
+    document.body.dataset.pret = '1';
+  });
+</script>
+</body>
+</html>
