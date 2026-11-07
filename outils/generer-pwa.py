@@ -141,6 +141,10 @@ PAGES = [
          desc="Comment accéder au NAS de Seb depuis l'extérieur avec Tailscale",
          picto="hard-drive", tuile="#0b4f55", trait="#ffffff",
          fond="#f6f9f9", theme="#0b4f55"),
+    dict(dossier="petite-souris", nom="Allô la Petite Souris !", court="Petite Souris",
+         desc="Tom appelle la Petite Souris (qui le taquine un peu)",
+         picto="rat", tuile="#1b1842", trait="#f7c948",
+         fond="#1b1842", theme="#1b1842"),
 ]
 
 

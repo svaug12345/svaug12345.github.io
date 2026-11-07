@@ -1,0 +1,39 @@
+{
+  "name": "Allô la Petite Souris !",
+  "short_name": "Petite Souris",
+  "description": "Tom appelle la Petite Souris (qui le taquine un peu)",
+  "id": "/petite-souris/",
+  "start_url": "/petite-souris/",
+  "scope": "/petite-souris/",
+  "display": "standalone",
+  "background_color": "#1b1842",
+  "theme_color": "#1b1842",
+  "lang": "fr",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "icones/icone-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icones/icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icones/icone-masquable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icones/icone-masquable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
