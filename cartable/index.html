@@ -38,6 +38,11 @@
    • v1.5.0 : section « Notifications » en tête de l'onglet Messages (prof absent, cours
               modifié, remplacé… : messages.notifications du service v1.8.0), sans celles
               qui ont expiré ; le texte des informations arrive avec le service v1.8.0
+   • v1.6.0 : encadré d'erreur replié (détails à déplier) ; aperçu sur 2 lignes, masqué
+              quand le message est ouvert ; ARCHIVER en glissant vers la gauche (notifications,
+              informations, discussions) avec « Annuler », section « Archivés » repliée en bas
+              (y glisser vers la droite = désarchiver) ; archiver une information non lue la
+              marque lue ; archives gardées sur l'appareil (localStorage cartable.archives)
 -->
 <html lang="fr">
 <head>
@@ -298,6 +303,24 @@
       background: var(--bad); color: #fff; font-size: 10px; letter-spacing: 0;
     }
     .msg { border-top: 1px solid var(--line); }
+    /* v1.6.0 : aperçu sur 2 lignes maximum, caché quand le message est ouvert */
+    .msg .apercu { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .msg[open] .apercu { display: none; }
+    /* Glisser pour archiver : la ligne suit le doigt, un fond indique l'action */
+    .glisse { position: relative; touch-action: pan-y; transition: transform .2s ease, opacity .2s ease; background: var(--card); }
+    .glisse.en-cours { transition: none; }
+    .glisse.part { transform: translateX(-110%) !important; opacity: 0; }
+    .glisse.part-droite { transform: translateX(110%) !important; opacity: 0; }
+    .archives > summary { list-style: none; cursor: pointer; font-size: 13px; color: var(--muted); font-weight: 800;
+      letter-spacing: .08em; text-transform: uppercase; padding: 4px 2px; }
+    .archives > summary::-webkit-details-marker { display: none; }
+    .alerte > summary { list-style: none; cursor: pointer; font-size: 14px; font-weight: 700; }
+    .alerte > summary::-webkit-details-marker { display: none; }
+    #toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+      background: var(--ink); color: var(--bg); border-radius: 12px; padding: 10px 14px; display: flex; gap: 14px;
+      align-items: center; font-size: 14px; box-shadow: 0 6px 20px rgba(0,0,0,.25); z-index: 50; max-width: calc(100% - 32px); }
+    #toast span { white-space: nowrap; }
+    #toast button { background: none; border: 0; color: var(--accent, #0f7c7b); font-weight: 800; letter-spacing: .08em; font: inherit; font-weight: 800; }
     /* Titre de carte avec un petit bouton à droite (« Tout marquer comme lu ») */
     .card-title.avec-action { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
     .lien-action { background: none; border: 0; color: var(--accent, #0f7c7b); font: inherit; font-weight: 800;
@@ -391,6 +414,7 @@
 
     <!-- Message d'erreur du service (jeton refusé, Pronote injoignable…) -->
     <section class="card alerte" id="alerte" hidden><p id="alerte-texte"></p></section>
+    <div id="toast" hidden><span id="toast-texte"></span><button id="toast-annuler">ANNULER</button></div>
 
     <!-- Contenu principal (caché tant qu'il n'y a pas de données) -->
     <div id="contenu" hidden style="display:flex;flex-direction:column;gap:14px">
@@ -411,7 +435,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = '1.5.0';
+    const VERSION = '1.6.0';
     // Adresse du service du NAS (reverse proxy DSM). Pour essayer un autre service :
     // ?service=http://192.168.1.161:8092 (retenu sur ce téléphone, ?service= vide pour revenir).
     const SERVICE_PAR_DEFAUT = 'https://pronote.baiji.fr';
@@ -666,6 +690,76 @@
       return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
     }
 
+    /* ---------- Archives des messages (v1.6.0) ----------
+       Objet { clé: date d'archivage } dans localStorage « cartable.archives ».
+       On oublie les archives de plus de 90 jours (le message a disparu de Pronote). */
+    let archivesOuvertes = false;
+    function lireArchives() {
+      try {
+        const a = JSON.parse(memo.lire('archives') || '{}');
+        const limite = Date.now() - 90 * 864e5;
+        for (const k of Object.keys(a)) if (a[k] < limite) delete a[k];
+        return a;
+      } catch { return {}; }
+    }
+    function ecrireArchives(a) { memo.ecrire('archives', JSON.stringify(a)); }
+
+    /* Petit message en bas de l'écran avec « Annuler » (6 s) */
+    let minuterieToast = null;
+    function toast(texte, annuler) {
+      $('toast-texte').textContent = texte;
+      $('toast').hidden = false;
+      $('toast-annuler').onclick = () => { $('toast').hidden = true; annuler(); };
+      clearTimeout(minuterieToast);
+      minuterieToast = setTimeout(() => { $('toast').hidden = true; }, 6000);
+    }
+
+    /*
+      Glisser une ligne du doigt :
+      - vers la GAUCHE (hors archives) : archiver ;
+      - vers la DROITE (dans « Archivés ») : désarchiver.
+      On ne déclenche que si le geste est surtout horizontal (sinon c'est un
+      défilement de la page) et dépasse 90 px.
+    */
+    function activerGlisse(el) {
+      const dansArchives = !!el.closest('.archives');
+      let x0 = 0, y0 = 0, dx = 0, actif = false, decide = false;
+      el.addEventListener('touchstart', (e) => {
+        x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; dx = 0; actif = false; decide = false;
+      }, { passive: true });
+      el.addEventListener('touchmove', (e) => {
+        const mx = e.touches[0].clientX - x0, my = e.touches[0].clientY - y0;
+        if (!decide && (Math.abs(mx) > 10 || Math.abs(my) > 10)) { decide = true; actif = Math.abs(mx) > Math.abs(my) * 1.5; }
+        if (!actif) return;
+        dx = dansArchives ? Math.max(0, mx) : Math.min(0, mx);   // un seul sens possible
+        el.classList.add('en-cours');
+        el.style.transform = `translateX(${dx}px)`;
+      }, { passive: true });
+      el.addEventListener('touchend', () => {
+        el.classList.remove('en-cours');
+        if (actif && Math.abs(dx) > 90) {
+          el.classList.add(dansArchives ? 'part-droite' : 'part');
+          setTimeout(() => basculerArchive(el.dataset.cle, !dansArchives, el.dataset.info), 200);
+        } else {
+          el.style.transform = '';
+        }
+      });
+    }
+    function basculerArchive(cle, archiver, idInfo) {
+      const a = lireArchives();
+      if (archiver) a[cle] = Date.now(); else delete a[cle];
+      ecrireArchives(a);
+      // Archiver une information non lue = elle a été vue : on la marque lue dans Pronote
+      if (archiver && idInfo) marquerLue([idInfo]);
+      afficherTout();
+      toast(archiver ? 'Message archivé' : 'Message remis dans la liste', () => {
+        const b = lireArchives();
+        if (archiver) delete b[cle]; else b[cle] = Date.now();
+        ecrireArchives(b);
+        afficherTout();
+      });
+    }
+
     /* ---------- Notes et évaluations (service v1.7.0) ---------- */
     let notesPar = 'date';   // « date » ou « matiere », comme dans Pronote
     // Couleur d'une compétence selon son niveau (mêmes repères que Pronote :
@@ -754,8 +848,14 @@
       if (!m) { $('vue').innerHTML = `<div class="card vide">Les messages arriveront à la prochaine lecture de Pronote (service v1.1.0 ou plus).</div>`; return; }
       const fichiers = (liste) => liste?.length ? `<div class="extras">${liste.map((f) => `<span title="À ouvrir dans Pronote">📎 ${esc(f)}</span>`).join('')}</div>` : '';
 
-      const discussions = (m.discussions || []).map((d) => `
-        <details class="msg ${d.nonLus ? 'non-lu' : ''}">
+      // Archives (v1.6.0) : clé STABLE de chaque message (les identifiants Pronote changent
+      // à chaque connexion) → type | titre | date. Gardées sur l'appareil.
+      const archives = lireArchives();
+      const cleD = (d) => 'd|' + d.sujet + '|' + d.le;
+      const cleI = (i) => 'i|' + i.titre + '|' + i.le;
+      const cleN = (n) => 'n|' + n.titre + '|' + n.le;
+      const discussions = (m.discussions || []).filter((d) => !archives[cleD(d)]).map((d) => `
+        <details class="msg glisse ${d.nonLus ? 'non-lu' : ''}" data-cle="${esc(cleD(d))}">
           <summary>
             <span class="point"></span>
             <span class="entete"><div class="sujet">${esc(d.sujet)}</div><div class="qui">${esc(d.avec)}${d.total > 1 ? ` · ${d.total} messages` : ''}${d.ferme ? ' · close' : ''}</div></span>
@@ -771,8 +871,8 @@
       const nbEnfants = donnees.enfants?.length || 0;
       const pourQui = (pour) => pour?.length && pour.length < nbEnfants
         ? ` · <b style="color:${COULEURS[pour[0]] || 'var(--accent)'}">${pour.map(esc).join(', ')}</b>` : '';
-      const informations = (m.informations || []).map((i) => `
-        <details class="msg ${i.lu ? '' : 'non-lu'}" ${i.id && !i.lu ? `data-info="${esc(i.id)}"` : ''}>
+      const ligneInfo = (i) => `
+        <details class="msg glisse ${i.lu ? '' : 'non-lu'}" data-cle="${esc(cleI(i))}" ${i.id && !i.lu ? `data-info="${esc(i.id)}"` : ''}>
           <summary>
             <span class="point"></span>
             <span class="entete"><div class="sujet">${esc(i.titre)}</div><div class="qui">${esc(i.de)}${i.categorie ? ` · ${esc(i.categorie)}` : ''}${pourQui(i.pour)}</div></span>
@@ -781,7 +881,8 @@
           ${i.texte || i.fichiers?.length
             ? `<div class="echange">${i.texte ? `<div class="texte">${esc(i.texte)}</div>` : ''}${fichiers(i.fichiers)}</div>`
             : '<div class="echange aide">Pas de texte : tout est dans le titre (ou ouvre Pronote).</div>'}
-        </details>`).join('');
+        </details>`;
+      const informations = (m.informations || []).filter((i) => !archives[cleI(i)]).map(ligneInfo).join('');
       // Bouton « Tout marquer comme lu » s'il reste des informations non lues (avec identifiant)
       const nonLuesIds = (m.informations || []).filter((i) => !i.lu && i.id).map((i) => i.id);
       const toutLu = nonLuesIds.length > 1
@@ -790,22 +891,30 @@
       // Service v1.5.0 : raisons pour lesquelles Pronote n'a pas tout donné (refus, droit…).
       // Avant, elles n'étaient visibles que dans le journal du NAS : l'onglet restait vide.
       const erreurs = (m.erreurs || []).length
-        ? `<div class="card alerte"><p>Pronote n'a pas donné tous les messages :</p>${m.erreurs.map((e) => `<p>• ${esc(e)}</p>`).join('')}</div>`
+        // Replié (v1.6.0) : une ligne, les détails techniques à déplier
+        ? `<details class="card alerte"><summary>⚠ Pronote n'a pas tout donné · détails</summary>${m.erreurs.map((e) => `<p>• ${esc(e)}</p>`).join('')}</details>`
         : '';
 
       // Notifications « Mes informations » de Pronote (service v1.8.0). On masque
       // celles dont la date d'expiration est passée (« jusquau », AAAA-MM-JJ).
       const aujourdhui = new Date().toLocaleDateString('sv-SE');   // « sv-SE » écrit AAAA-MM-JJ
       const notifs = (m.notifications || []).filter((n) => !n.jusquau || n.jusquau >= aujourdhui);
-      const notifications = notifs.map((n) => `
-        <details class="msg">
+      const ligneNotif = (n) => `
+        <details class="msg glisse" data-cle="${esc(cleN(n))}">
           <summary>
             <span class="point" style="background:var(--warn,#f59e0b)"></span>
-            <span class="entete"><div class="sujet">${esc(n.titre)}</div><div class="qui">${esc(n.texte.split('\n')[0])}${pourQui(n.pour)}</div></span>
+            <span class="entete"><div class="sujet">${esc(n.titre)}${pourQui(n.pour)}</div><div class="qui apercu">${esc(n.texte.replace(/\s*\n\s*/g, ' '))}</div></span>
             <span class="date">${esc(dateCourte(n.le))}</span>
           </summary>
           <div class="echange"><div class="texte">${esc(n.texte)}</div></div>
-        </details>`).join('');
+        </details>`;
+      const notifications = notifs.filter((n) => !archives[cleN(n)]).map(ligneNotif).join('');
+      // Les archivés (encore présents dans Pronote), dans une section repliée en bas
+      const archivesHtml = [
+        ...notifs.filter((n) => archives[cleN(n)]).map(ligneNotif),
+        ...(m.informations || []).filter((i) => archives[cleI(i)]).map(ligneInfo),
+      ].join('');
+      const nbArchives = notifs.filter((n) => archives[cleN(n)]).length + (m.informations || []).filter((i) => archives[cleI(i)]).length;
 
       $('vue').innerHTML = `
         ${erreurs}
@@ -815,7 +924,13 @@
           // Messagerie fermée par Pronote (le soir) et rien à montrer : pas de carte du tout (v1.4.1)
           ? `<section class="card"><div class="card-title">Discussions</div>${discussions || '<div class="vide">Aucune discussion.</div>'}</section>` : ''}
         <section class="card"><div class="card-title avec-action"><span>Informations du collège</span>${toutLu}</div>${informations || '<div class="vide">Aucune information.</div>'}</section>
-        <p class="aide" style="text-align:center">Ouvrir une information la marque comme lue dans Pronote. Pour répondre à un message, utilise Pronote.</p>`;
+        ${nbArchives ? `<details class="card archives" ${archivesOuvertes ? 'open' : ''}><summary>Archivés (${nbArchives}) ▾</summary>${archivesHtml}</details>` : ''}
+        <p class="aide" style="text-align:center">Glisse un message vers la gauche pour l'archiver. Ouvrir une information la marque comme lue dans Pronote.</p>`;
+
+      // Glisser pour archiver / désarchiver (v1.6.0)
+      document.querySelectorAll('.glisse').forEach(activerGlisse);
+      const blocArchives = document.querySelector('details.archives');
+      if (blocArchives) blocArchives.addEventListener('toggle', () => { archivesOuvertes = blocArchives.open; });
 
       // Ouvrir une information non lue = la marquer lue (l'événement « toggle » se
       // déclenche quand un <details> s'ouvre ou se ferme ; il ne « remonte » pas,
