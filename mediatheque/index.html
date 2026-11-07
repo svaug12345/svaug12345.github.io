@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Médiathèque — les documents empruntés aux Médiathèques de Paris-Saclay, avec leurs couvertures
-  Version 1.3.0
+  Version 1.4.0
   Les données viennent du service « biblio » du NAS (https://biblio.baiji.fr/prets.json),
   qui se connecte au compte lecteur et relit le site toutes les 3 heures.
   La page ne contient aucun identifiant et ne parle jamais directement au compte lecteur.
@@ -18,6 +18,8 @@
               repliée tout en bas : à l'écran, il ne reste que les manquants
    • v1.3.0 : en mode Check, une loupe sur chaque couverture ouvre la fiche (couverture en
               grand) ; la fiche a alors un bouton « Récupéré » pour cocher depuis là
+   • v1.4.0 : « Ma carte » : la carte de bibliothèque à présenter au comptoir, code-barres
+              Codabar dessiné par la page ; le numéro reste dans le téléphone (jamais dans le code)
 -->
 <html lang="fr">
 <head>
@@ -261,6 +263,25 @@
     .recup[open] summary { margin-bottom: 12px; }
     .recup .grille { opacity: .8; }
 
+    /* =========================================================
+       9. MA CARTE (à présenter au comptoir pour emprunter)
+       ========================================================= */
+    #carte { width: min(520px, calc(100vw - 16px)); }
+    .carte-titre { font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+    .carte-titre + h2 { font-size: 22px; font-weight: 800; margin-top: 2px; }
+    /* Le code-barres TOUJOURS noir sur blanc, même en thème sombre : sinon le lecteur ne le lit pas.
+       La marge blanche autour (« zone calme ») est obligatoire pour la lecture. */
+    .code-barres { background: #fff; border-radius: 14px; padding: 18px 16px 12px; margin-top: 14px; text-align: center; }
+    .code-barres svg { width: 100%; height: 120px; }
+    .code-barres .numero { color: #000; font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; letter-spacing: .12em; margin-top: 8px; }
+    .carte-aide { font-size: 13px; color: var(--muted); margin-top: 12px; line-height: 1.5; }
+    .champ { width: 100%; margin-top: 12px; padding: 12px 14px; border-radius: 12px; border: 2px solid var(--line);
+             background: var(--bg); color: var(--ink); font: 700 18px 'JetBrains Mono', monospace; letter-spacing: .08em; }
+    .champ:focus { outline: none; border-color: var(--accent); }
+    .erreur { color: var(--bad); font-size: 13px; font-weight: 700; margin-top: 8px; }
+    .lien-discret { font-size: 13px; font-weight: 700; color: var(--muted); text-decoration: underline; padding: 6px; }
+    #scan-video { width: 100%; border-radius: 12px; margin-top: 12px; background: #000; aspect-ratio: 4 / 3; object-fit: cover; }
+
     /* Bilan : la liste des manquants */
     .manquants { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
     .manquant { display: flex; gap: 12px; align-items: center; text-align: left; width: 100%; padding: 6px; border-radius: 12px; background: var(--soft); }
@@ -284,6 +305,10 @@
         <h1 class="titre" id="titre">Chargement…</h1>
       </div>
       <div style="display:flex;gap:4px">
+      <!-- Ma carte : la carte de bibliothèque à montrer au comptoir -->
+      <button class="icon-btn" id="btn-carte" aria-label="Ma carte de bibliothèque" title="Ma carte">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg>
+      </button>
       <!-- Mode Check : pour récupérer les documents auprès des enfants et voir ce qui manque -->
       <button class="icon-btn" id="btn-check" aria-label="Mode check" aria-pressed="false" title="Check : vérifier qu'on a tout">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/></svg>
@@ -305,16 +330,18 @@
 
   <dialog id="fiche" aria-label="Fiche du document"></dialog>
   <dialog id="bilan" aria-label="Bilan du check"></dialog>
+  <dialog id="carte" aria-label="Ma carte de bibliothèque"></dialog>
 
   <script>
     /* =================================================================
        CONFIGURATION
        ================================================================= */
-    const VERSION = '1.3.0';
+    const VERSION = '1.4.0';
     const PRETS_URL = 'https://biblio.baiji.fr/prets.json';       // le service du NAS
     const SITE = 'https://mediatheques.paris-saclay.com';
     const PAGE_PRETS = SITE + '/page/user/prets-en-cours?choix_tri_pret_bgm=dra';   // pour prolonger
     const MEMOIRE = 'mediatheque.donnees';                         // dernières données (hors ligne)
+    const MEMOIRE_CARTE = 'mediatheque.carte';                    // numéro de la carte (dans le téléphone seulement)
     const MEMOIRE_CHECK = 'mediatheque.check';                    // documents cochés en mode Check
     const TROP_VIEUX_H = 8;  // le service relit toutes les 3 h : au-delà de 8 h, quelque chose cloche
 
@@ -763,12 +790,186 @@
         $('fiche').close();
       }
     });
+    /* =================================================================
+       MA CARTE DE BIBLIOTHÈQUE
+       La carte des Médiathèques de Paris-Saclay porte un code-barres CODABAR,
+       le format classique des bibliothèques. Le numéro n'est PAS écrit dans ce
+       fichier (le dépôt GitHub est public) : il est gardé dans le téléphone
+       (localStorage), saisi une fois, scanné, ou donné par un lien ?carte=…
+       ================================================================= */
+
+    // Codabar : chaque caractère = 7 traits qui alternent barre, espace, barre, espace…
+    // 0 = trait fin, 1 = trait large. Entre deux caractères : un espace fin.
+    // Un code commence et finit par une lettre A, B, C ou D (« start » et « stop »).
+    const CODABAR = {
+      '0': '0000011', '1': '0000110', '2': '0001001', '3': '1100000', '4': '0010010',
+      '5': '1000010', '6': '0100001', '7': '0100100', '8': '0110000', '9': '1001000',
+      '-': '0001100', '$': '0011000', ':': '1000101', '/': '1010001', '.': '1010100', '+': '0010101',
+      'A': '0011010', 'B': '0101001', 'C': '0001011', 'D': '0001110',
+    };
+
+    // Dessine le code-barres en SVG. Les traits larges font 3 fois les fins (rapport conseillé).
+    // shape-rendering="crispEdges" : bords nets, sans flou, pour l'appareil de lecture.
+    function codabarSVG(texte) {
+      const FIN = 2, LARGE = 6, CALME = 20;   // CALME = marge blanche obligatoire de chaque côté
+      let x = CALME, barres = '';
+      [...texte].forEach((car, i) => {
+        [...CODABAR[car]].forEach((large, j) => {
+          const l = large === '1' ? LARGE : FIN;
+          if (j % 2 === 0) barres += `<rect x="${x}" width="${l}" height="100"/>`;   // positions paires = barres
+          x += l;                                                                    // impaires = espaces
+        });
+        if (i < texte.length - 1) x += FIN;  // espace entre deux caractères
+      });
+      return `<svg viewBox="0 0 ${x + CALME} 100" preserveAspectRatio="none" shape-rendering="crispEdges" aria-hidden="true"><g fill="#000">${barres}</g></svg>`;
+    }
+
+    // Nettoie ce qu'on a tapé ou scanné. Rend {debut, numero, fin} ou null si ce n'est pas du Codabar.
+    // Sans lettres de début/fin, on met A…B, comme sur la carte d'origine.
+    function lireNumero(brut) {
+      const t = String(brut || '').toUpperCase().replace(/\s+/g, '');
+      const m = /^([ABCD])?([0-9\-$:\/.+]{4,30})([ABCD])?$/.exec(t);
+      return m ? { debut: m[1] || 'A', numero: m[2], fin: m[3] || 'B' } : null;
+    }
+    function lireCarte() {
+      try { return JSON.parse(localStorage.getItem(MEMOIRE_CARTE)); } catch { return null; }
+    }
+    function sauverCarte(c) {
+      try { localStorage.setItem(MEMOIRE_CARTE, JSON.stringify(c)); return true; } catch { return false; }
+    }
+
+    // Garder l'écran allumé pendant qu'on montre la carte (sinon il s'éteint devant le lecteur)
+    let verrouEcran = null;
+    async function garderEcranAllume(oui) {
+      try {
+        if (oui && 'wakeLock' in navigator) verrouEcran = await navigator.wakeLock.request('screen');
+        else if (!oui && verrouEcran) { await verrouEcran.release(); verrouEcran = null; }
+      } catch { /* refusé (batterie faible…) : pas grave */ }
+    }
+
+    const CROIX = `<button class="icon-btn fermer" data-fermer aria-label="Fermer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>`;
+
+    // Ouvre la fenêtre : la carte si on a un numéro, sinon le formulaire pour l'enregistrer
+    function ouvrirCarte(enModif = false) {
+      const c = lireCarte();
+      if (c && !enModif) {
+        $('carte').innerHTML = `${CROIX}
+          <div class="carte-titre">Médiathèques Paris-Saclay</div>
+          <h2>Carte de bibliothèque</h2>
+          <div class="code-barres">
+            ${codabarSVG(c.debut + c.numero + c.fin)}
+            <div class="numero">${esc(c.numero)}</div>
+          </div>
+          <p class="carte-aide">Présente cet écran au lecteur de la borne ou du comptoir.
+            Monte la luminosité si le code ne passe pas du premier coup.</p>
+          <div class="boutons"><button class="lien-discret" id="carte-modifier">Changer de numéro</button></div>`;
+        garderEcranAllume(true);
+      } else {
+        // BarcodeDetector = lecteur de codes-barres intégré à Chrome sur Android (pas partout)
+        const scan = 'BarcodeDetector' in window;
+        $('carte').innerHTML = `${CROIX}
+          <div class="carte-titre">Ma carte</div>
+          <h2>${c ? 'Changer de numéro' : 'Enregistrer ta carte'}</h2>
+          <p class="carte-aide">Le numéro est sous le code-barres de ta carte. Il reste dans ce téléphone :
+            il n'est envoyé nulle part.</p>
+          <input class="champ" id="carte-numero" inputmode="numeric" autocomplete="off" placeholder="Numéro de carte" value="${c ? esc(c.numero) : ''}">
+          <div class="erreur" id="carte-erreur" hidden></div>
+          <video id="scan-video" playsinline muted hidden></video>
+          <div class="boutons">
+            <button class="btn" id="carte-ok">Enregistrer</button>
+            ${scan ? '<button class="btn secondaire" id="carte-scan">📷 Scanner ma carte</button>' : ''}
+            ${c ? '<button class="lien-discret" id="carte-oublier">Oublier ma carte sur ce téléphone</button>' : ''}
+          </div>`;
+      }
+      if (!$('carte').open) {
+        $('carte').showModal();
+        history.pushState({ fiche: true }, '');   // retour du téléphone = fermer la carte
+      }
+    }
+
+    // Lecture de la carte en plastique avec la caméra
+    let flux = null;
+    async function scannerCarte() {
+      const video = $('scan-video'), erreur = $('carte-erreur');
+      try {
+        const lecteur = new BarcodeDetector({ formats: ['codabar'] });
+        flux = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });  // caméra arrière
+        video.srcObject = flux; video.hidden = false; await video.play();
+        erreur.hidden = true;
+        // On regarde l'image 4 fois par seconde jusqu'à trouver un code (ou fermeture de la fenêtre)
+        while (flux) {
+          const trouves = await lecteur.detect(video).catch(() => []);
+          const c = trouves.length && lireNumero(trouves[0].rawValue);
+          if (c) {
+            arreterScan();
+            sauverCarte(c);
+            if (navigator.vibrate) navigator.vibrate(40);
+            ouvrirCarte();
+            return;
+          }
+          await new Promise((r) => setTimeout(r, 250));
+        }
+      } catch {
+        arreterScan();
+        erreur.textContent = 'Caméra indisponible : tape le numéro à la main.';
+        erreur.hidden = false;
+      }
+    }
+    function arreterScan() {
+      if (flux) flux.getTracks().forEach((t) => t.stop());   // éteint vraiment la caméra
+      flux = null;
+      if ($('scan-video')) $('scan-video').hidden = true;
+    }
+
+    $('btn-carte').addEventListener('click', () => ouvrirCarte());
+    $('carte').addEventListener('click', (e) => {
+      if (e.target === $('carte') || e.target.closest('[data-fermer]')) $('carte').close();
+      if (e.target.closest('#carte-modifier')) { garderEcranAllume(false); ouvrirCarte(true); }
+      if (e.target.closest('#carte-scan')) scannerCarte();
+      if (e.target.closest('#carte-oublier')) {
+        try { localStorage.removeItem(MEMOIRE_CARTE); } catch { /* rien */ }
+        $('carte').close();
+      }
+      if (e.target.closest('#carte-ok')) {
+        const c = lireNumero($('carte-numero').value);
+        if (!c) {
+          $('carte-erreur').textContent = 'Ce numéro ne ressemble pas à un numéro de carte (des chiffres, au moins 4).';
+          $('carte-erreur').hidden = false;
+          return;
+        }
+        arreterScan(); sauverCarte(c); ouvrirCarte();
+      }
+    });
+    // Touche « Entrée » du clavier = Enregistrer
+    $('carte').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.target.id === 'carte-numero') { e.preventDefault(); $('carte-ok').click(); }
+    });
+    $('carte').addEventListener('close', () => {
+      arreterScan(); garderEcranAllume(false);
+      if (history.state && history.state.fiche) history.back();
+    });
+
+    // Lien d'installation : baiji.fr/mediatheque/?carte=NUMERO enregistre le numéro puis
+    // l'efface de l'adresse (pour qu'il ne reste ni dans l'historique ni dans un favori).
+    // baiji.fr/mediatheque/?carte (sans numéro) ouvre directement la carte : pratique en raccourci.
+    {
+      const params = new URLSearchParams(location.search);
+      if (params.has('carte')) {
+        const c = lireNumero(params.get('carte'));
+        if (c) sauverCarte(c);
+        history.replaceState(null, '', location.pathname);
+        ouvrirCarte();
+      }
+    }
+
     // Fiche fermée (croix, touche Échap…) : on retire l'étape ajoutée à l'historique
     $('fiche').addEventListener('close', () => { if (history.state && history.state.fiche) history.back(); });
     // Bouton « retour » du téléphone : on ferme la fiche au lieu de quitter l'appli
     window.addEventListener('popstate', () => {
       if ($('fiche').open) $('fiche').close();
       if ($('bilan').open) $('bilan').close();
+      if ($('carte').open) $('carte').close();
     });
 
     // Image absente ou en erreur : on l'enlève, la tuile avec le titre apparaît dessous.
