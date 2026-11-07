@@ -35,6 +35,9 @@
               l'onglet « Emploi du temps » devient « Cours » pour que 4 onglets tiennent
    • v1.4.1 : plus de carte « Trimestre / moyenne » ni de carte « Discussions » quand
               Pronote ferme la messagerie (à la demande de Seb) ; coefficient écrit « 0,5 »
+   • v1.5.0 : section « Notifications » en tête de l'onglet Messages (prof absent, cours
+              modifié, remplacé… : messages.notifications du service v1.8.0), sans celles
+              qui ont expiré ; le texte des informations arrive avec le service v1.8.0
 -->
 <html lang="fr">
 <head>
@@ -408,7 +411,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = '1.4.1';
+    const VERSION = '1.5.0';
     // Adresse du service du NAS (reverse proxy DSM). Pour essayer un autre service :
     // ?service=http://192.168.1.161:8092 (retenu sur ce téléphone, ?service= vide pour revenir).
     const SERVICE_PAR_DEFAUT = 'https://pronote.baiji.fr';
@@ -790,8 +793,23 @@
         ? `<div class="card alerte"><p>Pronote n'a pas donné tous les messages :</p>${m.erreurs.map((e) => `<p>• ${esc(e)}</p>`).join('')}</div>`
         : '';
 
+      // Notifications « Mes informations » de Pronote (service v1.8.0). On masque
+      // celles dont la date d'expiration est passée (« jusquau », AAAA-MM-JJ).
+      const aujourdhui = new Date().toLocaleDateString('sv-SE');   // « sv-SE » écrit AAAA-MM-JJ
+      const notifs = (m.notifications || []).filter((n) => !n.jusquau || n.jusquau >= aujourdhui);
+      const notifications = notifs.map((n) => `
+        <details class="msg">
+          <summary>
+            <span class="point" style="background:var(--warn,#f59e0b)"></span>
+            <span class="entete"><div class="sujet">${esc(n.titre)}</div><div class="qui">${esc(n.texte.split('\n')[0])}${pourQui(n.pour)}</div></span>
+            <span class="date">${esc(dateCourte(n.le))}</span>
+          </summary>
+          <div class="echange"><div class="texte">${esc(n.texte)}</div></div>
+        </details>`).join('');
+
       $('vue').innerHTML = `
         ${erreurs}
+        ${notifications ? `<section class="card"><div class="card-title">Notifications</div>${notifications}</section>` : ''}
         ${m.instantane ? `<div class="instantane">🌙 Dernière image de la journée (Pronote masque les infos le soir).</div>` : ''}
         ${discussions || !m.messagerieFermee
           // Messagerie fermée par Pronote (le soir) et rien à montrer : pas de carte du tout (v1.4.1)
