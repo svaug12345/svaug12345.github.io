@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Médiathèque — les documents empruntés aux Médiathèques de Paris-Saclay, avec leurs couvertures
-  Version 1.4.0
+  Version 1.5.0
   Les données viennent du service « biblio » du NAS (https://biblio.baiji.fr/prets.json),
   qui se connecte au compte lecteur et relit le site toutes les 3 heures.
   La page ne contient aucun identifiant et ne parle jamais directement au compte lecteur.
@@ -20,6 +20,8 @@
               grand) ; la fiche a alors un bouton « Récupéré » pour cocher depuis là
    • v1.4.0 : « Ma carte » : la carte de bibliothèque à présenter au comptoir, code-barres
               Codabar dessiné par la page ; le numéro reste dans le téléphone (jamais dans le code)
+   • v1.5.0 : plus aucune proposition de prolongation (bouton, badge « Non prolong. », ligne
+              « Prolongeable ») ; lien vers le site des médiathèques sous la carte
 -->
 <html lang="fr">
 <head>
@@ -66,7 +68,7 @@
       --accent: #0f7c7b;      /* teal SV */
       --warn: #b45309;        /* orange : à rendre dans la semaine */
       --bad: #b91c1c;         /* rouge : à rendre dans 3 jours ou moins, ou en retard */
-      --good: #15803d;        /* vert : prolongeable */
+      --good: #15803d;        /* vert : récupéré (mode Check) */
       --radius: 18px;
     }
     /* Thème sombre automatique si le téléphone est en mode sombre */
@@ -336,10 +338,10 @@
     /* =================================================================
        CONFIGURATION
        ================================================================= */
-    const VERSION = '1.4.0';
+    const VERSION = '1.5.0';
     const PRETS_URL = 'https://biblio.baiji.fr/prets.json';       // le service du NAS
     const SITE = 'https://mediatheques.paris-saclay.com';
-    const PAGE_PRETS = SITE + '/page/user/prets-en-cours?choix_tri_pret_bgm=dra';   // pour prolonger
+    const PAGE_PRETS = SITE + '/page/user/prets-en-cours?choix_tri_pret_bgm=dra';   // « Mon compte » (pied de page)
     const MEMOIRE = 'mediatheque.donnees';                         // dernières données (hors ligne)
     const MEMOIRE_CARTE = 'mediatheque.carte';                    // numéro de la carte (dans le téléphone seulement)
     const MEMOIRE_CHECK = 'mediatheque.check';                    // documents cochés en mode Check
@@ -389,7 +391,7 @@
       const image = /^https:\/\//.test(p.couverture || '')
         ? `<img src="${esc(p.couverture)}" alt=""${differe ? ' loading="lazy"' : ''} referrerpolicy="no-referrer">` : '';
       return `<span class="couv" style="--t:${teinte(p.type)}"><span class="repli">${esc(p.titre)}</span>${image}`
-           + (p.prolongeable === false ? '<span class="fixe" title="Pas prolongeable">Non prolong.</span>' : '') + '</span>';
+           + '</span>';
     }
 
     /* =================================================================
@@ -475,8 +477,7 @@
       const n = joursAvant(iso);
       $('prochain').style.setProperty('--c', couleur(n));
       $('prochain').innerHTML = `<div><small>Prochain retour</small><b>${esc(dateCourte(iso))}</b>`
-        + `<span>${esc(compteARebours(n))} · ${nb} document${nb > 1 ? 's' : ''}</span></div>`
-        + `<a class="btn" href="${esc(PAGE_PRETS)}" target="_blank" rel="noopener">Prolonger ↗</a>`;
+        + `<span>${esc(compteARebours(n))} · ${nb} document${nb > 1 ? 's' : ''}</span></div>`;
     }
 
     function afficherFiltres() {
@@ -673,14 +674,12 @@
           ${ligne('Médiathèque', esc(p.mediatheque))}
           ${ligne('Emprunté le', p.emprunt ? esc(dateLongue(p.emprunt)) : '')}
           ${ligne('À rendre le', p.retour ? `${esc(dateLongue(p.retour))}<br><span style="color:${couleur(n)}">${esc(compteARebours(n))}</span>` : '')}
-          ${ligne('Prolongeable', p.prolongeable ? '<span class="oui">Oui</span>' : '<span class="non">Non</span>')}
         </dl>
         ${part !== null ? `<div class="duree" style="--c:${couleur(n)}" aria-hidden="true"><i style="width:${part.toFixed(0)}%"></i></div>` : ''}
         <div class="boutons">
           ${enCheck ? (coches.has(cleDoc(p))
               ? `<button class="btn secondaire" id="fiche-cocher" data-i="${tous.indexOf(p)}">Pas récupéré finalement</button>`
               : `<button class="btn" id="fiche-cocher" data-i="${tous.indexOf(p)}" style="background:var(--good)">✓ Récupéré</button>`) : ''}
-          ${p.prolongeable ? `<a class="btn" href="${esc(PAGE_PRETS)}" target="_blank" rel="noopener">Prolonger sur le site ↗</a>` : ''}
           <a class="btn secondaire" href="${esc(catalogue)}" target="_blank" rel="noopener">Voir dans le catalogue ↗</a>
         </div>`;
       $('fiche').showModal();
@@ -863,7 +862,11 @@
           </div>
           <p class="carte-aide">Présente cet écran au lecteur de la borne ou du comptoir.
             Monte la luminosité si le code ne passe pas du premier coup.</p>
-          <div class="boutons"><button class="lien-discret" id="carte-modifier">Changer de numéro</button></div>`;
+          <div class="boutons">
+            <!-- Le site des médiathèques : catalogue, réservations, horaires -->
+            <a class="btn secondaire" href="${esc(SITE)}" target="_blank" rel="noopener">Site des médiathèques ↗</a>
+            <button class="lien-discret" id="carte-modifier">Changer de numéro</button>
+          </div>`;
         garderEcranAllume(true);
       } else {
         // BarcodeDetector = lecteur de codes-barres intégré à Chrome sur Android (pas partout)
