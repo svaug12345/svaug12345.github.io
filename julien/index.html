@@ -2,7 +2,7 @@
 <!--
   ============================================================
   tac-velo.fr — TAC Vélo, Julien mécanicien vélo
-  Version 1.9.0
+  Version 1.9.1
   ------------------------------------------------------------
   Site vitrine d'une page pour Julien, mécanicien vélo.
   Devise : « Le vélo doit être un plaisir ».
@@ -14,8 +14,8 @@
   ⚙️ TOUT CE QUI EST À PERSONNALISER est dans le <script> en bas :
      l'objet JULIEN (téléphone, e-mail, zone, horaires), la liste
      SERVICES (avec les tarifs) et la liste ASTUCES (dépannage).
-     La page reste en « noindex » (invisible de Google) tant que
-     Julien n'a pas validé les tarifs.
+     Tarifs validés par Julien le 07/11/2026 : la page est visible
+     de Google (plus de « noindex » depuis la v1.9.1).
 
   Organisation de la page :
     1. En-tête (nom + bouton appeler toujours visible)
@@ -47,6 +47,8 @@
               directement quoi faire, étape par étape
    • v1.6.0 : site installable sur téléphone (manifeste, icône vélo, service worker)
    • v1.6.1 : compteur de visites de baiji.fr (/journal.js)
+   • v1.9.1 : tarifs (réparations et nettoyage) validés par Julien : la page
+              n'est plus en « noindex », Google peut la trouver
    • v1.9.0 : formules de nettoyage (« Coup de frais », « Transmission à neuf »,
               « Grand lavage », « Grand soin ») avec ce qui est compris, prix et
               supplément tout-suspendu ; liste NETTOYAGES dans le script
@@ -82,9 +84,9 @@
 <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
 <link rel="icon" href="icones/icone-192.png" type="image/png">
 <meta name="description" content="TAC Vélo : Julien, mécanicien vélo à Gif-sur-Yvette, dans son atelier de quartier ou à domicile. Le vélo doit être un plaisir : conseils pour vous dépanner vous-même, prix annoncé avant réparation, c'est vous qui décidez.">
-<!-- Invisible des moteurs de recherche tant que Julien n'a pas validé les tarifs.
-     Quand tout est prêt : supprimer cette ligne pour que Google puisse trouver le site. -->
-<meta name="robots" content="noindex">
+<!-- Visible des moteurs de recherche depuis la v1.9.1 (tarifs validés par Julien).
+     Pour cacher de nouveau le site à Google, remettre :
+     <meta name="robots" content="noindex"> -->
 <meta name="geo.placename" content="Gif-sur-Yvette">
 <meta name="theme-color" content="#f4efe6">
 <!-- Petit vélo en guise d'icône d'onglet (SVG directement dans l'adresse) -->
@@ -902,7 +904,7 @@ const JULIEN = {
   horaires:   "",            // ex. "Du mardi au samedi, 9 h – 19 h"
   horairesDetail: "Si je ne décroche pas, laissez un message : je rappelle.",
 };
-const VERSION = "1.9.0";     // ← à augmenter à chaque modification (voir l'historique en haut)
+const VERSION = "1.9.1";     // ← à augmenter à chaque modification (voir l'historique en haut)
 
 /* ------------------------------------------------------------
    Pictos (bibliothèque Lucide, licence ISC) — juste le dessin
@@ -943,7 +945,7 @@ function svg(nom) {
 
 /* ------------------------------------------------------------
    Liste des réparations, avec leurs TARIFS (main-d'œuvre).
-   ⚠️ Tarifs indicatifs à faire valider par Julien : pour en changer
+   Tarifs validés par Julien le 07/11/2026 : pour en changer
    un, il suffit de modifier le texte « prix » de la ligne.
    Pour ajouter une réparation : copier une ligne.
    ------------------------------------------------------------ */
@@ -965,7 +967,7 @@ document.getElementById("services").innerHTML = SERVICES.map(s => `
 
 /* ------------------------------------------------------------
    Formules de NETTOYAGE (prix tout compris, produits inclus).
-   ⚠️ Tarifs indicatifs à faire valider par Julien, comme les réparations.
+   Tarifs validés par Julien le 07/11/2026, comme les réparations.
    - nom      : le nom de la formule
    - prix     : affiché en gros dans la pastille jaune
    - pour     : une phrase « pour qui / quand »
