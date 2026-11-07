@@ -2,7 +2,7 @@
 <!--
   ============================================================
   tac-velo.fr — TAC Vélo, Julien mécanicien vélo
-  Version 1.8.1
+  Version 1.9.0
   ------------------------------------------------------------
   Site vitrine d'une page pour Julien, mécanicien vélo.
   Devise : « Le vélo doit être un plaisir ».
@@ -47,6 +47,9 @@
               directement quoi faire, étape par étape
    • v1.6.0 : site installable sur téléphone (manifeste, icône vélo, service worker)
    • v1.6.1 : compteur de visites de baiji.fr (/journal.js)
+   • v1.9.0 : formules de nettoyage (« Coup de frais », « Transmission à neuf »,
+              « Grand lavage », « Grand soin ») avec ce qui est compris, prix et
+              supplément tout-suspendu ; liste NETTOYAGES dans le script
    • v1.8.1 : adresse de l'atelier publiée (9 avenue Lannes, lien Google Maps,
               aussi en pied de page) ; contrôle d'une minute sur 4 colonnes
               égales avec numéros en pastille ; titres des étapes à 20 px et colonne du
@@ -324,6 +327,32 @@ header .btn { min-height: 42px; padding: 0 16px; font-size: 13px; }
   display: inline-block; margin-top: 10px; font: 800 15px/1.3 var(--body);
   background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px;
 }
+/* ---------- Nettoyage ----------
+   Une carte par formule : nom, prix bien visible, puis la liste de ce
+   qui est compris (petites coches vertes). Sur grand écran, 4 colonnes. */
+.nettoyage { margin-top: 40px; }
+.nettoyage h3.titre-bloc { font: 850 26px/1.1 var(--display); font-stretch: 110%; margin: 0 0 6px; }
+.nettoyage .intro { color: var(--muted); margin: 0 0 18px; max-width: 60ch; }
+.formules { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.formule {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 20px; display: flex; flex-direction: column; gap: 10px;
+}
+/* La formule mise en avant : bordure épaisse + ombre décalée, comme le bloc « sans coût caché » */
+.formule.vedette { border: 2px solid var(--ink); box-shadow: 5px 5px 0 var(--ink); }
+.formule .haut { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.formule h4 { font: 800 19px/1.15 var(--display); font-stretch: 105%; margin: 0; }
+.formule .tarif {
+  flex: none; font: 900 20px/1 var(--display); background: var(--accent); color: var(--accent-ink);
+  border-radius: 10px; padding: 7px 10px;
+}
+.formule .pour { margin: 0; font-size: 14px; color: var(--muted); }
+.formule ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; font-size: 15px; }
+.formule li { display: flex; gap: 8px; align-items: flex-start; }
+.formule li svg { flex: none; width: 16px; height: 16px; margin-top: 3px; color: var(--ok); }
+.formule .badge-vedette { align-self: flex-start; font: 800 12px/1 var(--body); text-transform: uppercase; letter-spacing: .08em; color: var(--rust); }
+.nettoyage .supplements { margin: 14px 0 0; font-size: 14px; color: var(--muted); }
+
 .sans-cache {
   margin-top: 22px; border: 2px solid var(--ink); border-radius: var(--radius);
   background: var(--surface); padding: 24px 22px; box-shadow: 6px 6px 0 var(--ink);
@@ -672,6 +701,13 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     </div>
     <!-- Les cartes sont fabriquées par le script à partir de la liste SERVICES (plus facile à modifier) -->
     <div class="services" id="services"></div>
+    <!-- Les formules de nettoyage : fabriquées par le script à partir de la liste NETTOYAGES -->
+    <div class="nettoyage" id="nettoyage">
+      <h3 class="titre-bloc">Le nettoyage, pour qu'il brille.</h3>
+      <p class="intro">Un vélo propre roule mieux et s'use moins vite : la boue et la vieille graisse mangent la chaîne et les pignons. Choisissez la formule qui vous va : produits compris dans le prix.</p>
+      <div class="formules" id="formules"></div>
+      <p class="supplements" id="supplements"></p>
+    </div>
     <!-- L'engagement « sans coût caché » -->
     <div class="sans-cache apparait">
       <h3>Sans coût caché. Jamais.</h3>
@@ -866,7 +902,7 @@ const JULIEN = {
   horaires:   "",            // ex. "Du mardi au samedi, 9 h – 19 h"
   horairesDetail: "Si je ne décroche pas, laissez un message : je rappelle.",
 };
-const VERSION = "1.8.1";     // ← à augmenter à chaque modification (voir l'historique en haut)
+const VERSION = "1.9.0";     // ← à augmenter à chaque modification (voir l'historique en haut)
 
 /* ------------------------------------------------------------
    Pictos (bibliothèque Lucide, licence ISC) — juste le dessin
@@ -926,6 +962,46 @@ document.getElementById("services").innerHTML = SERVICES.map(s => `
     <div class="pic">${svg(s.pic)}</div>
     <div><h3>${s.titre}</h3><p>${s.texte}</p>${s.prix ? `<span class="prix">${s.prix}</span>` : ""}</div>
   </div>`).join("");
+
+/* ------------------------------------------------------------
+   Formules de NETTOYAGE (prix tout compris, produits inclus).
+   ⚠️ Tarifs indicatifs à faire valider par Julien, comme les réparations.
+   - nom      : le nom de la formule
+   - prix     : affiché en gros dans la pastille jaune
+   - pour     : une phrase « pour qui / quand »
+   - compris  : ce qui est fait, une ligne par étape
+   - vedette  : true = carte mise en avant (une seule, c'est plus lisible)
+   Pour ajouter une formule : copier un bloc { … }.
+   ------------------------------------------------------------ */
+const NETTOYAGES = [
+  { nom: "Coup de frais", prix: "15 €",
+    pour: "Après une sortie boueuse, pour retrouver un vélo propre.",
+    compris: ["Lavage du cadre et des roues", "Séchage"] },
+  { nom: "Transmission à neuf", prix: "30 €",
+    pour: "Chaîne qui grince ou vitesses moins douces : on enlève la vieille graisse.",
+    compris: ["Dégraissage de la chaîne", "Dégraissage des pignons et des plateaux", "Nettoyage des dérailleurs", "Lubrification de la transmission"] },
+  { nom: "Grand lavage", prix: "30 €", vedette: true,
+    pour: "Le bon rythme : une fois par saison.",
+    compris: ["Lavage et savonnage", "Rinçage et séchage", "Lubrification de la transmission"] },
+  { nom: "Grand soin", prix: "50 €",
+    pour: "Avant de le ranger pour l'hiver, de le vendre ou de l'offrir.",
+    compris: ["Lavage, savonnage, rinçage, séchage", "Nettoyage des pneus", "Brossage et lubrification de la transmission", "Lustrage du cadre"] },
+];
+// Suppléments, affichés sous les cartes (laisser la liste vide pour ne rien afficher)
+const SUPPLEMENTS_NETTOYAGE = [
+  "VTT tout-suspendu (suspensions avant et arrière) : + 5 € (+ 10 € sur le Grand soin)",
+  "La révision complète comprend déjà le nettoyage de la transmission",
+];
+// Petite coche verte réutilisée devant chaque ligne « compris »
+const COCHE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+document.getElementById("formules").innerHTML = NETTOYAGES.map(f => `
+  <div class="formule apparait${f.vedette ? " vedette" : ""}">
+    ${f.vedette ? '<span class="badge-vedette">Le conseil de Julien</span>' : ""}
+    <div class="haut"><h4>${f.nom}</h4><span class="tarif">${f.prix}</span></div>
+    <p class="pour">${f.pour}</p>
+    <ul>${f.compris.map(c => `<li>${COCHE}${c}</li>`).join("")}</ul>
+  </div>`).join("");
+document.getElementById("supplements").textContent = SUPPLEMENTS_NETTOYAGE.join(" · ");
 
 /* ------------------------------------------------------------
    ASTUCES « Dépannez-vous vous-même ».
