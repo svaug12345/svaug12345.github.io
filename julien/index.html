@@ -1,8 +1,8 @@
 <!doctype html>
 <!--
   ============================================================
-  baiji.fr/julien/ — Julien, mécanicien vélo
-  Version 1.6.1
+  tac-velo.fr — TAC Vélo, Julien mécanicien vélo
+  Version 1.8.1
   ------------------------------------------------------------
   Site vitrine d'une page pour Julien, mécanicien vélo.
   Devise : « Le vélo doit être un plaisir ».
@@ -47,13 +47,27 @@
               directement quoi faire, étape par étape
    • v1.6.0 : site installable sur téléphone (manifeste, icône vélo, service worker)
    • v1.6.1 : compteur de visites de baiji.fr (/journal.js)
+   • v1.8.1 : adresse de l'atelier publiée (9 avenue Lannes, lien Google Maps,
+              aussi en pied de page) ; contrôle d'une minute sur 4 colonnes
+              égales avec numéros en pastille ; titres des étapes à 20 px et colonne du
+              milieu plus large (« Julien regarde et annonce le prix » sur une ligne)
+   • v1.8.0 : l'atelier présenté comme un « atelier de quartier » (proximité,
+              confiance, un seul interlocuteur) : carte « Où ? », badge, et
+              engagement 05 « Votre mécanicien de quartier »
+   • v1.7.1 : on insiste sur « prix annoncé avant » : Julien regarde le vélo,
+              annonce le prix, le client décide (accroche, badge, méthode,
+              bloc « sans coût caché », étapes)
+   • v1.7.0 : le site devient « TAC Vélo » et quitte baiji.fr/julien/ pour son
+              propre dépôt (svaug12345/tac-velo), servi sur tac-velo.fr ;
+              mention EI + SIRET en pied de page ; compteur /journal.js retiré
+              (il ne compte que les pages de baiji.fr)
   ============================================================
 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Julien · Mécanicien vélo à Gif-sur-Yvette</title>
+<title>TAC Vélo · Julien, mécanicien vélo à Gif-sur-Yvette</title>
 <!--
   PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »
   ou « Ajouter à l'écran d'accueil »). Fichiers fabriqués par outils/generer-pwa.py :
@@ -64,7 +78,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
 <link rel="icon" href="icones/icone-192.png" type="image/png">
-<meta name="description" content="Julien, mécanicien vélo à Gif-sur-Yvette, à l'atelier ou à domicile. Le vélo doit être un plaisir : conseils pour vous dépanner vous-même, tarifs affichés, aucun coût caché.">
+<meta name="description" content="TAC Vélo : Julien, mécanicien vélo à Gif-sur-Yvette, dans son atelier de quartier ou à domicile. Le vélo doit être un plaisir : conseils pour vous dépanner vous-même, prix annoncé avant réparation, c'est vous qui décidez.">
 <!-- Invisible des moteurs de recherche tant que Julien n'a pas validé les tarifs.
      Quand tout est prêt : supprimer cette ligne pour que Google puisse trouver le site. -->
 <meta name="robots" content="noindex">
@@ -229,7 +243,7 @@ header .btn { min-height: 42px; padding: 0 16px; font-size: 13px; }
 .methode .kicker { color: var(--accent); }
 .methode h2 { max-width: 16ch; }
 .methode .intro { color: color-mix(in srgb, var(--deep-ink) 72%, transparent); max-width: 52ch; margin: 18px 0 40px; }
-.engagements { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.engagements { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); } /* 180 px : les 5 engagements tiennent sur une ligne en grand écran */
 .engagement {
   border: 1px solid color-mix(in srgb, var(--deep-ink) 18%, transparent);
   border-radius: var(--radius); padding: 24px 22px;
@@ -263,13 +277,21 @@ header .btn { min-height: 42px; padding: 0 16px; font-size: 13px; }
    Chaque astuce est un <details> : on touche le titre, ça s'ouvre.
    Pas besoin de JavaScript pour ouvrir/fermer, c'est natif. */
 .check-minute {
-  display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  /* 2 colonnes sur téléphone, 4 colonnes égales dès 700 px (avant : les 4 cases
+     se tassaient à gauche, la grille prévoyant plus de colonnes que de cases) */
+  display: grid; gap: 18px 22px; grid-template-columns: 1fr 1fr;
   background: var(--accent); color: var(--accent-ink); border: 2px solid #1b1d1a;
   border-radius: var(--radius); padding: 20px 22px; margin-bottom: 26px;
 }
-.check-minute b { font: 900 30px/1 var(--display); display: block; }
-.check-minute span { font-size: 15px; font-weight: 600; }
-.check-titre { grid-column: 1 / -1; font: 800 18px/1.2 var(--display); font-stretch: 105%; }
+@media (min-width: 700px) { .check-minute { grid-template-columns: repeat(4, 1fr); } }
+/* Numéro dans une pastille sombre, centrée au-dessus du texte */
+.check-minute > div:not(.check-titre) { display: grid; justify-items: center; text-align: center; gap: 10px; align-content: start; }
+.check-minute b {
+  font: 900 20px/1 var(--display); display: grid; place-items: center;
+  width: 40px; height: 40px; border-radius: 50%; background: #1b1d1a; color: var(--accent);
+}
+.check-minute span { font-size: 15px; font-weight: 600; line-height: 1.4; }
+.check-titre { grid-column: 1 / -1; font: 800 18px/1.2 var(--display); font-stretch: 105%; text-align: center; }
 .astuces { display: grid; gap: 12px; }
 @media (min-width: 860px) { .astuces { grid-template-columns: 1fr 1fr; align-items: start; } }
 .astuce { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
@@ -422,7 +444,10 @@ header .btn { min-height: 42px; padding: 0 16px; font-size: 13px; }
   display: grid; place-items: center; font: 900 24px/1 var(--display);
   background: var(--accent); color: var(--accent-ink); border: 2px solid var(--ink);
 }
-.etape h3 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+.etape h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+/* Grand écran : la colonne du milieu est un peu plus large pour que
+   « Julien regarde et annonce le prix » tienne sur une seule ligne */
+@media (min-width: 900px) { .etapes { grid-template-columns: 1fr 1.25fr 1fr; } }
 .etape p { margin: 0; color: var(--muted); }
 
 /* ---------- Où ? À l'atelier ou chez vous ---------- */
@@ -484,20 +509,18 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 .apparait.vu { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { .apparait { opacity: 1; transform: none; transition: none; } }
 </style>
-  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
-  <script src="/journal.js" defer></script>
 </head>
 <body>
 
 <!-- ============ 1. EN-TÊTE ============ -->
 <header>
   <div class="wrap">
-    <a class="logo" href="#haut" aria-label="Julien, mécanicien vélo — haut de page">
+    <a class="logo" href="#haut" aria-label="TAC Vélo, Julien mécanicien vélo — haut de page">
       <span class="logo-pastille">
         <!-- picto clé à molette (Lucide « wrench », licence ISC) -->
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z"/></svg>
       </span>
-      <span><b>Julien</b><small>Mécanicien vélo</small></span>
+      <span><b>TAC Vélo</b><small>Julien, mécanicien vélo</small></span>
     </a>
     <a class="btn btn-main js-appel" href="#contact">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>
@@ -512,9 +535,9 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 <section class="hero">
   <div class="wrap">
     <div>
-      <span class="kicker">Julien · Mécanicien vélo · Gif-sur-Yvette</span>
+      <span class="kicker">TAC Vélo · Julien, mécanicien vélo · Gif-sur-Yvette</span>
       <h1>Le vélo doit être un <span class="surligne">plaisir.</span></h1>
-      <p class="lead">Un pneu à plat, une chaîne qui grince, ça ne devrait pas gâcher votre balade. Je vous montre <strong>comment vous dépanner vous-même</strong> quand c'est simple. Et quand c'est trop compliqué, ou que vous préférez rouler sans vous en soucier, je m'en occupe, <strong>au prix affiché</strong>.</p>
+      <p class="lead">Un pneu à plat, une chaîne qui grince, ça ne devrait pas gâcher votre balade. Je vous montre <strong>comment vous dépanner vous-même</strong> quand c'est simple. Et quand c'est trop compliqué, ou que vous préférez rouler sans vous en soucier, je m'en occupe : <strong>je regarde votre vélo, je vous annonce le prix, et c'est vous qui décidez</strong>.</p>
       <div class="actions">
         <a class="btn btn-main js-appel" href="#contact">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>
@@ -524,9 +547,9 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       </div>
       <ul class="badges">
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Tarifs affichés</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Aucun coût caché</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Prix annoncé avant, vous décidez</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Conseils gratuits</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>À l'atelier ou à domicile</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Atelier de quartier ou à domicile</li>
       </ul>
     </div>
 
@@ -586,7 +609,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       <div class="engagement apparait">
         <span class="num">01</span>
         <h3>Le prix avant, pas après</h3>
-        <p>Je regarde, je vous dis ce qu'il faut faire et combien ça coûte. Rien n'est lancé sans votre accord.</p>
+        <p>Je regarde d'abord votre vélo, puis je vous annonce le prix. C'est vous qui décidez : oui, je répare ; non, rien n'est fait. Pas de mauvaise surprise.</p>
       </div>
       <div class="engagement apparait">
         <span class="num">02</span>
@@ -602,6 +625,11 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
         <span class="num">04</span>
         <h3>Je vous apprends à vous dépanner</h3>
         <p>Les petites réparations, vous pouvez les faire vous-même : je vous montre comment. Un client autonome, c'est un client qui roule.</p>
+      </div>
+      <div class="engagement apparait">
+        <span class="num">05</span>
+        <h3>Votre mécanicien de quartier</h3>
+        <p>Un seul interlocuteur, du premier appel à la remise du vélo. Je suis du coin, je connais vos routes, et je tiens à ce qu'on se recroise avec le sourire.</p>
       </div>
     </div>
   </div>
@@ -648,7 +676,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     <div class="sans-cache apparait">
       <h3>Sans coût caché. Jamais.</h3>
       <ul>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Le prix total, main-d'œuvre et pièces, vous est annoncé avant de commencer.</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Je regarde d'abord votre vélo, puis je vous annonce le prix total, main-d'œuvre et pièces, avant de commencer. C'est vous qui décidez.</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Aucun supplément sans votre accord. Si je découvre autre chose, je vous appelle d'abord.</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Le diagnostic et les conseils sont gratuits. Si vous ne faites pas réparer, vous ne payez rien.</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Une facture détaillée, ligne par ligne, et vos pièces usées rendues.</li>
@@ -727,8 +755,8 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
         <p>Vous décrivez le problème en deux phrases. On choisit ensemble : vous passez à l'atelier, ou Julien vient chez vous.</p>
       </div>
       <div class="etape apparait">
-        <h3>Julien regarde et chiffre</h3>
-        <p>Diagnostic gratuit, explications, prix total. Vous décidez tranquillement, sans pression.</p>
+        <h3>Julien regarde et annonce le prix</h3>
+        <p>Diagnostic gratuit, explications, puis le prix total, annoncé à l'avance. Vous décidez tranquillement, sans pression : pas de mauvaise surprise.</p>
       </div>
       <div class="etape apparait">
         <h3>Vous repartez en roulant</h3>
@@ -736,17 +764,17 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       </div>
     </div>
 
-    <!-- Les deux façons de faire réparer. L'adresse exacte de l'atelier
-         n'est pas publiée : Julien la donne au téléphone. -->
+    <!-- Les deux façons de faire réparer. L'adresse de l'atelier est publiée
+         (avec un lien Google Maps) : c'est aussi celle de la fiche Google. -->
     <div class="lieux" id="ou">
       <div class="lieu apparait">
         <span class="pic">
           <!-- picto atelier (Lucide « warehouse », ISC) -->
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 21V10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v11"/><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 1.132-1.803l7.95-3.974a2 2 0 0 1 1.837 0l7.948 3.974A2 2 0 0 1 22 8z"/><path d="M6 13h12"/><path d="M6 17h12"/></svg>
         </span>
-        <h3>À l'atelier, à Gif-sur-Yvette</h3>
-        <p>Vous déposez votre vélo, Julien a tous ses outils sous la main. Idéal pour une révision complète ou une grosse réparation.</p>
-        <p class="pour">L'adresse vous est donnée au téléphone.</p>
+        <h3>L'atelier de quartier, à Gif-sur-Yvette</h3>
+        <p>Un atelier à taille humaine, tout près de chez vous. Pas de comptoir ni de file d'attente : vous confiez votre vélo directement à celui qui le répare, et il prend le temps de vous expliquer. Idéal pour une révision complète ou une grosse réparation.</p>
+        <p class="pour"><a href="https://www.google.com/maps/search/?api=1&amp;query=9+avenue+Lannes+91190+Gif-sur-Yvette" target="_blank" rel="noopener">9 avenue Lannes, Gif-sur-Yvette</a> · sur rendez-vous</p>
       </div>
       <div class="lieu apparait">
         <span class="pic">
@@ -804,7 +832,9 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 
 <footer>
   <div class="wrap">
-    <span>Julien · Mécanicien vélo · Le vélo doit être un plaisir</span>
+    <span>TAC Vélo · Julien, mécanicien vélo · Le vélo doit être un plaisir</span>
+    <!-- Mention obligatoire pour une entreprise individuelle : nom + SIRET -->
+    <span>EI Julien Vaugoude · 9 avenue Lannes, 91190 Gif-sur-Yvette · SIRET 990 844 326 00019</span>
     <span id="version"></span>
   </div>
 </footer>
@@ -832,11 +862,11 @@ const JULIEN = {
   whatsapp:   "33658236740",           // même numéro, chiffres seuls, sans le 0 ni le + (format exigé par WhatsApp)
   email:      "julien.vaugoude@gmail.com",
   zone:       "Gif-sur-Yvette et communes voisines",
-  zoneDetail: "À l'atelier, ou à domicile : Julien se déplace chez vous.",
+  zoneDetail: "À l'atelier de quartier, ou à domicile : Julien se déplace chez vous.",
   horaires:   "",            // ex. "Du mardi au samedi, 9 h – 19 h"
   horairesDetail: "Si je ne décroche pas, laissez un message : je rappelle.",
 };
-const VERSION = "1.6.1";     // ← à augmenter à chaque modification (voir l'historique en haut)
+const VERSION = "1.8.1";     // ← à augmenter à chaque modification (voir l'historique en haut)
 
 /* ------------------------------------------------------------
    Pictos (bibliothèque Lucide, licence ISC) — juste le dessin
@@ -1339,8 +1369,11 @@ brancherLiens();
    1) on demande le micro ; 2) on charge le SDK officiel ElevenLabs
    (seulement au premier appui, pour garder la page légère) ;
    3) on ouvre la conversation avec l'identifiant de l'agent.
-   L'agent n'accepte que les appels venant de baiji.fr (réglé côté
-   ElevenLabs) : en local, depuis un fichier, l'appel sera refusé.
+   L'agent n'accepte que les appels venant des domaines autorisés
+   côté ElevenLabs (baiji.fr, et tac-velo.fr une fois ajouté) : en
+   local, depuis un fichier, l'appel sera refusé.
+   ⚠️ Ne PAS activer « Require origin header » sur l'agent : sinon
+   ElevenLabs refuse tout avec l'erreur 3000 « domaine non autorisé ».
    ============================================================ */
 const AGENT_RAYON = "agent_9901m6b24af2f15s8fxy0ezqm92c";   // « Rayon – assistant de Julien » sur ElevenLabs
 

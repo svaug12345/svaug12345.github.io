@@ -1,8 +1,8 @@
 /*
   ============================================================
-  Service worker de Julien · Mécanicien vélo (baiji.fr)
-  Fabriqué par outils/generer-pwa.py — c'est lui qui rend la
-  page installable sur téléphone.
+  Service worker de TAC Vélo (tac-velo.fr)
+  Repris de outils/generer-pwa.py (dépôt svaug12345.github.io) —
+  c'est lui qui rend la page installable sur téléphone.
   ------------------------------------------------------------
   Stratégie « réseau d'abord » :
    • en ligne  → on prend TOUJOURS la version du site (donc
@@ -14,7 +14,7 @@
   normalement, sans être touché.
   ============================================================
 */
-const CACHE = "baiji-" + new URL(self.registration.scope).pathname;
+const CACHE = "tac-velo-" + new URL(self.registration.scope).pathname;
 
 // Installation : on prend la main tout de suite (pas d'attente)
 self.addEventListener("install", () => self.skipWaiting());
