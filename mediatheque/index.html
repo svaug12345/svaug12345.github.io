@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Médiathèque — les documents empruntés aux Médiathèques de Paris-Saclay, avec leurs couvertures
-  Version 1.2.0
+  Version 1.3.0
   Les données viennent du service « biblio » du NAS (https://biblio.baiji.fr/prets.json),
   qui se connecte au compte lecteur et relit le site toutes les 3 heures.
   La page ne contient aucun identifiant et ne parle jamais directement au compte lecteur.
@@ -16,6 +16,8 @@
               puis « Terminer » montre ceux qui manquent (coches gardées sur l'appareil)
    • v1.2.0 : en mode Check, un document coché s'efface et part dans « Déjà récupérés »,
               repliée tout en bas : à l'écran, il ne reste que les manquants
+   • v1.3.0 : en mode Check, une loupe sur chaque couverture ouvre la fiche (couverture en
+              grand) ; la fiche a alors un bouton « Récupéré » pour cocher depuis là
 -->
 <html lang="fr">
 <head>
@@ -235,6 +237,16 @@
     .checking .doc.coche .coche-ok { display: grid; }
     .checking .doc.coche .t { color: var(--good); }
 
+    /* La loupe : en mode Check, toucher la couverture coche le livre ; ce petit rond en haut
+       à droite ouvre plutôt la fiche, avec la couverture en grand. 34 px : assez gros pour le doigt. */
+    .loupe {
+      position: absolute; top: 4px; right: 4px; z-index: 1; width: 34px; height: 34px; border-radius: 50%;
+      display: none; place-items: center; background: rgba(0,0,0,.62); color: #fff;
+    }
+    .loupe svg { width: 18px; height: 18px; }
+    .checking .loupe { display: grid; }
+    .checking .doc.coche .loupe { display: none; }    /* sur un livre coché, la coche prend toute la place */
+
     /* Le document qu'on vient de cocher s'efface avant de partir en bas de la page */
     .doc.part { transition: opacity .3s, transform .3s; opacity: 0; transform: scale(.85); }
 
@@ -298,7 +310,7 @@
     /* =================================================================
        CONFIGURATION
        ================================================================= */
-    const VERSION = '1.2.0';
+    const VERSION = '1.3.0';
     const PRETS_URL = 'https://biblio.baiji.fr/prets.json';       // le service du NAS
     const SITE = 'https://mediatheques.paris-saclay.com';
     const PAGE_PRETS = SITE + '/page/user/prets-en-cours?choix_tri_pret_bgm=dra';   // pour prolonger
@@ -479,7 +491,7 @@
 
       // Un document de la grille (même modèle partout, cochés ou non)
       const tuile = (p) => `<button class="doc${coches.has(cleDoc(p)) ? ' coche' : ''}" data-i="${tous.indexOf(p)}" ${enCheck ? `aria-pressed="${coches.has(cleDoc(p))}"` : ''}>
-            ${couverture(p).replace(/<\/span>$/, COCHE + '</span>')}
+            ${couverture(p).replace(/<\/span>$/, COCHE + LOUPE + '</span>')}
             <span class="t">${esc(p.titre)}</span>
             ${p.auteur ? `<span class="a">${esc(p.auteur)}</span>` : ''}
           </button>`;
@@ -512,6 +524,9 @@
        ================================================================= */
     // La grosse coche posée sur la couverture (cachée par le CSS tant que le doc n'est pas coché)
     const COCHE = '<span class="coche-ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>';
+
+    // La loupe (un <span> et pas un <button> : on ne peut pas mettre un bouton dans un bouton)
+    const LOUPE = '<span class="loupe" aria-label="Voir en grand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5M11 8v6M8 11h6"/></svg></span>';
 
     function afficherCheck() {
       $('btn-check').setAttribute('aria-pressed', enCheck);
@@ -635,6 +650,9 @@
         </dl>
         ${part !== null ? `<div class="duree" style="--c:${couleur(n)}" aria-hidden="true"><i style="width:${part.toFixed(0)}%"></i></div>` : ''}
         <div class="boutons">
+          ${enCheck ? (coches.has(cleDoc(p))
+              ? `<button class="btn secondaire" id="fiche-cocher" data-i="${tous.indexOf(p)}">Pas récupéré finalement</button>`
+              : `<button class="btn" id="fiche-cocher" data-i="${tous.indexOf(p)}" style="background:var(--good)">✓ Récupéré</button>`) : ''}
           ${p.prolongeable ? `<a class="btn" href="${esc(PAGE_PRETS)}" target="_blank" rel="noopener">Prolonger sur le site ↗</a>` : ''}
           <a class="btn secondaire" href="${esc(catalogue)}" target="_blank" rel="noopener">Voir dans le catalogue ↗</a>
         </div>`;
@@ -691,8 +709,9 @@
     $('liste').addEventListener('click', (e) => {
       const b = e.target.closest('.doc');
       if (!b) return;
-      // En mode Check, toucher = cocher ; sinon, toucher = ouvrir la fiche
-      if (enCheck) cocher(b, tous[Number(b.dataset.i)]);
+      // En mode Check, toucher = cocher, sauf sur la loupe qui ouvre la fiche ;
+      // hors mode Check, toucher = ouvrir la fiche
+      if (enCheck && !e.target.closest('.loupe')) cocher(b, tous[Number(b.dataset.i)]);
       else ouvrirFiche(tous[Number(b.dataset.i)]);
     });
 
@@ -734,6 +753,15 @@
     $('fiche').addEventListener('click', (e) => {
       // Clic sur la croix, ou sur le fond sombre (la cible est alors le <dialog> lui-même)
       if (e.target === $('fiche') || e.target.closest('#fermer')) $('fiche').close();
+      // « Récupéré » depuis la fiche (mode Check) : on coche / décoche, on ferme et on redessine
+      const c = e.target.closest('#fiche-cocher');
+      if (c) {
+        const cle = cleDoc(tous[Number(c.dataset.i)]);
+        if (coches.has(cle)) coches.delete(cle); else coches.add(cle);
+        if (navigator.vibrate) navigator.vibrate(15);
+        sauverCheck(); afficherCheck(); afficherListe();
+        $('fiche').close();
+      }
     });
     // Fiche fermée (croix, touche Échap…) : on retire l'étape ajoutée à l'historique
     $('fiche').addEventListener('close', () => { if (history.state && history.state.fiche) history.back(); });
