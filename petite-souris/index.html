@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Page « Allô la Petite Souris ! » — Tom appelle la Petite Souris
-  Version 1.1.0 – 07/11/2026
+  Version 1.2.0 – 07/11/2026
   En ligne : https://baiji.fr/petite-souris/
 
   Historique :
@@ -9,6 +9,8 @@
    • 1.1.0 : voix perso « Tite Souris » ; souris plus taquine qui réclame des petits
              trucs pour le voyage et redoute le terrible chien Tizouk (prompt de
              l'agent) ; mode d'emploi mis à jour
+   • 1.2.0 : souris redessinée en baroudeuse (casque d'aviateur, lunettes, écharpe
+             au vent, oreille ébréchée, pansement) au lieu de la petite couronne
 
   L'histoire (elle est dans le prompt de l'agent, sur ElevenLabs) :
   Tom vient de fêter son anniversaire et il est « un peu vieux » pour perdre
@@ -181,40 +183,62 @@
     <h1>Allô la <span>Petite Souris</span>&nbsp;!</h1>
     <p class="chapo">Touche la dent pour l'appeler, Tom.</p>
 
-    <!-- La souris : dessin SVG maison (oreilles roses, moustaches) -->
+    <!-- La souris : dessin SVG maison, version baroudeuse -->
     <div class="zone-souris" aria-hidden="true">
       <span class="onde"></span>
       <span class="onde"></span>
       <span class="onde"></span>
       <div id="souris">
         <svg viewBox="0 0 140 140">
-          <!-- oreilles -->
-          <circle cx="38" cy="42" r="26" fill="#c9c2d6"/>
-          <circle cx="38" cy="42" r="16" fill="#f39bb8"/>
-          <circle cx="102" cy="42" r="26" fill="#c9c2d6"/>
-          <circle cx="102" cy="42" r="16" fill="#f39bb8"/>
+          <!--
+            La Petite Souris version BAROUDEUSE (v1.2.0) :
+            oreille ébréchée, casque d'aviateur en cuir + lunettes relevées,
+            pansement sur la joue, œil malin (sourcil levé), sourire en coin,
+            grande écharpe rouge qui flotte au vent. Ordre = du fond vers l'avant.
+          -->
+          <!-- écharpe qui flotte au vent (derrière la tête, côté droit) -->
+          <path d="M96 112 q22 -2 34 8 q-8 2 -6 8 q-14 -8 -30 -6 z" fill="#d6453d"/>
+          <path d="M104 116 l4 6 M114 117 l3 6" stroke="#a83029" stroke-width="2" stroke-linecap="round"/>
+          <!-- oreilles (la gauche a une encoche : souvenir d'aventure) -->
+          <path d="M38 16 a26 26 0 1 0 22 12 l-8 4 l2 -9 z" fill="#b9b0c4"/>
+          <circle cx="38" cy="42" r="15" fill="#e88aa8"/>
+          <circle cx="102" cy="42" r="26" fill="#b9b0c4"/>
+          <circle cx="102" cy="42" r="15" fill="#e88aa8"/>
           <!-- tête -->
-          <ellipse cx="70" cy="80" rx="42" ry="38" fill="#d8d2e3"/>
-          <!-- yeux qui brillent -->
-          <circle cx="54" cy="74" r="6" fill="#1b1842"/>
-          <circle cx="86" cy="74" r="6" fill="#1b1842"/>
-          <circle cx="56" cy="72" r="2" fill="#fff"/>
-          <circle cx="88" cy="72" r="2" fill="#fff"/>
-          <!-- joues roses -->
-          <circle cx="44" cy="92" r="6" fill="#f39bb8" opacity=".55"/>
-          <circle cx="96" cy="92" r="6" fill="#f39bb8" opacity=".55"/>
-          <!-- museau + nez -->
-          <ellipse cx="70" cy="96" rx="14" ry="10" fill="#efe9f5"/>
-          <circle cx="70" cy="91" r="5" fill="#e5719a"/>
-          <!-- sourire -->
-          <path d="M62 100 q8 7 16 0" stroke="#1b1842" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-          <!-- moustaches -->
-          <g stroke="#8b84a3" stroke-width="2" stroke-linecap="round">
-            <line x1="52" y1="94" x2="24" y2="88"/><line x1="52" y1="99" x2="24" y2="101"/>
-            <line x1="88" y1="94" x2="116" y2="88"/><line x1="88" y1="99" x2="116" y2="101"/>
+          <ellipse cx="70" cy="80" rx="42" ry="38" fill="#cfc7d9"/>
+          <!-- casque d'aviateur en cuir : calotte + couture + rabats -->
+          <path d="M30 70 q2 -34 40 -36 q38 2 40 36 q-12 -10 -40 -10 q-28 0 -40 10 z" fill="#8a5a33"/>
+          <path d="M70 35 v24" stroke="#6b4325" stroke-width="2" stroke-dasharray="3 3"/>
+          <path d="M30 70 q-4 12 4 22 l8 -4 q-4 -10 -2 -18 z" fill="#8a5a33"/>
+          <path d="M110 70 q4 12 -4 22 l-8 -4 q4 -10 2 -18 z" fill="#8a5a33"/>
+          <!-- lunettes d'aviateur relevées sur le casque -->
+          <rect x="40" y="46" width="60" height="6" rx="3" fill="#5a3a20"/>
+          <circle cx="56" cy="48" r="10" fill="#7fc6d8" stroke="#c9a45c" stroke-width="4"/>
+          <circle cx="84" cy="48" r="10" fill="#7fc6d8" stroke="#c9a45c" stroke-width="4"/>
+          <path d="M51 44 l4 -3 M79 44 l4 -3" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+          <!-- yeux : un normal, un plissé (clin d'œil malin) + sourcil levé -->
+          <circle cx="54" cy="76" r="6" fill="#1b1842"/>
+          <circle cx="56" cy="74" r="2" fill="#fff"/>
+          <path d="M80 77 q6 -5 12 0" stroke="#1b1842" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M46 66 q8 -6 16 -2" stroke="#6b6080" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <!-- pansement sur la joue -->
+          <g transform="rotate(-25 98 94)">
+            <rect x="88" y="90" width="20" height="8" rx="3" fill="#f2c9a0"/>
+            <rect x="95" y="90" width="6" height="8" fill="#e4b184"/>
           </g>
-          <!-- petite couronne dorée : c'est la cheffe ! -->
-          <path d="M56 40 l5 -12 l9 9 l9 -9 l5 12 z" fill="#f7c948" stroke="#c99a1c" stroke-width="2" stroke-linejoin="round"/>
+          <!-- museau + nez -->
+          <ellipse cx="70" cy="96" rx="14" ry="10" fill="#e6dfee"/>
+          <circle cx="70" cy="91" r="5" fill="#d9658c"/>
+          <!-- sourire en coin -->
+          <path d="M62 101 q9 4 17 -3" stroke="#1b1842" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <!-- moustaches (un peu ébouriffées) -->
+          <g stroke="#7b7393" stroke-width="2" stroke-linecap="round">
+            <line x1="52" y1="94" x2="24" y2="86"/><line x1="52" y1="99" x2="22" y2="103"/>
+            <line x1="88" y1="96" x2="114" y2="90"/><line x1="88" y1="100" x2="112" y2="106"/>
+          </g>
+          <!-- écharpe nouée sous le menton -->
+          <path d="M40 108 q30 16 60 0 l2 8 q-32 16 -64 0 z" fill="#d6453d"/>
+          <path d="M48 113 l2 6 M60 117 l1 6 M80 117 l-1 6 M92 113 l-2 6" stroke="#a83029" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </div>
     </div>
