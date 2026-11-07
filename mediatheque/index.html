@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Médiathèque — les documents empruntés aux Médiathèques de Paris-Saclay, avec leurs couvertures
-  Version 1.5.0
+  Version 1.5.1
   Les données viennent du service « biblio » du NAS (https://biblio.baiji.fr/prets.json),
   qui se connecte au compte lecteur et relit le site toutes les 3 heures.
   La page ne contient aucun identifiant et ne parle jamais directement au compte lecteur.
@@ -22,6 +22,8 @@
               Codabar dessiné par la page ; le numéro reste dans le téléphone (jamais dans le code)
    • v1.5.0 : plus aucune proposition de prolongation (bouton, badge « Non prolong. », ligne
               « Prolongeable ») ; lien vers le site des médiathèques sous la carte
+   • v1.5.1 : si le site ne donne pas les prêts (carte en erreur et liste vide), l'appli garde
+              les derniers prêts connus du téléphone, et n'affiche plus « Rien à rendre »
 -->
 <html lang="fr">
 <head>
@@ -338,7 +340,7 @@
     /* =================================================================
        CONFIGURATION
        ================================================================= */
-    const VERSION = '1.5.0';
+    const VERSION = '1.5.1';
     const PRETS_URL = 'https://biblio.baiji.fr/prets.json';       // le service du NAS
     const SITE = 'https://mediatheques.paris-saclay.com';
     const PAGE_PRETS = SITE + '/page/user/prets-en-cours?choix_tri_pret_bgm=dra';   // « Mon compte » (pied de page)
@@ -399,6 +401,7 @@
        ================================================================= */
     let tous = [];                                  // tous les prêts, à plat
     let plusieursCartes = false;
+    let inconnu = false;          // true = le site n'a pas donné les prêts (on ne sait pas ce qui est emprunté)
     const filtre = { type: null, mediatheque: null };   // null = pas de filtre
 
     /* Mode Check. Les coches sont gardées dans le téléphone (localStorage) : si on ferme
@@ -434,7 +437,9 @@
       if (!tous.some((p) => p.type === filtre.type)) filtre.type = null;
       if (!tous.some((p) => p.mediatheque === filtre.mediatheque)) filtre.mediatheque = null;
 
-      $('titre').textContent = tous.length ? `${tous.length} document${tous.length > 1 ? 's' : ''}` : 'Aucun emprunt';
+      // Une carte en erreur sans aucun prêt connu : on ne SAIT pas ce qui est emprunté
+      inconnu = !tous.length && cartes.some((c) => !c.ok);
+      $('titre').textContent = tous.length ? `${tous.length} document${tous.length > 1 ? 's' : ''}` : inconnu ? 'Liste indisponible' : 'Aucun emprunt';
       afficherBandeau(donnees, cartes, horsLigne);
       afficherProchain();
       afficherFiltres();
@@ -495,6 +500,10 @@
     }
 
     function afficherListe() {
+      if (inconnu) {
+        $('liste').innerHTML = '<section class="card vide"><strong>⏳</strong>Le site des médiathèques ne donne pas la liste des prêts pour le moment. Le service réessaie toutes les 30 minutes.</section>';
+        return;
+      }
       if (!tous.length) {
         $('liste').innerHTML = '<section class="card vide"><strong>📚</strong>Rien à rendre : c\'est le moment d\'aller en emprunter !</section>';
         return;
@@ -698,6 +707,15 @@
         const donnees = await reponse.json();
         // Le service vient de démarrer et n'a encore rien lu : on garde ce qu'on avait
         if (!donnees.updated && lireMemoire()) throw new Error('première lecture en cours');
+        // Carte en erreur ET liste vide (le site n'a pas donné les prêts) : plutôt que d'afficher
+        // « 0 document », on reprend pour cette carte les derniers prêts gardés dans le téléphone.
+        const memoire = lireMemoire();
+        for (const c of donnees.cartes || []) {
+          if (!c.ok && !(c.prets || []).length) {
+            const ancienne = memoire && (memoire.cartes || []).find((m) => m.nom === c.nom);
+            if (ancienne && (ancienne.prets || []).length) c.prets = ancienne.prets;
+          }
+        }
         try { localStorage.setItem(MEMOIRE, JSON.stringify(donnees)); } catch { /* stockage indisponible : tant pis */ }
         afficher(donnees, false);
       } catch {
