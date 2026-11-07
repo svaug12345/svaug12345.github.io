@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Médiathèque — les documents empruntés aux Médiathèques de Paris-Saclay, avec leurs couvertures
-  Version 1.5.1
+  Version 1.6.0
   Les données viennent du service « biblio » du NAS (https://biblio.baiji.fr/prets.json),
   qui se connecte au compte lecteur et relit le site toutes les 3 heures.
   La page ne contient aucun identifiant et ne parle jamais directement au compte lecteur.
@@ -24,6 +24,8 @@
               « Prolongeable ») ; lien vers le site des médiathèques sous la carte
    • v1.5.1 : si le site ne donne pas les prêts (carte en erreur et liste vide), l'appli garde
               les derniers prêts connus du téléphone, et n'affiche plus « Rien à rendre »
+   • v1.6.0 : plus de bandeau d'alerte (« connexion échouée », « service injoignable »…)
+              ni de pastilles par type de document ; les pastilles par médiathèque restent
 -->
 <html lang="fr">
 <head>
@@ -122,8 +124,6 @@
     .spin svg { animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Bandeau d'alerte : données anciennes ou connexion au site en échec */
-    .bandeau { background: var(--soft); border-left: 4px solid var(--warn); border-radius: 10px; padding: 10px 12px; font-size: 13px; font-weight: 600; }
 
     /* =========================================================
        4. PROCHAIN RETOUR (le plus important : en haut)
@@ -323,7 +323,6 @@
       </div>
     </header>
 
-    <div class="bandeau" id="bandeau" hidden></div>
     <section class="card prochain" id="prochain" hidden></section>
     <!-- Barre du mode Check (compteur, progression, boutons) -->
     <section class="card check-barre" id="check-barre" hidden></section>
@@ -340,14 +339,13 @@
     /* =================================================================
        CONFIGURATION
        ================================================================= */
-    const VERSION = '1.5.1';
+    const VERSION = '1.6.0';
     const PRETS_URL = 'https://biblio.baiji.fr/prets.json';       // le service du NAS
     const SITE = 'https://mediatheques.paris-saclay.com';
     const PAGE_PRETS = SITE + '/page/user/prets-en-cours?choix_tri_pret_bgm=dra';   // « Mon compte » (pied de page)
     const MEMOIRE = 'mediatheque.donnees';                         // dernières données (hors ligne)
     const MEMOIRE_CARTE = 'mediatheque.carte';                    // numéro de la carte (dans le téléphone seulement)
     const MEMOIRE_CHECK = 'mediatheque.check';                    // documents cochés en mode Check
-    const TROP_VIEUX_H = 8;  // le service relit toutes les 3 h : au-delà de 8 h, quelque chose cloche
 
     /* =================================================================
        PETITS OUTILS
@@ -440,7 +438,6 @@
       // Une carte en erreur sans aucun prêt connu : on ne SAIT pas ce qui est emprunté
       inconnu = !tous.length && cartes.some((c) => !c.ok);
       $('titre').textContent = tous.length ? `${tous.length} document${tous.length > 1 ? 's' : ''}` : inconnu ? 'Liste indisponible' : 'Aucun emprunt';
-      afficherBandeau(donnees, cartes, horsLigne);
       afficherProchain();
       afficherFiltres();
       // Document rendu à la médiathèque entre-temps : sa coche ne sert plus, on l'oublie
@@ -463,16 +460,6 @@
       return `il y a ${Math.round(min / 1440)} j`;
     }
 
-    function afficherBandeau(donnees, cartes, horsLigne) {
-      const age = donnees.updated ? (Date.now() - new Date(donnees.updated)) / 3600e3 : 0;
-      let message = '';
-      if (horsLigne) message = '⚠ Service injoignable : dernières données connues, peut-être dépassées.';
-      else if (cartes.some((c) => !c.ok)) message = '⚠ La dernière connexion au site a échoué : ces données ne sont peut-être plus à jour.';
-      else if (age > TROP_VIEUX_H) message = '⚠ Le service n\'a pas relu le site depuis plusieurs heures.';
-      $('bandeau').hidden = !message;
-      $('bandeau').textContent = message;
-    }
-
     function afficherProchain() {
       const avecDate = tous.filter((p) => p.retour);
       $('prochain').hidden = !avecDate.length;
@@ -486,7 +473,7 @@
     }
 
     function afficherFiltres() {
-      // Une ligne de pastilles par critère, seulement s'il y a un vrai choix (au moins 2 valeurs)
+      // Des pastilles seulement s'il y a un vrai choix (au moins 2 médiathèques)
       const pastilles = (cle) => {
         const compte = {};
         for (const p of tous) if (p[cle]) compte[p[cle]] = (compte[p[cle]] || 0) + 1;
@@ -494,7 +481,8 @@
         return valeurs.length < 2 ? '' : valeurs.map((v) =>
           `<button class="filtre" data-cle="${cle}" data-valeur="${esc(v)}" aria-pressed="${filtre[cle] === v}">${esc(v)}<em>${compte[v]}</em></button>`).join('');
       };
-      const html = pastilles('type') + pastilles('mediatheque');
+      // Seulement par médiathèque (les pastilles par type de document ont été retirées en v1.6.0)
+      const html = pastilles('mediatheque');
       $('filtres').hidden = !html;
       $('filtres').innerHTML = html;
     }
