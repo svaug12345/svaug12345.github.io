@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Médiathèque — les documents empruntés aux Médiathèques de Paris-Saclay, avec leurs couvertures
-  Version 1.0.4
+  Version 1.1.0
   Les données viennent du service « biblio » du NAS (https://biblio.baiji.fr/prets.json),
   qui se connecte au compte lecteur et relit le site toutes les 3 heures.
   La page ne contient aucun identifiant et ne parle jamais directement au compte lecteur.
@@ -12,6 +12,8 @@
    • v1.0.2 : fiche d'un document avec une grande couverture en haut
    • v1.0.3 : correction : la grande couverture restait invisible (hauteur nulle, jamais chargée)
    • v1.0.4 : compteur de visites de baiji.fr (/journal.js)
+   • v1.1.0 : mode « Check » : on touche chaque document rendu par les enfants,
+              puis « Terminer » montre ceux qui manquent (coches gardées sur l'appareil)
 -->
 <html lang="fr">
 <head>
@@ -198,6 +200,51 @@
     .duree { height: 6px; border-radius: 6px; background: var(--soft); overflow: hidden; margin-top: 4px; }
     .duree i { display: block; height: 100%; background: var(--c, var(--accent)); }
     .boutons { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+
+    /* =========================================================
+       8. MODE CHECK (récupérer les livres auprès des enfants)
+       ========================================================= */
+    /* Bouton « Check » de l'en-tête : allumé quand le mode est actif */
+    .icon-btn[aria-pressed="true"] { background: var(--accent); color: #fff; }
+
+    /* Barre collée en haut de l'écran : elle reste visible pendant qu'on fait défiler les couvertures */
+    .check-barre {
+      position: sticky; top: calc(env(safe-area-inset-top) + 8px); z-index: 5;
+      display: flex; flex-direction: column; gap: 10px; border-left: 5px solid var(--good);
+      box-shadow: 0 4px 16px rgba(0,0,0,.12);
+    }
+    .check-haut { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .check-haut small { display: block; font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+    .check-haut b { font-size: 20px; font-weight: 800; }
+    .check-barre .duree { margin-top: 0; height: 8px; }
+    .check-barre .duree i { background: var(--good); transition: width .25s; }
+    .check-boutons { display: flex; gap: 8px; }
+    .check-boutons .btn { flex: 1; padding: 11px 10px; }
+
+    /* Une couverture cochée : voile vert + grosse coche. Non cochée : légèrement grisée,
+       pour que l'œil trouve tout de suite ce qu'il reste à récupérer. */
+    .checking .doc .couv { transition: transform .12s, opacity .2s; }
+    .checking .doc:not(.coche) .couv { opacity: .55; }
+    .checking .doc:active .couv { transform: scale(.95); }
+    .doc .coche-ok {
+      position: absolute; inset: 0; display: none; place-items: center;
+      background: rgba(21, 128, 61, .55); color: #fff;
+    }
+    .doc .coche-ok svg { width: 46%; height: auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,.35)); }
+    .checking .doc.coche .coche-ok { display: grid; }
+    .checking .doc.coche .t { color: var(--good); }
+
+    /* Bilan : la liste des manquants */
+    .manquants { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+    .manquant { display: flex; gap: 12px; align-items: center; text-align: left; width: 100%; padding: 6px; border-radius: 12px; background: var(--soft); }
+    .manquant .couv { width: 48px; flex: none; }
+    /* Trop petite pour du texte : sans image, juste la tuile de couleur */
+    .manquant .couv .repli, .manquant .couv .fixe { display: none; }
+    .manquant b { display: block; font-size: 14px; font-weight: 800; line-height: 1.25; overflow-wrap: anywhere; }
+    .manquant span { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .bilan-ok { text-align: center; padding: 18px 4px 4px; }
+    .bilan-ok strong { display: block; font-size: 44px; }
+    .bilan-ok b { display: block; font-size: 18px; font-weight: 800; margin-top: 6px; }
   </style>
   <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
   <script src="/journal.js" defer></script>
@@ -209,29 +256,39 @@
         <div class="brand">Médiathèque</div>
         <h1 class="titre" id="titre">Chargement…</h1>
       </div>
+      <div style="display:flex;gap:4px">
+      <!-- Mode Check : pour récupérer les documents auprès des enfants et voir ce qui manque -->
+      <button class="icon-btn" id="btn-check" aria-label="Mode check" aria-pressed="false" title="Check : vérifier qu'on a tout">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/></svg>
+      </button>
       <button class="icon-btn" id="actualiser" aria-label="Actualiser">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36L21 8"/><path d="M21 3v5h-5"/></svg>
       </button>
+      </div>
     </header>
 
     <div class="bandeau" id="bandeau" hidden></div>
     <section class="card prochain" id="prochain" hidden></section>
+    <!-- Barre du mode Check (compteur, progression, boutons) -->
+    <section class="card check-barre" id="check-barre" hidden></section>
     <div class="filtres" id="filtres" hidden></div>
     <div id="liste" style="display:flex;flex-direction:column;gap:14px"></div>
     <footer class="pied" id="pied"></footer>
   </div>
 
   <dialog id="fiche" aria-label="Fiche du document"></dialog>
+  <dialog id="bilan" aria-label="Bilan du check"></dialog>
 
   <script>
     /* =================================================================
        CONFIGURATION
        ================================================================= */
-    const VERSION = '1.0.4';
+    const VERSION = '1.1.0';
     const PRETS_URL = 'https://biblio.baiji.fr/prets.json';       // le service du NAS
     const SITE = 'https://mediatheques.paris-saclay.com';
     const PAGE_PRETS = SITE + '/page/user/prets-en-cours?choix_tri_pret_bgm=dra';   // pour prolonger
     const MEMOIRE = 'mediatheque.donnees';                         // dernières données (hors ligne)
+    const MEMOIRE_CHECK = 'mediatheque.check';                    // documents cochés en mode Check
     const TROP_VIEUX_H = 8;  // le service relit toutes les 3 h : au-delà de 8 h, quelque chose cloche
 
     /* =================================================================
@@ -288,6 +345,23 @@
     let plusieursCartes = false;
     const filtre = { type: null, mediatheque: null };   // null = pas de filtre
 
+    /* Mode Check. Les coches sont gardées dans le téléphone (localStorage) : si on ferme
+       l'appli au milieu du tour des chambres, on retrouve tout en la rouvrant.
+       Une coche est enregistrée par « clé » de document (voir cleDoc). */
+    let enCheck = false;
+    let coches = new Set();
+    try {
+      const m = JSON.parse(localStorage.getItem(MEMOIRE_CHECK));
+      if (m) { enCheck = !!m.actif; coches = new Set(m.coches || []); }
+    } catch { /* rien de gardé : on part de zéro */ }
+
+    function sauverCheck() {
+      try { localStorage.setItem(MEMOIRE_CHECK, JSON.stringify({ actif: enCheck, coches: [...coches] })); } catch { /* tant pis */ }
+    }
+    // Un identifiant stable pour chaque prêt. Le service ne donne pas de numéro : on assemble
+    // carte + titre + auteur + date d'emprunt. Pas la date de retour : elle change quand on prolonge.
+    const cleDoc = (p) => [p.qui, p.titre, p.auteur, p.emprunt].join('|');
+
     /* =================================================================
        AFFICHAGE
        ================================================================= */
@@ -306,6 +380,11 @@
       afficherBandeau(donnees, cartes, horsLigne);
       afficherProchain();
       afficherFiltres();
+      // Document rendu à la médiathèque entre-temps : sa coche ne sert plus, on l'oublie
+      const cles = new Set(tous.map(cleDoc));
+      for (const c of [...coches]) if (!cles.has(c)) coches.delete(c);
+      sauverCheck();
+      afficherCheck();
       afficherListe();
 
       const maj = donnees.updated ? new Date(donnees.updated) : null;
@@ -381,8 +460,8 @@
             <h2>${connue ? 'À rendre ' + esc(dateCourte(iso)) : 'Date inconnue'}</h2>
             <span>${connue ? esc(compteARebours(n)) + ' · ' : ''}${docs.length}</span>
           </div>
-          <div class="grille">${docs.map((p) => `<button class="doc" data-i="${tous.indexOf(p)}">
-            ${couverture(p)}
+          <div class="grille">${docs.map((p) => `<button class="doc${coches.has(cleDoc(p)) ? ' coche' : ''}" data-i="${tous.indexOf(p)}" ${enCheck ? `aria-pressed="${coches.has(cleDoc(p))}"` : ''}>
+            ${couverture(p).replace(/<\/span>$/, COCHE + '</span>')}
             <span class="t">${esc(p.titre)}</span>
             ${p.auteur ? `<span class="a">${esc(p.auteur)}</span>` : ''}
           </button>`).join('')}</div>
@@ -391,9 +470,100 @@
     }
 
     /* =================================================================
+       MODE CHECK
+       On touche chaque document récupéré : il se coche (voile vert).
+       « Terminer » ouvre le bilan avec ceux qui manquent.
+       ================================================================= */
+    // La grosse coche posée sur la couverture (cachée par le CSS tant que le doc n'est pas coché)
+    const COCHE = '<span class="coche-ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>';
+
+    function afficherCheck() {
+      $('btn-check').setAttribute('aria-pressed', enCheck);
+      document.body.classList.toggle('checking', enCheck);     // le CSS grise / coche les couvertures
+      $('check-barre').hidden = !enCheck || !tous.length;
+      if (!enCheck || !tous.length) return;
+      const nb = tous.filter((p) => coches.has(cleDoc(p))).length;
+      const reste = tous.length - nb;
+      $('check-barre').innerHTML = `
+        <div class="check-haut">
+          <div><small>Récupérés</small>
+            <b class="mono">${nb} / ${tous.length}</b></div>
+          <span style="font-size:14px;font-weight:700;color:${reste ? 'var(--muted)' : 'var(--good)'}">
+            ${reste ? `${reste} à récupérer` : 'Tout est là ✓'}</span>
+        </div>
+        <div class="duree" aria-hidden="true"><i style="width:${(nb / tous.length * 100).toFixed(0)}%"></i></div>
+        <div class="check-boutons">
+          <button class="btn secondaire" id="check-zero">Recommencer</button>
+          <button class="btn" id="check-fin">Terminer</button>
+        </div>`;
+    }
+
+    function basculerCheck() {
+      enCheck = !enCheck;
+      sauverCheck();
+      afficherCheck();
+      afficherListe();
+      if (enCheck) $('check-barre').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Toucher une couverture en mode Check : on coche / décoche, sans tout redessiner
+    // (redessiner la grille ferait clignoter les images)
+    function cocher(bouton, p) {
+      const cle = cleDoc(p);
+      if (coches.has(cle)) coches.delete(cle); else coches.add(cle);
+      bouton.classList.toggle('coche', coches.has(cle));
+      bouton.setAttribute('aria-pressed', coches.has(cle));
+      if (navigator.vibrate) navigator.vibrate(15);              // petit retour au doigt sur Android
+      sauverCheck();
+      afficherCheck();
+    }
+
+    // Le bilan : tous les documents non cochés, groupés par enfant si plusieurs cartes,
+    // triés par date de retour (le plus urgent d'abord : c'est celui qu'il faut retrouver vite)
+    function ouvrirBilan() {
+      const manquants = tous.filter((p) => !coches.has(cleDoc(p)));
+      const contenu = manquants.length
+        ? `<div class="fiche-haut"><h2>${manquants.length} document${manquants.length > 1 ? 's' : ''} manquant${manquants.length > 1 ? 's' : ''}</h2>
+             <p>${tous.length - manquants.length} sur ${tous.length} récupérés. Touche un document pour voir sa fiche.</p></div>
+           <div class="manquants">${manquants.map((p) => {
+             const n = p.retour ? joursAvant(p.retour) : null;
+             return `<button class="manquant" data-i="${tous.indexOf(p)}">${couverture(p, false)}
+               <div><b>${esc(p.titre)}</b>
+                 ${p.auteur ? `<span>${esc(p.auteur)}</span>` : ''}
+                 <span>${plusieursCartes ? esc(p.qui) + ' · ' : ''}${p.retour ? `à rendre ${esc(dateCourte(p.retour))} · <span style="display:inline;color:${couleur(n)}">${esc(compteARebours(n))}</span>` : ''}</span>
+               </div></button>`;
+           }).join('')}</div>`
+        : `<div class="bilan-ok"><strong>🎉</strong><b>Tout est là !</b>
+             <p style="color:var(--muted);margin-top:4px">Les ${tous.length} documents ont été récupérés.</p></div>`;
+
+      $('bilan').innerHTML = `
+        <button class="icon-btn fermer" id="fermer-bilan" aria-label="Fermer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+        ${contenu}
+        <div class="boutons">
+          ${manquants.length
+            ? `<button class="btn" id="bilan-continuer">Continuer à chercher</button>
+               ${navigator.share ? '<button class="btn secondaire" id="bilan-partager">Envoyer la liste</button>' : ''}`
+            : ''}
+          <button class="btn ${manquants.length ? 'secondaire' : ''}" id="bilan-quitter">Quitter le check</button>
+        </div>`;
+      $('bilan').showModal();
+      history.pushState({ fiche: true }, '');            // retour du téléphone = fermer le bilan
+    }
+
+    // « Envoyer la liste » : feuille de partage d'Android (WhatsApp, SMS…), par exemple aux enfants
+    function partagerManquants() {
+      const manquants = tous.filter((p) => !coches.has(cleDoc(p)));
+      const texte = '📚 Livres de la médiathèque à retrouver :\n'
+        + manquants.map((p) => `• ${p.titre}${p.auteur ? ' (' + p.auteur + ')' : ''}${p.retour ? ' — à rendre ' + dateCourte(p.retour) : ''}`).join('\n');
+      navigator.share({ text: texte }).catch(() => {});    // annulé par l'utilisateur : rien à faire
+    }
+
+    /* =================================================================
        FICHE D'UN DOCUMENT
        ================================================================= */
-    function ouvrirFiche(p) {
+    function ouvrirFiche(p, pousser = true) {   // pousser = ajouter une étape à l'historique
       const n = p.retour ? joursAvant(p.retour) : null;
       // Part de la durée du prêt déjà écoulée, entre 0 et 100 %
       let part = null;
@@ -428,7 +598,7 @@
         </div>`;
       $('fiche').showModal();
       // On ajoute une étape à l'historique : le bouton « retour » du téléphone fermera la fiche
-      history.pushState({ fiche: true }, '');
+      if (pousser) history.pushState({ fiche: true }, '');
     }
 
     /* =================================================================
@@ -478,7 +648,41 @@
 
     $('liste').addEventListener('click', (e) => {
       const b = e.target.closest('.doc');
-      if (b) ouvrirFiche(tous[Number(b.dataset.i)]);
+      if (!b) return;
+      // En mode Check, toucher = cocher ; sinon, toucher = ouvrir la fiche
+      if (enCheck) cocher(b, tous[Number(b.dataset.i)]);
+      else ouvrirFiche(tous[Number(b.dataset.i)]);
+    });
+
+    $('btn-check').addEventListener('click', basculerCheck);
+    $('check-barre').addEventListener('click', (e) => {
+      if (e.target.closest('#check-fin')) ouvrirBilan();
+      if (e.target.closest('#check-zero')) {
+        coches.clear(); sauverCheck(); afficherCheck(); afficherListe();
+      }
+    });
+    $('bilan').addEventListener('click', (e) => {
+      const m = e.target.closest('.manquant');
+      if (m) {
+        // On passe du bilan à la fiche du document : on ferme le bilan sans toucher à
+        // l'historique, et la fiche réutilise l'étape qu'il avait ajoutée
+        bilanVersFiche = true; $('bilan').close();   // remis à false par l'écouteur « close » ci-dessous
+        ouvrirFiche(tous[Number(m.dataset.i)], false);
+        return;
+      }
+      if (e.target === $('bilan') || e.target.closest('#fermer-bilan') || e.target.closest('#bilan-continuer')) $('bilan').close();
+      if (e.target.closest('#bilan-partager')) partagerManquants();
+      if (e.target.closest('#bilan-quitter')) {
+        $('bilan').close();
+        coches.clear(); enCheck = false; sauverCheck(); afficherCheck(); afficherListe();
+      }
+    });
+    let bilanVersFiche = false;
+    // Attention : l'événement « close » arrive un peu APRÈS l'appel à close() (il est mis en file
+    // d'attente). C'est donc ici, et pas juste après close(), qu'on remet le drapeau à false.
+    $('bilan').addEventListener('close', () => {
+      if (bilanVersFiche) { bilanVersFiche = false; return; }
+      if (history.state && history.state.fiche) history.back();
     });
 
     $('fiche').addEventListener('click', (e) => {
@@ -488,7 +692,10 @@
     // Fiche fermée (croix, touche Échap…) : on retire l'étape ajoutée à l'historique
     $('fiche').addEventListener('close', () => { if (history.state && history.state.fiche) history.back(); });
     // Bouton « retour » du téléphone : on ferme la fiche au lieu de quitter l'appli
-    window.addEventListener('popstate', () => { if ($('fiche').open) $('fiche').close(); });
+    window.addEventListener('popstate', () => {
+      if ($('fiche').open) $('fiche').close();
+      if ($('bilan').open) $('bilan').close();
+    });
 
     // Image absente ou en erreur : on l'enlève, la tuile avec le titre apparaît dessous.
     // « true » est obligatoire : l'événement error d'une image ne remonte pas tout seul.
