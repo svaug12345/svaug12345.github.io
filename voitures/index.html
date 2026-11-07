@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Voitures — suivi de la batterie et de la charge de l'e-5008 et de la Corsa
-  Version 1.6.0
+  Version 1.7.0
   Données : service « voitures » du NAS (https://voitures.baiji.fr), qui interroge
   psa_car_controller à la maison et ne publie que la batterie et la charge (jamais le GPS).
   Historique :
@@ -42,6 +42,9 @@
    • v1.6.0 : chauffe programmée (service v3.5) : bouton « Programmer », on choisit
               l'heure de départ, le NAS lance la chauffe 20 min avant ; ligne
               « ⏰ Prête demain à 7 h 30 » avec « Annuler »
+   • v1.7.0 : état des portes (🔒 Verrouillée / 🔓 Pas verrouillée) et bouton
+              « Verrouiller » (service v3.6), protégé par le code secret ;
+              volontairement AUCUN bouton pour déverrouiller
 -->
 <html lang="fr">
 <head>
@@ -195,6 +198,8 @@
       font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
     }
     .heat.stop { background: var(--ink); color: var(--surface); }
+    .lockbtn { background: var(--teal); }               /* bouton Verrouiller : couleur de la charte */
+    .precond-txt.open b { color: var(--warn); }        /* « Pas verrouillée » en orange */
     /* Chauffe programmée */
     .plan { margin-top: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
     .plan b { color: var(--ink); }
@@ -316,7 +321,7 @@
     /* =================================================================
        CONFIGURATION
        ================================================================= */
-    const VERSION = '1.6.0';
+    const VERSION = '1.7.0';
     const API = 'https://voitures.baiji.fr';        // service du NAS
     const POLL_NORMAL_S = 120;    // lecture de l'état : toutes les 2 min…
     const POLL_LIVE_S = 30;       // …toutes les 30 s en mode « Suivi de charge »
@@ -381,6 +386,7 @@
     let plans = {};           // chauffes programmées lues sur le NAS : { e5008: { ready, start, status } }
     let planLead = 20;        // minutes d'avance prises par le NAS (renvoyées par le service)
     let planOpen = null;      // voiture dont le choix d'heure est ouvert
+    const lockSent = {};      // verrouillage demandé : { e5008: horodatage de fin d'attente }
 
     /* =================================================================
        CHARGEMENT DES DONNÉES
@@ -501,6 +507,7 @@
           ${eta}
           ${limitBlock(car, id)}
           ${precondBlock(car, id)}
+          ${lockBlock(car, id)}
           ${codeBoxHtml(id)}
           <div class="car-foot">
             <div class="age ${old ? 'old' : ''}">${car.error ? '⚠ Voiture injoignable · ' : ''}${ageTxt}${quota}</div>
@@ -622,6 +629,8 @@
       btn.disabled = pct === (car?.chargeLimit ?? 100);
     });
     $('cars').addEventListener('click', (e) => {
+      const lk = e.target.closest('[data-lock]');
+      if (lk && !lk.disabled) return sendLock(lk.dataset.lock);
       const heat = e.target.closest('[data-heat]');
       if (heat && !heat.disabled) return setPrecond(heat.dataset.heat, heat.dataset.on === '1');
       const cut = e.target.closest('[data-cut]');
@@ -770,6 +779,48 @@
         sendPlan(id, d.toISOString());
       }
     });
+
+    /* =================================================================
+       VERROUILLAGE (service v3.6)
+       -----------------------------------------------------------------
+       La voiture renvoie car.lockState : 'locked', 'unlocked' ou null.
+       Le NAS ne sait QUE verrouiller : il n'y a aucun moyen d'ouvrir la
+       voiture depuis cette appli (trop risqué depuis Internet).
+       ================================================================= */
+    function lockBlock(car, id) {
+      if (!data?.lockControl) return '';                      // service trop ancien
+      const waiting = lockSent[id] && lockSent[id] > Date.now();
+      let txt;
+      if (waiting) txt = `<div class="precond-txt">Verrouillage envoyé, réponse de la voiture dans une minute…</div>`;
+      else if (car.lockState === 'locked') txt = `<div class="precond-txt"><b>🔒 Verrouillée</b></div>`;
+      else if (car.lockState === 'unlocked') txt = `<div class="precond-txt open"><b>🔓 Pas verrouillée</b></div>`;
+      else txt = `<div class="precond-txt"><b>Portes</b><br>état inconnu</div>`;
+      // Le bouton n'apparaît que si la voiture n'est pas (connue comme) verrouillée
+      const btn = car.lockState === 'locked' && !waiting ? ''
+        : `<button class="heat lockbtn" data-lock="${id}" ${waiting ? 'disabled' : ''}>Verrouiller</button>`;
+      return `<div class="precond">${txt}${btn}</div>`;
+    }
+
+    async function sendLock(id) {
+      const code = store.get('chargeCode');
+      if (!code) { askCodeFor = id; afterCode = () => sendLock(id); renderCars(); $('code-' + id)?.focus(); return; }
+      try {
+        const res = await fetch(`${API}/lock?car=${id}`, { method: 'POST', headers: { 'X-Code': code } });
+        const body = await res.json().catch(() => ({}));
+        if (res.status === 202) {
+          const wait = (body.checkInS || 75) + 10;
+          lockSent[id] = Date.now() + wait * 1000;
+          toast('Verrouillage demandé, la voiture répond dans une minute environ');
+          setTimeout(() => { delete lockSent[id]; load(); }, wait * 1000);   // relecture de l'état des portes
+        } else if (res.status === 401) {
+          store.set('chargeCode', ''); askCodeFor = id; afterCode = () => sendLock(id);
+          toast('Code faux');
+        } else {
+          toast(body.error ? `Impossible : ${body.error}` : 'Impossible pour le moment');
+        }
+      } catch { toast('NAS injoignable'); }
+      renderCars();
+    }
 
     async function setPrecond(id, on) {
       const code = store.get('chargeCode');
