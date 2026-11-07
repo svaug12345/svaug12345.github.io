@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Médiathèque — les documents empruntés aux Médiathèques de Paris-Saclay, avec leurs couvertures
-  Version 1.1.0
+  Version 1.2.0
   Les données viennent du service « biblio » du NAS (https://biblio.baiji.fr/prets.json),
   qui se connecte au compte lecteur et relit le site toutes les 3 heures.
   La page ne contient aucun identifiant et ne parle jamais directement au compte lecteur.
@@ -14,6 +14,8 @@
    • v1.0.4 : compteur de visites de baiji.fr (/journal.js)
    • v1.1.0 : mode « Check » : on touche chaque document rendu par les enfants,
               puis « Terminer » montre ceux qui manquent (coches gardées sur l'appareil)
+   • v1.2.0 : en mode Check, un document coché s'efface et part dans « Déjà récupérés »,
+              repliée tout en bas : à l'écran, il ne reste que les manquants
 -->
 <html lang="fr">
 <head>
@@ -221,10 +223,9 @@
     .check-boutons { display: flex; gap: 8px; }
     .check-boutons .btn { flex: 1; padding: 11px 10px; }
 
-    /* Une couverture cochée : voile vert + grosse coche. Non cochée : légèrement grisée,
-       pour que l'œil trouve tout de suite ce qu'il reste à récupérer. */
-    .checking .doc .couv { transition: transform .12s, opacity .2s; }
-    .checking .doc:not(.coche) .couv { opacity: .55; }
+    /* Une couverture cochée : voile vert + grosse coche (les cochés partent ensuite en bas,
+       les manquants restent donc en pleines couleurs) */
+    .checking .doc .couv { transition: transform .12s; }
     .checking .doc:active .couv { transform: scale(.95); }
     .doc .coche-ok {
       position: absolute; inset: 0; display: none; place-items: center;
@@ -233,6 +234,20 @@
     .doc .coche-ok svg { width: 46%; height: auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,.35)); }
     .checking .doc.coche .coche-ok { display: grid; }
     .checking .doc.coche .t { color: var(--good); }
+
+    /* Le document qu'on vient de cocher s'efface avant de partir en bas de la page */
+    .doc.part { transition: opacity .3s, transform .3s; opacity: 0; transform: scale(.85); }
+
+    /* « Déjà récupérés » : section repliée en bas (<details> = repli natif du navigateur) */
+    .recup summary {
+      list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+      font-size: 15px; font-weight: 800; color: var(--good);
+    }
+    .recup summary::-webkit-details-marker { display: none; }
+    .recup summary::after { content: '▾'; color: var(--muted); transition: transform .2s; }
+    .recup[open] summary::after { transform: rotate(180deg); }
+    .recup[open] summary { margin-bottom: 12px; }
+    .recup .grille { opacity: .8; }
 
     /* Bilan : la liste des manquants */
     .manquants { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
@@ -283,7 +298,7 @@
     /* =================================================================
        CONFIGURATION
        ================================================================= */
-    const VERSION = '1.1.0';
+    const VERSION = '1.2.0';
     const PRETS_URL = 'https://biblio.baiji.fr/prets.json';       // le service du NAS
     const SITE = 'https://mediatheques.paris-saclay.com';
     const PAGE_PRETS = SITE + '/page/user/prets-en-cours?choix_tri_pret_bgm=dra';   // pour prolonger
@@ -361,6 +376,8 @@
     // Un identifiant stable pour chaque prêt. Le service ne donne pas de numéro : on assemble
     // carte + titre + auteur + date d'emprunt. Pas la date de retour : elle change quand on prolonge.
     const cleDoc = (p) => [p.qui, p.titre, p.auteur, p.emprunt].join('|');
+    let recupOuvert = false;      // la section « Déjà récupérés » est-elle dépliée ?
+    let minuteurListe = null;     // réaffichage différé après une coche (voir cocher)
 
     /* =================================================================
        AFFICHAGE
@@ -442,7 +459,15 @@
         $('liste').innerHTML = '<section class="card vide"><strong>📚</strong>Rien à rendre : c\'est le moment d\'aller en emprunter !</section>';
         return;
       }
-      const visibles = tous.filter((p) => (!filtre.type || p.type === filtre.type) && (!filtre.mediatheque || p.mediatheque === filtre.mediatheque));
+      let visibles = tous.filter((p) => (!filtre.type || p.type === filtre.type) && (!filtre.mediatheque || p.mediatheque === filtre.mediatheque));
+
+      // Mode Check : les documents cochés sortent des groupes et vont tout en bas,
+      // dans une section repliée. Les groupes ne montrent donc que ce qui manque.
+      let recuperes = [];
+      if (enCheck) {
+        recuperes = visibles.filter((p) => coches.has(cleDoc(p)));
+        visibles = visibles.filter((p) => !coches.has(cleDoc(p)));
+      }
 
       // On regroupe par date de retour, en gardant l'ordre (la liste est déjà triée)
       const groupes = new Map();
@@ -452,6 +477,13 @@
         groupes.get(cle).push(p);
       }
 
+      // Un document de la grille (même modèle partout, cochés ou non)
+      const tuile = (p) => `<button class="doc${coches.has(cleDoc(p)) ? ' coche' : ''}" data-i="${tous.indexOf(p)}" ${enCheck ? `aria-pressed="${coches.has(cleDoc(p))}"` : ''}>
+            ${couverture(p).replace(/<\/span>$/, COCHE + '</span>')}
+            <span class="t">${esc(p.titre)}</span>
+            ${p.auteur ? `<span class="a">${esc(p.auteur)}</span>` : ''}
+          </button>`;
+
       $('liste').innerHTML = [...groupes].map(([iso, docs]) => {
         const connue = iso !== '?';
         const n = connue ? joursAvant(iso) : null;
@@ -460,13 +492,17 @@
             <h2>${connue ? 'À rendre ' + esc(dateCourte(iso)) : 'Date inconnue'}</h2>
             <span>${connue ? esc(compteARebours(n)) + ' · ' : ''}${docs.length}</span>
           </div>
-          <div class="grille">${docs.map((p) => `<button class="doc${coches.has(cleDoc(p)) ? ' coche' : ''}" data-i="${tous.indexOf(p)}" ${enCheck ? `aria-pressed="${coches.has(cleDoc(p))}"` : ''}>
-            ${couverture(p).replace(/<\/span>$/, COCHE + '</span>')}
-            <span class="t">${esc(p.titre)}</span>
-            ${p.auteur ? `<span class="a">${esc(p.auteur)}</span>` : ''}
-          </button>`).join('')}</div>
+          <div class="grille">${docs.map(tuile).join('')}</div>
         </section>`;
-      }).join('');
+      }).join('')
+      // Plus rien à chercher (dans ce filtre) : un petit mot à la place des groupes
+      + (enCheck && !visibles.length && recuperes.length
+          ? '<section class="card vide"><strong>🎉</strong>Tout est récupéré ! Touche « Terminer » pour le bilan.</section>' : '')
+      // La section repliée des récupérés, ouverte seulement si on l'avait ouverte
+      + (recuperes.length ? `<details class="card recup"${recupOuvert ? ' open' : ''}>
+          <summary>✓ Déjà récupérés · ${recuperes.length}</summary>
+          <div class="grille">${recuperes.map(tuile).join('')}</div>
+        </details>` : '');
     }
 
     /* =================================================================
@@ -506,8 +542,9 @@
       if (enCheck) $('check-barre').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    // Toucher une couverture en mode Check : on coche / décoche, sans tout redessiner
-    // (redessiner la grille ferait clignoter les images)
+    // Toucher une couverture en mode Check : on coche (ou décoche), le document affiche la
+    // coche verte un court instant, s'efface, puis la liste est redessinée : il rejoint
+    // « Déjà récupérés » en bas (ou revient à sa place s'il était décoché).
     function cocher(bouton, p) {
       const cle = cleDoc(p);
       if (coches.has(cle)) coches.delete(cle); else coches.add(cle);
@@ -516,6 +553,11 @@
       if (navigator.vibrate) navigator.vibrate(15);              // petit retour au doigt sur Android
       sauverCheck();
       afficherCheck();
+      setTimeout(() => bouton.classList.add('part'), 250);        // on laisse voir la coche, puis fondu
+      // Un seul réaffichage, 0,6 s après la DERNIÈRE coche : si on enchaîne plusieurs livres
+      // vite, la grille ne bouge pas sous le doigt entre deux touches.
+      clearTimeout(minuteurListe);
+      minuteurListe = setTimeout(afficherListe, 600);
     }
 
     // Le bilan : tous les documents non cochés, groupés par enfant si plusieurs cartes,
@@ -653,6 +695,10 @@
       if (enCheck) cocher(b, tous[Number(b.dataset.i)]);
       else ouvrirFiche(tous[Number(b.dataset.i)]);
     });
+
+    $('liste').addEventListener('toggle', (e) => {
+      if (e.target.classList.contains('recup')) recupOuvert = e.target.open;
+    }, true);
 
     $('btn-check').addEventListener('click', basculerCheck);
     $('check-barre').addEventListener('click', (e) => {
