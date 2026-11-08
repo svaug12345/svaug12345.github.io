@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr/pressoir/ — Pressoir (vidéo et son)
-  Version 1.2.2
+  Version 1.3.0
   ------------------------------------------------------------
   Compresse une vidéo ou un son directement dans le navigateur,
   avec les encodeurs matériels du téléphone (API WebCodecs),
@@ -19,6 +19,8 @@
               le débit vidéo ne dépasse jamais celui de l'original
    • v1.2.1 : l'appli s'appelle simplement « Pressoir » (elle traite aussi le son)
    • v1.2.2 : compteur de visites de baiji.fr (/journal.js)
+   • v1.3.0 : version tablette (≥ 760 px) : page élargie, 2 colonnes
+              (fichier + résultat à gauche, réglages à droite) ; téléphone inchangé
   ============================================================
 -->
 <html lang="fr">
@@ -163,6 +165,67 @@ video { background: #000; max-height: 50vh; }
 .note { color: var(--muted); font-size: 0.85rem; margin: 0; }
 .note.warn { color: var(--bad); }
 @media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+
+/* ==========================================================================
+   TABLETTE (écran d'au moins 760 px de large : tablette en portrait ou en paysage)
+   --------------------------------------------------------------------------
+   Sur téléphone, .atelier, .col-reglages et .col-suite sont « transparents »
+   (display: contents) : leurs enfants se comportent comme s'ils étaient
+   directement dans .wrap, donc le téléphone garde exactement sa colonne unique.
+   À partir de 760 px :
+   • la page s'élargit (1180 px max au lieu de 560) ;
+   • .atelier devient une grille à 2 colonnes, avec des zones nommées :
+       ┌──────────────┬──────────────┐
+       │ 1 · Fichier  │ 2 · Réglage  │
+       ├──────────────┤ 3 · Découpe  │
+       │ Progression  │   (Lancer)   │
+       │ / Résultat   │              │
+       └──────────────┴──────────────┘
+     À gauche : le fichier puis ce qui en sort (progression, résultat avec
+     l'aperçu vidéo) ; à droite : tous les réglages. Comme la colonne de
+     droite couvre les 2 lignes, la 2e ligne est en « 1fr » : c'est elle qui
+     absorbe la hauteur en trop, et il n'y a pas de trou sous le fichier.
+   • chaque colonne est elle-même une pile (flex) de cartes : rien ne s'étire
+     sur toute la largeur de l'écran, les boutons gardent une taille normale.
+   Rien n'est calculé en JavaScript : la rotation de la tablette est gérée
+   toute seule par le navigateur.
+   ========================================================================== */
+.atelier, .col-reglages, .col-suite { display: contents; }
+
+@media (min-width: 760px) {
+  .wrap { max-width: 1180px; padding-block: 28px 48px; gap: 20px;
+          padding-left: max(24px, env(safe-area-inset-left, 0px));
+          padding-right: max(24px, env(safe-area-inset-right, 0px)); }
+  h1 { font-size: 2.5rem; }
+  .lede { max-width: 72ch; font-size: 1.05rem; }
+
+  .atelier {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "fichier reglages"
+                         "suite   reglages";
+    grid-template-rows: auto 1fr;   /* la ligne « suite » prend le reste */
+    gap: 20px;
+    align-items: start;             /* chaque carte garde sa propre hauteur */
+  }
+  .etape-fichier { grid-area: fichier; }
+  .col-reglages  { grid-area: reglages; }
+  .col-suite     { grid-area: suite; }
+  .col-reglages, .col-suite { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+
+  section { padding: 20px; border-radius: 16px; }
+  .pick { padding: 34px 16px; }          /* zone de dépôt plus confortable au doigt */
+  .row > button { flex: 0 1 220px; }     /* boutons de taille raisonnable, pas étirés */
+  #go { flex-basis: 100%; }              /* … sauf « Lancer », le grand bouton d'action */
+  video { max-height: 46vh; }
+}
+
+/* Grande tablette en paysage : la colonne de gauche (fichier, aperçu vidéo)
+   un peu plus large que celle des réglages. */
+@media (min-width: 1100px) {
+  .atelier { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 24px; }
+  .col-reglages, .col-suite { gap: 24px; }
+}
 </style>
   <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
   <script src="/journal.js" defer></script>
@@ -172,14 +235,19 @@ video { background: #000; max-height: 50vh; }
 <div class="wrap">
   <header>
     <h1>Pressoir<span>.</span></h1>
-    <span class="version" id="version">v1.2.2</span>
+    <span class="version" id="version">v1.3.0</span>
   </header>
   <p class="lede">Compresse une vidéo ou un son directement dans ton téléphone, et découpe-le si besoin en morceaux d'une taille max. Rien n'est envoyé sur internet, et il n'y a pas de pub.</p>
 
   <p class="msg err" id="unsupported" hidden>Ce navigateur ne gère pas WebCodecs. Ouvre la page dans Chrome (Android ou ordinateur).</p>
 
+  <!-- L'« atelier » regroupe les étapes. Sur téléphone, lui et ses colonnes
+       sont transparents (display: contents) : la page reste une seule colonne.
+       Sur tablette, il devient une grille à 2 colonnes (voir « TABLETTE » dans le CSS). -->
+  <div class="atelier">
+
   <!-- 1. Choix du fichier -->
-  <section>
+  <section class="etape-fichier">
     <h2>1 · Fichier</h2>
     <label class="pick" id="pick">
       <strong id="pickTitle">Choisir une vidéo ou un son</strong>
@@ -193,6 +261,9 @@ video { background: #000; max-height: 50vh; }
       <label><input type="radio" name="mode" id="mode-audio" value="audio"><span>Son seul</span></label>
     </div>
   </section>
+
+  <!-- Colonne de droite sur tablette : réglage + découpe -->
+  <div class="col-reglages">
 
   <!-- 2. Réglage -->
   <section>
@@ -223,6 +294,10 @@ video { background: #000; max-height: 50vh; }
       <button class="primary" id="go" disabled>Lancer</button>
     </div>
   </section>
+  </div><!-- /col-reglages -->
+
+  <!-- Suite : progression, résultat, erreur (sous le fichier, en paysage) -->
+  <div class="col-suite">
 
   <!-- 4. Progression -->
   <section id="work" hidden>
@@ -253,6 +328,8 @@ video { background: #000; max-height: 50vh; }
   </section>
 
   <p class="msg err" id="error" hidden></p>
+  </div><!-- /col-suite -->
+  </div><!-- /atelier -->
 </div>
 
 <!-- mp4-muxer : assemble les morceaux encodés dans un fichier .mp4 / .m4a (global Mp4Muxer) -->
@@ -277,7 +354,7 @@ video { background: #000; max-height: 50vh; }
    On ne charge jamais une grosse vidéo d'un coup : on la lit par fenêtres.
    ========================================================================== */
 
-const APP_VERSION = "1.2.2";
+const APP_VERSION = "1.3.0";
 document.getElementById("version").textContent = "v" + APP_VERSION;
 
 // ---- Préréglages vidéo : côté court visé (px) et débit vidéo (bits/s) ----

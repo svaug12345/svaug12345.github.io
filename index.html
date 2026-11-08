@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr — Page d'accueil des projets (marque SV)
-  Version 1.31.0
+  Version 1.32.0
   ------------------------------------------------------------
   Historique :
    • v1.0.0 : première page d'accueil
@@ -61,6 +61,8 @@
    • v1.29.0 : baiji.fr/julien/ reprend la dernière version de TAC Vélo (dépôt tac-velo, v1.8.1)
    • v1.30.0 : ajout de « Petite Souris » (Tom appelle la Petite Souris) dans « Famille & amis »
    • v1.31.0 : ajout de « Allô Sébastien ? » (Monique, la voisine, papote oiseaux et nature) dans « Famille & amis »
+   • v1.32.0 : affichage tablette (dès 760 px) : page élargie à 1180 px, 3 colonnes de cartes
+              en portrait, 4 en paysage, cartes plus aérées ; téléphone inchangé
 
   À déposer dans le dépôt GitHub : svaug12345.github.io
   → c'est le fichier "index.html" à la racine.
@@ -532,6 +534,59 @@
     }
     .dialogue .actions { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
     .dialogue .etat { flex: 1; font-size: .8rem; color: var(--teal); }
+
+    /*
+      ============================================================
+      TABLETTE (à partir de 760 px de large) — ajouté en v1.32.0
+      ------------------------------------------------------------
+      Avant, la page restait une colonne de 760 px au milieu de
+      l'écran : en paysage (≈ 1280 px), il y avait ~500 px de vide.
+      Désormais, dès 760 px :
+       • la page s'élargit jusqu'à 1180 px (comme Cartable) ;
+       • la grille passe à 3 colonnes fixes en portrait (≈ 800 px),
+         puis 4 dès 1100 px (paysage ≈ 1280 px) ; tout est en CSS,
+         sans JavaScript : rien à redessiner quand on tourne la
+         tablette, le navigateur réapplique les règles tout seul ;
+       • les cartes sont un peu plus aérées (marges, picto plus grand) ;
+       • la barre du mode Rangement tient sur une seule ligne
+         (texte à gauche, boutons à droite) ;
+       • la fenêtre « Pour le site… » peut être un peu plus large.
+      En dessous de 760 px (téléphones), RIEN ne change : ces règles
+      ne s'appliquent tout simplement pas.
+      ============================================================
+    */
+    @media (min-width: 760px) {
+      body  { padding: 0 24px; }               /* marge d'écran un peu plus large */
+      .page { max-width: 1180px; padding-top: 48px; }
+      header { margin-bottom: 36px; }
+
+      /* 3 colonnes de même largeur (1fr) en portrait… */
+      .grille {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+      }
+      .carte { padding: 18px; gap: 16px; }
+      .pastille { flex-basis: 48px; height: 48px; border-radius: 11px; }
+      .pastille svg { width: 26px; height: 26px; }
+      .carte-nom  { font-size: 1.06rem; }
+      .carte-desc { font-size: 0.88rem; }
+
+      /* Barre du mode Rangement : une seule ligne */
+      .barre-edition { display: flex; align-items: center; gap: 16px; }
+      .barre-edition p { margin: 0; flex: 1; }
+
+      .dialogue { width: min(680px, calc(100% - 48px)); padding: 24px; }
+    }
+
+    /* Grand paysage (≥ 1100 px) : on gagne un peu de hauteur en haut de
+       page, précieuse quand l'écran est large mais peu haut (≈ 800 px). */
+    @media (min-width: 1100px) {
+      .grille { grid-template-columns: repeat(4, 1fr); }   /* …4 en paysage */
+      .page { padding-top: 36px; }
+      header { margin-bottom: 24px; }
+      .logo { width: 64px; height: 64px; margin-bottom: 12px; }
+      .section-titre { margin-top: 32px; }
+    }
   </style>
 </head>
 
@@ -605,7 +660,7 @@
 
     <!-- ===================== PIED DE PAGE ===================== -->
     <footer>
-      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.31.0</p>
+      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.32.0</p>
     </footer>
 
     <!--

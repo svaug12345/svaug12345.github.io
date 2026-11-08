@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   On mange quoi ? — les repas de la famille
-  Version 1.2.0
+  Version 1.3.0
   Trois onglets :
    • Semaine : « Ce soir » en grand, puis un dîner par jour (toucher un jour = choisir) ;
    • Courses : les ingrédients des plats de la semaine, rangés par rayon, à cocher en magasin ;
@@ -19,6 +19,9 @@
               recherche dans les plats ; « Annuler » après une suppression (plus de double
               confirmation) ; bouton « Revenir à cette semaine » ; 15 nouvelles idées de plats
               simples ajoutées une fois aux listes existantes
+   • v1.3.0 : TABLETTE : page élargie ; Semaine en 2 colonnes (planning 7 colonnes en
+              paysage), courses rangées par rayon sur 2-3 colonnes, plats en grille,
+              sélecteur centré, barre d'onglets en pilule flottante (téléphone inchangé)
 -->
 <html lang="fr">
 <head>
@@ -339,6 +342,120 @@
     .pastille.ok { background: var(--ok); }
     .pastille.err { background: var(--danger); }
 
+    /* =========================================================
+       9. TABLETTE (v1.3.0)
+       Tout ce qui précède est la mise en page TÉLÉPHONE : elle ne change pas.
+       Les règles ci-dessous ne s'appliquent qu'à partir de 760 px de large
+       (tablette en portrait ≈ 800 px, en paysage ≈ 1280 px) :
+        • la page s'élargit (1180 px max) au lieu de rester une colonne étroite ;
+        • Semaine : « Ce soir » en bandeau (plat à gauche, boutons à droite),
+          les 7 jours en 2 colonnes (lun→jeu | ven→dim) ; dès 1100 px, en
+          vrai planning de la semaine : 7 colonnes côte à côte ;
+        • Courses : les rayons répartis en 2 colonnes (3 dès 1100 px), comme
+          un journal (« columns » en CSS) ; un rayon n'est jamais coupé ;
+        • Plats : une grille de petites cartes (2 colonnes, 3 dès 1100 px) ;
+        • le sélecteur de plat devient une fenêtre centrée (plus une feuille
+          collée en bas), avec la liste des plats sur 2 colonnes ;
+        • la barre d'onglets devient une « pilule » flottante centrée, au lieu
+          d'une bande qui traverse tout l'écran.
+       Tout est en CSS : pas de JavaScript, donc rien à recalculer quand on
+       tourne la tablette, le navigateur s'en charge.
+       ========================================================= */
+    @media (min-width: 760px) {
+      body { padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }
+      .page {
+        max-width: 1180px;
+        padding-top: calc(26px + env(safe-area-inset-top, 0px));
+        padding-left: max(28px, env(safe-area-inset-left, 0px));
+        padding-right: max(28px, env(safe-area-inset-right, 0px));
+        gap: 18px;
+      }
+      header h1 { font-size: 1.9rem; }
+      section { gap: 16px; }
+
+      /* --- Semaine : bandeau « Ce soir » sur une grille 2 × 2 ---
+         colonne 1 = étiquette + nom du plat, colonne 2 = les boutons */
+      .ce-soir {
+        display: grid; grid-template-columns: 1fr auto; align-items: center;
+        column-gap: 24px; row-gap: 8px; padding: 24px 28px;
+      }
+      .ce-soir .etiquette { grid-column: 1; grid-row: 1; }
+      .ce-soir .plat { grid-column: 1; grid-row: 2; font-size: 2.3rem; }
+      .ce-soir .plat.vide { font-size: 1.7rem; }
+      .ce-soir .rangee { grid-column: 2; grid-row: 1 / span 2; flex-wrap: nowrap; }
+      .nav-semaine { max-width: 560px; width: 100%; align-self: center; }
+
+      /* Les 7 jours sur 2 colonnes : « grid-auto-flow: column » remplit d'abord
+         la 1re colonne de haut en bas (lun → jeu), puis la 2e (ven → dim). */
+      .jours {
+        display: grid; grid-template-columns: 1fr 1fr;
+        grid-template-rows: repeat(4, auto); grid-auto-flow: column;
+        overflow: hidden;            /* coins arrondis de la carte respectés */
+      }
+      .jours li, .jours li.aujourdhui:first-child, .jours li.aujourdhui:last-child { border-radius: 0; }
+      .jours li:nth-child(5) { border-top: 0; }                       /* haut de la 2e colonne */
+      .jours li:nth-child(n+5) { border-left: 1px solid var(--line); } /* trait entre colonnes */
+      .jours li:nth-child(7) { border-bottom: 1px solid var(--line); } /* dimanche : trait sous la case */
+      .jour-btn { min-height: 64px; padding-left: 18px; }
+
+      /* Boutons « Remplir / Tout effacer » et aide : pas étirés sur toute la largeur */
+      #vue-semaine > .rangee.deux { max-width: 560px; width: 100%; align-self: center; }
+      #vue-semaine > .aide { text-align: center; }
+
+      /* --- Courses : rayons en colonnes --- */
+      #form-extra { max-width: 640px; }
+      #courses { columns: 2; column-gap: 0; column-rule: 1px solid var(--line); padding: 4px 0; }
+      .groupe-rayon { break-inside: avoid; padding-bottom: 6px; }
+      #courses > .caddie, #courses > .vide-msg { column-span: all; }
+      .caddie { border-top: 1px solid var(--line); }
+      .caddie ul.courses { columns: 2; column-gap: 0; }
+      .caddie ul.courses li { break-inside: avoid; }
+      #vue-courses > .rangee:last-of-type { justify-content: center; }
+
+      /* --- Plats : grille de petites cartes --- */
+      #form-plat, #cherche-plat { max-width: 640px; }
+      .plats.carte { background: none; border: 0; border-radius: 0;
+        display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: stretch; }
+      .plats > li { background: var(--card); border: 1px solid var(--line); border-radius: 16px; }
+      .plats > li.vide-msg { grid-column: 1 / -1; }
+      .plat-tete { padding: 14px 6px 14px 16px; min-height: 64px; }
+
+      /* --- Sélecteur de plat : fenêtre centrée, plus une feuille du bas --- */
+      dialog#choix { margin: auto; max-width: 640px; width: calc(100% - 64px);
+        max-height: 80vh; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+      .choix-corps { max-height: 80vh; padding: 20px 22px 22px; }
+      .raccourcis { grid-template-columns: repeat(4, 1fr); }
+      .raccourcis #choix-hasard { grid-column: auto; }
+      .choix-liste { display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; align-content: start; }
+      .choix-liste li:nth-child(2) button { border-top: 0; }   /* haut de la 2e colonne */
+
+      /* --- Barre d'onglets : pilule flottante centrée --- */
+      nav.onglets {
+        left: 50%; right: auto; transform: translateX(-50%);
+        bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+        width: min(520px, calc(100% - 56px));
+        padding: 0 8px;
+        border: 1px solid var(--line); border-radius: 22px;
+        box-shadow: 0 8px 28px rgba(5, 30, 30, .14);
+      }
+      #toast { bottom: calc(104px + env(safe-area-inset-bottom, 0px)); }
+    }
+
+    @media (min-width: 1100px) {
+      /* Semaine en vrai planning : 7 colonnes, une par jour */
+      .jours { grid-template-columns: repeat(7, minmax(0, 1fr)); grid-template-rows: auto; grid-auto-flow: row; }
+      .jours li { flex-direction: column; align-items: stretch; border-top: 0; border-bottom: 0; border-left: 1px solid var(--line); }
+      .jours li:first-child { border-left: 0; }
+      .jour-btn { grid-template-columns: 1fr; align-content: start; gap: 12px; min-height: 150px; padding: 16px 14px 8px; }
+      .jour-nom b { font-size: 1.05rem; }
+      .jour-plat { font-size: 1.05rem; line-height: 1.25; }
+      .jours .rond { margin: 0 auto 12px; }          /* le dé, centré en bas de la colonne */
+
+      #courses { columns: 3; }
+      .caddie ul.courses { columns: 3; }
+      .plats.carte { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
     @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
   </style>
 </head>
@@ -419,7 +536,7 @@
 
   <footer>
     <span><span class="pastille" id="pastille"></span><span id="etat">Chargement…</span></span>
-    <span><button id="btn-synchro" hidden>Clé</button><span id="sep-cle" hidden> · </span><span>SV · v1.2.0</span></span>
+    <span><button id="btn-synchro" hidden>Clé</button><span id="sep-cle" hidden> · </span><span>SV · v1.3.0</span></span>
   </footer>
 </div>
 
@@ -460,7 +577,7 @@
 
 <script>
 /* ==============================================================
-   On mange quoi ? — v1.2.0
+   On mange quoi ? — v1.3.0
    ==============================================================
    ORGANISATION DU CODE
    1. Réglages et données de départ
@@ -471,7 +588,7 @@
    6. Actions (ce que font les boutons) et « Annuler »
    7. Démarrage
    ============================================================== */
-const VERSION = "1.2.0";
+const VERSION = "1.3.0";
 
 /* ---------- 1. RÉGLAGES ----------
    Adresse /exec du script Google « Repas famille » (code dans outils/repas.gs).
@@ -868,7 +985,13 @@ function afficherCourses() {
     ul.className = "courses";
     liste.sort((a, b) => a.nom.localeCompare(b.nom, "fr"))
       .forEach(a => ul.append(ligneArticle(a, cle, false)));
-    boite.append(titre, ul);
+    // Le titre et ses articles sont rangés dans une même boîte « groupe-rayon » :
+    // sur téléphone elle ne change rien, sur tablette elle empêche qu'un rayon
+    // soit coupé en deux entre deux colonnes (voir TABLETTE dans le CSS).
+    const groupe = document.createElement("div");
+    groupe.className = "groupe-rayon";
+    groupe.append(titre, ul);
+    boite.append(groupe);
   }
   if (!aPrendre.length) {
     const p = document.createElement("p");

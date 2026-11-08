@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Médiathèque — les documents empruntés aux Médiathèques de Paris-Saclay, avec leurs couvertures
-  Version 1.6.0
+  Version 1.7.0
   Les données viennent du service « biblio » du NAS (https://biblio.baiji.fr/prets.json),
   qui se connecte au compte lecteur et relit le site toutes les 3 heures.
   La page ne contient aucun identifiant et ne parle jamais directement au compte lecteur.
@@ -26,6 +26,9 @@
               les derniers prêts connus du téléphone, et n'affiche plus « Rien à rendre »
    • v1.6.0 : plus de bandeau d'alerte (« connexion échouée », « service injoignable »…)
               ni de pastilles par type de document ; les pastilles par médiathèque restent
+   • v1.7.0 : TABLETTE : page élargie, « Prochain retour » à côté des filtres, groupes de
+              couvertures côte à côte (2 colonnes, 3 en paysage), barre du Check sur une ligne,
+              fiche en deux colonnes (couverture à gauche) et bilan sur 2 colonnes
 -->
 <html lang="fr">
 <head>
@@ -102,6 +105,8 @@
     .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
 
     #app { max-width: 760px; margin: 0 auto; padding: 16px 16px 40px; display: flex; flex-direction: column; gap: 14px; }
+    /* La liste des groupes : une colonne sur téléphone (sur tablette : voir TABLETTE, en bas) */
+    #liste { display: flex; flex-direction: column; gap: 14px; }
     .card { background: var(--card); border-radius: var(--radius); padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
 
     /* Bouton principal de la charte SV : capitales espacées */
@@ -297,6 +302,70 @@
     .bilan-ok { text-align: center; padding: 18px 4px 4px; }
     .bilan-ok strong { display: block; font-size: 44px; }
     .bilan-ok b { display: block; font-size: 18px; font-weight: 800; margin-top: 6px; }
+    /* =========================================================
+       10. TABLETTE (v1.7.0)
+       Tout ce qui suit ne s'applique qu'à partir de 760 px de large (tablette en portrait
+       ~800 px, en paysage ~1280 px). En dessous, sur téléphone, rien ne change.
+       L'idée : au lieu d'une colonne étroite au milieu de l'écran, on utilise la largeur.
+        • la page s'élargit jusqu'à 1180 px ;
+        • #app devient une GRILLE à 2 colonnes : « Prochain retour » à gauche, les pastilles
+          de médiathèques à droite, sur la même ligne ; tout le reste prend toute la largeur ;
+        • les groupes « À rendre le… » se rangent côte à côte (2 colonnes, 3 dès 1100 px),
+          un gros groupe (classe « gros », plus de 6 documents) prend 2 colonnes ;
+        • la barre du mode Check tient sur une seule ligne ;
+        • la fiche d'un document passe en 2 colonnes : couverture à gauche, infos à droite ;
+        • le bilan montre les manquants sur 2 colonnes.
+       ========================================================= */
+    @media (min-width: 760px) {
+      #app {
+        max-width: 1180px; padding: 24px 28px 48px; gap: 18px;
+        display: grid; grid-template-columns: minmax(280px, 380px) minmax(0, 1fr); align-items: center;
+      }
+      /* Par défaut, chaque bloc prend les 2 colonnes (de la ligne 1 à la dernière : 1 / -1) */
+      #app > * { grid-column: 1 / -1; }
+      /* « Prochain retour » à gauche, filtres à droite, sur la même ligne (la n° 2) */
+      #prochain { grid-column: 1; }
+      #filtres { grid-column: 2; grid-row: 2; justify-content: flex-end; }
+      /* S'il manque l'un des deux, l'autre reprend toute la largeur (:has = « qui contient ») */
+      #app:has(#filtres[hidden]) #prochain,
+      #app:has(#prochain[hidden]) #filtres { grid-column: 1 / -1; }
+      #app:has(#prochain[hidden]) #filtres { justify-content: flex-start; }
+      .titre { font-size: 28px; }
+      .filtre { padding: 9px 15px; font-size: 14px; }
+
+      /* Les groupes côte à côte. align-items: start = chaque carte garde sa propre hauteur */
+      #liste { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: start; }
+      #liste > .gros, #liste > .vide, #liste > .recup { grid-column: 1 / -1; }
+      /* 90 px mini : 3 couvertures par groupe (une colonne de groupes fait ~330 px utiles) */
+      .grille { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 18px 14px; }
+      .card { padding: 18px; }
+
+      /* Barre du Check : compteur | progression | boutons, sur une seule ligne */
+      .check-barre { flex-direction: row; align-items: center; gap: 18px; }
+      .check-haut { flex: none; gap: 18px; }
+      .check-barre .duree { flex: 1; }
+      .check-boutons .btn { flex: none; min-width: 150px; }
+
+      /* Fiche : grille à 2 colonnes, la couverture occupe toute la hauteur à gauche */
+      #fiche[open] {
+        width: min(720px, calc(100vw - 48px)); padding: 22px;
+        display: grid; grid-template-columns: 240px minmax(0, 1fr); column-gap: 22px; align-content: start;
+      }
+      #fiche .fiche-visuel { grid-column: 1; grid-row: 1 / span 4; width: 100%; margin: 0; }
+      #fiche > :not(.fiche-visuel):not(.fermer) { grid-column: 2; }
+      #fiche .fiche-haut { padding-right: 40px; }      /* pour ne pas passer sous la croix */
+      #fiche .fiche-haut h2 { font-size: 21px; }
+
+      /* Bilan plus large, manquants sur 2 colonnes, boutons côte à côte */
+      #bilan { width: min(720px, calc(100vw - 48px)); padding: 22px; }
+      .manquants { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      #bilan .boutons { flex-direction: row; justify-content: flex-end; flex-wrap: wrap; }
+      #carte { width: min(560px, calc(100vw - 48px)); padding: 22px; }
+    }
+    @media (min-width: 1100px) {
+      #liste { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      #liste > .gros { grid-column: span 2; }
+    }
   </style>
   <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
   <script src="/journal.js" defer></script>
@@ -327,7 +396,7 @@
     <!-- Barre du mode Check (compteur, progression, boutons) -->
     <section class="card check-barre" id="check-barre" hidden></section>
     <div class="filtres" id="filtres" hidden></div>
-    <div id="liste" style="display:flex;flex-direction:column;gap:14px"></div>
+    <div id="liste"></div>
     <footer class="pied" id="pied"></footer>
   </div>
 
@@ -339,7 +408,7 @@
     /* =================================================================
        CONFIGURATION
        ================================================================= */
-    const VERSION = '1.6.0';
+    const VERSION = '1.7.0';
     const PRETS_URL = 'https://biblio.baiji.fr/prets.json';       // le service du NAS
     const SITE = 'https://mediatheques.paris-saclay.com';
     const PAGE_PRETS = SITE + '/page/user/prets-en-cours?choix_tri_pret_bgm=dra';   // « Mon compte » (pied de page)
@@ -524,7 +593,8 @@
       $('liste').innerHTML = [...groupes].map(([iso, docs]) => {
         const connue = iso !== '?';
         const n = connue ? joursAvant(iso) : null;
-        return `<section class="card">
+        // « gros » = plus de 6 documents : sur tablette, ce groupe prend 2 colonnes (voir TABLETTE)
+        return `<section class="card${docs.length > 6 ? ' gros' : ''}">
           <div class="groupe-titre" style="--c:${connue ? couleur(n) : 'var(--muted)'}">
             <h2>${connue ? 'À rendre ' + esc(dateCourte(iso)) : 'Date inconnue'}</h2>
             <span>${connue ? esc(compteARebours(n)) + ' · ' : ''}${docs.length}</span>

@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr/journal/ — Journal du site (charte SV)
-  Version 1.0.1 – 05/11/2026
+  Version 1.1.0 – 08/11/2026
   ------------------------------------------------------------
   Deux tableaux de bord sur une page :
    • SERVICES : est-ce que baiji.fr et les sous-domaines du NAS
@@ -27,6 +27,8 @@
    • v1.0.0 : première version (services + visites, mode démo,
               « ce navigateur, c'est moi »)
    • v1.0.1 : nom lisible pour la page de passage /photos/
+   • v1.1.0 : affichage TABLETTE (page élargie, graphique et services
+              côte à côte en paysage, listes en 2 ou 3 colonnes)
   ============================================================
 -->
 <html lang="fr">
@@ -230,12 +232,95 @@
     .interrupteur[aria-checked="true"] { background: var(--accent); }
     .interrupteur[aria-checked="true"]::after { transform: translateX(18px); }
 
+    /* Le tableau de bord : une colonne de cartes espacées de 14 px
+       (était écrit directement dans la balise avant la v1.1.0) */
+    #tableau, .listes { display: flex; flex-direction: column; gap: 14px; }
+
     footer { text-align: center; font-size: 12px; color: var(--muted); margin-top: 6px; }
 
     /* Téléphone : tuiles plus petites, classements l'un sous l'autre */
     @media (max-width: 520px) {
       .tuile .valeur { font-size: 21px; }
       .deux-col { grid-template-columns: 1fr; }
+    }
+
+    /* =========================================================
+       10. TABLETTE (v1.1.0)
+       ---------------------------------------------------------
+       Sous 760 px de large (téléphone) : RIEN ne change.
+       À partir de 760 px (tablette en portrait, ~800 px) :
+        • la page s'élargit jusqu'à 1180 px au lieu de 760 ;
+        • #tableau devient une GRILLE CSS avec des zones nommées
+          (grid-template-areas) : on dit où va chaque bloc sans
+          toucher à l'ordre du HTML ;
+        • les listes (pages, appareils, navigateurs, sources,
+          dernières visites) passent en COLONNES CSS (column-count),
+          comme des colonnes de journal : les cartes se rangent de
+          haut en bas puis passent à la colonne suivante, sans trou
+          même si elles n'ont pas la même hauteur ;
+        • .deux-col prend « display: contents » : la boîte disparaît
+          et Appareils / Navigateurs deviennent deux cartes de la
+          liste comme les autres.
+       À partir de 1100 px (tablette en paysage, ~1280 px) :
+        • le graphique (2/3) et les services (1/3) côte à côte ;
+        • les listes sur 3 colonnes.
+       ========================================================= */
+    @media (min-width: 760px) {
+      #app { max-width: 1180px; padding: 22px 24px 48px; gap: 16px; }
+      .titre { font-size: 28px; }
+      .card { padding: 20px; }
+
+      #tableau {
+        display: grid; gap: 16px;
+        grid-template-columns: minmax(0, 1fr);   /* minmax(0,…) : jamais de débordement */
+        grid-template-areas:
+          "services"
+          "filtres"
+          "tuiles"
+          "graphe"
+          "listes"
+          "moi";
+      }
+      .zone-services { grid-area: services; }
+      .zone-filtres  { grid-area: filtres; }
+      .zone-tuiles   { grid-area: tuiles; }
+      .zone-graphe   { grid-area: graphe; }
+      .listes        { grid-area: listes; }
+      .zone-moi      { grid-area: moi; }
+
+      /* Tuiles plus grandes, elles ont la place */
+      .tuiles { gap: 16px; }
+      .tuile { padding: 16px 18px; border-radius: 16px; }
+      .tuile .valeur { font-size: 32px; }
+      .tuile .libelle { font-size: 13px; }
+
+      /* Graphique plus haut sur un écran plus large */
+      .graphe svg { height: 200px; }
+
+      /* Listes en 2 colonnes « de journal » */
+      .listes { display: block; column-count: 2; column-gap: 16px; }
+      .listes .card {
+        break-inside: avoid;          /* une carte n'est jamais coupée entre deux colonnes */
+        margin-bottom: 16px;          /* l'espace entre cartes (gap ne marche pas en colonnes) */
+      }
+      .deux-col { display: contents; }
+    }
+
+    @media (min-width: 1100px) {
+      #tableau {
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+        grid-template-areas:
+          "filtres  filtres"
+          "tuiles   tuiles"
+          "graphe   services"
+          "listes   listes"
+          "moi      moi";
+      }
+      /* Le graphique s'étire pour avoir la même hauteur que les services */
+      .zone-graphe { display: flex; flex-direction: column; }
+      .zone-graphe #graphe { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; }
+      .graphe svg { height: auto; flex: 1; min-height: 200px; }
+      .listes { column-count: 3; }
     }
   </style>
 </head>
@@ -277,30 +362,32 @@
     </section>
 
     <!-- Tableau de bord (rempli par le script) -->
-    <div id="tableau" hidden style="display:flex;flex-direction:column;gap:14px">
+    <div id="tableau" hidden>
 
-      <section class="card">
+      <section class="card zone-services">
         <h2><span>Services</span><span class="aide">vérifiés toutes les 10 min</span></h2>
         <div class="services" id="services"></div>
       </section>
 
-      <div class="filtres" role="group" aria-label="Visites à compter">
+      <div class="filtres zone-filtres" role="group" aria-label="Visites à compter">
         <button class="pilule" id="filtre-tous" aria-pressed="true">Toutes les visites</button>
         <button class="pilule" id="filtre-sans-moi" aria-pressed="false">Sans les miennes</button>
       </div>
 
-      <div class="tuiles">
+      <div class="tuiles zone-tuiles">
         <div class="tuile"><div class="valeur mono" id="t-jour">–</div><div class="libelle">vues aujourd'hui · <b id="t-jour-v">–</b> visiteurs</div></div>
         <div class="tuile"><div class="valeur mono" id="t-30">–</div><div class="libelle">vues en 30 jours · <b id="t-30-v">–</b> visiteurs</div></div>
         <div class="tuile"><div class="valeur mono" id="t-app">–</div><div class="libelle">ouvertures en appli installée</div></div>
       </div>
 
-      <section class="card graphe">
+      <section class="card graphe zone-graphe">
         <h2><span>30 derniers jours</span></h2>
         <div id="graphe"></div>
         <div class="legende"><span><i class="clair"></i>Pages vues</span><span><i></i>Visiteurs</span></div>
       </section>
 
+      <!-- Les listes : l'une sous l'autre sur téléphone, en colonnes sur tablette -->
+      <div class="listes">
       <section class="card">
         <h2><span>Pages</span><span class="aide">vues · visiteurs</span></h2>
         <div class="classement" id="pages"></div>
@@ -320,8 +407,9 @@
         <h2><span>Dernières visites</span></h2>
         <div id="dernieres"></div>
       </section>
+      </div><!-- fin .listes -->
 
-      <section class="card moi">
+      <section class="card moi zone-moi">
         <div>
           <div style="font-weight:800">Ce navigateur, c'est moi</div>
           <p class="note">Ses visites sont marquées « moi », pour pouvoir les retirer des chiffres avec « Sans les miennes ».</p>
@@ -330,14 +418,14 @@
       </section>
     </div>
 
-    <footer>Journal · <span class="mono">v1.0.1</span> · <a href="#" id="oublier-cle" style="color:inherit">changer de clé</a></footer>
+    <footer>Journal · <span class="mono">v1.1.0</span> · <a href="#" id="oublier-cle" style="color:inherit">changer de clé</a></footer>
   </div>
 
   <script>
     /* ============================================================
        RÉGLAGES
        ============================================================ */
-    const VERSION = '1.0.1';
+    const VERSION = '1.1.0';
     // Adresse du script Google : lue dans /journal.js (un seul endroit à régler)
     const URL_JOURNAL = window.BAIJI_JOURNAL_URL || '';
     const DEMO = new URLSearchParams(location.search).has('demo');

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Famille · Vaugoude's Family — tableau de bord de la maison
-  Version 1.8.0
+  Version 1.9.0
   Mobile par défaut ; mode TV avec baiji.fr/famille/?tv (retour : ?mobile).
   Historique :
    • v1.0.0 : météo, tâches du jour (Google Sheet), 7 prochains jours, Pass TV,
@@ -37,6 +37,9 @@
    • v1.8.0 : carte « Ce jour-là » : diaporama des photos prises un jour comme aujourd'hui,
               les années passées (service « souvenirs » du NAS, qui les prend dans Immich ;
               même clé que les devoirs) ; toucher la photo = suivante, « Immich › » l'ouvre
+   • v1.9.0 : TABLETTE : à partir de 760 px de large, page élargie (1180 px max) et cartes
+              en 2 colonnes (portrait), 3 colonnes dès 1100 px (paysage) ; les devoirs y
+              détaillent les jours suivants comme à la télé ; téléphone et mode TV inchangés
 -->
 <html lang="fr">
 <head>
@@ -408,6 +411,38 @@
     body:not(.tv) #memory-card { order: 5; }      /* Ce jour-là : après l'agenda */
     body:not(.tv) .w-days-card { order: 6; }
     body:not(.tv) #app footer { order: 99; }
+
+    /* =========================================================
+       9. TABLETTE (v1.9.0)
+       Sur un écran d'au moins 760 px de large (tablette, ordinateur),
+       la page n'est plus une colonne étroite au milieu : elle s'élargit
+       (1180 px max) et les cartes sont réparties en colonnes :
+         • 760 à 1099 px (tablette en portrait) : 2 colonnes ;
+         • 1100 px et plus (tablette en paysage) : 3 colonnes, dans l'esprit
+           du mode TV, mais en tailles normales (px) et la page défile.
+       Le CSS seul ne sait pas faire des colonnes « qui se remplissent
+       sans trou » avec des cartes de hauteurs différentes : c'est le JS
+       (fonction tabletLayout(), partie TABLETTE du script) qui range les
+       cartes dans des <div class="tab-col"> à l'intérieur de .tab-grid,
+       et les remet à leur place d'origine si l'écran redevient étroit.
+       Rien ne change sur téléphone (< 760 px) ni en mode TV (?tv).
+       ========================================================= */
+    @media (min-width: 760px) {
+      body:not(.tv) #app { max-width: 1180px; padding: 24px 28px 48px; gap: 18px; }
+      body:not(.tv) .date { font-size: 28px; }
+      body:not(.tv) .clock { font-size: 40px; }
+      /* La grille de colonnes : --n = nombre de colonnes (posé par le JS) */
+      .tab-grid { display: grid; grid-template-columns: repeat(var(--n, 2), minmax(0, 1fr)); gap: 18px; align-items: start; }
+      .tab-col { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+      /* Les règles « order » du téléphone (partie 8) ne doivent pas jouer ici :
+         dans une colonne, les cartes restent dans l'ordre choisi par le JS.
+         !important car certaines de ces règles visent un id (plus prioritaire). */
+      .tab-col > * { order: 0 !important; }
+      /* Cartes un peu plus aérées ; la bande heure par heure suit la nouvelle marge */
+      body:not(.tv) .card { padding: 18px 20px; }
+      body:not(.tv) .hourly { margin: 10px -20px 0; padding: 0 20px 2px; }
+      body:not(.tv) .memory { aspect-ratio: 3 / 2; }
+    }
   </style>
   <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
   <script src="/journal.js" defer></script>
@@ -489,7 +524,7 @@
         <div class="card-title"><span id="tasks-title">Tâches du jour</span></div>
         <div id="tasks-today"></div>
       </section>
-      <section class="card">
+      <section class="card" id="cars-card">
         <div class="card-title"><a class="mobile-only" href="../voitures/" style="color:inherit;text-decoration:none">Voitures ›</a><span class="tv-only">Voitures</span><span id="cars-updated"></span></div>
         <div id="cars"></div>
       </section>
@@ -537,7 +572,7 @@
     /* =================================================================
        CONFIGURATION — les seules lignes à modifier en temps normal
        ================================================================= */
-    const VERSION = '1.8.0';
+    const VERSION = '1.9.0';
 
     // Google Sheet "Family tasks" publié en TSV (Fichier > Partager > Publier sur le web).
     // C'est le même lien que celui de ton Kindle.
@@ -967,7 +1002,8 @@
         const day = days[0];
         const todo = kid.devoirs.filter(d => d.pour === day && !d.fait);
         // À la télé, la carte a toute une colonne : on détaille aussi les 4 jours suivants
-        const extraDays = IS_TV ? days.slice(1, 5) : [];
+        // Même chose sur tablette (colonnes larges, place en hauteur) : voir TABLETTE
+        const extraDays = (IS_TV || tabletCols) ? days.slice(1, 5) : [];
         const lastShown = extraDays[extraDays.length - 1] || day;
         const later = kid.devoirs.filter(d => d.pour > lastShown && !d.fait).length;
         const [y, m, dd] = day.split('-').map(Number);
@@ -1299,6 +1335,62 @@
       store.set('agendaView', agendaView);
       renderAgenda(agendaData);
     });
+
+    /* =================================================================
+       TABLETTE (v1.9.0) — voir aussi la partie 9 du CSS
+       Sur un écran large (≥ 760 px), on range les cartes dans 2 ou 3
+       colonnes. Chaque liste ci-dessous = une colonne, de haut en bas.
+       On a choisi la répartition pour que les colonnes aient à peu près
+       la même hauteur (l'agenda et le planning des 7 jours sont longs).
+       Une carte cachée (hidden) ne prend simplement pas de place.
+       ================================================================= */
+    const TABLET_COLUMNS = {
+      // Portrait (760-1099 px) : à gauche le temps, l'agenda et la maison ; à droite les enfants
+      2: [['.weather', '.w-days-card', '#agenda-card', '#cars-card', '#loans-card', '#memory-card'],
+          ['.tasks-today', '#homework-card', '#week-card']],
+      // Paysage (≥ 1100 px) : temps + agenda + photos | tâches et devoirs | maison + planning
+      3: [['.weather', '.w-days-card', '#agenda-card', '#memory-card'],
+          ['.tasks-today', '#homework-card'],
+          ['#cars-card', '#loans-card', '#week-card']]
+    };
+    let tabletCols = 0;       // 0 = affichage téléphone, sinon nombre de colonnes en cours
+
+    // matchMedia = « est-ce que l'écran correspond à cette règle CSS ? » (mêmes seuils que le CSS)
+    const MQ_TABLET = matchMedia('(min-width: 760px)');
+    const MQ_WIDE = matchMedia('(min-width: 1100px)');
+
+    // Place d'origine des cartes : chaque .col avec ses cartes, dans l'ordre (pour pouvoir les y remettre)
+    const ORIGINAL_COLS = [...document.querySelectorAll('#app > .col')].map(col => [col, [...col.children]]);
+
+    function tabletLayout() {
+      if (IS_TV) return;                                   // le mode TV garde sa propre grille
+      const n = MQ_WIDE.matches ? 3 : MQ_TABLET.matches ? 2 : 0;
+      if (n === tabletCols) return;                        // rien n'a changé
+      tabletCols = n;
+      $('tab-grid')?.remove();                             // on repart de zéro (les cartes sont remises ci-dessous)
+      // 1) Toutes les cartes retournent à leur place d'origine (append déplace l'élément, il ne le copie pas)
+      for (const [col, cards] of ORIGINAL_COLS) col.append(...cards);
+      if (n) {
+        // 2) Écran large : on fabrique la grille et ses colonnes, puis on y déplace les cartes
+        const grid = document.createElement('div');
+        grid.id = 'tab-grid';
+        grid.className = 'tab-grid';
+        grid.style.setProperty('--n', n);
+        for (const selectors of TABLET_COLUMNS[n]) {
+          const col = document.createElement('div');
+          col.className = 'tab-col';
+          for (const sel of selectors) { const card = document.querySelector(sel); if (card) col.append(card); }
+          grid.append(col);
+        }
+        document.querySelector('#app > .top').after(grid);   // juste sous l'en-tête
+      }
+      // Les devoirs détaillent plus de jours sur tablette : on les redessine
+      if (homeworkData) renderHomework(homeworkData);
+    }
+    // Rotation de la tablette ou fenêtre redimensionnée : on range à nouveau
+    MQ_TABLET.addEventListener('change', tabletLayout);
+    MQ_WIDE.addEventListener('change', tabletLayout);
+    tabletLayout();
 
     /* =================================================================
        DÉMARRAGE
