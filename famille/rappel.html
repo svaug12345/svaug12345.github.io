@@ -17,6 +17,7 @@
                les tâches du jour passent en dessous, en plus compact
     • v1.3.0 : réponse « Non, pas encore » → alerte psychédélique plein écran (« OK OK, j'y vais ! »
                pour revenir à la question) ; le dashboard devient un bouton discret, à côté de « Menu TV »
+    • v1.3.1 : tout est un peu moins gros (tailles réduites d'environ 20 %)
 
   Les couleurs, la police et les pictogrammes reprennent ceux du dashboard famille
   (baiji.fr/famille, mode TV) pour que tout ait le même style.
@@ -63,18 +64,18 @@
       flex-direction: column;
       /* Unités "vw/vh" = % de la taille de l'écran : la page s'adapte à toute TV */
       padding: 4vh 6vw;
-      gap: 3.5vh;
+      gap: 2.87vh;
       overflow: hidden;
     }
 
     /* ============ 3. EN-TÊTE : salutation + heure ============ */
     header { display: flex; justify-content: space-between; align-items: baseline; }
-    #greeting { font-size: 2.2vw; font-weight: 600; color: var(--muted); }
-    #clock { font-size: 2.2vw; font-weight: 700; color: var(--accent); }
+    #greeting { font-size: 1.8vw; font-weight: 600; color: var(--muted); }
+    #clock { font-size: 1.8vw; font-weight: 700; color: var(--accent); }
 
     /* ============ 4. LA GRANDE QUESTION ============ */
     h1 {
-      font-size: 3.6vw;
+      font-size: 2.95vw;
       font-weight: 800;
       line-height: 1.1;
       /* Petite apparition en douceur */
@@ -85,17 +86,17 @@
       background: linear-gradient(transparent 62%, rgba(20,163,160,.45) 62%);
       padding: 0 .15em;
     }
-    @keyframes pop { from { opacity: 0; transform: translateY(2vh) scale(.97); } to { opacity: 1; transform: none; } }
+    @keyframes pop { from { opacity: 0; transform: translateY(1.64vh) scale(.97); } to { opacity: 1; transform: none; } }
 
     /* ============ 4 bis. LE PASS VIP TV (l'élément principal de l'écran) ============ */
     #pass {
       position: relative;
       overflow: hidden;                     /* pour le reflet qui passe dessus */
-      border-radius: 1.6vw;
-      padding: 2.6vh 2.4vw 3vh;
+      border-radius: 1.31vw;
+      padding: 2.13vh 1.97vw 2.46vh;
       /* Fond sombre doré + double bordure or, façon billet VIP */
       background: linear-gradient(135deg, #2a2108 0%, #12100a 55%, #2a2108 100%);
-      border: .3vw solid var(--gold);
+      border: 0.25vw solid var(--gold);
       box-shadow: 0 0 4vw rgba(245,197,66,.25), inset 0 0 0 .5vw rgba(245,197,66,.12);
       animation: pop .6s ease-out both;
     }
@@ -104,7 +105,7 @@
       content: ''; position: absolute; top: 50%;
       width: 3vw; height: 3vw; margin-top: -1.5vw;
       border-radius: 50%; background: var(--bg);
-      border: .3vw solid var(--gold);
+      border: 0.25vw solid var(--gold);
     }
     #pass::before { left: -1.8vw; }
     #pass::after  { right: -1.8vw; }
@@ -120,24 +121,24 @@
 
     .pass-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 2.2vh; }
     .pass-title {
-      font-size: 3.4vw; font-weight: 800; letter-spacing: .08em;
+      font-size: 2.79vw; font-weight: 800; letter-spacing: .08em;
       /* Texte en dégradé or */
       background: linear-gradient(180deg, #fff2c4, var(--gold) 55%, var(--gold-deep));
       -webkit-background-clip: text; background-clip: text; color: transparent;
     }
-    .pass-ticket { font-size: 3.4vw; }
-    .pass-sub { font-size: 1.7vw; font-weight: 700; color: var(--gold); opacity: .85; }
+    .pass-ticket { font-size: 2.79vw; }
+    .pass-sub { font-size: 1.39vw; font-weight: 700; color: var(--gold); opacity: .85; }
 
-    .pass-items { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6vw; }
+    .pass-items { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.31vw; }
     .pass-item {
-      display: flex; align-items: center; gap: 1vw;
+      display: flex; align-items: center; gap: 0.82vw;
       background: rgba(245,197,66,.08);
-      border: .15vw solid rgba(245,197,66,.35);
-      border-radius: 1vw;
-      padding: 2vh 1.2vw;
-      font-size: 2.1vw; font-weight: 800; line-height: 1.15;
+      border: 0.12vw solid rgba(245,197,66,.35);
+      border-radius: 0.82vw;
+      padding: 1.64vh 0.98vw;
+      font-size: 1.72vw; font-weight: 800; line-height: 1.15;
     }
-    .pass-item .ico { font-size: 3.4vw; }
+    .pass-item .ico { font-size: 2.79vw; }
     /* Les trois conditions apparaissent l'une après l'autre */
     .pass-item:nth-child(1) { animation: pop .5s .3s ease-out both; }
     .pass-item:nth-child(2) { animation: pop .5s .45s ease-out both; }
@@ -151,15 +152,15 @@
       flex: 1;                         /* prend toute la hauteur disponible */
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(20vw, 1fr));
-      gap: 2vw;
-      align-content: center;           /* cartes centrées verticalement dans l'espace libre */
+      gap: 1.64vw;
+      align-content: start;            /* cartes juste sous leur titre */
     }
     .kid {
       background: var(--card);
       border: 1px solid var(--line);
       border-top: .5vh solid var(--c);  /* liseré de la couleur de l'enfant */
-      border-radius: 1.4vw;
-      padding: 1.6vh 1.4vw;
+      border-radius: 1.15vw;
+      padding: 1.31vh 1.15vw;
       animation: pop .6s ease-out both;
     }
     /* Les cartes apparaissent l'une après l'autre */
@@ -169,41 +170,41 @@
 
     .kid-head { display: flex; align-items: center; gap: .8vw; margin-bottom: 1.2vh; }
     .avatar {
-      width: 3vw; height: 3vw; border-radius: 50%;
+      width: 2.46vw; height: 2.46vw; border-radius: 50%;
       background: var(--c); color: #fff;
       display: grid; place-items: center;
-      font-size: 1.5vw; font-weight: 800;
+      font-size: 1.23vw; font-weight: 800;
     }
-    .kid-name { font-size: 1.8vw; font-weight: 800; }
+    .kid-name { font-size: 1.48vw; font-weight: 800; }
 
-    .tasks { display: flex; flex-wrap: wrap; gap: .8vh .6vw; }
+    .tasks { display: flex; flex-wrap: wrap; gap: 0.66vh 0.49vw; }
     .task {
-      font-size: 1.4vw; font-weight: 600;
+      font-size: 1.15vw; font-weight: 600;
       background: rgba(255,255,255,.05);
-      border-radius: .8vw;
-      padding: 1vh 1vw;
+      border-radius: 0.66vw;
+      padding: 0.82vh 0.82vw;
     }
 
     /* Messages (chargement, aucune tâche, erreur) */
     .message {
       grid-column: 1 / -1;
       text-align: center;
-      font-size: 2.4vw; font-weight: 700; color: var(--muted);
+      font-size: 1.97vw; font-weight: 700; color: var(--muted);
       padding-top: 2vh;
     }
-    .message.big { color: var(--ink); font-size: 2.4vw; }
+    .message.big { color: var(--ink); font-size: 1.97vw; }
 
     /* ============ 6. BOUTONS (navigation à la télécommande) ============ */
     /* padding-right : on laisse la place aux boutons discrets en bas à droite */
     footer { display: flex; justify-content: center; gap: 3vw; padding-right: 16vw; }
     button {
       font: inherit;
-      font-size: 2.1vw; font-weight: 800;
+      font-size: 1.72vw; font-weight: 800;
       color: var(--ink);
       background: var(--card);
-      border: .35vw solid var(--line);
-      border-radius: 99vw;          /* bouton "pilule" */
-      padding: 1.8vh 3vw;
+      border: 0.29vw solid var(--line);
+      border-radius: 81.18vw;          /* bouton "pilule" */
+      padding: 1.48vh 2.46vw;
       transition: transform .15s, border-color .15s, background .15s;
       outline: none;
     }
@@ -212,21 +213,21 @@
        invisibles… sauf quand on les sélectionne à la télécommande. */
     #discret { position: fixed; right: 2vw; bottom: 2vh; display: flex; gap: .8vw; }
     #discret button {
-      font-size: 1.1vw; font-weight: 600;
-      padding: .8vh 1.2vw;
-      border-width: .15vw;
+      font-size: 0.9vw; font-weight: 600;
+      padding: 0.66vh 0.98vw;
+      border-width: 0.12vw;
       opacity: .35;
     }
     #discret button:focus { opacity: 1; transform: scale(1.05); }
 
     /* Bouton « Non » : rouge discret pour le distinguer du « Oui » */
-    #btn-non:focus { border-color: #f43f5e; background: #3b1018; box-shadow: 0 0 3vw rgba(244,63,94,.45); }
+    #btn-non:focus { border-color: #f43f5e; background: #3b1018; box-shadow: 0 0 2.46vw rgba(244,63,94,.45); }
 
     button:focus {
       border-color: var(--accent);
       background: #0f3b40;
       transform: scale(1.08);
-      box-shadow: 0 0 3vw rgba(20,163,160,.45);
+      box-shadow: 0 0 2.46vw rgba(20,163,160,.45);
     }
 
     /* ============ 7. ALERTE PSYCHÉDÉLIQUE (réponse « Non ») ============
@@ -235,7 +236,7 @@
     #alerte {
       position: fixed; inset: 0; z-index: 10;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 3.5vh; overflow: hidden; text-align: center;
+      gap: 2.87vh; overflow: hidden; text-align: center;
       animation: teinte 5s linear infinite;          /* toutes les couleurs glissent en continu */
     }
     #alerte[hidden] { display: none; }
@@ -248,33 +249,33 @@
     /* Cercles concentriques qui « respirent » par-dessus (effet hypnotique) */
     #alerte::after {
       content: ''; position: absolute; inset: -30%;
-      background: repeating-radial-gradient(circle, rgba(0,0,0,.28) 0 2.5vw, transparent 2.5vw 5vw);
+      background: repeating-radial-gradient(circle, rgba(0,0,0,.28) 0 2.05vw, transparent 2.05vw 4.1vw);
       animation: respire 2.4s ease-in-out infinite alternate;
     }
     #alerte > * { position: relative; z-index: 1; }   /* le contenu passe devant les fonds */
 
     .alerte-titre {
-      font-size: 10vw; font-weight: 800; color: #fff; line-height: 1;
-      text-shadow: .4vw .4vw 0 #ff00d4, -.4vw -.4vw 0 #00c3ff, 0 0 3vw #000;
+      font-size: 8.2vw; font-weight: 800; color: #fff; line-height: 1;
+      text-shadow: 0.33vw 0.33vw 0 #ff00d4, -.4vw -.4vw 0 #00c3ff, 0 0 2.46vw #000;
       animation: tangue .9s ease-in-out infinite alternate;
     }
     .alerte-carte {
       background: rgba(5,15,18,.82);
-      border: .35vw solid #fff;
-      border-radius: 2vw;
-      padding: 3vh 4vw;
-      max-width: 70vw;
+      border: 0.29vw solid #fff;
+      border-radius: 1.64vw;
+      padding: 2.46vh 3.28vw;
+      max-width: 57.4vw;
     }
-    .alerte-carte p { font-size: 2.6vw; font-weight: 800; color: #fff; }
+    .alerte-carte p { font-size: 2.13vw; font-weight: 800; color: #fff; }
     .alerte-carte .petit { font-size: 1.9vw; font-weight: 600; color: #ffe27a; margin-top: 1.5vh; }
     .spirale { display: inline-block; animation: tourne 2s linear infinite; }
 
     #btn-ok {
-      font-size: 3vw; padding: 2.2vh 4vw;
+      font-size: 2.46vw; padding: 1.8vh 3.28vw;
       background: #fff; color: #10282d; border-color: #fff;
       animation: battement 1.2s ease-in-out infinite;
     }
-    #btn-ok:focus { background: #fff; border-color: #ff00d4; box-shadow: 0 0 4vw #fff; }
+    #btn-ok:focus { background: #fff; border-color: #ff00d4; box-shadow: 0 0 3.28vw #fff; }
 
     @keyframes tourne   { to { transform: rotate(360deg); } }
     @keyframes teinte   { to { filter: hue-rotate(360deg); } }
