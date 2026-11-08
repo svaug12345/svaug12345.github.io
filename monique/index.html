@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Page « Allô Sébastien ? » — la ligne de Monique, notre voisine
-  Version 1.1.0 – 08/11/2026
+  Version 1.1.1 – 08/11/2026
   En ligne : https://baiji.fr/monique/
 
   Historique :
@@ -13,6 +13,9 @@
    • 1.1.0 : « Sébastien » au lieu de « Seb » (c'est comme ça que Monique l'appelle) ;
              l'agent est aussi branché sur le numéro « Perso » : lien « Ou par
              téléphone » (tel:) sous le bouton, pour appeler sans internet
+   • 1.1.1 : plus aucune anecdote sur le faisan (Loulou, le faisan de Monique,
+             ne vient plus depuis des mois et ça la rend triste : sujet à ne
+             jamais lancer, ni sur la page ni dans l'agent)
 
   Comment ça marche ?
   - Monique est une dame âgée : tout est fait pour être SIMPLE et LISIBLE.
@@ -332,11 +335,12 @@
       erreurAppel:"L'appel n'a pas marché. Réessayez dans un petit moment.",
     };
 
-    // Petites anecdotes vérifiées sur les oiseaux et la nature (une au hasard à chaque visite)
+    // Petites anecdotes vérifiées sur les oiseaux et la nature (une au hasard à chaque visite).
+    // ⚠ JAMAIS de faisan ici : Loulou, le faisan de Monique, ne vient plus et ça la rend triste.
     const ANECDOTES = [
       "Le rouge-gorge chante même en plein hiver : le mâle ET la femelle défendent chacun leur petit territoire.",
       "Une mésange bleue pèse à peu près 11 grammes, le poids de deux morceaux de sucre.",
-      "Le faisan dort perché dans les arbres la nuit, pour être à l'abri des renards.",
+      "Le chardonneret élégant a le visage rouge vif et les ailes barrées de jaune : on le repère aux chardons, dont il adore les graines.",
       "Les grues cendrées passent au-dessus de l'Île-de-France en novembre : on les entend souvent avant de les voir, avec leurs cris en « V ».",
       "Pour les oiseaux en hiver : graines de tournesol, boules de graisse sans filet et un peu d'eau propre. Jamais de pain ni de lait.",
       "Le pic épeiche tambourine sur les troncs jusqu'à une vingtaine de coups par seconde, sans avoir mal à la tête.",
