@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
-  Page « Allô Seb ? » — la ligne de Monique, notre voisine
-  Version 1.0.0 – 08/11/2026
+  Page « Allô Sébastien ? » — la ligne de Monique, notre voisine
+  Version 1.1.0 – 08/11/2026
   En ligne : https://baiji.fr/monique/
 
   Historique :
@@ -10,10 +10,13 @@
              et des poules, et apprend des choses à Monique ; page « jardin »
              très lisible (gros caractères, un seul gros bouton), rouge-gorge
              dessiné en SVG qui « chante » avec la voix ; installable (PWA)
+   • 1.1.0 : « Sébastien » au lieu de « Seb » (c'est comme ça que Monique l'appelle) ;
+             l'agent est aussi branché sur le numéro « Perso » : lien « Ou par
+             téléphone » (tel:) sous le bouton, pour appeler sans internet
 
   Comment ça marche ?
   - Monique est une dame âgée : tout est fait pour être SIMPLE et LISIBLE.
-    Un seul gros bouton « Appeler Seb », des textes en grand, fort contraste.
+    Un seul gros bouton « Appeler Sébastien », des textes en grand, fort contraste.
   - Au-dessus, un « Le saviez-vous ? » sur les oiseaux, tiré au hasard
     à chaque visite (tableau ANECDOTES, plus bas) : un petit cadeau même sans appeler.
   - Au clic, 3 états se succèdent (une classe CSS sur <body>) :
@@ -21,19 +24,19 @@
                       Le navigateur demande le micro.
       2. en-ligne  → le bouton devient « Raccrocher » (rouge), un chrono tourne,
                       le rouge-gorge ouvre le bec et des notes s'envolent
-                      quand Seb parle.
+                      quand Sébastien parle.
       3. repos     → après raccrochage, tout revient comme au départ.
   - SDK officiel « @elevenlabs/client » (comme SOS Amitié) : pas de bulle
     ElevenLabs ni de « Terms and conditions », la page reste épurée.
   - Garde-fous : c'est l'agent lui-même (consignes dans ElevenLabs) qui dit
     d'appeler le 15 / 112 en cas de souci de santé, et qui se présente comme
-    « le Seb virtuel » si Monique demande à qui elle parle.
+    « le Sébastien virtuel » si Monique demande à qui elle parle.
 -->
 <html lang="fr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Allô Seb ?</title>
+  <title>Allô Sébastien ?</title>
   <!--
     PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »
     ou « Ajouter à l'écran d'accueil »). Fichiers fabriqués par outils/generer-pwa.py :
@@ -189,6 +192,17 @@
     }
     body.en-ligne #chrono { visibility: visible; }
 
+    /* ---------- Lien « Ou par téléphone » ---------- */
+    .tel {
+      color: var(--encre);
+      font-size: 20px;
+      text-decoration: none;
+      border-bottom: 2px dotted var(--doux);
+      padding: 4px 2px;
+    }
+    .tel strong { font-variant-numeric: tabular-nums; white-space: nowrap; }
+    body.en-ligne .tel, body.connexion .tel { display: none; }   /* caché pendant l'appel */
+
     /* ---------- « Le saviez-vous ? » ---------- */
     .savoir {
       background: var(--carte);
@@ -238,7 +252,7 @@
   <main>
     <header>
       <p class="surtitre">La ligne de Monique</p>
-      <h1>Allô <em>Seb</em>&nbsp;?</h1>
+      <h1>Allô <em>Sébastien</em>&nbsp;?</h1>
     </header>
 
     <!-- Le rouge-gorge : formes simples (cercles, ellipses), aucune image à charger -->
@@ -278,7 +292,7 @@
       <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
         <path d="M6.6 10.8a15.2 15.2 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1L6.6 10.8z"/>
       </svg>
-      <span id="libelle">Appeler Seb</span>
+      <span id="libelle">Appeler Sébastien</span>
     </button>
 
     <!-- aria-live : les lecteurs d'écran annoncent les changements -->
@@ -286,6 +300,10 @@
       <span id="chrono">00:00</span>
       <span id="parole">Appuyez sur le bouton vert, puis parlez normalement.</span>
     </div>
+
+    <!-- Le même Sébastien virtuel répond aussi au téléphone (numéro « Perso » dans ElevenLabs).
+         « tel: » ouvre directement le clavier d'appel du téléphone. -->
+    <a class="tel" href="tel:+33188732704">Ou par téléphone&nbsp;: <strong>01&nbsp;88&nbsp;73&nbsp;27&nbsp;04</strong></a>
 
     <section class="savoir">
       <h2>Le saviez-vous ?</h2>
@@ -299,18 +317,18 @@
     /* ============================================================
        1. RÉGLAGES
        ============================================================ */
-    const AGENT_ID = "agent_9501m6x8vgcyeqssa0x9x2swjamt";   // l'agent « Allô Seb ? – Monique » sur ElevenLabs
+    const AGENT_ID = "agent_9501m6x8vgcyeqssa0x9x2swjamt";   // l'agent « Allô Sébastien ? – Monique » sur ElevenLabs
 
     // Tous les textes affichés, regroupés ici pour les changer facilement
     const TEXTES = {
-      repos:      "Appeler Seb",
+      repos:      "Appeler Sébastien",
       connexion:  "Ça sonne…",
       raccrocher: "Raccrocher",
       erreur:     "Pas de réseau",
       sousTitre:  "Appuyez sur le bouton vert, puis parlez normalement.",
-      sebParle:   "Seb vous parle…",
-      aVous:      "À vous, Monique, Seb vous écoute",
-      micro:      "Il faut autoriser le micro (bouton « Autoriser »), sinon Seb ne vous entend pas.",
+      sebParle:   "Sébastien vous parle…",
+      aVous:      "À vous, Monique, Sébastien vous écoute",
+      micro:      "Il faut autoriser le micro (bouton « Autoriser »), sinon Sébastien ne vous entend pas.",
       erreurAppel:"L'appel n'a pas marché. Réessayez dans un petit moment.",
     };
 
@@ -386,7 +404,7 @@
     // 60 fois par seconde pendant l'appel
     function animer() {
       if (!conversation) return;
-      // getOutputVolume() = voix de Seb, entre 0 et 1 (on l'amplifie un peu)
+      // getOutputVolume() = voix de Sébastien, entre 0 et 1 (on l'amplifie un peu)
       const v = Math.min(1, conversation.getOutputVolume() * 2.5);
       lisse = lisse * 0.7 + v * 0.3;                         // moyenne glissante = mouvement doux
       becHaut.style.transform = `rotate(${-lisse * 18}deg)`; // le bec s'ouvre jusqu'à 18°
@@ -399,7 +417,7 @@
     }
 
     /* ============================================================
-       4. L'APPEL AVEC LE SEB VIRTUEL
+       4. L'APPEL AVEC LE SÉBASTIEN VIRTUEL
        ============================================================ */
     function repos() {
       cancelAnimationFrame(boucle);
@@ -412,7 +430,7 @@
     }
 
     function erreur(e, message) {
-      console.error("Allô Seb :", e);
+      console.error("Allô Sébastien :", e);
       cancelAnimationFrame(boucle);
       clearInterval(minuterie);
       conversation = null;
@@ -455,7 +473,7 @@
             lancerChrono();
             animer();
           },
-          // mode = "speaking" (Seb parle) ou "listening" (il écoute Monique)
+          // mode = "speaking" (Sébastien parle) ou "listening" (il écoute Monique)
           onModeChange: ({ mode }) => {
             parole.textContent = mode === "speaking" ? TEXTES.sebParle : TEXTES.aVous;
           },

@@ -1,7 +1,7 @@
 {
-  "name": "Allô Seb ? · Monique",
-  "short_name": "Allô Seb",
-  "description": "Monique appelle Seb pour parler d'oiseaux, de nature et papoter",
+  "name": "Allô Sébastien ? · Monique",
+  "short_name": "Sébastien",
+  "description": "Monique appelle Sébastien pour parler d'oiseaux, de nature et papoter",
   "id": "/monique/",
   "start_url": "/monique/",
   "scope": "/monique/",
