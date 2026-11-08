@@ -15,6 +15,8 @@
     • v1.1.0 : hébergée sur baiji.fr ; bouton discret « Menu TV » (retour à l'accueil Google TV)
     • v1.2.0 : « Pass VIP TV » mis en avant (table dressée, habits au panier, cartable prêt),
                les tâches du jour passent en dessous, en plus compact
+    • v1.3.0 : réponse « Non, pas encore » → alerte psychédélique plein écran (« OK OK, j'y vais ! »
+               pour revenir à la question) ; le dashboard devient un bouton discret, à côté de « Menu TV »
 
   Les couleurs, la police et les pictogrammes reprennent ceux du dashboard famille
   (baiji.fr/famille, mode TV) pour que tout ait le même style.
@@ -192,7 +194,8 @@
     .message.big { color: var(--ink); font-size: 2.4vw; }
 
     /* ============ 6. BOUTONS (navigation à la télécommande) ============ */
-    footer { display: flex; justify-content: center; gap: 3vw; }
+    /* padding-right : on laisse la place aux boutons discrets en bas à droite */
+    footer { display: flex; justify-content: center; gap: 3vw; padding-right: 16vw; }
     button {
       font: inherit;
       font-size: 2.1vw; font-weight: 800;
@@ -205,16 +208,19 @@
       outline: none;
     }
     /* :focus = le bouton sélectionné avec la croix directionnelle : il doit se voir de loin */
-    /* Bouton discret « Menu TV » : petit, en bas à droite, presque invisible…
-       sauf quand on le sélectionne à la télécommande. */
-    #btn-home {
-      position: fixed; right: 2vw; bottom: 2vh;
+    /* Boutons discrets « Dashboard » et « Menu TV » : petits, en bas à droite, presque
+       invisibles… sauf quand on les sélectionne à la télécommande. */
+    #discret { position: fixed; right: 2vw; bottom: 2vh; display: flex; gap: .8vw; }
+    #discret button {
       font-size: 1.1vw; font-weight: 600;
       padding: .8vh 1.2vw;
       border-width: .15vw;
       opacity: .35;
     }
-    #btn-home:focus { opacity: 1; transform: scale(1.05); }
+    #discret button:focus { opacity: 1; transform: scale(1.05); }
+
+    /* Bouton « Non » : rouge discret pour le distinguer du « Oui » */
+    #btn-non:focus { border-color: #f43f5e; background: #3b1018; box-shadow: 0 0 3vw rgba(244,63,94,.45); }
 
     button:focus {
       border-color: var(--accent);
@@ -222,6 +228,59 @@
       transform: scale(1.08);
       box-shadow: 0 0 3vw rgba(20,163,160,.45);
     }
+
+    /* ============ 7. ALERTE PSYCHÉDÉLIQUE (réponse « Non ») ============
+       Couleurs qui tournent et ondulent, mais SANS clignotement rapide
+       (pas plus de 3 flashs par seconde : règle de sécurité pour les écrans). */
+    #alerte {
+      position: fixed; inset: 0; z-index: 10;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 3.5vh; overflow: hidden; text-align: center;
+      animation: teinte 5s linear infinite;          /* toutes les couleurs glissent en continu */
+    }
+    #alerte[hidden] { display: none; }
+    /* Arc-en-ciel géant qui tourne derrière tout */
+    #alerte::before {
+      content: ''; position: absolute; inset: -60%;
+      background: conic-gradient(#ff004c, #ff9a00, #fff200, #00ff85, #00c3ff, #7a00ff, #ff00d4, #ff004c);
+      animation: tourne 7s linear infinite;
+    }
+    /* Cercles concentriques qui « respirent » par-dessus (effet hypnotique) */
+    #alerte::after {
+      content: ''; position: absolute; inset: -30%;
+      background: repeating-radial-gradient(circle, rgba(0,0,0,.28) 0 2.5vw, transparent 2.5vw 5vw);
+      animation: respire 2.4s ease-in-out infinite alternate;
+    }
+    #alerte > * { position: relative; z-index: 1; }   /* le contenu passe devant les fonds */
+
+    .alerte-titre {
+      font-size: 10vw; font-weight: 800; color: #fff; line-height: 1;
+      text-shadow: .4vw .4vw 0 #ff00d4, -.4vw -.4vw 0 #00c3ff, 0 0 3vw #000;
+      animation: tangue .9s ease-in-out infinite alternate;
+    }
+    .alerte-carte {
+      background: rgba(5,15,18,.82);
+      border: .35vw solid #fff;
+      border-radius: 2vw;
+      padding: 3vh 4vw;
+      max-width: 70vw;
+    }
+    .alerte-carte p { font-size: 2.6vw; font-weight: 800; color: #fff; }
+    .alerte-carte .petit { font-size: 1.9vw; font-weight: 600; color: #ffe27a; margin-top: 1.5vh; }
+    .spirale { display: inline-block; animation: tourne 2s linear infinite; }
+
+    #btn-ok {
+      font-size: 3vw; padding: 2.2vh 4vw;
+      background: #fff; color: #10282d; border-color: #fff;
+      animation: battement 1.2s ease-in-out infinite;
+    }
+    #btn-ok:focus { background: #fff; border-color: #ff00d4; box-shadow: 0 0 4vw #fff; }
+
+    @keyframes tourne   { to { transform: rotate(360deg); } }
+    @keyframes teinte   { to { filter: hue-rotate(360deg); } }
+    @keyframes respire  { from { transform: scale(1); } to { transform: scale(1.25); } }
+    @keyframes tangue   { from { transform: rotate(-4deg) scale(.96); } to { transform: rotate(4deg) scale(1.04); } }
+    @keyframes battement { 50% { transform: scale(1.08); } }
   </style>
 </head>
 <body>
@@ -253,13 +312,28 @@
   </main>
 
   <footer>
-    <!-- Android.openDashboard() / Android.openPlex() : fonctions fournies par le code Kotlin -->
-    <button id="btn-dashboard" onclick="Android.openDashboard()">🏠 Voir le dashboard</button>
+    <!-- Android.openPlex() etc. : fonctions fournies par le code Kotlin de l'appli -->
+    <button id="btn-non" onclick="alerte()">❌ Non, pas encore</button>
     <button id="btn-plex" onclick="Android.openPlex()">🎬 Oui, oui, je le jure ! → Plex</button>
   </footer>
 
-  <!-- Caché par défaut : affiché seulement si l'appli sait le gérer (voir plus bas) -->
-  <button id="btn-home" onclick="Android.openHome()" hidden>Menu TV ›</button>
+  <!-- Boutons discrets en bas à droite -->
+  <nav id="discret">
+    <button id="btn-dashboard" onclick="Android.openDashboard()">Dashboard ›</button>
+    <!-- Caché par défaut : affiché seulement si l'appli sait le gérer (voir plus bas) -->
+    <button id="btn-home" onclick="Android.openHome()" hidden>Menu TV ›</button>
+  </nav>
+
+  <!-- Alerte plein écran, affichée quand on répond « Non » -->
+  <section id="alerte" hidden>
+    <div class="alerte-titre">🚨 ALERTE ! 🚨</div>
+    <div class="alerte-carte">
+      <p><span class="spirale">🌀</span> Tâches pas faites = pas de Pass VIP TV ! <span class="spirale">🌀</span></p>
+      <p class="petit">🍽️ Table dressée · 👕 Habits dans le panier · 🎒 Cartable prêt pour demain</p>
+      <p class="petit">Allez hop, on s'y met, la télé t'attendra 😉</p>
+    </div>
+    <button id="btn-ok" onclick="fermerAlerte()">OK OK, j'y vais ! 🏃</button>
+  </section>
 
   <script>
     /* ================= Petits utilitaires ================= */
@@ -317,7 +391,7 @@
     function showTasks(tsv) {
       if (tsv === null) {
         $('kids').innerHTML = '<div class="message">Impossible de charger les tâches 📡<br>Va vérifier sur le dashboard !</div>';
-        $('btn-dashboard').focus();
+        $('btn-plex').focus();
         return;
       }
 
@@ -361,15 +435,31 @@
           </div>
         </div>`).join('');
 
-      // Focus initial sur « Voir le dashboard » : on pousse à vérifier avant le film 😉
-      $('btn-dashboard').focus();
+      // Focus sur « Oui », sauf si l'alerte est ouverte (le téléchargement des tâches
+      // peut finir pendant qu'elle est affichée : on ne lui vole pas le focus)
+      if ($('alerte').hidden) $('btn-plex').focus();
     }
 
     // Les anciennes versions de l'appli n'ont pas openHome() : on ne montre le bouton que s'il marche.
     if (window.Android && typeof Android.openHome === 'function') $('btn-home').hidden = false;
 
+    /* ================= Alerte « Non » ================= */
+    // Ouvre l'alerte et rend le reste de la page « inerte » : la télécommande ne peut
+    // sélectionner que le bouton « OK OK, j'y vais ! ».
+    function alerte() {
+      for (const el of document.body.children) if (el.id !== 'alerte') el.inert = true;
+      $('alerte').hidden = false;
+      $('btn-ok').focus();
+    }
+    // Ferme l'alerte et revient à la question (pour répondre « Oui » une fois les tâches faites)
+    function fermerAlerte() {
+      for (const el of document.body.children) el.inert = false;
+      $('alerte').hidden = true;
+      $('btn-plex').focus();
+    }
+
     // Focus de départ, avant même l'arrivée des tâches
-    $('btn-dashboard').focus();
+    $('btn-plex').focus();
   </script>
 </body>
 </html>
