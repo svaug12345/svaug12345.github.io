@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Famille · Vaugoude's Family — tableau de bord de la maison
-  Version 1.9.0
+  Version 1.10.0
   Mobile par défaut ; mode TV avec baiji.fr/famille/?tv (retour : ?mobile).
   Historique :
    • v1.0.0 : météo, tâches du jour (Google Sheet), 7 prochains jours, Pass TV,
@@ -40,6 +40,10 @@
    • v1.9.0 : TABLETTE : à partir de 760 px de large, page élargie (1180 px max) et cartes
               en 2 colonnes (portrait), 3 colonnes dès 1100 px (paysage) ; les devoirs y
               détaillent les jours suivants comme à la télé ; téléphone et mode TV inchangés
+   • v1.10.0 : TÉLÉ allégée : une télé est reconnue toute seule (télécommande, pas d'écran
+              tactile) même sans « ?tv » ; tâches du jour seulement ; Médiathèque = le premier
+              retour attendu seulement (date + nombre si plus de 3 documents) ; devoirs sur
+              3 jours ; agenda sur 7 jours ; la clé des devoirs se tape directement à l'écran
 -->
 <html lang="fr">
 <head>
@@ -349,7 +353,17 @@
     body.tv .day svg { width: 1.8vw; height: 1.8vw; }
     body.tv .tasks-today { flex: none; }            /* hauteur naturelle : les devoirs prennent le reste */
     body.tv #homework-card { flex: 1; min-height: 0; }   /* les devoirs remplissent toute la colonne 2 */
-    body.tv #week-card { display: none; }           /* planning 7 jours : téléphone seulement */
+    body.tv #week-card { display: none; }
+    /* v1.10.0 — case de saisie de la clé des devoirs (télé sans clé) */
+    .key-form { display: flex; flex-wrap: wrap; gap: .6em; align-items: center; color: var(--muted); }
+    .key-form p { width: 100%; margin: 0; }
+    .key-form input { flex: 1; min-width: 10em; font: inherit; padding: .5em .7em; border-radius: .6em;
+                      border: 2px solid var(--line, #2a3a3f); background: transparent; color: inherit; }
+    .key-form input:focus, .key-form button:focus { outline: 3px solid var(--accent, #19b3a9); outline-offset: 2px; }
+    .key-form button { font: inherit; font-weight: 700; padding: .5em 1.2em; border-radius: .6em; border: 0;
+                       background: var(--accent, #19b3a9); color: #fff; }
+    .key-form small { width: 100%; }
+    body.tv .key-form { font-size: 1.25vw; }    /* à la télé : lisible depuis le canapé */           /* planning 7 jours : téléphone seulement */
     /* S'il n'y a aucun devoir (vacances), la colonne du milieu serait vide : on la retire et
        l'écran passe en 2 colonnes. ":has()" = « qui contient » : on regarde si la carte des
        devoirs est cachée (attribut hidden). */
@@ -572,7 +586,7 @@
     /* =================================================================
        CONFIGURATION — les seules lignes à modifier en temps normal
        ================================================================= */
-    const VERSION = '1.9.0';
+    const VERSION = '1.10.0';
 
     // Google Sheet "Family tasks" publié en TSV (Fichier > Partager > Publier sur le web).
     // C'est le même lien que celui de ton Kindle.
@@ -590,7 +604,7 @@
     // Tant qu'elle est vide, la carte Agenda reste cachée.
     const AGENDA_URL = 'https://script.google.com/macros/s/AKfycbzbzD8I38Ul_baGjfa17QQ-gZbSQvlbL9QTlerMiGDeAHUGhz-Q0eo2XuZR6k4cgvro/exec';
     // Nombre de jours affichés dans la carte Agenda (le script en fournit 30)
-    const AGENDA_DAYS = { mobile: 14, tv: 10 };
+    const AGENDA_DAYS = { mobile: 14, tv: 7 };   // v1.10.0 : 7 jours à la télé (au lieu de 10)
 
     // Coordonnées de Gif-sur-Yvette pour la météo
     const LAT = 48.7018, LON = 2.1340;
@@ -636,7 +650,17 @@
     // Le mode TV ne s'applique pas sur un téléphone : on regarde le PETIT côté de l'écran
     // (environ 400 px sur un téléphone, même tourné en paysage ; 540 px ou plus sur une télé).
     // Sur un téléphone, on reste donc en affichage mobile même si le mode TV a été choisi.
-    const IS_TV = store.get('mode') === 'tv' && Math.min(screen.width, screen.height) >= 500;
+    //
+    // v1.10.0 — détection automatique : une télé (appli Démarrage Auto, navigateur de la TV)
+    // n'ouvre pas forcément l'adresse avec « ?tv ». On la reconnaît alors à deux indices :
+    //   • son « user agent » (la carte d'identité du navigateur) contient souvent « TV » ;
+    //   • elle n'a ni souris ni écran tactile : matchMedia('(pointer: none)') = vrai.
+    //     (Un téléphone ou une tablette a un écran tactile, un ordinateur une souris.)
+    // Si on a choisi « ?mobile » à la main, ce choix passe avant la détection.
+    const LOOKS_LIKE_TV = /\bTV\b|GoogleTV|Android ?TV|SmartTV|BRAVIA|AFT[A-Z]|CrKey/i.test(navigator.userAgent)
+      || matchMedia('(pointer: none)').matches;
+    const WANTS_TV = store.get('mode') === 'tv' || (store.get('mode') !== 'mobile' && LOOKS_LIKE_TV);
+    const IS_TV = WANTS_TV && Math.min(screen.width, screen.height) >= 500;
     document.body.classList.toggle('tv', IS_TV);
 
     /* =================================================================
@@ -961,6 +985,11 @@
         const timer = setTimeout(() => ctrl.abort(), 12000);
         const res = await fetch(PRONOTE_URL, { cache: 'no-store', signal: ctrl.signal, headers: { 'X-Cle': key } });
         clearTimeout(timer);
+        // Clé refusée (401 / 403) : à la télé, on l'oublie pour reproposer la case de saisie
+        if ((res.status === 401 || res.status === 403) && IS_TV) {
+          try { localStorage.removeItem('cartable.cle'); } catch {}
+          return renderHomeworkNoKey();
+        }
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
         cache.save('homework', data);
@@ -973,17 +1002,31 @@
       if (homeworkData) renderHomework(homeworkData);
     }
 
-    // Pas de clé sur cet appareil : sur téléphone, on explique comment faire ; sur la TV, rien
+    // Pas de clé sur cet appareil.
+    // • Télé (v1.10.0) : une case pour taper la clé avec la télécommande (ou le clavier
+    //   de l'appli Google TV du téléphone). Elle est enregistrée dans la télé, une fois pour toutes.
+    // • Téléphone / tablette : on renvoie vers Cartable, qui enregistre la même clé.
     function renderHomeworkNoKey() {
       $('homework-card').hidden = false;
+      $('homework-when').textContent = '';
       if (IS_TV) {
-        // Pas de lien cliquable utile à la télécommande : on donne l'adresse à taper une fois
-        $('homework-when').textContent = '';
-        $('homework').innerHTML = `<div class="empty">Clé des devoirs absente sur cet écran.<br>`
-          + `Ouvre une fois <b>baiji.fr/famille/?tv&amp;cle=</b><i>ta clé Cartable</i></div>`;
+        $('homework').innerHTML =
+            `<form id="key-form" class="key-form">`
+          + `<p>Pour voir les devoirs et les photos, tape une fois la clé Cartable :</p>`
+          + `<input id="key-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Clé Cartable">`
+          + `<button type="submit">OK</button>`
+          + `<small>Sur ton téléphone : Cartable → ⚙ Réglages → 3 pour la voir.</small>`
+          + `</form>`;
+        $('key-form').addEventListener('submit', (e) => {
+          e.preventDefault();                       // pas de rechargement de page
+          const cle = $('key-input').value.trim();
+          if (!cle) return;
+          store.set('cartable.cle', cle);           // même nom de case que Cartable
+          loadHomework();                           // on relance tout de suite devoirs…
+          loadMemories();                           // …et photos « Ce jour-là » (même clé)
+        });
         return;
       }
-      $('homework-when').textContent = '';
       $('homework').innerHTML = `<div class="empty">Ouvre une fois <a href="../cartable/">Cartable</a> sur cet appareil et saisis la clé : les devoirs apparaîtront ici.</div>`;
     }
 
@@ -1003,7 +1046,8 @@
         const todo = kid.devoirs.filter(d => d.pour === day && !d.fait);
         // À la télé, la carte a toute une colonne : on détaille aussi les 4 jours suivants
         // Même chose sur tablette (colonnes larges, place en hauteur) : voir TABLETTE
-        const extraDays = (IS_TV || tabletCols) ? days.slice(1, 5) : [];
+        // v1.10.0 : à la télé, 3 jours en tout (demain + 2) pour alléger ; tablette : 5 jours
+        const extraDays = IS_TV ? days.slice(1, 3) : tabletCols ? days.slice(1, 5) : [];
         const lastShown = extraDays[extraDays.length - 1] || day;
         const later = kid.devoirs.filter(d => d.pour > lastShown && !d.fait).length;
         const [y, m, dd] = day.split('-').map(Number);
@@ -1195,10 +1239,13 @@
       // 2) On regroupe par date de retour : { '2026-11-04': [...], '2026-11-14': [...] }
       const byDate = {};
       for (const p of all) (byDate[p.retour || '?'] ||= []).push(p);
-      const dates = Object.keys(byDate).sort();
+      let dates = Object.keys(byDate).sort();
+      // v1.10.0 — À la télé : seulement le PREMIER retour attendu (le plus urgent).
+      // S'il compte plus de 3 documents, on n'affiche que la date et le nombre (pas les titres).
+      if (IS_TV) dates = dates.slice(0, 1);
 
       // 3) Une ligne par date, avec un compte à rebours coloré
-      const MAX = IS_TV ? 4 : 99;                 // sur la télé, 4 titres par date au plus
+      const TV_MAX_TITRES = 3;                    // à la télé : titres affichés seulement jusqu'à 3 documents
       $('loans').innerHTML = dates.map(iso => {
         const list = byDate[iso];
         let label = 'Date inconnue', when = '', color = 'var(--muted)';
@@ -1210,7 +1257,12 @@
           // rouge : en retard ou dans 3 jours ou moins ; orange : dans la semaine
           color = n <= 3 ? 'var(--bad)' : n <= 7 ? 'var(--warn)' : 'var(--muted)';
         }
-        const chips = list.slice(0, MAX).map(p => {
+        // Télé et plus de 3 documents : juste la date et le nombre, sans pastilles
+        if (IS_TV && list.length > TV_MAX_TITRES) {
+          return `<div class="loan-group" style="--c:${color}">`
+               + `<div class="loan-date">${label}<small>${when} · ${list.length} documents</small></div></div>`;
+        }
+        const chips = list.map(p => {
           // Miniature : seulement une adresse https complète. onerror : si l'image ne se charge
           // pas, on l'enlève et la pastille garde juste le titre. no-referrer : le site de la
           // médiathèque n'a pas besoin de savoir d'où vient la demande.
@@ -1222,8 +1274,7 @@
           const balise = IS_TV ? 'span' : 'button';
           return `<${balise} class="mini${p.prolongeable === false ? ' fixe' : ''}" title="${esc(p.auteur)}"${IS_TV ? '' : ` data-i="${all.indexOf(p)}"`}>`
             + miniature + `<span>` + (several ? `<i>${esc(p.qui)}</i>` : '') + esc(p.titre) + `</span></${balise}>`;
-        }).join('')
-          + (list.length > MAX ? `<span class="mini">+${list.length - MAX}</span>` : '');
+        }).join('');
         return `<div class="loan-group" style="--c:${color}">`
              + `<div class="loan-date">${label}<small>${when} · ${list.length}</small></div>`
              + `<div class="loan-list">${chips}</div></div>`;

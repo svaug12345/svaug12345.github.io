@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Cartable — devoirs et emplois du temps Pronote de Gaby et Nanon
-  Version 1.2.1
+  Version 1.8.0
   Les données viennent du service « pronote » du NAS (https://pronote.baiji.fr),
   qui se connecte au Pronote du collège comme l'appli mobile officielle.
   La page ne parle jamais directement à Pronote.
@@ -46,6 +46,7 @@
    • v1.7.0 : TABLETTE : page élargie, cartes réparties en 2 colonnes (3 sur grand écran
               paysage) pour Devoirs, Notes et Messages ; onglet Cours = 2 ou 3 jours côte à
               côte (les flèches avancent d'autant) ; redessiné quand on tourne la tablette
+   • v1.8.0 : Réglages → 3 = afficher la clé d'accès (pour la taper sur la télé du dashboard)
 -->
 <html lang="fr">
 <head>
@@ -457,7 +458,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = '1.7.0';
+    const VERSION = '1.8.0';
     // Adresse du service du NAS (reverse proxy DSM). Pour essayer un autre service :
     // ?service=http://192.168.1.161:8092 (retenu sur ce téléphone, ?service= vide pour revenir).
     const SERVICE_PAR_DEFAUT = 'https://pronote.baiji.fr';
@@ -1271,9 +1272,13 @@
 
     // Réglages : un petit menu par boîte de dialogue, sans écran de plus
     $('btn-reglages').onclick = () => {
-      const choix = prompt('Réglages :\n1 = Reconnecter Pronote (nouveau QR code)\n2 = Changer la clé d\'accès\n\nTape 1 ou 2 :');
+      const choix = prompt('Réglages :\n1 = Reconnecter Pronote (nouveau QR code)\n2 = Changer la clé d\'accès\n3 = Afficher la clé (pour la télé)\n\nTape 1, 2 ou 3 :');
       if (choix === '1') montrer('qr');
       if (choix === '2') { memo.ecrire('cle', null); montrer('cle'); }
+      // 3 (v1.8.0) : on montre la clé enregistrée sur ce téléphone, pour la recopier
+      // dans la case « Clé Cartable » du dashboard Famille à la télé (une seule fois).
+      // Elle reste sur l'appareil : rien n'est envoyé nulle part.
+      if (choix === '3') alert('Clé d\'accès :\n\n' + (memo.lire('cle') || '(aucune clé enregistrée)'));
     };
 
     /* =========================================================
