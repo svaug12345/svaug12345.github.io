@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr — Page d'accueil des projets (marque SV)
-  Version 1.30.0
+  Version 1.31.0
   ------------------------------------------------------------
   Historique :
    • v1.0.0 : première page d'accueil
@@ -60,6 +60,7 @@
    • v1.28.0 : carte « On mange quoi ? » (menu de la semaine et courses) dans « Maison »
    • v1.29.0 : baiji.fr/julien/ reprend la dernière version de TAC Vélo (dépôt tac-velo, v1.8.1)
    • v1.30.0 : ajout de « Petite Souris » (Tom appelle la Petite Souris) dans « Famille & amis »
+   • v1.31.0 : ajout de « Allô Seb ? » (Monique, la voisine, papote oiseaux et nature) dans « Famille & amis »
 
   À déposer dans le dépôt GitHub : svaug12345.github.io
   → c'est le fichier "index.html" à la racine.
@@ -604,7 +605,7 @@
 
     <!-- ===================== PIED DE PAGE ===================== -->
     <footer>
-      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.30.0</p>
+      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.31.0</p>
     </footer>
 
     <!--
@@ -647,6 +648,7 @@
       maison: `<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/> <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>`,  // house
       chat: `<path d="M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58-.42 7-.42 7 .57 1.07 1 2.24 1 3.44C21 17.9 16.97 21 12 21s-9-3-9-7.56c0-1.25.5-2.4 1-3.44 0 0-1.89-6.42-.5-7 1.39-.58 4.72.23 6.5 2.23A9.04 9.04 0 0 1 12 5Z"/> <path d="M8 14v.5"/> <path d="M16 14v.5"/> <path d="M11.25 16.25h1.5L12 17l-.75-.75Z"/>`,  // cat
       souris: `<path d="M13 22H4a2 2 0 0 1 0-4h12"/> <path d="M13.236 18a3 3 0 0 0-2.2-5"/> <path d="M16 9h.01"/> <path d="M16.82 3.94a3 3 0 1 1 3.237 4.868l1.815 2.587a1.5 1.5 0 0 1-1.5 2.1l-2.872-.453a3 3 0 0 0-3.5 3"/> <path d="M17 4.988a3 3 0 1 0-5.2 2.052A7 7 0 0 0 4 14.015 4 4 0 0 0 8 18"/>`,  // rat (Lucide)
+      oiseau: `<path d="M16 7h.01"/> <path d="M3.4 18H12a8 8 0 0 0 8-8V7a4 4 0 0 0-7.28-2.3L2 20"/> <path d="m20 7 2 .5-2 .5"/> <path d="M10 18v3"/> <path d="M14 17.75V21"/> <path d="M7 18a6 6 0 0 0 3.84-10.61"/>`,  // oiseau (Lucide « bird »)
       qr: `<path d="M17 12v4a1 1 0 0 1-1 1h-4"/> <path d="M17 3h2a2 2 0 0 1 2 2v2"/> <path d="M17 8V7"/> <path d="M21 17v2a2 2 0 0 1-2 2h-2"/> <path d="M3 7V5a2 2 0 0 1 2-2h2"/> <path d="M7 17h.01"/> <path d="M7 21H5a2 2 0 0 1-2-2v-2"/> <rect x="7" y="7" width="5" height="5" rx="1"/>`,  // scan-qr-code
       signature: `<path d="m21 17-2.156-1.868A.5.5 0 0 0 18 15.5v.5a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1c0-2.545-3.991-3.97-8.5-4a1 1 0 0 0 0 5c4.153 0 4.745-11.295 5.708-13.5a2.5 2.5 0 1 1 3.31 3.284"/> <path d="M3 21h18"/>`,  // signature
       couverts: `<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/> <path d="M7 2v20"/> <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>`,  // utensils
@@ -792,6 +794,10 @@
         desc: "Tom appelle la Petite Souris… qui a des doutes sur sa dent retrouvée",
         courte: "Allô la Petite Souris !",
         url: "petite-souris/" },
+      { id: "monique", nom: "Allô Seb ?", icone: "oiseau", vocal: true,
+        desc: "Monique, notre voisine, appelle Seb pour parler d'oiseaux, de nature et papoter",
+        courte: "La ligne de Monique",
+        url: "monique/" },
 
       // ---------- Sites ----------
       { id: "julien",      nom: "TAC Vélo · Julien, mécanicien vélo", icone: "velo",
@@ -864,7 +870,7 @@
       rubriques: [
         { nom: "Maison", projets: ["famille", "repas", "cartable", "voitures", "mediatheque", "photos"] },
         { nom: "Outils", projets: ["qr", "pressoir", "place-nette", "paraphe", "journal"] },
-        { nom: "Famille & amis", projets: ["revisions", "nego-papa", "foot-chats", "petite-souris", "grand-verdict", "sos-amitie"] },
+        { nom: "Famille & amis", projets: ["revisions", "nego-papa", "foot-chats", "petite-souris", "monique", "grand-verdict", "sos-amitie"] },
         { nom: "Carrefour", projets: ["fournisseurs", "nexus", "salle-negociation", "pochpoch"] },
         { nom: "Formation", projets: ["epuration", "entretien-tuteur", "fart"] },
         { nom: "Sites & démos", projets: ["julien", "location"] },

@@ -1,0 +1,478 @@
+<!doctype html>
+<!--
+  Page « Allô Seb ? » — la ligne de Monique, notre voisine
+  Version 1.0.0 – 08/11/2026
+  En ligne : https://baiji.fr/monique/
+
+  Historique :
+   • 1.0.0 : première version : agent vocal ElevenLabs « Allô Seb ? – Monique »
+             (voix « SebastienV ») qui parle d'oiseaux, de nature, des enfants
+             et des poules, et apprend des choses à Monique ; page « jardin »
+             très lisible (gros caractères, un seul gros bouton), rouge-gorge
+             dessiné en SVG qui « chante » avec la voix ; installable (PWA)
+
+  Comment ça marche ?
+  - Monique est une dame âgée : tout est fait pour être SIMPLE et LISIBLE.
+    Un seul gros bouton « Appeler Seb », des textes en grand, fort contraste.
+  - Au-dessus, un « Le saviez-vous ? » sur les oiseaux, tiré au hasard
+    à chaque visite (tableau ANECDOTES, plus bas) : un petit cadeau même sans appeler.
+  - Au clic, 3 états se succèdent (une classe CSS sur <body>) :
+      1. connexion → « Ça sonne… » + le bouton vibre comme un téléphone.
+                      Le navigateur demande le micro.
+      2. en-ligne  → le bouton devient « Raccrocher » (rouge), un chrono tourne,
+                      le rouge-gorge ouvre le bec et des notes s'envolent
+                      quand Seb parle.
+      3. repos     → après raccrochage, tout revient comme au départ.
+  - SDK officiel « @elevenlabs/client » (comme SOS Amitié) : pas de bulle
+    ElevenLabs ni de « Terms and conditions », la page reste épurée.
+  - Garde-fous : c'est l'agent lui-même (consignes dans ElevenLabs) qui dit
+    d'appeler le 15 / 112 en cas de souci de santé, et qui se présente comme
+    « le Seb virtuel » si Monique demande à qui elle parle.
+-->
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Allô Seb ?</title>
+  <!--
+    PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »
+    ou « Ajouter à l'écran d'accueil »). Fichiers fabriqués par outils/generer-pwa.py :
+     • manifest.webmanifest : nom, couleurs, icônes de l'appli ;
+     • icones/ : les icônes (apple-touch-icon = celle des iPhone) ;
+     • sw.js : le service worker, enregistré en bas de page.
+  -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <link rel="icon" href="icones/icone-192.png" type="image/png">
+  <!-- « noindex » : invisible sur Google, accessible seulement avec le lien -->
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#f3efe2">
+  <!-- Fraunces = titre chaleureux un peu « carnet de nature » ; Manrope = texte (charte SV) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;1,9..144,500&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ---------- Couleurs (une seule source de vérité) ---------- */
+    :root {
+      --fond:    #f3efe2;   /* papier crème, comme un carnet d'observation */
+      --carte:   #fffdf6;   /* fond du « Le saviez-vous ? » */
+      --encre:   #1f2a22;   /* vert presque noir : texte très lisible */
+      --doux:    #4f5c52;   /* texte secondaire (reste bien contrasté) */
+      --vert:    #3f6b45;   /* vert sapin : bouton d'appel */
+      --vert-2:  #2b4d30;   /* vert plus foncé (ombre du bouton = effet touche) */
+      --gorge:   #e0702f;   /* orange du rouge-gorge */
+      --rouge:   #b8323b;   /* raccrocher / erreur */
+    }
+    /* Mode sombre automatique si le téléphone est en thème sombre */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --fond:  #18201a;
+        --carte: #223026;
+        --encre: #f1ede1;
+        --doux:  #c3cbbf;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      background: var(--fond);
+      color: var(--encre);
+      font-family: Manrope, system-ui, sans-serif;
+      font-size: 20px;              /* base plus grande que d'habitude : lecture facile */
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      min-height: 100dvh;           /* hauteur réelle sur mobile (barre d'adresse comprise) */
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 26px;
+      padding: 28px 18px 36px;
+      text-align: center;
+      max-width: 560px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* ---------- L'enseigne ---------- */
+    .surtitre {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--vert);
+      margin: 0 0 6px;
+    }
+    @media (prefers-color-scheme: dark) { .surtitre { color: #9cc79f; } }
+    h1 {
+      font-family: Fraunces, Georgia, serif;
+      font-weight: 600;
+      font-size: clamp(46px, 13vw, 68px);
+      line-height: 1;
+      margin: 0;
+    }
+    h1 em { color: var(--gorge); font-weight: 500; }
+
+    /* ---------- Le rouge-gorge (SVG dessiné à la main, plus bas) ---------- */
+    .oiseau-zone { position: relative; width: 150px; height: 120px; }
+    #oiseau { width: 150px; height: 120px; overflow: visible; }
+    /* Le bec du haut pivote autour de sa base : il s'ouvre quand Seb parle */
+    #bec-haut { transform-origin: 112px 47px; transition: transform .08s; }
+    /* Le corps « respire » doucement, tout le temps */
+    #corps { transform-origin: 75px 95px; animation: respire 3.6s ease-in-out infinite; }
+    @keyframes respire { 50% { transform: scale(1.025); } }
+    /* Les notes de musique qui s'envolent pendant que Seb parle */
+    .note {
+      position: absolute;
+      right: 0; top: 18px;
+      font-size: 26px;
+      color: var(--gorge);
+      opacity: 0;
+      pointer-events: none;
+      animation: envol 1.6s ease-out forwards;
+    }
+    @keyframes envol {
+      0%   { opacity: 0; transform: translate(0, 0) rotate(0); }
+      20%  { opacity: 1; }
+      100% { opacity: 0; transform: translate(40px, -60px) rotate(20deg); }
+    }
+
+    /* ---------- Le bouton d'appel (le cœur de la page) ---------- */
+    #bouton {
+      width: min(100%, 360px);
+      min-height: 110px;
+      border-radius: 28px;
+      border: none;
+      cursor: pointer;
+      background: var(--vert);
+      color: #fff;
+      font: 800 26px/1.2 Manrope, sans-serif;
+      letter-spacing: .06em;
+      box-shadow: 0 8px 0 var(--vert-2), 0 16px 30px rgba(0,0,0,.18);
+      transition: transform .1s, box-shadow .1s, background .25s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      padding: 18px 24px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* Effet « touche qu'on enfonce » */
+    #bouton:active { transform: translateY(6px); box-shadow: 0 2px 0 var(--vert-2), 0 6px 14px rgba(0,0,0,.18); }
+    #bouton:focus-visible { outline: 4px solid var(--gorge); outline-offset: 6px; }
+    #bouton svg { width: 46px; height: 46px; flex: none; transition: transform .25s; }
+
+    /* Pendant la sonnerie, le bouton vibre comme un vieux téléphone */
+    body.connexion #bouton { animation: sonnerie 1.1s ease-in-out infinite; cursor: progress; }
+
+    /* Pendant l'appel : bouton rouge « Raccrocher », combiné tourné vers le bas */
+    body.en-ligne #bouton { background: var(--rouge); box-shadow: 0 8px 0 #7d1f26, 0 16px 30px rgba(0,0,0,.18); }
+    body.en-ligne #bouton svg { transform: rotate(135deg); }
+    body.erreur  #bouton { background: var(--rouge); box-shadow: 0 8px 0 #7d1f26; }
+
+    /* ---------- Infos pendant l'appel ---------- */
+    #infos { min-height: 3.4em; font-size: 21px; color: var(--doux); font-weight: 500; }
+    #chrono {
+      display: block;
+      font-variant-numeric: tabular-nums;   /* chiffres de même largeur : le chrono ne tremble pas */
+      font-weight: 800;
+      font-size: 26px;
+      color: var(--encre);
+      visibility: hidden;
+    }
+    body.en-ligne #chrono { visibility: visible; }
+
+    /* ---------- « Le saviez-vous ? » ---------- */
+    .savoir {
+      background: var(--carte);
+      border-left: 6px solid var(--gorge);
+      border-radius: 18px;
+      padding: 18px 20px;
+      text-align: left;
+      box-shadow: 0 4px 16px rgba(0,0,0,.06);
+      width: 100%;
+    }
+    .savoir h2 {
+      margin: 0 0 8px;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--gorge);
+    }
+    #anecdote { margin: 0; font-size: 21px; line-height: 1.45; }
+    #autre {
+      margin-top: 12px;
+      background: none;
+      border: 2px solid currentColor;
+      color: var(--doux);
+      border-radius: 999px;
+      font: 700 17px Manrope, sans-serif;
+      padding: 10px 18px;
+      cursor: pointer;
+    }
+    /* Pendant l'appel, on cache l'anecdote : un seul point d'attention */
+    body.en-ligne .savoir, body.connexion .savoir { display: none; }
+
+    @keyframes sonnerie {
+      0%, 40%, 100% { transform: rotate(0); }
+      5%, 15%, 25%  { transform: rotate(-3deg); }
+      10%, 20%, 30% { transform: rotate(3deg); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      body.connexion #bouton, #corps { animation: none; }
+      .note { display: none; }
+    }
+  </style>
+  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+  <script src="/journal.js" defer></script>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="surtitre">La ligne de Monique</p>
+      <h1>Allô <em>Seb</em>&nbsp;?</h1>
+    </header>
+
+    <!-- Le rouge-gorge : formes simples (cercles, ellipses), aucune image à charger -->
+    <div class="oiseau-zone" id="oiseau-zone" aria-hidden="true">
+      <svg id="oiseau" viewBox="0 0 150 120">
+        <!-- branche -->
+        <path d="M5 108 Q75 98 145 110" stroke="#7a5a3a" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M120 104 q8 -10 18 -10" stroke="#7a5a3a" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <ellipse cx="136" cy="92" rx="8" ry="4" fill="#5d8a52" transform="rotate(-20 136 92)"/>
+        <g id="corps">
+          <!-- queue -->
+          <path d="M30 78 L4 70 L10 88 Z" fill="#7b6650"/>
+          <!-- corps brun -->
+          <ellipse cx="68" cy="70" rx="44" ry="32" fill="#8a7259"/>
+          <!-- tête -->
+          <circle cx="98" cy="46" r="22" fill="#8a7259"/>
+          <!-- la gorge orange, signature du rouge-gorge -->
+          <ellipse cx="92" cy="66" rx="26" ry="24" fill="#e0702f"/>
+          <!-- ventre clair -->
+          <ellipse cx="72" cy="86" rx="26" ry="14" fill="#efe6d6"/>
+          <!-- aile -->
+          <path d="M40 62 Q62 52 78 70 Q60 86 38 78 Z" fill="#6d5a45"/>
+          <!-- œil (avec un reflet) -->
+          <circle cx="104" cy="41" r="4.2" fill="#1a1a1a"/>
+          <circle cx="105.4" cy="39.6" r="1.3" fill="#fff"/>
+          <!-- bec : le bas est fixe, le haut s'ouvre (id="bec-haut") -->
+          <path d="M112 50 L126 50 L112 54 Z" fill="#3a3a3a"/>
+          <path id="bec-haut" d="M112 47 L128 48.5 L112 51 Z" fill="#2b2b2b"/>
+          <!-- pattes -->
+          <path d="M62 100 v6 M76 100 v6" stroke="#5a4a3a" stroke-width="3" stroke-linecap="round"/>
+        </g>
+      </svg>
+    </div>
+
+    <button id="bouton" type="button">
+      <!-- Icône de combiné téléphonique (dessinée en SVG) -->
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M6.6 10.8a15.2 15.2 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1L6.6 10.8z"/>
+      </svg>
+      <span id="libelle">Appeler Seb</span>
+    </button>
+
+    <!-- aria-live : les lecteurs d'écran annoncent les changements -->
+    <div id="infos" aria-live="polite">
+      <span id="chrono">00:00</span>
+      <span id="parole">Appuyez sur le bouton vert, puis parlez normalement.</span>
+    </div>
+
+    <section class="savoir">
+      <h2>Le saviez-vous ?</h2>
+      <p id="anecdote"></p>
+      <button id="autre" type="button">Une autre !</button>
+    </section>
+  </main>
+
+
+  <script type="module">
+    /* ============================================================
+       1. RÉGLAGES
+       ============================================================ */
+    const AGENT_ID = "agent_9501m6x8vgcyeqssa0x9x2swjamt";   // l'agent « Allô Seb ? – Monique » sur ElevenLabs
+
+    // Tous les textes affichés, regroupés ici pour les changer facilement
+    const TEXTES = {
+      repos:      "Appeler Seb",
+      connexion:  "Ça sonne…",
+      raccrocher: "Raccrocher",
+      erreur:     "Pas de réseau",
+      sousTitre:  "Appuyez sur le bouton vert, puis parlez normalement.",
+      sebParle:   "Seb vous parle…",
+      aVous:      "À vous, Monique, Seb vous écoute",
+      micro:      "Il faut autoriser le micro (bouton « Autoriser »), sinon Seb ne vous entend pas.",
+      erreurAppel:"L'appel n'a pas marché. Réessayez dans un petit moment.",
+    };
+
+    // Petites anecdotes vérifiées sur les oiseaux et la nature (une au hasard à chaque visite)
+    const ANECDOTES = [
+      "Le rouge-gorge chante même en plein hiver : le mâle ET la femelle défendent chacun leur petit territoire.",
+      "Une mésange bleue pèse à peu près 11 grammes, le poids de deux morceaux de sucre.",
+      "Le faisan dort perché dans les arbres la nuit, pour être à l'abri des renards.",
+      "Les grues cendrées passent au-dessus de l'Île-de-France en novembre : on les entend souvent avant de les voir, avec leurs cris en « V ».",
+      "Pour les oiseaux en hiver : graines de tournesol, boules de graisse sans filet et un peu d'eau propre. Jamais de pain ni de lait.",
+      "Le pic épeiche tambourine sur les troncs jusqu'à une vingtaine de coups par seconde, sans avoir mal à la tête.",
+      "Le merle mâle est tout noir avec un bec jaune ; la femelle est brune. Ils ne se ressemblent presque pas !",
+      "La sittelle est le seul oiseau de nos jardins capable de descendre un tronc la tête en bas.",
+      "Le geai des chênes cache des milliers de glands chaque automne… et en oublie beaucoup : il plante ainsi des chênes.",
+      "Les poules muent souvent en automne : elles perdent des plumes et pondent moins, le temps de refaire leur manteau.",
+      "Le troglodyte mignon est minuscule, mais son chant est l'un des plus puissants de nos jardins.",
+      "Les hirondelles reviennent souvent au même nid, année après année, après des milliers de kilomètres.",
+    ];
+
+    const bouton   = document.getElementById("bouton");
+    const libelle  = document.getElementById("libelle");
+    const chrono   = document.getElementById("chrono");
+    const parole   = document.getElementById("parole");
+    const becHaut  = document.getElementById("bec-haut");
+    const zoneOiseau = document.getElementById("oiseau-zone");
+    const anecdote = document.getElementById("anecdote");
+
+    // Anecdote au hasard, et une autre (différente) quand on touche « Une autre ! »
+    let indexAnecdote = Math.floor(Math.random() * ANECDOTES.length);
+    function montrerAnecdote() { anecdote.textContent = ANECDOTES[indexAnecdote]; }
+    montrerAnecdote();
+    document.getElementById("autre").addEventListener("click", () => {
+      indexAnecdote = (indexAnecdote + 1) % ANECDOTES.length;   // % = on revient au début à la fin
+      montrerAnecdote();
+    });
+
+    /* ============================================================
+       2. LES ÉTATS DE LA PAGE
+       On met une classe sur <body> : le CSS fait le reste.
+       ============================================================ */
+    function etat(nom) { document.body.className = nom || ""; }
+
+    // Chrono de l'appel (mm:ss)
+    let debutAppel = 0, minuterie = null;
+    function lancerChrono() {
+      debutAppel = Date.now();
+      chrono.textContent = "00:00";
+      minuterie = setInterval(() => {
+        const s = Math.floor((Date.now() - debutAppel) / 1000);
+        // padStart(2, "0") ajoute un zéro devant : 7 → "07"
+        chrono.textContent =
+          String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+      }, 1000);
+    }
+
+    /* ============================================================
+       3. LE ROUGE-GORGE QUI « CHANTE » AVEC LA VOIX
+       ============================================================ */
+    let conversation = null;   // la session en cours (null = pas d'appel)
+    let boucle = null;         // boucle d'animation
+    let lisse  = 0;            // volume lissé, pour un mouvement fluide
+    let derniereNote = 0;      // moment de la dernière note envoyée
+
+    // Fait s'envoler une note de musique (elle s'efface toute seule à la fin de l'animation)
+    function envoyerNote() {
+      const n = document.createElement("span");
+      n.className = "note";
+      n.textContent = Math.random() < 0.5 ? "♪" : "♫";
+      zoneOiseau.appendChild(n);
+      n.addEventListener("animationend", () => n.remove());
+    }
+
+    // 60 fois par seconde pendant l'appel
+    function animer() {
+      if (!conversation) return;
+      // getOutputVolume() = voix de Seb, entre 0 et 1 (on l'amplifie un peu)
+      const v = Math.min(1, conversation.getOutputVolume() * 2.5);
+      lisse = lisse * 0.7 + v * 0.3;                         // moyenne glissante = mouvement doux
+      becHaut.style.transform = `rotate(${-lisse * 18}deg)`; // le bec s'ouvre jusqu'à 18°
+      // Une note toutes les 0,7 s maximum, seulement quand il y a de la voix
+      if (lisse > 0.15 && Date.now() - derniereNote > 700) {
+        derniereNote = Date.now();
+        envoyerNote();
+      }
+      boucle = requestAnimationFrame(animer);
+    }
+
+    /* ============================================================
+       4. L'APPEL AVEC LE SEB VIRTUEL
+       ============================================================ */
+    function repos() {
+      cancelAnimationFrame(boucle);
+      clearInterval(minuterie);
+      conversation = null;
+      becHaut.style.transform = "";
+      etat("");
+      libelle.textContent = TEXTES.repos;
+      parole.textContent  = TEXTES.sousTitre;
+    }
+
+    function erreur(e, message) {
+      console.error("Allô Seb :", e);
+      cancelAnimationFrame(boucle);
+      clearInterval(minuterie);
+      conversation = null;
+      etat("erreur");
+      libelle.textContent = TEXTES.erreur;
+      parole.textContent = message || TEXTES.erreurAppel;
+      // On laisse le message plus longtemps que d'habitude : le temps de le lire tranquillement
+      setTimeout(repos, 6000);
+    }
+
+    bouton.addEventListener("click", async () => {
+      // Clic pendant l'appel → on raccroche
+      if (conversation) { await conversation.endSession(); return; }
+      if (document.body.classList.contains("connexion")) return;   // anti double-clic
+
+      etat("connexion");
+      libelle.textContent = TEXTES.connexion;
+
+      try {
+        // 1) Accès au micro (le navigateur demande l'autorisation)
+        try {
+          await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (e) {
+          return erreur(e, TEXTES.micro);
+        }
+
+        // 2) Le SDK ElevenLabs n'est chargé qu'au premier appel (page plus légère).
+        //    Version figée, la même que les autres pages, pour qu'une mise à jour ne casse rien.
+        const { Conversation } = await import(
+          "https://cdn.jsdelivr.net/npm/@elevenlabs/client@1.32.1/+esm"
+        );
+
+        // 3) Ouverture de la conversation
+        conversation = await Conversation.startSession({
+          agentId: AGENT_ID,
+          onConnect: () => {
+            etat("en-ligne");
+            libelle.textContent = TEXTES.raccrocher;
+            parole.textContent  = TEXTES.sebParle;   // il commence par son message d'accueil
+            lancerChrono();
+            animer();
+          },
+          // mode = "speaking" (Seb parle) ou "listening" (il écoute Monique)
+          onModeChange: ({ mode }) => {
+            parole.textContent = mode === "speaking" ? TEXTES.sebParle : TEXTES.aVous;
+          },
+          onDisconnect: repos,
+          onError: (e) => erreur(e),
+        });
+      } catch (e) {
+        erreur(e);
+      }
+    });
+  </script>
+<script>
+  // ---- Page installable : enregistrement du service worker (sw.js, même dossier) ----
+  // Il fonctionne en « réseau d'abord » : la page en ligne est toujours la plus récente.
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    navigator.serviceWorker.register("sw.js");
+  }
+</script>
+</body>
+</html>
