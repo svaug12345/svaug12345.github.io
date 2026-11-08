@@ -43,6 +43,9 @@
               informations, discussions) avec « Annuler », section « Archivés » repliée en bas
               (y glisser vers la droite = désarchiver) ; archiver une information non lue la
               marque lue ; archives gardées sur l'appareil (localStorage cartable.archives)
+   • v1.7.0 : TABLETTE : page élargie, cartes réparties en 2 colonnes (3 sur grand écran
+              paysage) pour Devoirs, Notes et Messages ; onglet Cours = 2 ou 3 jours côte à
+              côte (les flèches avancent d'autant) ; redessiné quand on tourne la tablette
 -->
 <html lang="fr">
 <head>
@@ -132,6 +135,25 @@
     #app { max-width: 560px; margin: 0 auto; padding: 16px 16px 40px; display: flex; flex-direction: column; gap: 14px; }
 
     .card { background: var(--card); border-radius: var(--radius); padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+
+    /* ---------- TABLETTE (v1.7.0) ----------
+       Dès 760 px de large, la page s'élargit et les cartes de l'onglet se
+       répartissent en colonnes, comme des journaux (« columns » en CSS) :
+       chaque carte reste entière (break-inside: avoid).
+       Les éléments « de largeur complète » (bandeaux, bascule Par date / Par matière)
+       s'étalent sur toutes les colonnes (column-span: all).
+       L'onglet Cours, lui, est une GRILLE de jours côte à côte. */
+    @media (min-width: 760px) {
+      #app { max-width: 1180px; padding: 24px 28px 48px; gap: 18px; }
+      #vue:not([data-vue="edt"]) { display: block !important; columns: 2; column-gap: 18px; }
+      #vue:not([data-vue="edt"]) > * { break-inside: avoid; margin: 0 0 18px; }
+      #vue > .alerte, #vue > .instantane, #vue > .bascule, #vue > p.aide { column-span: all; }
+      #vue[data-vue="edt"] { display: grid !important; grid-template-columns: repeat(var(--jours, 2), minmax(0, 1fr)); align-items: start; gap: 18px; }
+      .enfants { max-width: 720px; }
+    }
+    @media (min-width: 1100px) {
+      #vue:not([data-vue="edt"]) { columns: 3; }
+    }
     .card-title {
       font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
       color: var(--muted); margin-bottom: 10px;
@@ -435,7 +457,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = '1.6.0';
+    const VERSION = '1.7.0';
     // Adresse du service du NAS (reverse proxy DSM). Pour essayer un autre service :
     // ?service=http://192.168.1.161:8092 (retenu sur ce téléphone, ?service= vide pour revenir).
     const SERVICE_PAR_DEFAUT = 'https://pronote.baiji.fr';
@@ -601,6 +623,7 @@
       // Les messages concernent tout le compte : les boutons des enfants ne servent pas dans cet onglet
       $('enfants').style.display = vueChoisie === 'messages' ? 'none' : '';
 
+      $('vue').dataset.vue = vueChoisie;   // sert au CSS tablette (grille de jours pour « edt »)
       if (vueChoisie === 'messages') afficherMessages();
       else if (vueChoisie === 'edt') afficherEDT(enfant);
       else if (vueChoisie === 'notes') afficherNotes(enfant);
@@ -957,13 +980,37 @@
       return jours.find((j) => j > auj) || jours.at(-1) || auj;
     }
 
+    /*
+      Combien de jours afficher côte à côte ? (v1.7.0)
+      Téléphone : 1 ; tablette en portrait (≥ 760 px) : 2 ; paysage (≥ 1100 px) : 3.
+      « matchMedia » pose la même question que les @media du CSS, mais en JavaScript.
+    */
+    const ecranTablette = matchMedia('(min-width: 760px)');
+    const ecranLarge = matchMedia('(min-width: 1100px)');
+    const nbJoursEDT = () => (ecranLarge.matches ? 3 : ecranTablette.matches ? 2 : 1);
+    // On tourne la tablette (ou on redimensionne la fenêtre) : on redessine
+    for (const mq of [ecranTablette, ecranLarge]) mq.addEventListener('change', () => { if (donnees) afficherTout(); });
+
     function afficherEDT(enfant) {
       const jours = joursAvecCours(enfant);
       if (!jours.length) { $('vue').innerHTML = `<div class="card vide">Pas d'emploi du temps pour ces deux semaines.</div>`; return; }
       if (!jourEDT || !jours.includes(jourEDT)) jourEDT = jourParDefaut(enfant);
-      const i = jours.indexOf(jourEDT);
-      const cours = enfant.edt.filter((c) => c.date === jourEDT);
+      const n = nbJoursEDT();
+      // Premier jour affiché : jourEDT, en reculant si on est au bout (pour garder n colonnes)
+      const i = Math.max(0, Math.min(jours.indexOf(jourEDT), jours.length - n));
+      const affiches = jours.slice(i, i + n);
+      $('vue').style.setProperty('--jours', affiches.length);
+      $('vue').innerHTML = affiches.map((jour, k) =>
+        carteJourEDT(enfant, jour, k === 0 && i > 0, k === affiches.length - 1 && i + n < jours.length)).join('');
+      // Les flèches avancent (ou reculent) d'autant de jours qu'il y en a d'affichés
+      const av = $('jour-avant'), ap = $('jour-apres');
+      if (av) av.onclick = () => { jourEDT = jours[Math.max(0, i - n)]; afficherEDT(enfant); };
+      if (ap) ap.onclick = () => { jourEDT = jours[Math.min(jours.length - 1, i + n)]; afficherEDT(enfant); };
+    }
 
+    /** Une carte « jour » de l'emploi du temps ; flèches seulement sur la 1re (avant) et la dernière (après) */
+    function carteJourEDT(enfant, jourEDT, flecheAvant, flecheApres) {
+      const cours = enfant.edt.filter((c) => c.date === jourEDT);
       // Devoirs à rendre ce jour-là : on marque les cours concernés
       const devoirsDuJour = enfant.devoirs.filter((d) => d.pour === jourEDT);
       const auj = aujourdhui();
@@ -999,24 +1046,21 @@
       }).join('');
 
       const debut = cours.find((c) => !c.annule)?.debut, fin = [...cours].reverse().find((c) => !c.annule)?.fin;
-      $('vue').innerHTML = `<section class="card">
+      // Bouton invisible (visibility: hidden) quand il n'y a pas de flèche : le titre reste centré
+      const fleche = (id, label, chemin, actif) => `<button class="icon-btn" id="${actif ? id : ''}" aria-label="${label}" ${actif ? '' : 'disabled style="visibility:hidden"'}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="${chemin}"/></svg>
+          </button>`;
+      return `<section class="card">
         <div class="nav-jour">
-          <button class="icon-btn" id="jour-avant" aria-label="Jour précédent" ${i <= 0 ? 'disabled' : ''}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-          </button>
+          ${fleche('jour-avant', 'Jours précédents', 'm15 18-6-6 6-6', flecheAvant)}
           <div class="titre">
             <b>${esc(fmt(jourEDT, { weekday: 'long', day: 'numeric', month: 'long' }))}</b>
             <span>${esc(jourEDT === auj ? "Aujourd'hui" : nomDuJour(jourEDT))}${debut ? ` · ${debut} – ${fin}` : ''}</span>
           </div>
-          <button class="icon-btn" id="jour-apres" aria-label="Jour suivant" ${i >= jours.length - 1 ? 'disabled' : ''}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-          </button>
+          ${fleche('jour-apres', 'Jours suivants', 'm9 18 6-6-6-6', flecheApres)}
         </div>
         ${lignes}
       </section>`;
-
-      $('jour-avant').onclick = () => { jourEDT = jours[i - 1]; afficherEDT(enfant); };
-      $('jour-apres').onclick = () => { jourEDT = jours[i + 1]; afficherEDT(enfant); };
     }
 
     const minutes = (hhmm) => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
