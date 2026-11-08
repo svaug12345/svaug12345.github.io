@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<!--
+  rappel.html — v1.1.0 — écran « Les tâches du jour sont faites ? » affiché sur la TV
+  à l'allumage, par l'appli Android « Démarrage Auto » (dépôt svaug12345/plex-auto).
+
+  Ce fichier existe en DEUX exemplaires identiques :
+    • baiji.fr/famille/rappel.html (dépôt du site) : c'est lui que la TV charge en priorité.
+      → modifier CE fichier suffit pour changer le texte ou le style, sans mettre à jour l'appli ;
+    • app/src/main/assets/rappel.html (dans l'APK) : copie de secours si le Wi-Fi n'est pas prêt.
+  Les tâches sont téléchargées par le code Kotlin (TaskCheckActivity) puis transmises
+  à la fonction showTasks() ci-dessous. Les boutons appellent l'objet « Android » fourni par l'appli.
+
+  Historique :
+    • v1.0.0 : première version (dans l'APK seulement)
+    • v1.1.0 : hébergée sur baiji.fr ; bouton discret « Menu TV » (retour à l'accueil Google TV)
+
+  Les couleurs, la police et les pictogrammes reprennent ceux du dashboard famille
+  (baiji.fr/famille, mode TV) pour que tout ait le même style.
+-->
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Rappel des tâches</title>
+  <!-- Compteur de visites du site (n'envoie rien hors de *.baiji.fr, donc rien depuis l'APK) -->
+  <script src="/journal.js" defer></script>
+
+  <!-- Même police que le dashboard. Si la TV est hors ligne, on retombe sur la police système. -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ============ 1. COULEURS (celles du mode TV du dashboard) ============ */
+    :root {
+      --bg: #050f12;       /* fond quasi noir : pixels presque éteints sur OLED */
+      --card: #0c1f24;     /* fond des cartes */
+      --ink: #eef6f7;      /* texte principal */
+      --muted: #8aa3a8;    /* texte secondaire */
+      --line: #18343b;     /* bordures */
+      --accent: #14a3a0;   /* turquoise de la charte SV */
+      /* Une couleur par enfant, comme dans le planning */
+      --gaby: #10b981;
+      --tom: #3b82f6;
+      --nanon: #f43f5e;
+      --tous: #64748b;
+    }
+
+    /* ============ 2. BASE ============ */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      color: var(--ink);
+      /* Léger halo turquoise en haut, le reste reste sombre */
+      background: radial-gradient(ellipse at 50% -20%, #0f3b40 0%, var(--bg) 60%);
+      display: flex;
+      flex-direction: column;
+      /* Unités "vw/vh" = % de la taille de l'écran : la page s'adapte à toute TV */
+      padding: 4vh 6vw;
+      gap: 3.5vh;
+      overflow: hidden;
+    }
+
+    /* ============ 3. EN-TÊTE : salutation + heure ============ */
+    header { display: flex; justify-content: space-between; align-items: baseline; }
+    #greeting { font-size: 2.2vw; font-weight: 600; color: var(--muted); }
+    #clock { font-size: 2.2vw; font-weight: 700; color: var(--accent); }
+
+    /* ============ 4. LA GRANDE QUESTION ============ */
+    h1 {
+      font-size: 4.6vw;
+      font-weight: 800;
+      line-height: 1.1;
+      /* Petite apparition en douceur */
+      animation: pop .6s ease-out both;
+    }
+    h1 .hl {
+      /* Surlignage turquoise façon marqueur sous "faites" */
+      background: linear-gradient(transparent 62%, rgba(20,163,160,.45) 62%);
+      padding: 0 .15em;
+    }
+    @keyframes pop { from { opacity: 0; transform: translateY(2vh) scale(.97); } to { opacity: 1; transform: none; } }
+
+    /* ============ 5. CARTES DES ENFANTS ============ */
+    #kids {
+      flex: 1;                         /* prend toute la hauteur disponible */
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(20vw, 1fr));
+      gap: 2vw;
+      align-content: center;           /* cartes centrées verticalement dans l'espace libre */
+    }
+    .kid {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-top: .5vh solid var(--c);  /* liseré de la couleur de l'enfant */
+      border-radius: 1.4vw;
+      padding: 2.4vh 1.6vw;
+      animation: pop .6s ease-out both;
+    }
+    /* Les cartes apparaissent l'une après l'autre */
+    .kid:nth-child(2) { animation-delay: .1s; }
+    .kid:nth-child(3) { animation-delay: .2s; }
+    .kid:nth-child(4) { animation-delay: .3s; }
+
+    .kid-head { display: flex; align-items: center; gap: 1vw; margin-bottom: 2vh; }
+    .avatar {
+      width: 4vw; height: 4vw; border-radius: 50%;
+      background: var(--c); color: #fff;
+      display: grid; place-items: center;
+      font-size: 2vw; font-weight: 800;
+    }
+    .kid-name { font-size: 2.2vw; font-weight: 800; }
+
+    .tasks { display: flex; flex-direction: column; gap: 1.2vh; }
+    .task {
+      font-size: 1.7vw; font-weight: 600;
+      background: rgba(255,255,255,.05);
+      border-radius: .8vw;
+      padding: 1vh 1vw;
+    }
+
+    /* Messages (chargement, aucune tâche, erreur) */
+    .message {
+      grid-column: 1 / -1;
+      text-align: center;
+      font-size: 2.4vw; font-weight: 700; color: var(--muted);
+      padding-top: 6vh;
+    }
+    .message.big { color: var(--ink); font-size: 3.2vw; }
+
+    /* ============ 6. BOUTONS (navigation à la télécommande) ============ */
+    footer { display: flex; justify-content: center; gap: 3vw; }
+    button {
+      font: inherit;
+      font-size: 2.1vw; font-weight: 800;
+      color: var(--ink);
+      background: var(--card);
+      border: .35vw solid var(--line);
+      border-radius: 99vw;          /* bouton "pilule" */
+      padding: 1.8vh 3vw;
+      transition: transform .15s, border-color .15s, background .15s;
+      outline: none;
+    }
+    /* :focus = le bouton sélectionné avec la croix directionnelle : il doit se voir de loin */
+    /* Bouton discret « Menu TV » : petit, en bas à droite, presque invisible…
+       sauf quand on le sélectionne à la télécommande. */
+    #btn-home {
+      position: fixed; right: 2vw; bottom: 2vh;
+      font-size: 1.1vw; font-weight: 600;
+      padding: .8vh 1.2vw;
+      border-width: .15vw;
+      opacity: .35;
+    }
+    #btn-home:focus { opacity: 1; transform: scale(1.05); }
+
+    button:focus {
+      border-color: var(--accent);
+      background: #0f3b40;
+      transform: scale(1.08);
+      box-shadow: 0 0 3vw rgba(20,163,160,.45);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div id="greeting">Bonsoir !</div>
+    <div id="clock"></div>
+  </header>
+
+  <h1>Les tâches du jour sont <span class="hl">faites</span> ? 🤔</h1>
+
+  <main id="kids">
+    <div class="message">Chargement des tâches…</div>
+  </main>
+
+  <footer>
+    <!-- Android.openDashboard() / Android.openPlex() : fonctions fournies par le code Kotlin -->
+    <button id="btn-dashboard" onclick="Android.openDashboard()">🏠 Voir le dashboard</button>
+    <button id="btn-plex" onclick="Android.openPlex()">🎬 Oui, oui, je le jure ! → Plex</button>
+  </footer>
+
+  <!-- Caché par défaut : affiché seulement si l'appli sait le gérer (voir plus bas) -->
+  <button id="btn-home" onclick="Android.openHome()" hidden>Menu TV ›</button>
+
+  <script>
+    /* ================= Petits utilitaires ================= */
+    const $ = id => document.getElementById(id);
+
+    // Protège le texte venant du Google Sheet avant de l'insérer dans la page
+    // (évite qu'un caractère comme < casse l'affichage).
+    const esc = s => String(s).replace(/[&<>"']/g, c =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    // Date du jour au format JJ/MM/AAAA, comme dans la colonne C du Sheet
+    function todayFr() {
+      const d = new Date();
+      const p = n => String(n).padStart(2, '0');
+      return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()}`;
+    }
+
+    /* ================= Salutation et horloge ================= */
+    function tick() {
+      const d = new Date();
+      const h = d.getHours();
+      // Le message change selon l'heure
+      $('greeting').textContent =
+        h < 12 ? 'Bonjour ! ☀️' : h < 18 ? 'Bon après-midi ! 🌤️' : 'Bonsoir ! 🌙';
+      $('clock').textContent = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    }
+    tick();
+    setInterval(tick, 10000); // mise à jour toutes les 10 s
+
+    /* ================= Tâches ================= */
+    // Couleur de chaque enfant (variables CSS définies plus haut)
+    const KIDS = { Nanon: 'var(--nanon)', Gaby: 'var(--gaby)', Tom: 'var(--tom)', Tous: 'var(--tous)' };
+
+    // Pictogramme selon le nom de la tâche (mêmes règles que le dashboard)
+    function taskIcon(name) {
+      const t = (name || '').toLowerCase();
+      if (t.includes('table')) return '🍽️';
+      if (t.includes('compost') || t.includes('poubelle')) return '♻️';
+      if (t.includes('linge') || t.includes('habit') || t.includes('saucisson')) return '🧦';
+      if (t.includes('courses')) return '🛒';
+      if (t.includes('boite') || t.includes('lettre')) return '📬';
+      if (t.includes('repas') || t.includes('cuisine')) return '🍳';
+      if (t.includes('poule')) return '🐔';
+      if (t.includes('jardin') || t.includes('bazar')) return '🌿';
+      if (t.includes('chambre')) return '🧽';
+      if (t.includes('tizouk')) return '🐶';
+      return '✨';
+    }
+
+    /**
+     * Appelée par le code Kotlin avec le contenu du Google Sheet (format TSV :
+     * colonnes séparées par des tabulations), ou avec null si le téléchargement a échoué.
+     * Colonnes : A Mois | B Jour | C Date (JJ/MM/AAAA) | D Qui | E Tâches
+     */
+    function showTasks(tsv) {
+      if (tsv === null) {
+        $('kids').innerHTML = '<div class="message">Impossible de charger les tâches 📡<br>Va vérifier sur le dashboard !</div>';
+        $('btn-dashboard').focus();
+        return;
+      }
+
+      // 1) On garde uniquement les lignes d'aujourd'hui, regroupées par enfant
+      const today = todayFr();
+      const groups = {};                                   // { Gaby: ['Table', ...], ... }
+      const rows = tsv.split('\n').slice(1);               // slice(1) : on saute les en-têtes
+      for (const row of rows) {
+        const cols = row.replace('\r', '').split('\t');
+        if (cols.length < 5) continue;
+        // Le Sheet peut écrire 8/11/2026 au lieu de 08/11/2026 : on normalise
+        const [dd, mm, yyyy] = cols[2].trim().split('/');
+        if (!yyyy) continue;
+        const date = `${dd.padStart(2, '0')}/${mm.padStart(2, '0')}/${yyyy}`;
+        if (date !== today) continue;
+        const qui = cols[3].trim() || 'Tous', tache = cols[4].trim();
+        if (tache) (groups[qui] ||= []).push(tache);
+      }
+      // Règle automatique du planning : le lundi, chambre nickel pour tout le monde
+      if (new Date().getDay() === 1) (groups.Tous ||= []).push('Chambre nikel');
+
+      // 2) Affichage : une carte par enfant qui a quelque chose à faire
+      const names = ['Nanon', 'Gaby', 'Tom', 'Tous'].filter(n => groups[n]);
+      // Les noms inattendus (ex. "Papa") sont ajoutés à la fin plutôt qu'ignorés
+      for (const n of Object.keys(groups)) if (!names.includes(n)) names.push(n);
+
+      if (names.length === 0) {
+        $('kids').innerHTML = '<div class="message big">Aucune tâche aujourd\'hui 🎉<br>Bonne soirée !</div>';
+        $('btn-plex').focus();               // rien à faire : on propose directement Plex
+        return;
+      }
+
+      $('kids').innerHTML = names.map(name => `
+        <div class="kid" style="--c:${KIDS[name] || 'var(--tous)'}">
+          <div class="kid-head">
+            <div class="avatar">${name === 'Tous' ? '★' : esc(name[0])}</div>
+            <div class="kid-name">${esc(name)}</div>
+          </div>
+          <div class="tasks">
+            ${groups[name].map(t => `<div class="task">${taskIcon(t)} ${esc(t)}</div>`).join('')}
+          </div>
+        </div>`).join('');
+
+      // Focus initial sur « Voir le dashboard » : on pousse à vérifier avant le film 😉
+      $('btn-dashboard').focus();
+    }
+
+    // Les anciennes versions de l'appli n'ont pas openHome() : on ne montre le bouton que s'il marche.
+    if (window.Android && typeof Android.openHome === 'function') $('btn-home').hidden = false;
+
+    // Focus de départ, avant même l'arrivée des tâches
+    $('btn-dashboard').focus();
+  </script>
+</body>
+</html>
