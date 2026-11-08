@@ -13,6 +13,8 @@
   Historique :
     • v1.0.0 : première version (dans l'APK seulement)
     • v1.1.0 : hébergée sur baiji.fr ; bouton discret « Menu TV » (retour à l'accueil Google TV)
+    • v1.2.0 : « Pass VIP TV » mis en avant (table dressée, habits au panier, cartable prêt),
+               les tâches du jour passent en dessous, en plus compact
 
   Les couleurs, la police et les pictogrammes reprennent ceux du dashboard famille
   (baiji.fr/famille, mode TV) pour que tout ait le même style.
@@ -38,6 +40,8 @@
       --muted: #8aa3a8;    /* texte secondaire */
       --line: #18343b;     /* bordures */
       --accent: #14a3a0;   /* turquoise de la charte SV */
+      --gold: #f5c542;     /* or du « Pass VIP TV » */
+      --gold-deep: #b8860b;
       /* Une couleur par enfant, comme dans le planning */
       --gaby: #10b981;
       --tom: #3b82f6;
@@ -68,7 +72,7 @@
 
     /* ============ 4. LA GRANDE QUESTION ============ */
     h1 {
-      font-size: 4.6vw;
+      font-size: 3.6vw;
       font-weight: 800;
       line-height: 1.1;
       /* Petite apparition en douceur */
@@ -80,6 +84,65 @@
       padding: 0 .15em;
     }
     @keyframes pop { from { opacity: 0; transform: translateY(2vh) scale(.97); } to { opacity: 1; transform: none; } }
+
+    /* ============ 4 bis. LE PASS VIP TV (l'élément principal de l'écran) ============ */
+    #pass {
+      position: relative;
+      overflow: hidden;                     /* pour le reflet qui passe dessus */
+      border-radius: 1.6vw;
+      padding: 2.6vh 2.4vw 3vh;
+      /* Fond sombre doré + double bordure or, façon billet VIP */
+      background: linear-gradient(135deg, #2a2108 0%, #12100a 55%, #2a2108 100%);
+      border: .3vw solid var(--gold);
+      box-shadow: 0 0 4vw rgba(245,197,66,.25), inset 0 0 0 .5vw rgba(245,197,66,.12);
+      animation: pop .6s ease-out both;
+    }
+    /* Encoches rondes sur les côtés : la silhouette d'un ticket */
+    #pass::before, #pass::after {
+      content: ''; position: absolute; top: 50%;
+      width: 3vw; height: 3vw; margin-top: -1.5vw;
+      border-radius: 50%; background: var(--bg);
+      border: .3vw solid var(--gold);
+    }
+    #pass::before { left: -1.8vw; }
+    #pass::after  { right: -1.8vw; }
+
+    /* Reflet doré qui balaie le ticket toutes les 4 s */
+    .shine {
+      position: absolute; inset: 0; pointer-events: none;
+      background: linear-gradient(110deg, transparent 35%, rgba(255,230,150,.18) 50%, transparent 65%);
+      transform: translateX(-100%);
+      animation: shine 4s ease-in-out 1s infinite;
+    }
+    @keyframes shine { 0% { transform: translateX(-100%); } 40%, 100% { transform: translateX(100%); } }
+
+    .pass-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 2.2vh; }
+    .pass-title {
+      font-size: 3.4vw; font-weight: 800; letter-spacing: .08em;
+      /* Texte en dégradé or */
+      background: linear-gradient(180deg, #fff2c4, var(--gold) 55%, var(--gold-deep));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .pass-ticket { font-size: 3.4vw; }
+    .pass-sub { font-size: 1.7vw; font-weight: 700; color: var(--gold); opacity: .85; }
+
+    .pass-items { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6vw; }
+    .pass-item {
+      display: flex; align-items: center; gap: 1vw;
+      background: rgba(245,197,66,.08);
+      border: .15vw solid rgba(245,197,66,.35);
+      border-radius: 1vw;
+      padding: 2vh 1.2vw;
+      font-size: 2.1vw; font-weight: 800; line-height: 1.15;
+    }
+    .pass-item .ico { font-size: 3.4vw; }
+    /* Les trois conditions apparaissent l'une après l'autre */
+    .pass-item:nth-child(1) { animation: pop .5s .3s ease-out both; }
+    .pass-item:nth-child(2) { animation: pop .5s .45s ease-out both; }
+    .pass-item:nth-child(3) { animation: pop .5s .6s ease-out both; }
+
+    /* Petit titre au-dessus des tâches du jour */
+    .section-title { font-size: 1.7vw; font-weight: 700; color: var(--muted); margin-bottom: -1.5vh; }
 
     /* ============ 5. CARTES DES ENFANTS ============ */
     #kids {
@@ -94,7 +157,7 @@
       border: 1px solid var(--line);
       border-top: .5vh solid var(--c);  /* liseré de la couleur de l'enfant */
       border-radius: 1.4vw;
-      padding: 2.4vh 1.6vw;
+      padding: 1.6vh 1.4vw;
       animation: pop .6s ease-out both;
     }
     /* Les cartes apparaissent l'une après l'autre */
@@ -102,18 +165,18 @@
     .kid:nth-child(3) { animation-delay: .2s; }
     .kid:nth-child(4) { animation-delay: .3s; }
 
-    .kid-head { display: flex; align-items: center; gap: 1vw; margin-bottom: 2vh; }
+    .kid-head { display: flex; align-items: center; gap: .8vw; margin-bottom: 1.2vh; }
     .avatar {
-      width: 4vw; height: 4vw; border-radius: 50%;
+      width: 3vw; height: 3vw; border-radius: 50%;
       background: var(--c); color: #fff;
       display: grid; place-items: center;
-      font-size: 2vw; font-weight: 800;
+      font-size: 1.5vw; font-weight: 800;
     }
-    .kid-name { font-size: 2.2vw; font-weight: 800; }
+    .kid-name { font-size: 1.8vw; font-weight: 800; }
 
-    .tasks { display: flex; flex-direction: column; gap: 1.2vh; }
+    .tasks { display: flex; flex-wrap: wrap; gap: .8vh .6vw; }
     .task {
-      font-size: 1.7vw; font-weight: 600;
+      font-size: 1.4vw; font-weight: 600;
       background: rgba(255,255,255,.05);
       border-radius: .8vw;
       padding: 1vh 1vw;
@@ -124,9 +187,9 @@
       grid-column: 1 / -1;
       text-align: center;
       font-size: 2.4vw; font-weight: 700; color: var(--muted);
-      padding-top: 6vh;
+      padding-top: 2vh;
     }
-    .message.big { color: var(--ink); font-size: 3.2vw; }
+    .message.big { color: var(--ink); font-size: 2.4vw; }
 
     /* ============ 6. BOUTONS (navigation à la télécommande) ============ */
     footer { display: flex; justify-content: center; gap: 3vw; }
@@ -169,6 +232,22 @@
 
   <h1>Les tâches du jour sont <span class="hl">faites</span> ? 🤔</h1>
 
+  <!-- Le Pass VIP TV : les 3 conditions pour avoir le droit à la télé -->
+  <section id="pass">
+    <div class="shine"></div>
+    <div class="pass-head">
+      <!-- L'emoji reste HORS du texte doré : le dégradé "clip" le rendrait tout jaune -->
+      <div><span class="pass-ticket">🎟️</span> <span class="pass-title">PASS VIP TV</span></div>
+      <div class="pass-sub">Pas de pass, pas d'écran !</div>
+    </div>
+    <div class="pass-items">
+      <div class="pass-item"><span class="ico">🍽️</span>Table dressée</div>
+      <div class="pass-item"><span class="ico">👕</span>Habits dans le panier</div>
+      <div class="pass-item"><span class="ico">🎒</span>Cartable prêt pour demain</div>
+    </div>
+  </section>
+
+  <div class="section-title">Et les tâches du jour :</div>
   <main id="kids">
     <div class="message">Chargement des tâches…</div>
   </main>
@@ -266,8 +345,8 @@
       for (const n of Object.keys(groups)) if (!names.includes(n)) names.push(n);
 
       if (names.length === 0) {
-        $('kids').innerHTML = '<div class="message big">Aucune tâche aujourd\'hui 🎉<br>Bonne soirée !</div>';
-        $('btn-plex').focus();               // rien à faire : on propose directement Plex
+        $('kids').innerHTML = '<div class="message big">Pas d\'autre tâche aujourd\'hui 🎉 — juste le pass !</div>';
+        $('btn-plex').focus();               // seulement le pass à valider : on propose directement Plex
         return;
       }
 
