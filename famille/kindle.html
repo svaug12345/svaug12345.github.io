@@ -2,7 +2,7 @@
 <!--
   ============================================================
   Vaugoude's Family — VUE KINDLE (écran e-ink en paysage)
-  Version 1.0.0 (07/11/2026)
+  Version 1.1.0 (08/11/2026)
   ------------------------------------------------------------
   Une page fixe de 1024 × 758 px, en noir et blanc pur, pensée pour
   être PHOTOGRAPHIÉE par le service « kindle » du NAS (dépôt privé
@@ -17,6 +17,8 @@
     • agenda Google (Apps Script « Agenda Famille ») : semaine à venir + week-ends
     • tâches du jour (Google Sheet « Family tasks »)
     • batteries des voitures (service « voitures » du NAS)
+    • une photo « Ce jour-là » (service « souvenirs » du NAS, photos Immich,
+      même clé que les devoirs) : une autre à chaque photo d'écran (15 min)
 
   Règles e-ink : pas de couleur, pas d'emoji (rendu baveux), traits
   épais, police Atkinson Hyperlegible (dessinée pour être lisible).
@@ -26,6 +28,7 @@
 
   Historique :
     • v1.0.0 : première version (design « E · météo en bandeau »)
+    • v1.1.0 : photo « Ce jour-là » en bas de la colonne de droite (place restante)
   ============================================================
 -->
 <html lang="fr">
@@ -40,6 +43,7 @@
 <style>
   /* ---------- Base : tout en noir sur blanc ---------- */
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }   /* sinon « display: flex » des blocs gagne sur hidden */
   html, body { margin: 0; background: #fff; color: #000; }
   body { font-family: 'Atkinson Hyperlegible', sans-serif; overflow: hidden; }
   b { font-weight: 700; }
@@ -116,6 +120,12 @@
   .we .pris { background: #000; color: #fff; }          /* pris = blanc sur noir : se voit de loin */
   .taches { display: flex; flex-direction: column; gap: 3px; font-size: 17px; }
   .taches div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* Photo « Ce jour-là » : prend la hauteur qui reste dans la colonne de droite.
+     Niveaux de gris un peu plus contrastés : l'e-ink a peu de nuances. */
+  .souvenir { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: 5px; }
+  .souvenir .cadre { flex: 1; min-height: 0; border: 2px solid #000; border-radius: 6px; overflow: hidden; }
+  .souvenir img { display: block; width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.15); }
+  .souvenir .legende { font-size: 15px; flex: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .voitures { display: flex; justify-content: space-between; font-size: 15px; border-top: 1px solid #000; padding-top: 6px; margin-top: auto; flex: none; }
 </style>
 </head>
@@ -143,6 +153,8 @@
       <div class="bloc"><span class="rubrique">Semaine à venir</span><div class="agenda" id="agenda"></div></div>
       <div class="bloc"><span class="rubrique">Week-ends</span><div id="weekends" class="weekends"></div></div>
       <div class="bloc" id="bloc-taches"><span class="rubrique">Tâches du jour</span><div class="taches" id="taches"></div></div>
+      <!-- Caché tant qu'il n'y a pas de photo (ou plus assez de place) -->
+      <div class="souvenir" id="souvenir" hidden><span class="rubrique">Ce jour-là</span><div class="cadre"><img id="souvenir-img" alt=""></div><div class="legende" id="souvenir-legende"></div></div>
       <div class="voitures" id="voitures"></div>
     </div>
   </div>
@@ -152,11 +164,13 @@
   /* =================================================================
      CONFIGURATION (mêmes adresses que famille/index.html)
      ================================================================= */
-  const VERSION = '1.0.0';
+  const VERSION = '1.1.0';
   const SHEET_TSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRGC5e1KLZdKKeTUSLC8aqJXHvPphh1ceso4-yYJAUtbyZGPPhriMMtEQpeL4cjcrbQfcp6WOM_RUT2/pub?gid=647675679&single=true&output=tsv';
   const CARS_URL = 'https://voitures.baiji.fr/cars.json';
   const AGENDA_URL = 'https://script.google.com/macros/s/AKfycbzbzD8I38Ul_baGjfa17QQ-gZbSQvlbL9QTlerMiGDeAHUGhz-Q0eo2XuZR6k4cgvro/exec';
   const PRONOTE_URL = 'https://pronote.baiji.fr/pronote.json';
+  const SOUVENIRS_URL = 'https://souvenirs.baiji.fr';    // photos « Ce jour-là » (service du NAS)
+  const PHOTO_MINI = 110;                   // en dessous de cette hauteur (px), la photo n'est pas affichée
   const LAT = 48.7018, LON = 2.1340;        // Gif-sur-Yvette
   const JOURS_DEVOIRS = 5;                  // on regarde les devoirs des 5 prochains jours qui en ont
   const NB_WEEKENDS = 4;                    // nombre de week-ends listés
@@ -344,6 +358,16 @@
   }
   const estAnniv = (ev) => ev.agenda === 'anniv' && ev.journee;
 
+  // Lignes de la semaine à venir, gardées pour pouvoir les redessiner plus court
+  // si la photo « Ce jour-là » a besoin de place (voir placePourLaPhoto)
+  let lignesAgenda = [];
+  function dessinerAgenda(max) {
+    const lignes = lignesAgenda;
+    $('agenda').innerHTML = lignes.length
+      ? lignes.slice(0, max).join('') + (lignes.length > max ? `<b></b><span>+ ${lignes.length - max} autre(s)</span>` : '')
+      : '<b></b><span>Rien de prévu</span>';
+  }
+
   async function agenda() {
     const data = await get(AGENDA_URL, { ms: 20000 });    // Apps Script est parfois lent à démarrer
     const evs = data.evenements || [];
@@ -362,10 +386,8 @@
         lignes.push(`<b>${k === 0 ? esc(label) : ''}</b><span>${esc(quoi)}</span>`);
       });
     }
-    const MAX = 6;
-    $('agenda').innerHTML = lignes.length
-      ? lignes.slice(0, MAX).join('') + (lignes.length > MAX ? `<b></b><span>+ ${lignes.length - MAX} autre(s)</span>` : '')
-      : '<b></b><span>Rien de prévu</span>';
+    lignesAgenda = lignes;
+    dessinerAgenda(6);
 
     // --- Week-ends : libre ou pris (les anniversaires ne comptent pas comme « pris »)
     let sat = addDays(today, (6 - today.getDay() + 7) % 7);
@@ -415,15 +437,61 @@
   }
 
   /* =================================================================
+     CE JOUR-LÀ (service « souvenirs » du NAS)
+     Format : { jour, photos: [ {id, annee, ilYa, date, lieu} ] }
+     La page est photographiée toutes les 15 min : on choisit la photo
+     d'après l'heure (n° du quart d'heure de la journée), donc la liseuse
+     montre une photo différente à chaque rafraîchissement.
+     ================================================================= */
+  async function souvenir() {
+    let key = null;
+    try { key = localStorage.getItem('cartable.cle'); } catch {}
+    if (!key) return;                                   // sans clé : pas de photo (les devoirs le signalent déjà)
+    const data = await get(SOUVENIRS_URL + '/souvenirs.json', { ms: 10000, headers: { 'X-Cle': key } });
+    const photos = data.photos || [];
+    if (!photos.length) return;                         // rien ce jour-là : le bloc reste caché
+    const now = new Date();
+    const p = photos[Math.floor((now.getHours() * 60 + now.getMinutes()) / 15) % photos.length];
+
+    // La photo demande la clé (en-tête) : on la télécharge, puis on la donne à l'<img> en « blob: »
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 15000);
+    const res = await fetch(SOUVENIRS_URL + '/photo?id=' + encodeURIComponent(p.id), { signal: ctrl.signal, headers: { 'X-Cle': key } });
+    clearTimeout(timer);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const img = $('souvenir-img');
+    img.src = URL.createObjectURL(await res.blob());
+    await img.decode();                                 // on attend qu'elle soit prête AVANT la photo d'écran
+
+    $('souvenir-legende').innerHTML = `<b>Il y a ${p.ilYa} an${p.ilYa > 1 ? 's' : ''}</b> · ${p.annee}${p.lieu ? ' · ' + esc(p.lieu) : ''}`;
+    $('souvenir').hidden = false;
+  }
+
+  // Une fois tout le reste en place : la photo prend la hauteur qui reste. Si c'est trop
+  // peu, on lui fait de la place en raccourcissant d'abord la semaine à venir (jusqu'à
+  // 3 lignes), puis la liste des week-ends (jusqu'à 2) ; si ça ne suffit toujours pas,
+  // on retire la photo plutôt que d'afficher une vignette illisible.
+  function placePourLaPhoto() {
+    const bloc = $('souvenir');
+    if (bloc.hidden) return;
+    const assez = () => bloc.querySelector('.cadre').clientHeight >= PHOTO_MINI;
+    for (let max = 5; !assez() && max >= 3 && lignesAgenda.length > max; max--) dessinerAgenda(max);
+    const we = [...document.querySelectorAll('#weekends .we')];
+    while (!assez() && we.length > 2) we.pop().remove();
+    if (!assez()) bloc.hidden = true;
+  }
+
+  /* =================================================================
      DÉMARRAGE : tout en parallèle, puis le signal « prête pour la photo »
      ================================================================= */
   afficherDate();
-  Promise.allSettled([meteo(), devoirs(), agenda(), taches(), voitures()]).then(async (res) => {
+  Promise.allSettled([meteo(), devoirs(), agenda(), taches(), voitures(), souvenir()]).then(async (res) => {
     res.forEach((r, i) => { if (r.status === 'rejected') console.warn('Source ' + i + ' indisponible', r.reason); });
     // Une source en panne : on le signale discrètement à côté de l'heure de mise à jour
-    const ko = ['météo', 'devoirs', 'agenda', 'tâches', 'voitures'].filter((_, i) => res[i].status === 'rejected');
+    const ko = ['météo', 'devoirs', 'agenda', 'tâches', 'voitures', 'photo'].filter((_, i) => res[i].status === 'rejected');
     if (ko.length) $('maj').textContent += ' · sans ' + ko.join(', ');
     try { await document.fonts.ready; } catch {}
+    placePourLaPhoto();
     document.body.dataset.pret = '1';
   });
 </script>

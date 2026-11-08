@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Famille · Vaugoude's Family — tableau de bord de la maison
-  Version 1.7.6
+  Version 1.8.0
   Mobile par défaut ; mode TV avec baiji.fr/famille/?tv (retour : ?mobile).
   Historique :
    • v1.0.0 : météo, tâches du jour (Google Sheet), 7 prochains jours, Pass TV,
@@ -34,6 +34,9 @@
    • v1.7.4 : miniature de la couverture dans chaque pastille de la carte Médiathèque
    • v1.7.5 : toucher un document de la carte Médiathèque ouvre son visuel en grand (pas à la télé)
    • v1.7.6 : compteur de visites de baiji.fr (/journal.js)
+   • v1.8.0 : carte « Ce jour-là » : diaporama des photos prises un jour comme aujourd'hui,
+              les années passées (service « souvenirs » du NAS, qui les prend dans Immich ;
+              même clé que les devoirs) ; toucher la photo = suivante, « Immich › » l'ouvre
 -->
 <html lang="fr">
 <head>
@@ -283,6 +286,34 @@
     footer a { color: var(--accent); font-weight: 700; text-decoration: none; }
 
     /* =========================================================
+       7 bis. CE JOUR-LÀ (photos souvenirs d'Immich)
+       Deux images superposées : la nouvelle apparaît en fondu par-dessus
+       l'ancienne (transition d'opacité), puis les rôles s'échangent.
+       ========================================================= */
+    .memory {
+      position: relative; overflow: hidden; border-radius: 12px; background: #000;
+      aspect-ratio: 4 / 3;            /* téléphone : cadre 4:3, la photo est recadrée (cover) */
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+    .memory img {
+      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+      opacity: 0; transition: opacity 1.2s ease;
+    }
+    .memory img.on { opacity: 1; }
+    /* Légende sur un dégradé sombre en bas de la photo, toujours lisible */
+    .memory-cap {
+      position: absolute; left: 0; right: 0; bottom: 0; padding: 28px 12px 10px; color: #fff;
+      background: linear-gradient(to top, rgba(0,0,0,.72), transparent);
+      display: flex; justify-content: space-between; align-items: flex-end; gap: 10px;
+    }
+    .memory-cap b { display: block; font-size: 17px; font-weight: 800; }
+    .memory-cap small { font-size: 12.5px; opacity: .85; }
+    /* Petits points : où on en est dans les photos du jour */
+    .memory-dots { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; max-width: 45%; }
+    .memory-dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.45); }
+    .memory-dots i.on { background: #fff; }
+
+    /* =========================================================
        8. MODE TV
        Une grille fixe en 3 colonnes qui tient sur un écran 16:9,
        sans défilement. Les tailles sont en "vw" (pourcentage de la
@@ -354,6 +385,13 @@
     body.tv .hw-done { font-size: 1.1vw; }
     body.tv .hw-later { font-size: .95vw; }
     body.tv .empty { font-size: 1.2vw; }
+    /* Ce jour-là : la carte prend toute la place qui reste en bas de la colonne 3 */
+    body.tv #memory-card { flex: 1; min-height: 11vw; display: flex; flex-direction: column; }
+    body.tv #memory-card:not([hidden]) .memory { flex: 1; min-height: 0; aspect-ratio: auto; border-radius: .8vw; }
+    body.tv .memory-cap { padding: 2vw 1vw .8vw; }
+    body.tv .memory-cap b { font-size: 1.3vw; }
+    body.tv .memory-cap small { font-size: .9vw; }
+    body.tv .memory-dots i { width: .4vw; height: .4vw; }
     /* Éléments masqués à la télé (pas de télécommande pour cliquer) */
     body.tv .mobile-only { display: none !important; }
     body:not(.tv) .tv-only { display: none !important; }
@@ -367,7 +405,8 @@
     body:not(.tv) .tasks-today { order: 2; }
     body:not(.tv) #homework-card { order: 3; }     /* juste après les tâches */
     body:not(.tv) #agenda-card { order: 4; }
-    body:not(.tv) .w-days-card { order: 5; }
+    body:not(.tv) #memory-card { order: 5; }      /* Ce jour-là : après l'agenda */
+    body:not(.tv) .w-days-card { order: 6; }
     body:not(.tv) #app footer { order: 99; }
   </style>
   <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
@@ -462,6 +501,21 @@
         <dialog id="loan-dialog" aria-label="Document emprunté"></dialog>
       </section>
 
+      <!-- Ce jour-là : photos prises un jour comme aujourd'hui, les années passées
+           (service « souvenirs » du NAS, qui les prend dans Immich).
+           Cachée s'il n'y a pas de clé, pas de photo, ou si le service ne répond pas.
+           TV : remplit le bas de la colonne ; téléphone : après l'agenda. -->
+      <section class="card" id="memory-card" hidden>
+        <div class="card-title">
+          <span>Ce jour-là</span>
+          <a class="mobile-only" id="memory-open" href="https://photos.baiji.fr/" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">Immich ›</a>
+        </div>
+        <div class="memory" id="memory" title="Photo suivante">
+          <img alt=""><img alt="">
+          <div class="memory-cap"><div><b id="memory-when"></b><small id="memory-where"></small></div><div class="memory-dots" id="memory-dots"></div></div>
+        </div>
+      </section>
+
       <!-- Planning des 7 prochains jours (téléphone et TV ; filtre par enfant sur téléphone) -->
       <section class="card" id="week-card">
         <div class="card-title">
@@ -483,7 +537,7 @@
     /* =================================================================
        CONFIGURATION — les seules lignes à modifier en temps normal
        ================================================================= */
-    const VERSION = '1.7.6';
+    const VERSION = '1.8.0';
 
     // Google Sheet "Family tasks" publié en TSV (Fichier > Partager > Publier sur le web).
     // C'est le même lien que celui de ton Kindle.
@@ -515,7 +569,13 @@
     // sur un appareil où Cartable a déjà été ouvert (même site baiji.fr = même stockage).
     const PRONOTE_URL = 'https://pronote.baiji.fr/pronote.json';
 
-    const REFRESH = { weather: 15, tasks: 10, cars: 5, loans: 30, agenda: 15, homework: 30 };
+    // Ce jour-là : le service « souvenirs » du NAS (photos du jour, prises dans Immich).
+    // Même clé que les devoirs (celle de Cartable) : rien à saisir en plus.
+    const SOUVENIRS_URL = 'https://souvenirs.baiji.fr';
+    // Une nouvelle photo toutes les N secondes (téléphone / télé)
+    const MEMORY_SECONDS = { mobile: 8, tv: 30 };
+
+    const REFRESH = { weather: 15, tasks: 10, cars: 5, loans: 30, agenda: 15, homework: 30, memories: 60 };
 
     /* =================================================================
        MODE TV
@@ -936,6 +996,90 @@
     }
 
     /* =================================================================
+       CE JOUR-LÀ (service « souvenirs » du NAS)
+       Format : { jour, photos: [ {id, annee, ilYa, date, lieu} ] }
+       Les photos demandent la clé (en-tête X-Cle) : une balise <img src="…">
+       ne sait pas envoyer d'en-tête, donc on télécharge chaque photo avec
+       fetch, puis on la donne à l'<img> sous forme d'adresse « blob: »
+       (une adresse locale qui pointe vers les octets gardés en mémoire).
+       ================================================================= */
+    let memories = [];          // photos du jour
+    let memoryDay = null;       // jour de la liste en cours (pour savoir si elle a changé)
+    let memoryIndex = -1;       // photo affichée
+    let memoryTimer = null;     // minuteur du diaporama
+    const memoryBlobs = new Map();   // id → adresse blob: déjà téléchargée
+
+    async function loadMemories() {
+      const key = cartableKey();
+      if (!SOUVENIRS_URL || !key) return;          // pas de clé : la carte reste cachée
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 12000);
+        const res = await fetch(SOUVENIRS_URL + '/souvenirs.json', { cache: 'no-store', signal: ctrl.signal, headers: { 'X-Cle': key } });
+        clearTimeout(timer);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        const list = data.photos || [];
+        // Liste inchangée (même jour, mêmes photos) : on laisse le diaporama tourner
+        const same = data.jour === memoryDay && list.map(p => p.id).join() === memories.map(p => p.id).join();
+        if (same) return;
+        // Nouveau jour : on libère la mémoire des photos d'hier
+        if (data.jour !== memoryDay) { memoryBlobs.forEach(u => URL.revokeObjectURL(u)); memoryBlobs.clear(); }
+        memoryDay = data.jour;
+        memories = list;
+        memoryIndex = -1;
+        if (!memories.length) { $('memory-card').hidden = true; return; }
+        await showMemory(0);
+        restartMemoryTimer();
+      } catch (e) {
+        console.warn('Souvenirs indisponibles', e);
+        if (!memories.length) $('memory-card').hidden = true;   // sinon on garde ce qui s'affiche
+      }
+    }
+
+    // Télécharge une photo (une seule fois) et renvoie son adresse blob:
+    async function memoryUrl(p) {
+      if (memoryBlobs.has(p.id)) return memoryBlobs.get(p.id);
+      const res = await fetch(SOUVENIRS_URL + '/photo?id=' + encodeURIComponent(p.id), { headers: { 'X-Cle': cartableKey() } });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const url = URL.createObjectURL(await res.blob());
+      memoryBlobs.set(p.id, url);
+      return url;
+    }
+
+    // Affiche la photo n°i en fondu, puis prépare la suivante en arrière-plan
+    async function showMemory(i) {
+      if (!memories.length) return;
+      i = (i + memories.length) % memories.length;          // on reboucle au début
+      const p = memories[i];
+      let url;
+      try { url = await memoryUrl(p); }
+      catch (e) { console.warn('Photo indisponible', e); return; }
+      memoryIndex = i;
+      // L'image cachée reçoit la nouvelle photo ; une fois chargée, elle passe devant
+      const [a, b] = $('memory').querySelectorAll('img');
+      const next = a.classList.contains('on') ? b : a, prev = next === a ? b : a;
+      next.onload = () => { next.classList.add('on'); prev.classList.remove('on'); };
+      next.src = url;
+      $('memory-when').textContent = p.ilYa === 1 ? `Il y a 1 an · ${p.annee}` : `Il y a ${p.ilYa} ans · ${p.annee}`;
+      $('memory-where').textContent = p.lieu || '';
+      $('memory-open').href = 'https://photos.baiji.fr/photos/' + encodeURIComponent(p.id);
+      $('memory-dots').innerHTML = memories.length > 1 ? memories.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join('') : '';
+      $('memory-card').hidden = false;
+      // Préchargement de la suivante : le prochain fondu sera immédiat
+      if (memories.length > 1) memoryUrl(memories[(i + 1) % memories.length]).catch(() => {});
+    }
+
+    function restartMemoryTimer() {
+      clearInterval(memoryTimer);
+      if (memories.length < 2) return;
+      memoryTimer = setInterval(() => showMemory(memoryIndex + 1), (IS_TV ? MEMORY_SECONDS.tv : MEMORY_SECONDS.mobile) * 1000);
+    }
+
+    // Toucher la photo = photo suivante (et le minuteur repart de zéro)
+    $('memory').addEventListener('click', () => { showMemory(memoryIndex + 1); restartMemoryTimer(); });
+
+    /* =================================================================
        BAS DE PAGE : état de la synchro
        ================================================================= */
     function setStatus(what, time, stale) {
@@ -1160,7 +1304,7 @@
        DÉMARRAGE
        ================================================================= */
     function loadAll() {
-      return Promise.allSettled([loadWeather(), loadTasks(), loadCars(), loadLoans(), loadAgenda(), loadHomework()]);
+      return Promise.allSettled([loadWeather(), loadTasks(), loadCars(), loadLoans(), loadAgenda(), loadHomework(), loadMemories()]);
     }
 
     function start() {
@@ -1187,6 +1331,7 @@
       setInterval(loadLoans, REFRESH.loans * 60e3);
       setInterval(loadAgenda, REFRESH.agenda * 60e3);
       setInterval(loadHomework, REFRESH.homework * 60e3);
+      setInterval(loadMemories, REFRESH.memories * 60e3);
 
       // 4) Quand on revient sur l'appli après l'avoir quittée : on actualise
       document.addEventListener('visibilitychange', () => { if (!document.hidden) loadAll(); });
