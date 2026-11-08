@@ -18,6 +18,9 @@
     • v1.3.0 : réponse « Non, pas encore » → alerte psychédélique plein écran (« OK OK, j'y vais ! »
                pour revenir à la question) ; le dashboard devient un bouton discret, à côté de « Menu TV »
     • v1.3.1 : tout est un peu moins gros (tailles réduites d'environ 20 %)
+    • v1.4.0 : « Oui » ne mène plus directement à Plex : 3 confirmations de plus en plus
+               insistantes (« Vraiment ? », « Vraiment de vraiment, en vrai ? »,
+               « C'est une bonne situation ça, scribe ? ») ; « Euh… non » → l'alerte
 
   Les couleurs, la police et les pictogrammes reprennent ceux du dashboard famille
   (baiji.fr/famille, mode TV) pour que tout ait le même style.
@@ -282,6 +285,44 @@
     @keyframes respire  { from { transform: scale(1); } to { transform: scale(1.25); } }
     @keyframes tangue   { from { transform: rotate(-4deg) scale(.96); } to { transform: rotate(4deg) scale(1.04); } }
     @keyframes battement { 50% { transform: scale(1.08); } }
+
+    /* ============ 8. CONFIRMATIONS DU « OUI » (3 étapes) ============
+       Un seul calque #confirm dont le texte et le décor changent à chaque étape
+       (classes .e1, .e2, .e3 posées par le JavaScript). */
+    #confirm {
+      position: fixed; inset: 0; z-index: 9;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 3vh; text-align: center; padding: 0 8vw;
+    }
+    #confirm[hidden] { display: none; }
+    .confirm-emoji { font-size: 9vw; line-height: 1; }
+    .confirm-q { font-weight: 800; line-height: 1.15; }
+    .confirm-btns { display: flex; gap: 2.5vw; margin-top: 2vh; }
+    .confirm-btns button { font-size: 1.9vw; }
+    #confirm-non:focus { border-color: #f43f5e; background: #3b1018; box-shadow: 0 0 3vw rgba(244,63,94,.45); }
+    /* Chaque étape réapparaît avec un petit « pop » (relancé par le JavaScript) */
+    .relance { animation: pop .45s ease-out both; }
+
+    /* Étape 1 : sobre, un sourcil levé */
+    #confirm.e1 { background: radial-gradient(ellipse at 50% 30%, #0f3b40, var(--bg) 70%); }
+    #confirm.e1 .confirm-q { font-size: 5.5vw; }
+
+    /* Étape 2 : plus insistant, violet, l'emoji tourne autour du texte en tanguant */
+    #confirm.e2 { background: radial-gradient(ellipse at 50% 30%, #3a1458, #0b0614 70%); }
+    #confirm.e2 .confirm-q { font-size: 4.6vw; color: #f5d0fe; }
+    #confirm.e2 .confirm-emoji { animation: tangue .7s ease-in-out infinite alternate; }
+
+    /* Étape 3 : le papyrus du scribe (sable, encre brune, police à empattements) */
+    #confirm.e3 {
+      background:
+        repeating-linear-gradient(0deg, rgba(120,80,30,.07) 0 .4vh, transparent .4vh 1.2vh),
+        linear-gradient(160deg, #f1e2b8, #d9bb7f);
+      color: #3b2610;
+    }
+    #confirm.e3 .confirm-q { font-family: Georgia, 'Times New Roman', serif; font-style: italic; font-size: 4.4vw; }
+    #confirm.e3 .confirm-btns button { background: #fff7e0; color: #3b2610; border-color: #b08a4a; }
+    #confirm.e3 #confirm-oui:focus { background: #3b2610; color: #f1e2b8; border-color: #3b2610; box-shadow: 0 0 3vw rgba(59,38,16,.4); }
+    #confirm.e3 #confirm-non:focus { background: #7f1d1d; color: #fff; border-color: #7f1d1d; }
   </style>
 </head>
 <body>
@@ -315,7 +356,7 @@
   <footer>
     <!-- Android.openPlex() etc. : fonctions fournies par le code Kotlin de l'appli -->
     <button id="btn-non" onclick="alerte()">❌ Non, pas encore</button>
-    <button id="btn-plex" onclick="Android.openPlex()">🎬 Oui, oui, je le jure ! → Plex</button>
+    <button id="btn-plex" onclick="confirmer()">🎬 Oui, oui, je le jure ! → Plex</button>
   </footer>
 
   <!-- Boutons discrets en bas à droite -->
@@ -324,6 +365,16 @@
     <!-- Caché par défaut : affiché seulement si l'appli sait le gérer (voir plus bas) -->
     <button id="btn-home" onclick="Android.openHome()" hidden>Menu TV ›</button>
   </nav>
+
+  <!-- Confirmations du « Oui » : le texte est rempli par confirmer() / montrerEtape() -->
+  <section id="confirm" hidden>
+    <div class="confirm-emoji" id="confirm-emoji"></div>
+    <div class="confirm-q" id="confirm-q"></div>
+    <div class="confirm-btns">
+      <button id="confirm-non" onclick="alerte()">Euh… non 😬</button>
+      <button id="confirm-oui" onclick="confirmSuivant()"></button>
+    </div>
+  </section>
 
   <!-- Alerte plein écran, affichée quand on répond « Non » -->
   <section id="alerte" hidden>
@@ -444,19 +495,71 @@
     // Les anciennes versions de l'appli n'ont pas openHome() : on ne montre le bouton que s'il marche.
     if (window.Android && typeof Android.openHome === 'function') $('btn-home').hidden = false;
 
+    /* ================= Calques plein écran ================= */
+    // Affiche UN calque (alerte ou confirmation) et rend tout le reste « inerte » :
+    // la télécommande ne peut plus sélectionner que les boutons de ce calque.
+    function ouvrirCalque(id) {
+      for (const el of document.body.children) {
+        el.inert = el.id !== id;                       // inerte = tout sauf le calque
+        // Un seul calque à la fois (attention : le Pass VIP est aussi une <section>, on n'y touche pas)
+        if ((el.id === 'alerte' || el.id === 'confirm') && el.id !== id) el.hidden = true;
+      }
+      $(id).hidden = false;
+    }
+    // Ferme tous les calques et revient à la question
+    function fermerCalques() {
+      for (const el of document.body.children) {
+        el.inert = false;
+        if (el.id === 'alerte' || el.id === 'confirm') el.hidden = true;
+      }
+      $('btn-plex').focus();
+    }
+
     /* ================= Alerte « Non » ================= */
-    // Ouvre l'alerte et rend le reste de la page « inerte » : la télécommande ne peut
-    // sélectionner que le bouton « OK OK, j'y vais ! ».
     function alerte() {
-      for (const el of document.body.children) if (el.id !== 'alerte') el.inert = true;
-      $('alerte').hidden = false;
+      ouvrirCalque('alerte');
       $('btn-ok').focus();
     }
-    // Ferme l'alerte et revient à la question (pour répondre « Oui » une fois les tâches faites)
-    function fermerAlerte() {
-      for (const el of document.body.children) el.inert = false;
-      $('alerte').hidden = true;
-      $('btn-plex').focus();
+    // « OK OK, j'y vais ! » : retour à la question (pour répondre « Oui » une fois les tâches faites)
+    function fermerAlerte() { fermerCalques(); }
+
+    /* ================= Confirmations du « Oui » ================= */
+    // Les 3 questions, de plus en plus insistantes. « oui » = texte du bouton pour continuer.
+    const ETAPES = [
+      { classe: 'e1', emoji: '🤨', q: 'Vraiment ?',                              oui: 'Oui, vraiment !' },
+      { classe: 'e2', emoji: '🧐', q: 'Vraiment de vraiment, en vrai ?',         oui: 'Oui, en vrai de vrai !' },
+      { classe: 'e3', emoji: '📜', q: "C'est une bonne situation ça, scribe ?",  oui: 'Oui ! → Plex 🎬' },
+    ];
+    let etape = 0;
+
+    // Clic sur « Oui, oui, je le jure ! » : on commence par la 1re question
+    function confirmer() {
+      etape = 0;
+      ouvrirCalque('confirm');
+      montrerEtape();
+    }
+
+    // Remplit le calque avec la question en cours
+    function montrerEtape() {
+      const e = ETAPES[etape];
+      const calque = $('confirm');
+      calque.className = e.classe;
+      $('confirm-emoji').textContent = e.emoji;
+      $('confirm-q').textContent = e.q;
+      $('confirm-oui').textContent = e.oui;
+      // Relance l'animation d'apparition : on retire la classe, on force le navigateur
+      // à « recalculer » (lecture de offsetWidth), puis on la remet.
+      for (const el of [$('confirm-emoji'), $('confirm-q')]) {
+        el.classList.remove('relance'); void el.offsetWidth; el.classList.add('relance');
+      }
+      $('confirm-oui').focus();
+    }
+
+    // « Oui » à une question : la suivante, ou Plex après la dernière
+    function confirmSuivant() {
+      etape++;
+      if (etape < ETAPES.length) montrerEtape();
+      else Android.openPlex();
     }
 
     // Focus de départ, avant même l'arrivée des tâches
