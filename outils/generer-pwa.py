@@ -73,6 +73,11 @@ PAGES = [
          desc="Aide vocale pour les franchisés : rejoindre Nexus, la plateforme B2B de Carrefour",
          picto="store", tuile="#005FCD", trait="#ffffff",   # couleurs Nexus
          fond="#F3F7FC", theme="#005FCD"),
+    dict(dossier="equipe-nexus", nom="L'équipe Nexus Carrefour",
+         court="Équipe Nexus",
+         desc="Philippe, Thomas et Zeineb répondent à vos questions sur Nexus, la plateforme B2B de Carrefour",
+         picto="users", tuile="#005FCD", trait="#ffffff",   # couleurs Nexus
+         fond="#F3F7FC", theme="#005FCD"),
     dict(dossier="salle-negociation", nom="Salle de négociation", court="Négociation",
          desc="S'entraîner à négocier face à un fournisseur vocal",
          picto="handshake", tuile="#0b355f", trait="#ffffff",
