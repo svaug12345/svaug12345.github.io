@@ -1,6 +1,6 @@
 /*
   ============================================================
-  Google Apps Script « Rappel Nexus » — version 1.1.0 (02/11/2026)
+  Google Apps Script « Rappel Nexus » — version 1.2.0 (09/11/2026)
   ------------------------------------------------------------
   Rôle : relais entre la page https://baiji.fr/assistant-nexus/
   et ElevenLabs. Quand un partenaire remplit « Vous préférez être
@@ -27,11 +27,16 @@
   Historique :
    • 1.0.0 : première version (horaires, limites, journal, appel ElevenLabs)
    • 1.1.0 : jusqu'à 5 demandes par numéro et par heure (au lieu d'une), pour les tests
+   • 1.2.0 : second mode « prospection » (page baiji.fr/prospection-nexus/) : la page
+             envoie type=prospection + le seul numéro de téléphone, et le script fait
+             appeler la personne par l'agent « Équipe Nexus – Prospection fournisseurs »
+             (Philippe, Thomas, Zeineb). Mêmes garde-fous (horaires, limites, journal).
   ============================================================
 */
 
 // ---------- Réglages ----------
 const AGENT_ID  = 'agent_6501m6dse9w4ffr8xvfcvn8bmxk6';      // agent « Rappel Nexus B2B »
+const AGENT_PROSPECTION = 'agent_4801m6zx8h3xes4bqxx6qr0566sh';   // agent « Équipe Nexus – Prospection fournisseurs »
 const NUMERO_ID = 'phnum_9901m6c9jcbnfrnb4aps8c7wkj8f';      // numéro Twilio +33 2 19 12 14 49
 const MAX_PAR_JOUR = 20;           // garde-fou : nombre maximum de rappels par jour (coût, abus)
 const MAX_PAR_NUMERO = 5;          // un même numéro peut faire au plus 5 demandes…
@@ -53,9 +58,13 @@ function doPost(e) {
     //    S'il est rempli, c'est un robot : on fait semblant que tout va bien.
     if (p.site) return repondre({ ok: true });
 
-    // 2) Champs obligatoires et accord explicite
+    // Quel formulaire nous écrit ? « prospection » = la page prospection-nexus/
+    // (juste un numéro) ; sinon c'est le formulaire de rappel des franchisés.
+    const prospection = p.type === 'prospection';
+
+    // 2) Champs obligatoires et accord explicite (formulaire franchisés seulement)
     const nom = nettoyer(p.nom, 60);
-    if (!nom || p.accord !== 'oui') return repondre({ ok: false, erreur: 'champs' });
+    if (!prospection && (!nom || p.accord !== 'oui')) return repondre({ ok: false, erreur: 'champs' });
 
     // 3) Numéro de téléphone : on le met au format international (+33…)
     const tel = normaliserTelephone(p.telephone);
@@ -90,6 +99,15 @@ function doPost(e) {
       verrou.releaseLock();
     }
 
+    // 6 bis) Mode prospection : on lance directement l'équipe commerciale.
+    //        Sans nom ni entreprise, l'agent garde ses valeurs par défaut
+    //        ({{nom_contact}} = Philou, {{entreprise}} = Philou et associés, pour les tests).
+    if (prospection) {
+      const r = lancerAppel(tel, null, null, null, AGENT_PROSPECTION);
+      journal('(prospection)', '', tel, '', r.ok ? 'appel prospection lancé' : 'échec : ' + r.detail);
+      return repondre(r.ok ? { ok: true } : { ok: false, erreur: 'erreur' });
+    }
+
     // 6) La difficulté, en phrase lisible par l'agent ({{difficulte}} dans son prompt)
     const choix = nettoyer(p.difficulte, 150);
     const precision = nettoyer(p.precision, 200);
@@ -115,18 +133,24 @@ function doPost(e) {
  * Appel sortant via l'API ElevenLabs (avec Twilio).
  * Les « dynamic_variables » remplacent {{nom_contact}}, {{entreprise}}
  * et {{difficulte}} dans le prompt et le premier message de l'agent.
+ * agent (facultatif) : quel agent appelle ; par défaut AGENT_ID (Rappel Nexus B2B).
+ * Une variable laissée à null n'est pas envoyée : l'agent garde sa valeur par défaut.
  */
-function lancerAppel(tel, nom, entreprise, difficulte) {
+function lancerAppel(tel, nom, entreprise, difficulte, agent) {
   const cle = PropertiesService.getScriptProperties().getProperty('ELEVENLABS_KEY');
   if (!cle) return { ok: false, detail: 'clé ELEVENLABS_KEY absente' };
 
+  // On ne garde que les variables renseignées
+  const variables = {};
+  if (nom) variables.nom_contact = nom;
+  if (entreprise) variables.entreprise = entreprise;
+  if (difficulte) variables.difficulte = difficulte;
+
   const corps = {
-    agent_id: AGENT_ID,
+    agent_id: agent || AGENT_ID,
     agent_phone_number_id: NUMERO_ID,
     to_number: tel,
-    conversation_initiation_client_data: {
-      dynamic_variables: { nom_contact: nom, entreprise: entreprise, difficulte: difficulte }
-    }
+    conversation_initiation_client_data: { dynamic_variables: variables }
   };
 
   const rep = UrlFetchApp.fetch('https://api.elevenlabs.io/v1/convai/twilio/outbound-call', {

@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Page « L'équipe Nexus vous appelle » – prospection des fournisseurs
-  Version 1.0.0 – 09/11/2026
+  Version 1.1.0 – 09/11/2026
   En ligne : https://baiji.fr/prospection-nexus/
 
   Historique :
@@ -15,6 +15,11 @@
              l'onglet « Conversations » de l'agent.
              Page façon écran d'appel entrant : bouton vert « Décrocher », chrono,
              bouton rouge « Raccrocher », avatars qui s'allument, sous-titres.
+   • 1.1.0 : « Être appelé sur mon téléphone » : on tape juste son numéro et l'équipe
+             appelle VRAIMENT (appel sortant depuis le numéro Nexus). La page passe par
+             le Google Apps Script « Rappel Nexus » (v1.2.0, mode type=prospection,
+             code : outils/rappel-nexus.gs), qui garde la clé ElevenLabs et ses
+             garde-fous (lun-ven 9 h-19 h, 20 appels/jour, 5 par numéro et par heure).
 
   Rappel : comment trois voix dans UNE conversation ? (même principe que equipe-nexus/)
   - Le texte normal est dit par Philippe (voix principale de l'agent) ;
@@ -155,6 +160,31 @@
 
     .note { margin: 14px 0 0; font-size: .85rem; opacity: .75; }
 
+    /* ---------- « Être appelé sur mon téléphone » : une case + un bouton ---------- */
+    #form-appel {
+      margin: 18px 0 0; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.18);
+      display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center;
+    }
+    #form-appel label { width: 100%; font-weight: 600; }
+    #form-appel input[type=tel] {
+      font: inherit; font-size: 1.05rem; text-align: center; letter-spacing: .04em;
+      width: 210px; min-height: 48px; padding: 10px 12px;
+      border: 0; border-radius: 999px; color: var(--texte);
+    }
+    #form-appel input:focus { outline: 3px solid var(--orange); outline-offset: 2px; }
+    #bouton-rappel {
+      font: inherit; font-weight: 700; min-height: 48px; padding: 10px 20px; cursor: pointer;
+      border: 0; border-radius: 999px; background: var(--orange); color: #fff;
+    }
+    #bouton-rappel:disabled { opacity: .6; cursor: wait; }
+    #retour-rappel { width: 100%; margin: 4px 0 0; font-size: .92rem; min-height: 1.4em; }
+    #retour-rappel.ok { color: #8FF0B4; }
+    #retour-rappel.ko { color: #FFB4AA; }
+    /* Piège anti-robots : invisible pour les humains */
+    .piege { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+    /* Pendant un appel dans la page, on cache le formulaire (une chose à la fois) */
+    body.connexion #form-appel, body.en-ligne #form-appel { display: none; }
+
     /* ---------- Pourquoi Nexus ---------- */
     h2.section { font-size: 1.15rem; margin: 0 0 14px; color: var(--bleu); }
     .atouts { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
@@ -214,6 +244,17 @@
 
         <div id="sous-titres"></div>
         <p class="note">Assistants vocaux automatiques · Autorisez le micro pour leur répondre.</p>
+
+        <!-- Ou bien : l'équipe vous appelle pour de vrai, sur votre téléphone -->
+        <form id="form-appel" novalidate>
+          <label for="tel">Ou être appelé sur mon téléphone</label>
+          <input id="tel" type="tel" name="telephone" autocomplete="tel" inputmode="tel"
+                 placeholder="06 12 34 56 78" maxlength="20" required>
+          <!-- Piège à robots : un humain ne voit pas ce champ, donc le laisse vide -->
+          <div class="piege" aria-hidden="true"><input type="text" name="site" tabindex="-1" autocomplete="off"></div>
+          <button id="bouton-rappel" type="submit">Être appelé</button>
+          <p id="retour-rappel" role="status"></p>
+        </form>
       </section>
 
       <section class="carte">
@@ -392,6 +433,60 @@
         });
       } catch (e) {
         erreur(e);
+      }
+    });
+
+
+    /* ==========================================================
+       « ÊTRE APPELÉ » : la page envoie le numéro au Google Apps
+       Script « Rappel Nexus » (mode prospection). C'est LUI qui
+       garde la clé ElevenLabs (jamais dans la page : tout le
+       monde pourrait la lire) et qui demande à ElevenLabs
+       d'appeler ce numéro avec l'équipe commerciale.
+       ========================================================== */
+    const RAPPEL_URL = "https://script.google.com/macros/s/AKfycbwDu_CRDHobWlM6CTPqtWsaHyYxJ9K5Xjfv4-ElqrNV8QQhuOt-Ld-2FRLJOr4LtdUc/exec";
+
+    const formAppel    = document.getElementById("form-appel");
+    const boutonRappel = document.getElementById("bouton-rappel");
+    const retourRappel = document.getElementById("retour-rappel");
+
+    // Messages selon la réponse du script (clé = code d'erreur renvoyé)
+    const MSG_RAPPEL = {
+      ok:        "C'est parti ! L'équipe Nexus vous appelle dans quelques secondes.",
+      telephone: "Ce numéro ne semble pas valide. Indiquez un numéro français, par exemple 06 12 34 56 78.",
+      horaires:  "L'équipe appelle du lundi au vendredi, de 9 h à 19 h. Vous pouvez aussi décrocher ci-dessus.",
+      deja:      "Plusieurs appels ont déjà été demandés pour ce numéro. Réessayez dans une heure.",
+      limite:    "L'équipe a beaucoup appelé aujourd'hui. Réessayez demain, ou décrochez ci-dessus.",
+      erreur:    "L'appel n'a pas pu être lancé. Réessayez dans un moment.",
+    };
+    function retour(code) {
+      retourRappel.textContent = MSG_RAPPEL[code] || MSG_RAPPEL.erreur;
+      retourRappel.className = code === "ok" ? "ok" : "ko";
+    }
+
+    formAppel.addEventListener("submit", async (ev) => {
+      ev.preventDefault();                     // pas de rechargement de page
+      const d = new FormData(formAppel);
+      // Petite vérification côté page (le script refait la sienne, plus stricte)
+      const chiffres = String(d.get("telephone")).replace(/\D/g, "");
+      if (chiffres.length < 9) return retour("telephone");
+
+      d.append("type", "prospection");         // dit au script : « c'est l'équipe commerciale »
+      boutonRappel.disabled = true;
+      retourRappel.textContent = "Envoi…";
+      retourRappel.className = "";
+      try {
+        // URLSearchParams = envoi « formulaire classique », sans « preflight » CORS
+        // (Apps Script ne sait pas y répondre)
+        const rep = await fetch(RAPPEL_URL, { method: "POST", body: new URLSearchParams(d) });
+        const res = await rep.json();          // { ok: true } ou { ok: false, erreur: "…" }
+        retour(res.ok ? "ok" : res.erreur);
+        if (res.ok) formAppel.reset();
+      } catch (e) {
+        console.error(e);
+        retour("erreur");
+      } finally {
+        boutonRappel.disabled = false;
       }
     });
   </script>
