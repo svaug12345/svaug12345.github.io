@@ -1,0 +1,39 @@
+{
+  "name": "L'équipe Nexus vous appelle",
+  "short_name": "Prospection Nexus",
+  "description": "Philippe, Thomas et Zeineb présentent Nexus aux fournisseurs de Carrefour",
+  "id": "/prospection-nexus/",
+  "start_url": "/prospection-nexus/",
+  "scope": "/prospection-nexus/",
+  "display": "standalone",
+  "background_color": "#F3F7FC",
+  "theme_color": "#00479B",
+  "lang": "fr",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "icones/icone-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icones/icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icones/icone-masquable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icones/icone-masquable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -1,0 +1,405 @@
+<!doctype html>
+<!--
+  Page « L'équipe Nexus vous appelle » – prospection des fournisseurs
+  Version 1.0.0 – 09/11/2026
+  En ligne : https://baiji.fr/prospection-nexus/
+
+  Historique :
+   • 1.0.0 : première version. La même équipe que equipe-nexus/ (Philippe = voix
+             PhilippeA, Thomas = ThomasG, Zeineb = ZeinebBK), mais cette fois ce sont
+             des COMMERCIAUX : ils « appellent » un fournisseur pour lui présenter
+             Nexus et le convaincre de rejoindre la plateforme. Agent ElevenLabs
+             « Équipe Nexus – Prospection fournisseurs » (4 min max, fond de bureau).
+             À la fin de chaque appel, ElevenLabs remplit une fiche (entreprise,
+             contact, courriel pour l'invitation, intérêt, objections) visible dans
+             l'onglet « Conversations » de l'agent.
+             Page façon écran d'appel entrant : bouton vert « Décrocher », chrono,
+             bouton rouge « Raccrocher », avatars qui s'allument, sous-titres.
+
+  Rappel : comment trois voix dans UNE conversation ? (même principe que equipe-nexus/)
+  - Le texte normal est dit par Philippe (voix principale de l'agent) ;
+    le texte entre <Thomas>…</Thomas> ou <Zeineb>…</Zeineb> par la voix correspondante.
+  - decouper() relit ces balises pour savoir qui parle (sous-titres + avatars).
+-->
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>L'équipe Nexus vous appelle</title>
+  <!-- PWA : page installable (fichiers fabriqués par outils/generer-pwa.py) -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <meta name="theme-color" content="#00479B">
+  <link rel="icon" href="icones/icone-192.png" type="image/png">
+  <meta name="description" content="Fournisseurs : l'équipe Nexus de Carrefour vous présente sa plateforme B2B.">
+  <meta name="robots" content="noindex, nofollow">
+
+  <style>
+    /* ---------- Couleurs Nexus + une couleur par conseiller ---------- */
+    :root {
+      --bleu: #005FCD;
+      --bleu-fonce: #00479B;
+      --nuit: #0A2A57;          /* fond de « l'écran de téléphone » */
+      --orange: #EC7300;
+      --fond: #F3F7FC;
+      --carte: #FFFFFF;
+      --texte: #16233A;
+      --texte-doux: #5A6779;
+      --vert: #1FAA59;          /* décrocher */
+      --rouge: #D93025;         /* raccrocher */
+      --rayon: 16px;
+      --philippe: #3D8BFF;
+      --thomas:   #EC7300;
+      --zeineb:   #19B7A3;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--fond); color: var(--texte); line-height: 1.55;
+    }
+    .conteneur { max-width: 760px; margin: 0 auto; }
+
+    .logo-bande { background: #fff; padding: 18px 16px; border-bottom: 4px solid var(--orange); }
+    .logo-bande img { display: block; height: 52px; width: auto; max-width: 100%; }
+
+    header {
+      background: linear-gradient(135deg, var(--bleu), var(--bleu-fonce));
+      color: #fff; padding: 26px 16px 70px;
+    }
+    h1 { font-size: clamp(1.5rem, 5vw, 2.1rem); margin: 0 0 8px; line-height: 1.2; }
+    h1 em { font-style: normal; color: #FFC58A; }
+    .sous-titre { margin: 0; opacity: .92; }
+
+    main { padding: 0 16px 40px; }
+    .carte {
+      background: var(--carte); border-radius: var(--rayon);
+      box-shadow: 0 6px 24px rgba(0,95,205,.10);
+      padding: 22px; margin-top: 18px;
+    }
+
+    /* ============================================================
+       L'ÉCRAN D'APPEL (fond bleu nuit, comme un téléphone qui sonne)
+       États posés sur <body> par etat() :
+         (aucun)   → ça sonne : bouton vert « Décrocher » qui vibre
+         connexion → on décroche…
+         en-ligne  → en conversation : chrono + bouton rouge « Raccrocher »
+         termine   → appel fini, les sous-titres restent lisibles
+       ============================================================ */
+    .telephone {
+      margin-top: -46px; text-align: center; color: #fff;
+      background: radial-gradient(circle at 50% 0%, #17468C, var(--nuit) 70%);
+      border-radius: 24px; padding: 24px 18px 26px;
+      box-shadow: 0 14px 34px rgba(10,42,87,.35);
+    }
+    .appel-entrant { margin: 0; font-size: .85rem; letter-spacing: .12em; text-transform: uppercase; opacity: .75; }
+    .qui-appelle { margin: 4px 0 2px; font-size: 1.35rem; font-weight: 800; }
+    #etat-appel { margin: 0 0 20px; opacity: .85; font-variant-numeric: tabular-nums; min-height: 1.5em; }
+
+    /* Les trois avatars */
+    .equipe { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0 0 24px; padding: 0; list-style: none; }
+    .membre { display: grid; justify-items: center; gap: 4px; }
+    .avatar {
+      --c: var(--philippe);
+      width: 72px; height: 72px; border-radius: 50%;
+      display: grid; place-items: center;
+      font-weight: 800; font-size: 1.6rem; color: #fff; background: var(--c);
+      box-shadow: 0 0 0 3px rgba(255,255,255,.9);
+      transition: transform .25s, opacity .25s;
+    }
+    .membre[data-qui="Thomas"] .avatar { --c: var(--thomas); }
+    .membre[data-qui="Zeineb"] .avatar { --c: var(--zeineb); }
+    .membre strong { font-size: 1rem; }
+    .membre span { font-size: .78rem; opacity: .75; line-height: 1.3; }
+    /* Au repos, les trois « sonnent » ensemble (petite vague décalée) */
+    body:not(.en-ligne):not(.termine) .avatar { animation: sonne 1.6s ease-in-out infinite; }
+    .membre:nth-child(2) .avatar { animation-delay: .2s !important; }
+    .membre:nth-child(3) .avatar { animation-delay: .4s !important; }
+    @keyframes sonne { 0%, 60%, 100% { transform: none; } 20% { transform: translateY(-5px); } 40% { transform: translateY(2px); } }
+    /* En ligne : celui qui parle s'allume, les autres s'estompent */
+    body.en-ligne .avatar { opacity: .45; }
+    body.en-ligne .membre.parle .avatar { opacity: 1; transform: scale(1.12); animation: halo 1.1s ease-in-out infinite; }
+    @keyframes halo {
+      0%, 100% { box-shadow: 0 0 0 3px #fff, 0 0 0 6px color-mix(in srgb, var(--c) 55%, transparent); }
+      50%      { box-shadow: 0 0 0 3px #fff, 0 0 0 16px color-mix(in srgb, var(--c) 18%, transparent); }
+    }
+
+    /* Le gros bouton rond : vert pour décrocher, rouge pour raccrocher */
+    #bouton-appel {
+      width: 78px; height: 78px; border-radius: 50%; border: 0; cursor: pointer;
+      display: inline-grid; place-items: center;
+      background: var(--vert); box-shadow: 0 10px 24px rgba(31,170,89,.45);
+      transition: background .2s, transform .15s;
+    }
+    #bouton-appel svg { transition: transform .25s; }
+    body:not(.en-ligne):not(.connexion) #bouton-appel { animation: vibre 1.6s ease-in-out infinite; }
+    @keyframes vibre { 0%, 70%, 100% { transform: none; } 75% { transform: rotate(-12deg); } 80% { transform: rotate(12deg); } 85% { transform: rotate(-8deg); } 90% { transform: rotate(8deg); } }
+    body.en-ligne #bouton-appel { background: var(--rouge); box-shadow: 0 10px 24px rgba(217,48,37,.45); }
+    body.en-ligne #bouton-appel svg { transform: rotate(135deg); }   /* combiné « raccroché » */
+    body.connexion #bouton-appel { opacity: .7; cursor: wait; }
+    #bouton-appel:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+    #libelle { display: block; margin-top: 10px; font-weight: 700; }
+
+    /* Sous-titres (fond blanc à l'intérieur de l'écran) */
+    #sous-titres { display: none; margin: 20px 0 0; text-align: left; max-height: 320px; overflow-y: auto;
+                   background: #fff; color: var(--texte); border-radius: 14px; padding: 10px; }
+    body.en-ligne #sous-titres, body.termine #sous-titres { display: block; }
+    #sous-titres p { margin: 0 0 8px; padding: 9px 11px; border-radius: 12px; font-size: .95rem; }
+    #sous-titres p:last-child { margin-bottom: 0; }
+    #sous-titres .ia { --c: var(--philippe); background: #EEF4FC; border-left: 4px solid var(--c); }
+    #sous-titres .ia[data-qui="Thomas"] { --c: var(--thomas); background: #FFF6EC; }
+    #sous-titres .ia[data-qui="Zeineb"] { --c: var(--zeineb); background: #EAF7F5; }
+    #sous-titres .vous { background: #F1F3F6; margin-left: 15%; }
+    #sous-titres b { display: block; font-size: .78rem; color: var(--c, var(--texte-doux)); }
+    #sous-titres .vous b { color: var(--texte-doux); }
+
+    .note { margin: 14px 0 0; font-size: .85rem; opacity: .75; }
+
+    /* ---------- Pourquoi Nexus ---------- */
+    h2.section { font-size: 1.15rem; margin: 0 0 14px; color: var(--bleu); }
+    .atouts { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+    .atout { border-left: 4px solid var(--orange); background: #FFF6EC; padding: 12px 14px; border-radius: 8px; }
+    .atout strong { display: block; margin-bottom: 2px; }
+
+    footer { text-align: center; color: var(--texte-doux); font-size: .85rem; padding: 0 16px 24px; }
+    @media (max-width: 380px) { .avatar { width: 58px; height: 58px; font-size: 1.3rem; } }
+  </style>
+  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+  <script src="/journal.js" defer></script>
+</head>
+<body>
+
+  <div class="logo-bande">
+    <div class="conteneur"><img src="logo-nexus.png" alt="Carrefour nexus" width="620" height="155"></div>
+  </div>
+
+  <header>
+    <div class="conteneur">
+      <h1>Fournisseurs : rejoignez Nexus, la plateforme <em>B2B</em> de Carrefour</h1>
+      <p class="sous-titre">Philippe, Thomas et Zeineb, de l'équipe Nexus, ont quelque chose à vous proposer. Décrochez !</p>
+    </div>
+  </header>
+
+  <main>
+    <div class="conteneur">
+
+      <!-- L'écran d'appel -->
+      <section class="telephone" aria-live="polite">
+        <p class="appel-entrant">Appel entrant</p>
+        <p class="qui-appelle">Équipe Nexus · Carrefour</p>
+        <p id="etat-appel">Ça sonne…</p>
+
+        <ul class="equipe">
+          <li class="membre" data-qui="Philippe">
+            <div class="avatar" aria-hidden="true">P</div>
+            <strong>Philippe</strong><span>Le capitaine</span>
+          </li>
+          <li class="membre" data-qui="Thomas">
+            <div class="avatar" aria-hidden="true">T</div>
+            <strong>Thomas</strong><span>Le spécialiste, rien ne lui échappe</span>
+          </li>
+          <li class="membre" data-qui="Zeineb">
+            <div class="avatar" aria-hidden="true">Z</div>
+            <strong>Zeineb</strong><span>La pédagogue</span>
+          </li>
+        </ul>
+
+        <button id="bouton-appel" type="button" aria-labelledby="libelle">
+          <!-- Combiné de téléphone (SVG maison) ; tourné de 135° quand on peut raccrocher -->
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
+            <path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/>
+          </svg>
+        </button>
+        <span id="libelle">Décrocher</span>
+
+        <div id="sous-titres"></div>
+        <p class="note">Assistants vocaux automatiques · Autorisez le micro pour leur répondre.</p>
+      </section>
+
+      <section class="carte">
+        <h2 class="section">Pourquoi rejoindre Nexus ?</h2>
+        <div class="atouts">
+          <div class="atout">
+            <strong>Commandes et factures au même endroit</strong>
+            <span>Les bons de commande arrivent dans votre compte, vous les confirmez en ligne.</span>
+          </div>
+          <div class="atout">
+            <strong>Compte standard gratuit</strong>
+            <span>Il suffit pour travailler avec Carrefour.</span>
+          </div>
+          <div class="atout">
+            <strong>Déjà sur Ariba ?</strong>
+            <span>Vous gardez votre compte (OneBuy ou autre client) : pas de doublon.</span>
+          </div>
+          <div class="atout">
+            <strong>Moins de factures rejetées</strong>
+            <span>La facture se crée depuis la commande : références et prix repris automatiquement.</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer>Carrefour – Nexus, plateforme B2B · Assistants vocaux automatiques de l'équipe Nexus</footer>
+
+  <script type="module">
+    // Agent ElevenLabs « Équipe Nexus – Prospection fournisseurs »
+    const AGENT_ID = "agent_4801m6zx8h3xes4bqxx6qr0566sh";
+
+    // Voix principale (texte sans balise) et voix « secondaires » (balises)
+    const PRINCIPAL = "Philippe";
+    const AUTRES = ["Thomas", "Zeineb"];
+    const MS_PAR_CARACTERE = 62;   // vitesse de parole estimée, pour faire briller le bon avatar
+
+    const TEXTES = {
+      sonne:      "Ça sonne…",
+      decrocher:  "Décrocher",
+      connexion:  "Connexion…",
+      raccrocher: "Raccrocher",
+      rappeler:   "Rappeler l'équipe",
+      termine:    "Appel terminé",
+      micro:      "Micro bloqué : autorisez-le dans le navigateur, puis réessayez.",
+      erreur:     "L'équipe n'est pas joignable pour l'instant. Réessayez dans un moment.",
+    };
+
+    const bouton    = document.getElementById("bouton-appel");
+    const libelle   = document.getElementById("libelle");
+    const etatAppel = document.getElementById("etat-appel");
+    const fil       = document.getElementById("sous-titres");
+    const membres   = document.querySelectorAll(".membre");
+
+    let conversation = null;   // conversation en cours (null = pas d'appel)
+    let minuteurs = [];        // minuteries qui passent la parole d'un avatar à l'autre
+    let chrono = null;         // minuterie du compteur mm:ss
+    let debut = 0;             // heure du décroché (millisecondes)
+
+    function etat(nom) {
+      document.body.classList.remove("connexion", "en-ligne", "termine");
+      if (nom) document.body.classList.add(nom);
+    }
+    function ecranB2B(texte) { return texte.replace(/bi[\s-]?tou[\s-]?bi/gi, "B2B"); }
+
+    // --- Chrono de l'appel : 0:00, 0:01… (comme sur un vrai téléphone) ---
+    function demarrerChrono() {
+      debut = Date.now();
+      const tic = () => {
+        const s = Math.floor((Date.now() - debut) / 1000);
+        etatAppel.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+      };
+      tic();
+      chrono = setInterval(tic, 1000);
+    }
+    function arreterChrono() { clearInterval(chrono); chrono = null; }
+
+    /* decouper("Salut <Thomas>Bonjour</Thomas>") → [{qui:"Philippe",…},{qui:"Thomas",…}]
+       (explications détaillées dans equipe-nexus/index.html, même fonction) */
+    function decouper(texte) {
+      const morceaux = [];
+      const regle = new RegExp(`<(${AUTRES.join("|")})>([\\s\\S]*?)(?:<\\/\\1>|$)`, "g");
+      let position = 0;
+      for (const m of texte.matchAll(regle)) {
+        ajouterMorceau(morceaux, PRINCIPAL, texte.slice(position, m.index));
+        ajouterMorceau(morceaux, m[1], m[2]);
+        position = m.index + m[0].length;
+      }
+      ajouterMorceau(morceaux, PRINCIPAL, texte.slice(position));
+      return morceaux;
+    }
+    function ajouterMorceau(liste, qui, texte) {
+      const propre = texte.replace(/<\/?[^>]+>/g, "").replace(/\[[^\]]*\]/g, "").trim();
+      if (!propre) return;
+      const dernier = liste[liste.length - 1];
+      if (dernier && dernier.qui === qui) dernier.texte += " " + propre;
+      else liste.push({ qui, texte: propre });
+    }
+
+    function quiParle(qui) { membres.forEach((m) => m.classList.toggle("parle", m.dataset.qui === qui)); }
+    function stopperMinuteurs() { minuteurs.forEach(clearTimeout); minuteurs = []; }
+    function enchainerAvatars(morceaux) {
+      stopperMinuteurs();
+      let attente = 0;
+      for (const { qui, texte } of morceaux) {
+        minuteurs.push(setTimeout(() => quiParle(qui), attente));
+        attente += Math.max(1200, texte.length * MS_PAR_CARACTERE);
+      }
+    }
+
+    function ajouterSousTitre(qui, texte, deLIa) {
+      const p = document.createElement("p");
+      p.className = deLIa ? "ia" : "vous";
+      if (deLIa) p.dataset.qui = qui;
+      const nom = document.createElement("b");
+      nom.textContent = deLIa ? qui : "Vous";
+      p.append(nom, ecranB2B(texte));        // jamais de HTML injecté
+      fil.append(p);
+      fil.scrollTop = fil.scrollHeight;
+    }
+
+    // Fin d'appel (raccroché d'un côté ou de l'autre, ou erreur)
+    function repos(message) {
+      conversation = null;
+      stopperMinuteurs();
+      quiParle(null);
+      arreterChrono();
+      const duree = debut ? etatAppel.textContent : "";
+      etat(fil.childElementCount ? "termine" : null);
+      libelle.textContent = fil.childElementCount ? TEXTES.rappeler : TEXTES.decrocher;
+      etatAppel.textContent = message || (duree ? `${TEXTES.termine} · ${duree}` : TEXTES.sonne);
+      debut = 0;
+    }
+    function erreur(e) {
+      console.error(e);
+      repos(e && e.name === "NotAllowedError" ? TEXTES.micro : TEXTES.erreur);
+    }
+
+    bouton.addEventListener("click", async () => {
+      if (conversation) { await conversation.endSession(); return; }   // en ligne : raccrocher
+      if (document.body.classList.contains("connexion")) return;
+
+      etat("connexion");
+      libelle.textContent = TEXTES.connexion;
+      etatAppel.textContent = TEXTES.connexion;
+      fil.replaceChildren();
+
+      try {
+        await navigator.mediaDevices.getUserMedia({ audio: true });           // 1) micro
+        const { Conversation } = await import(                               // 2) SDK (version figée)
+          "https://cdn.jsdelivr.net/npm/@elevenlabs/client@1.32.1/+esm"
+        );
+        conversation = await Conversation.startSession({                     // 3) l'appel
+          agentId: AGENT_ID,
+          onConnect: () => {
+            etat("en-ligne");
+            libelle.textContent = TEXTES.raccrocher;
+            demarrerChrono();
+          },
+          onModeChange: ({ mode }) => {
+            if (mode !== "speaking") { stopperMinuteurs(); quiParle(null); }
+          },
+          onMessage: ({ source, message }) => {
+            if (!message) return;
+            if (source === "ai") {
+              const morceaux = decouper(message);
+              morceaux.forEach(({ qui, texte }) => ajouterSousTitre(qui, texte, true));
+              enchainerAvatars(morceaux);
+            } else {
+              ajouterSousTitre(null, message, false);
+            }
+          },
+          onDisconnect: () => repos(),
+          onError: (e) => erreur(e),
+        });
+      } catch (e) {
+        erreur(e);
+      }
+    });
+  </script>
+<script>
+  // ---- Page installable : enregistrement du service worker (sw.js, même dossier) ----
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    navigator.serviceWorker.register("sw.js");
+  }
+</script>
+</body>
+</html>
