@@ -2,7 +2,7 @@
 <!--
   ============================================================
   tac-velo.fr — TAC Vélo, Julien mécanicien vélo
-  Version 1.10.1
+  Version 1.10.2
   ------------------------------------------------------------
   Site vitrine d'une page pour Julien, mécanicien vélo.
   Devise : « Le vélo doit être un plaisir ».
@@ -31,6 +31,8 @@
     9. Contact
 
   Historique :
+   • v1.10.2 : nouveau compte Google Ads (AW-18568190227, conversion « Click to call »
+              ayf6COLZ-LUdEJOygJZF) : l'ancien compte (AW-1041764794) était fermé
    • v1.10.1 : balise de vérification Google Search Console (baiji.fr/julien/)
    • v1.10.0 : référencement + suivi des appels.
               Google : titre et description, « réparation vélo à Gif-sur-Yvette »
@@ -1014,7 +1016,7 @@ const JULIEN = {
   horaires:   "",            // volontairement vide : Julien ne veut pas afficher d'horaires
   horairesDetail: "Si je ne décroche pas, laissez un message : je rappelle.",
 };
-const VERSION = "1.10.1";    // ← à augmenter à chaque modification (voir l'historique en haut)
+const VERSION = "1.10.2";    // ← à augmenter à chaque modification (voir l'historique en haut)
 
 /* ------------------------------------------------------------
    Pictos (bibliothèque Lucide, licence ISC) — juste le dessin
@@ -1676,8 +1678,8 @@ brancherLiens();   // les boutons « Appeler / SMS » de fin d'appel reçoivent 
    ============================================================ */
 const SUIVI = {
   ga4:      "",   // ex. "G-AB12CD34EF"
-  ads:      "AW-1041764794",   // compte Google Ads de TAC Vélo (balise Google)
-  adsAppel: "YuqnCKST77UdELqj4PAD",   // étiquette de la conversion Google Ads « Click to call »
+  ads:      "AW-18568190227",   // compte Google Ads 2 de TAC Vélo (l'ancien, AW-1041764794, était fermé)
+  adsAppel: "ayf6COLZ-LUdEJOygJZF",   // étiquette de la conversion Google Ads « Click to call »
 };
 const CLE_CHOIX = "tacvelo-cookies";          // nom du choix enregistré dans le navigateur
 const DUREE_CHOIX = 182 * 24 * 3600 * 1000;    // 6 mois, en millisecondes (recommandation CNIL)
