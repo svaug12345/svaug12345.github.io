@@ -23,6 +23,9 @@
                « C'est une bonne situation ça, scribe ? ») ; « Euh… non » → l'alerte
     • v1.5.0 : les 3 questions changent CHAQUE JOUR : 12 séries rigolotes (`SERIES`), une par jour
                selon la date (`serieDuJour()`), chacune avec ses décors (`theme`) ; `?serie=N` pour tester
+    • v1.6.0 : 12 séries de plus, avec des clins d'œil à des films, séries et jeux (`SERIES_CINE`),
+               intercalées une sur deux avec les séries « maison » → 24 séries ; décors arcade,
+               magie, montagne, londres
 
   Les couleurs, la police et les pictogrammes reprennent ceux du dashboard famille
   (baiji.fr/famille, mode TV) pour que tout ait le même style.
@@ -368,15 +371,45 @@
     #confirm.t-poule { background: radial-gradient(ellipse at 50% 30%, #fde68a, #f59e0b 85%); color: #4a2c05; }
     #confirm.t-poule .confirm-emoji { animation: tangue .5s ease-in-out infinite alternate; }
 
-    /* Boutons des décors CLAIRS (papyrus, météo, poule) : fond clair, texte foncé */
+    /* arcade : jeu vidéo rétro (lignes de balayage, jaune et rouge, boutons carrés) */
+    #confirm.t-arcade {
+      background:
+        repeating-linear-gradient(0deg, rgba(255,255,255,.04) 0 2px, transparent 2px 5px),
+        radial-gradient(ellipse at 50% 40%, #1a0b3d, #000 75%);
+    }
+    #confirm.t-arcade .confirm-q {
+      font-family: 'JetBrains Mono', 'Courier New', monospace; text-transform: uppercase;
+      color: #ffe000; text-shadow: .3vw .3vw 0 #e60012;
+    }
+    #confirm.t-arcade .confirm-btns button { border-radius: 0; background: #111; color: #fff; border-color: #ffe000; font-family: 'Courier New', monospace; }
+    #confirm.t-arcade #confirm-oui:focus { background: #e60012; border-color: #ffe000; box-shadow: 0 0 2vw #ffe000; }
+    #confirm.t-arcade .confirm-emoji { animation: battement .9s steps(2) infinite; }
+
+    /* magie : bordeaux et or, comme une vieille école de sorciers */
+    #confirm.t-magie { background: radial-gradient(ellipse at 50% 30%, #5a1414, #140404 75%); }
+    #confirm.t-magie .confirm-q { font-family: Georgia, serif; color: #f5d27a; text-shadow: 0 0 1.5vw rgba(245,210,122,.35); }
+    #confirm.t-magie .confirm-emoji { animation: battement 2s ease-in-out infinite; }
+
+    /* montagne : ciel bleu et prairie verte */
+    #confirm.t-montagne { background: linear-gradient(180deg, #bfe6ff 0%, #e6f6ff 45%, #b7e0a0 60%, #6fbf5a 100%); color: #1f3a12; }
+
+    /* londres : ciel gris de brume, parapluie qui se balance */
+    #confirm.t-londres { background: linear-gradient(180deg, #9fb3c8, #4b5d73); }
+    #confirm.t-londres .confirm-q { font-family: Georgia, serif; font-style: italic; color: #fff; }
+    #confirm.t-londres .confirm-emoji { animation: tangue 1.4s ease-in-out infinite alternate; }
+
+    /* Boutons des décors CLAIRS (papyrus, météo, montagne, poule) : fond clair, texte foncé */
     #confirm.t-papyrus .confirm-btns button,
     #confirm.t-meteo .confirm-btns button,
+    #confirm.t-montagne .confirm-btns button,
     #confirm.t-poule .confirm-btns button { background: rgba(255,255,255,.75); color: #2b1d0e; border-color: rgba(0,0,0,.25); }
     #confirm.t-papyrus #confirm-oui:focus,
     #confirm.t-meteo #confirm-oui:focus,
+    #confirm.t-montagne #confirm-oui:focus,
     #confirm.t-poule #confirm-oui:focus { background: #2b1d0e; color: #fff; border-color: #2b1d0e; box-shadow: 0 0 3vw rgba(0,0,0,.3); }
     #confirm.t-papyrus #confirm-non:focus,
     #confirm.t-meteo #confirm-non:focus,
+    #confirm.t-montagne #confirm-non:focus,
     #confirm.t-poule #confirm-non:focus { background: #7f1d1d; color: #fff; border-color: #7f1d1d; }
   </style>
 </head>
@@ -583,7 +616,7 @@
     // Chaque étape : theme = décor (classes t-… du CSS), emoji, q = question, oui = texte du bouton
     // pour continuer. La 3e étape mène à Plex : son bouton le dit.
     // Pour ajouter une série : copier un bloc [ … ], changer les textes. Rien d'autre à faire.
-    const SERIES = [
+    const SERIES_MAISON = [
       [ // 1. La classique
         { theme: 'sobre',   emoji: '🤨', q: 'Vraiment ?',                             oui: 'Oui, vraiment !' },
         { theme: 'violet',  emoji: '🧐', q: 'Vraiment de vraiment, en vrai ?',        oui: 'Oui, en vrai de vrai !' },
@@ -645,6 +678,75 @@
         { theme: 'papyrus', emoji: '📜', q: "C'est une bonne situation ça, scribe ?",                   oui: 'Oui ! → Plex 🎬' },
       ],
     ];
+
+    // Séries « ciné » : petits clins d'œil à des films, séries et jeux (allusions seulement,
+    // jamais de vraies répliques ni de paroles de chansons).
+    const SERIES_CINE = [
+      [ // Le dîner de cons
+        { theme: 'sobre',  emoji: '🤵', q: "Ton prénom, c'est Juste ? Alors juste… c'est fait ?",                 oui: 'Juste fait !' },
+        { theme: 'violet', emoji: '📞', q: "Personne n'a téléphoné pour dire que la table n'était pas mise ?",    oui: 'Personne !' },
+        { theme: 'sobre',  emoji: '🏆', q: 'Champion du rangement, même sans maquette en allumettes ?',            oui: 'Champion ! → Plex 🎬' },
+      ],
+      [ // Astérix, mission Cléopâtre
+        { theme: 'papyrus', emoji: '🏛️', q: 'Le palais doit être fini avant le retour de la reine. Le salon aussi ?', oui: 'Le salon aussi !' },
+        { theme: 'papyrus', emoji: '🐊', q: 'Pas de chaussettes cachées dans un sarcophage ?',                       oui: 'Aucun sarcophage !' },
+        { theme: 'papyrus', emoji: '🧪', q: 'Par Toutatis, on peut sortir la potion magique… euh, Plex ?',          oui: 'Par Toutatis ! → Plex 🎬' },
+      ],
+      [ // Les Bad Guys
+        { theme: 'terminal', emoji: '🐺', q: 'Le plan était parfait : table, habits, cartable. Le loup confirme ?', oui: 'Le loup confirme' },
+        { theme: 'terminal', emoji: '🐍', q: "Le serpent, lui, n'est pas convaincu. Tu le rassures ?",             oui: 'Je rassure le serpent' },
+        { theme: 'violet',   emoji: '😇', q: "Alors c'est vrai, tu es passé du côté des gentils ?",                 oui: 'Gentil confirmé → Plex 🎬' },
+      ],
+      [ // Nimona
+        { theme: 'violet', emoji: '🦈', q: "Tu ne t'es pas transformé en requin pour éviter de mettre la table ?", oui: 'Pas de requin !' },
+        { theme: 'violet', emoji: '🦏', q: 'Ni en rhinocéros pour écraser les habits dans le panier ?',            oui: 'Ni rhinocéros !' },
+        { theme: 'espace', emoji: '🛡️', q: 'Le chevalier te fait confiance. On ouvre les portes du royaume ?',     oui: 'Ouvrez ! → Plex 🎬' },
+      ],
+      [ // Vaiana
+        { theme: 'ocean', emoji: '🌊', q: "L'océan t'a choisi… pour mettre la table. Mission accomplie ?",       oui: 'Mission accomplie !' },
+        { theme: 'ocean', emoji: '🐓', q: 'Même le coq complètement à côté de la plaque a fait sa part ?',       oui: 'Même lui !' },
+        { theme: 'ocean', emoji: '💚', q: "Le cœur de l'île (enfin, le cartable) est bien rangé à sa place ?",   oui: 'À sa place ! → Plex 🎬' },
+      ],
+      [ // Fais pas ci, fais pas ça
+        { theme: 'sobre',  emoji: '🏠', q: 'Chez les Lepic, on vérifie tout. Chez les Bouley, on fait confiance. Et ici ?', oui: 'Ici, confiance !' },
+        { theme: 'meteo',  emoji: '📋', q: 'Si des voisins super organisés passaient, ils seraient impressionnés ?',       oui: 'Très impressionnés !' },
+        { theme: 'violet', emoji: '😅', q: 'Fais pas ci, fais pas ça… mais Plex, ça, tu peux ?',                          oui: 'Je peux ! → Plex 🎬' },
+      ],
+      [ // Harry Potter
+        { theme: 'magie', emoji: '🎩', q: 'Le Choixpeau hésite… Tu as vraiment tout fait ?',                     oui: 'Tout fait !' },
+        { theme: 'magie', emoji: '🪄', q: 'Sans aucun sortilège de rangement, rien qu\'avec tes mains ?',         oui: 'Sans baguette !' },
+        { theme: 'magie', emoji: '🗺️', q: 'Jures-tu solennellement que tes intentions sont BONNES ?',            oui: 'Je le jure ! → Plex 🎬' },
+      ],
+      [ // Pirates des Caraïbes
+        { theme: 'ocean', emoji: '🎩', q: 'Un capitaine au chapeau étrange inspecte le navire. Tout est en ordre ?', oui: 'Tout est en ordre !' },
+        { theme: 'ocean', emoji: '🧭', q: 'Ta boussole indique bien « fini »… et pas « canapé » ?',               oui: 'Elle indique « fini » !' },
+        { theme: 'ocean', emoji: '📜', q: "Mettre la table, c'est un vrai code… ou juste des lignes directrices ?", oui: 'Un vrai code ! → Plex 🎬' },
+      ],
+      [ // La mélodie du bonheur
+        { theme: 'montagne', emoji: '🎵', q: 'Les tâches, c\'est comme les notes : on commence par le début. Do… Ré… tout fait ?', oui: 'Do, ré, tout fait !' },
+        { theme: 'montagne', emoji: '🪟', q: "Les rideaux sont toujours des rideaux ? Personne ne s'en est fait des habits ?",       oui: 'Rideaux intacts !' },
+        { theme: 'montagne', emoji: '📯', q: 'Le capitaine siffle : tout le monde au garde‑à‑vous ?',                                oui: 'Garde-à-vous ! → Plex 🎬' },
+      ],
+      [ // Mary Poppins
+        { theme: 'londres', emoji: '☂️', q: "Ranger d'un claquement de doigts, ça ne marche qu'avec un parapluie magique. Fait à la main ?", oui: 'À la main !' },
+        { theme: 'londres', emoji: '👜', q: "Ton cartable n'est pas un sac sans fond rempli de bazar ?",                                   oui: 'Rien de trop !' },
+        { theme: 'londres', emoji: '🪁', q: 'Pratiquement parfait en tout ?',                                                              oui: 'Pratiquement ! → Plex 🎬' },
+      ],
+      [ // Bomberman
+        { theme: 'arcade', emoji: '💣', q: 'Aucune bombe de chaussettes oubliée sous le lit ?',        oui: 'Zéro bombe !' },
+        { theme: 'arcade', emoji: '🧱', q: 'Tous les blocs de bazar détruits ? Le niveau est propre ?', oui: 'Niveau propre !' },
+        { theme: 'arcade', emoji: '🔥', q: 'Bonus débloqué : Plex. On l\'active ?',                     oui: 'Activer ! → Plex 🎬' },
+      ],
+      [ // Mario
+        { theme: 'arcade', emoji: '🍄', q: 'Toutes les pièces ramassées ? Même celles sous le canapé ?', oui: 'Toutes !' },
+        { theme: 'arcade', emoji: '🏰', q: 'Tu es sûr que la princesse est bien dans CE château ?',     oui: 'Dans celui-là !' },
+        { theme: 'arcade', emoji: '🚩', q: 'Drapeau tout en haut du mât ? Niveau terminé ?',           oui: 'Terminé ! → Plex 🎬' },
+      ],
+    ];
+
+    // On MÉLANGE les deux listes, une série « maison », une série « ciné », et ainsi de suite :
+    // flatMap remplace chaque série maison par la paire [maison, ciné].
+    const SERIES = SERIES_MAISON.flatMap((serie, i) => SERIES_CINE[i] ? [serie, SERIES_CINE[i]] : [serie]);
 
     /**
      * Choisit la série du jour : la même toute la journée, une autre le lendemain.
