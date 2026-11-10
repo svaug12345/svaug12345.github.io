@@ -21,6 +21,8 @@
     • v1.4.0 : « Oui » ne mène plus directement à Plex : 3 confirmations de plus en plus
                insistantes (« Vraiment ? », « Vraiment de vraiment, en vrai ? »,
                « C'est une bonne situation ça, scribe ? ») ; « Euh… non » → l'alerte
+    • v1.5.0 : les 3 questions changent CHAQUE JOUR : 12 séries rigolotes (`SERIES`), une par jour
+               selon la date (`serieDuJour()`), chacune avec ses décors (`theme`) ; `?serie=N` pour tester
 
   Les couleurs, la police et les pictogrammes reprennent ceux du dashboard famille
   (baiji.fr/famille, mode TV) pour que tout ait le même style.
@@ -303,26 +305,79 @@
     /* Chaque étape réapparaît avec un petit « pop » (relancé par le JavaScript) */
     .relance { animation: pop .45s ease-out both; }
 
-    /* Étape 1 : sobre, un sourcil levé */
-    #confirm.e1 { background: radial-gradient(ellipse at 50% 30%, #0f3b40, var(--bg) 70%); }
-    #confirm.e1 .confirm-q { font-size: 5.5vw; }
+    /* Taille par défaut de la question ; .long = question longue, écrite un peu plus petit */
+    .confirm-q { font-size: 4.4vw; max-width: 80vw; }
+    .confirm-q.long { font-size: 3.2vw; }
 
-    /* Étape 2 : plus insistant, violet, l'emoji tourne autour du texte en tanguant */
-    #confirm.e2 { background: radial-gradient(ellipse at 50% 30%, #3a1458, #0b0614 70%); }
-    #confirm.e2 .confirm-q { font-size: 4.6vw; color: #f5d0fe; }
-    #confirm.e2 .confirm-emoji { animation: tangue .7s ease-in-out infinite alternate; }
+    /* ---------- Les décors (classe t-… posée par le JavaScript) ---------- */
+    /* sobre : un sourcil levé */
+    #confirm.t-sobre { background: radial-gradient(ellipse at 50% 30%, #0f3b40, var(--bg) 70%); }
 
-    /* Étape 3 : le papyrus du scribe (sable, encre brune, police à empattements) */
-    #confirm.e3 {
+    /* violet : plus insistant, l'emoji tangue */
+    #confirm.t-violet { background: radial-gradient(ellipse at 50% 30%, #3a1458, #0b0614 70%); }
+    #confirm.t-violet .confirm-q { color: #f5d0fe; }
+    #confirm.t-violet .confirm-emoji { animation: tangue .7s ease-in-out infinite alternate; }
+
+    /* papyrus : sable, encre brune, écriture à l'ancienne */
+    #confirm.t-papyrus {
       background:
         repeating-linear-gradient(0deg, rgba(120,80,30,.07) 0 .4vh, transparent .4vh 1.2vh),
         linear-gradient(160deg, #f1e2b8, #d9bb7f);
       color: #3b2610;
     }
-    #confirm.e3 .confirm-q { font-family: Georgia, 'Times New Roman', serif; font-style: italic; font-size: 4.4vw; }
-    #confirm.e3 .confirm-btns button { background: #fff7e0; color: #3b2610; border-color: #b08a4a; }
-    #confirm.e3 #confirm-oui:focus { background: #3b2610; color: #f1e2b8; border-color: #3b2610; box-shadow: 0 0 3vw rgba(59,38,16,.4); }
-    #confirm.e3 #confirm-non:focus { background: #7f1d1d; color: #fff; border-color: #7f1d1d; }
+    #confirm.t-papyrus .confirm-q { font-family: Georgia, 'Times New Roman', serif; font-style: italic; }
+
+    /* tribunal : boiseries sombres, lettres dorées */
+    #confirm.t-tribunal {
+      background:
+        repeating-linear-gradient(90deg, rgba(0,0,0,.14) 0 .3vw, transparent .3vw 3.5vw),
+        linear-gradient(180deg, #4a2c17, #24150a);
+    }
+    #confirm.t-tribunal .confirm-q { font-family: Georgia, serif; color: #f6d98b; }
+
+    /* terminal : écran d'ordinateur vert, comme dans les films */
+    #confirm.t-terminal { background: #020a04; }
+    #confirm.t-terminal .confirm-q {
+      font-family: 'JetBrains Mono', 'Courier New', monospace; color: #39ff6a;
+      text-shadow: 0 0 1.2vw rgba(57,255,106,.55);
+    }
+    #confirm.t-terminal .confirm-btns button { background: #031a0a; color: #39ff6a; border-color: #1f7a3a; font-family: 'Courier New', monospace; }
+    #confirm.t-terminal #confirm-oui:focus { border-color: #39ff6a; box-shadow: 0 0 3vw rgba(57,255,106,.45); }
+
+    /* espace : ciel étoilé (chaque radial-gradient minuscule = une étoile) */
+    #confirm.t-espace {
+      background:
+        radial-gradient(2px 2px at 12% 18%, #fff, transparent), radial-gradient(2px 2px at 78% 12%, #fff, transparent),
+        radial-gradient(1.5px 1.5px at 35% 72%, #fff, transparent), radial-gradient(2px 2px at 88% 64%, #fff, transparent),
+        radial-gradient(1.5px 1.5px at 55% 28%, #cfe3ff, transparent), radial-gradient(2px 2px at 22% 88%, #fff, transparent),
+        radial-gradient(1.5px 1.5px at 66% 90%, #fff, transparent), radial-gradient(2px 2px at 5% 50%, #cfe3ff, transparent),
+        radial-gradient(ellipse at 50% 120%, #1e3a8a, #020617 65%);
+    }
+    #confirm.t-espace .confirm-q { color: #e0e7ff; }
+    #confirm.t-espace .confirm-emoji { animation: battement 1.6s ease-in-out infinite; }
+
+    /* océan : pour les pirates */
+    #confirm.t-ocean { background: linear-gradient(180deg, #0b4f6c, #01283a 70%); }
+    #confirm.t-ocean .confirm-q { font-family: Georgia, serif; color: #ffd166; }
+    #confirm.t-ocean .confirm-emoji { animation: tangue 1.2s ease-in-out infinite alternate; }
+
+    /* météo : ciel bleu clair, texte foncé */
+    #confirm.t-meteo { background: linear-gradient(180deg, #8ecae6, #e0f2fe); color: #0b3a53; }
+
+    /* poule : jaune paille */
+    #confirm.t-poule { background: radial-gradient(ellipse at 50% 30%, #fde68a, #f59e0b 85%); color: #4a2c05; }
+    #confirm.t-poule .confirm-emoji { animation: tangue .5s ease-in-out infinite alternate; }
+
+    /* Boutons des décors CLAIRS (papyrus, météo, poule) : fond clair, texte foncé */
+    #confirm.t-papyrus .confirm-btns button,
+    #confirm.t-meteo .confirm-btns button,
+    #confirm.t-poule .confirm-btns button { background: rgba(255,255,255,.75); color: #2b1d0e; border-color: rgba(0,0,0,.25); }
+    #confirm.t-papyrus #confirm-oui:focus,
+    #confirm.t-meteo #confirm-oui:focus,
+    #confirm.t-poule #confirm-oui:focus { background: #2b1d0e; color: #fff; border-color: #2b1d0e; box-shadow: 0 0 3vw rgba(0,0,0,.3); }
+    #confirm.t-papyrus #confirm-non:focus,
+    #confirm.t-meteo #confirm-non:focus,
+    #confirm.t-poule #confirm-non:focus { background: #7f1d1d; color: #fff; border-color: #7f1d1d; }
   </style>
 </head>
 <body>
@@ -524,12 +579,87 @@
     function fermerAlerte() { fermerCalques(); }
 
     /* ================= Confirmations du « Oui » ================= */
-    // Les 3 questions, de plus en plus insistantes. « oui » = texte du bouton pour continuer.
-    const ETAPES = [
-      { classe: 'e1', emoji: '🤨', q: 'Vraiment ?',                              oui: 'Oui, vraiment !' },
-      { classe: 'e2', emoji: '🧐', q: 'Vraiment de vraiment, en vrai ?',         oui: 'Oui, en vrai de vrai !' },
-      { classe: 'e3', emoji: '📜', q: "C'est une bonne situation ça, scribe ?",  oui: 'Oui ! → Plex 🎬' },
+    // Les séries de 3 questions, de plus en plus insistantes. UNE série par jour (voir serieDuJour).
+    // Chaque étape : theme = décor (classes t-… du CSS), emoji, q = question, oui = texte du bouton
+    // pour continuer. La 3e étape mène à Plex : son bouton le dit.
+    // Pour ajouter une série : copier un bloc [ … ], changer les textes. Rien d'autre à faire.
+    const SERIES = [
+      [ // 1. La classique
+        { theme: 'sobre',   emoji: '🤨', q: 'Vraiment ?',                             oui: 'Oui, vraiment !' },
+        { theme: 'violet',  emoji: '🧐', q: 'Vraiment de vraiment, en vrai ?',        oui: 'Oui, en vrai de vrai !' },
+        { theme: 'papyrus', emoji: '📜', q: "C'est une bonne situation ça, scribe ?", oui: 'Oui ! → Plex 🎬' },
+      ],
+      [ // 2. Le tribunal
+        { theme: 'tribunal', emoji: '⚖️', q: "La cour est ouverte. L'accusé confirme-t-il avoir tout fait ?", oui: 'Je le confirme !' },
+        { theme: 'tribunal', emoji: '🔍', q: "La cour rappelle qu'un parent peut aller vérifier. Toujours sûr ?", oui: "Qu'il vérifie !" },
+        { theme: 'tribunal', emoji: '🔨', q: "Dernière chance de plaider coupable…",                         oui: 'Non coupable ! → Plex 🎬' },
+      ],
+      [ // 3. Le détecteur de mensonges
+        { theme: 'terminal', emoji: '🤖', q: 'ANALYSE DE LA RÉPONSE EN COURS…',                     oui: "Lancer l'analyse" },
+        { theme: 'terminal', emoji: '📈', q: 'Pupilles légèrement dilatées détectées. Tu confirmes ?', oui: 'Je confirme !' },
+        { theme: 'terminal', emoji: '✅', q: 'Résultat : 97 % de sincérité. Les 3 % restants, on en parle ?', oui: "C'était le stress → Plex 🎬" },
+      ],
+      [ // 4. La mission spatiale
+        { theme: 'espace', emoji: '🚀', q: 'Houston, ici la Terre. Mission « tâches » accomplie ?',  oui: 'Affirmatif !' },
+        { theme: 'espace', emoji: '🛰️', q: 'Nos satellites voient encore un cartable ouvert… Confirmez ?', oui: 'Fausse alerte !' },
+        { theme: 'espace', emoji: '🌕', q: 'Décollage dans 3… 2… On est VRAIMENT sûrs ?',            oui: 'Décollage ! → Plex 🎬' },
+      ],
+      [ // 5. La poule
+        { theme: 'poule', emoji: '🐔', q: 'La poule a un léger doute.',                                     oui: 'Rassurer la poule' },
+        { theme: 'poule', emoji: '🍽️', q: 'Elle demande si la table est VRAIMENT dressée. Couverts compris.', oui: 'Couverts compris !' },
+        { theme: 'poule', emoji: '👀', q: 'Elle te regarde droit dans les yeux. Tu tiens ?',               oui: 'Je soutiens son regard → Plex 🎬' },
+      ],
+      [ // 6. Les pirates
+        { theme: 'ocean', emoji: '🏴‍☠️', q: 'Moussaillon ! Le pont est-il briqué ?',           oui: 'Oui, capitaine !' },
+        { theme: 'ocean', emoji: '🧭', q: "Le capitaine n'a qu'un œil… mais il voit tout.",   oui: 'Rien à cacher !' },
+        { theme: 'ocean', emoji: '🦜', q: 'Jure-le sur la tête de ton perroquet !',           oui: 'Juré ! → Plex 🎬' },
+      ],
+      [ // 7. Le bulletin météo
+        { theme: 'meteo', emoji: '🧦', q: 'Bulletin spécial : risque de chaussettes sur le canapé. Démenti ?', oui: 'Démenti total !' },
+        { theme: 'meteo', emoji: '🎒', q: 'Vigilance orange sur le cartable de demain. On lève l\'alerte ?', oui: "On lève l'alerte !" },
+        { theme: 'meteo', emoji: '☀️', q: 'Ciel dégagé confirmé ? Le présentateur te croit sur parole.',    oui: 'Grand soleil → Plex 🎬' },
+      ],
+      [ // 8. La version simple… mais insistante
+        { theme: 'sobre',  emoji: '🤔', q: 'Sûr ?',                    oui: 'Sûr !' },
+        { theme: 'violet', emoji: '😏', q: 'Sûr sûr ?',                oui: 'Sûr sûr !' },
+        { theme: 'violet', emoji: '🫣', q: 'Sûr sûr sûr de chez sûr ?', oui: 'De chez sûr ! → Plex 🎬' },
+      ],
+      [ // 9. Le témoin
+        { theme: 'sobre',  emoji: '👨', q: "Si on demande à Papa, il dit pareil ?",  oui: 'Pareil !' },
+        { theme: 'violet', emoji: '👩', q: "Et si on demande à Maman ?",              oui: 'Pareil aussi !' },
+        { theme: 'poule',  emoji: '🐔', q: "Et à la poule ?",                         oui: 'Elle confirme ! → Plex 🎬' },
+      ],
+      [ // 10. L'agent secret
+        { theme: 'terminal', emoji: '🕶️', q: 'Message codé reçu : « le cartable est-il prêt ? » Confirmez.', oui: 'Message confirmé' },
+        { theme: 'terminal', emoji: '💣', q: "Cet écran s'autodétruira si vous mentez. Toujours sûr ?",       oui: 'Sûr, agent !' },
+        { theme: 'espace',   emoji: '🔓', q: 'Accès à Plex accordé… à moins que ?',                           oui: 'Accès ! → Plex 🎬' },
+      ],
+      [ // 11. L'inspecteur
+        { theme: 'tribunal', emoji: '🕵️', q: "L'inspecteur a relevé des miettes suspectes sur la table…", oui: 'Elles étaient là avant !' },
+        { theme: 'tribunal', emoji: '👕', q: 'Et les habits : DANS le panier, ou juste À CÔTÉ ?',        oui: 'DANS le panier !' },
+        { theme: 'papyrus',  emoji: '📝', q: "L'inspecteur classe l'affaire. Une dernière déclaration ?",  oui: 'Affaire classée → Plex 🎬' },
+      ],
+      [ // 12. Le scribe, version longue
+        { theme: 'papyrus', emoji: '🏺', q: 'Le scribe trempe sa plume. Tout est fait ?',               oui: 'Tout est fait !' },
+        { theme: 'papyrus', emoji: '🐫', q: 'Il doit l\'écrire sur le papyrus officiel… Toujours d\'accord ?', oui: "Qu'il l'écrive !" },
+        { theme: 'papyrus', emoji: '📜', q: "C'est une bonne situation ça, scribe ?",                   oui: 'Oui ! → Plex 🎬' },
+      ],
     ];
+
+    /**
+     * Choisit la série du jour : la même toute la journée, une autre le lendemain.
+     * On compte les jours écoulés depuis le 1er janvier 1970 (à l'heure locale), puis on prend
+     * le reste de la division par le nombre de séries (%) : on fait le tour des séries, une par jour.
+     * Pour tester une série précise : ajouter ?serie=3 à l'adresse.
+     */
+    function serieDuJour() {
+      const force = new URLSearchParams(location.search).get('serie');
+      if (force && SERIES[force - 1]) return SERIES[force - 1];
+      const d = new Date();
+      const jour = Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
+      return SERIES[jour % SERIES.length];
+    }
+    const ETAPES = serieDuJour();
     let etape = 0;
 
     // Clic sur « Oui, oui, je le jure ! » : on commence par la 1re question
@@ -543,10 +673,15 @@
     function montrerEtape() {
       const e = ETAPES[etape];
       const calque = $('confirm');
-      calque.className = e.classe;
+      calque.className = 't-' + e.theme;
+      // Question longue (plus de 45 caractères) : un peu plus petite pour tenir sur l'écran
+      $('confirm-q').classList.toggle('long', e.q.length > 45);
       $('confirm-emoji').textContent = e.emoji;
-      $('confirm-q').textContent = e.q;
-      $('confirm-oui').textContent = e.oui;
+      // insecable() : espace insécable avant ? ! : ; » pour que la ponctuation ne parte jamais
+      // toute seule à la ligne (typographie française)
+      const insecable = t => t.replace(/ ([?!:;»])/g, '\u00a0$1').replace(/« /g, '«\u00a0');
+      $('confirm-q').textContent = insecable(e.q);
+      $('confirm-oui').textContent = insecable(e.oui);
       // Relance l'animation d'apparition : on retire la classe, on force le navigateur
       // à « recalculer » (lecture de offsetWidth), puis on la remet.
       for (const el of [$('confirm-emoji'), $('confirm-q')]) {
