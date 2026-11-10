@@ -2,7 +2,7 @@
 <!--
   ============================================================
   tac-velo.fr — TAC Vélo, Julien mécanicien vélo
-  Version 1.10.0
+  Version 1.10.1
   ------------------------------------------------------------
   Site vitrine d'une page pour Julien, mécanicien vélo.
   Devise : « Le vélo doit être un plaisir ».
@@ -31,6 +31,7 @@
     9. Contact
 
   Historique :
+   • v1.10.1 : balise de vérification Google Search Console (baiji.fr/julien/)
    • v1.10.0 : référencement + suivi des appels.
               Google : titre et description, « réparation vélo à Gif-sur-Yvette »
               dans le h1, fiche d'identité JSON-LD (LocalBusiness), aperçu de partage
@@ -107,6 +108,9 @@
      Le jour où tac-velo.fr marche : remplacer « https://baiji.fr/julien/ » par
      « https://tac-velo.fr/ » dans tout ce bloc <head>, dans sitemap.xml et robots.txt. -->
 <link rel="canonical" href="https://baiji.fr/julien/">
+<!-- Preuve pour Google Search Console (propriété « préfixe d'URL » https://baiji.fr/julien/).
+     À laisser en place : si on l'enlève, Search Console perd l'accès aux statistiques. -->
+<meta name="google-site-verification" content="R2KcW9tMU1KvaQtyXwfGsXmJExKEl_JwNgZjVAlP0ZY">
 <meta name="geo.region" content="FR-91">
 <meta name="geo.placename" content="Gif-sur-Yvette">
 <!-- Aperçu quand on partage le lien (WhatsApp, Facebook, SMS…) : titre, texte, image.
@@ -1010,7 +1014,7 @@ const JULIEN = {
   horaires:   "",            // volontairement vide : Julien ne veut pas afficher d'horaires
   horairesDetail: "Si je ne décroche pas, laissez un message : je rappelle.",
 };
-const VERSION = "1.10.0";    // ← à augmenter à chaque modification (voir l'historique en haut)
+const VERSION = "1.10.1";    // ← à augmenter à chaque modification (voir l'historique en haut)
 
 /* ------------------------------------------------------------
    Pictos (bibliothèque Lucide, licence ISC) — juste le dessin
