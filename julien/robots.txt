@@ -1,0 +1,12 @@
+# robots.txt — consignes pour les robots des moteurs de recherche (Google, Bing…)
+# Depuis la v1.9.1 (tarifs validés par Julien), tout le site est ouvert.
+# « Disallow: » vide = rien n'est interdit.
+# ⚠️ Google ne lit ce fichier QU'À LA RACINE du domaine (tac-velo.fr/robots.txt).
+#    Tant que le site est servi sur baiji.fr/julien/, il est ignoré : c'est
+#    normal, et sans conséquence (rien n'y est interdit).
+User-agent: *
+Disallow:
+
+# Plan du site, pour aider Google à trouver la page
+# (PROVISOIRE : à remettre sur https://tac-velo.fr/sitemap.xml quand le domaine marche)
+Sitemap: https://baiji.fr/julien/sitemap.xml

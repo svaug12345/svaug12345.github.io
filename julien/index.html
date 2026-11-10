@@ -2,7 +2,7 @@
 <!--
   ============================================================
   tac-velo.fr — TAC Vélo, Julien mécanicien vélo
-  Version 1.9.1
+  Version 1.10.0
   ------------------------------------------------------------
   Site vitrine d'une page pour Julien, mécanicien vélo.
   Devise : « Le vélo doit être un plaisir ».
@@ -31,6 +31,17 @@
     9. Contact
 
   Historique :
+   • v1.10.0 : référencement + suivi des appels.
+              Google : titre et description, « réparation vélo à Gif-sur-Yvette »
+              dans le h1, fiche d'identité JSON-LD (LocalBusiness), aperçu de partage
+              (Open Graph), numéro écrit en dur (contact + pied de page), robots.txt
+              et sitemap.xml ; adresse officielle PROVISOIRE = https://baiji.fr/julien/
+              tant que tac-velo.fr n'est pas en ligne (à remplacer partout ensuite).
+              Zone : Gif-sur-Yvette, Gometz, Bures-sur-Yvette ; pas d'horaires.
+              Suivi Google Ads (AW-1041764794, conversion « Click to call ») avec
+              bandeau cookies conforme CNIL : rien n'est chargé avant « Accepter » ;
+              clics Appeler / WhatsApp / SMS / e-mail mesurés ; lien « Cookies »
+              en pied de page. Réglages dans l'objet SUIVI (en bas).
    • v1.0.0 : première version
    • v1.1.0 : assistant vocal « Rayon » (agent ElevenLabs) qui répond aux
               premières questions et invite à contacter le mécanicien
@@ -72,7 +83,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>TAC Vélo · Julien, mécanicien vélo à Gif-sur-Yvette</title>
+<!-- Titre de l'onglet ET titre bleu dans les résultats Google (≈ 60 caractères max).
+     Les mots que les gens tapent (« réparation vélo » + la ville) sont au début. -->
+<title>Réparation vélo à Gif-sur-Yvette · TAC Vélo, atelier et domicile</title>
 <!--
   PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »
   ou « Ajouter à l'écran d'accueil »). Fichiers fabriqués par outils/generer-pwa.py :
@@ -83,11 +96,71 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
 <link rel="icon" href="icones/icone-192.png" type="image/png">
-<meta name="description" content="TAC Vélo : Julien, mécanicien vélo à Gif-sur-Yvette, dans son atelier de quartier ou à domicile. Le vélo doit être un plaisir : conseils pour vous dépanner vous-même, prix annoncé avant réparation, c'est vous qui décidez.">
-<!-- Visible des moteurs de recherche depuis la v1.9.1 (tarifs validés par Julien).
-     Pour cacher de nouveau le site à Google, remettre :
-     <meta name="robots" content="noindex"> -->
+<!-- Description = le petit texte gris sous le titre dans Google (≈ 155 caractères max).
+     Elle doit donner envie de cliquer… ou d'appeler directement. -->
+<meta name="description" content="Mécanicien vélo à Gif-sur-Yvette : réparation, révision, crevaison, freins, vélo électrique. À l'atelier ou à domicile, prix annoncé avant. ☎ 06 58 23 67 40">
+<!-- Ouvert aux moteurs de recherche depuis la v1.9.1 (tarifs validés par Julien).
+     « index, follow » = Google peut afficher la page et suivre ses liens. -->
+<meta name="robots" content="index, follow">
+<!-- Adresse « officielle » de la page : évite que Google voie deux sites.
+     ⚠️ PROVISOIRE (v1.10.0) : baiji.fr/julien/, car tac-velo.fr n'est pas encore en ligne.
+     Le jour où tac-velo.fr marche : remplacer « https://baiji.fr/julien/ » par
+     « https://tac-velo.fr/ » dans tout ce bloc <head>, dans sitemap.xml et robots.txt. -->
+<link rel="canonical" href="https://baiji.fr/julien/">
+<meta name="geo.region" content="FR-91">
 <meta name="geo.placename" content="Gif-sur-Yvette">
+<!-- Aperçu quand on partage le lien (WhatsApp, Facebook, SMS…) : titre, texte, image.
+     « og » = Open Graph, le format lu par presque toutes les applis. -->
+<meta property="og:type" content="website">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:site_name" content="TAC Vélo">
+<meta property="og:url" content="https://baiji.fr/julien/">
+<meta property="og:title" content="TAC Vélo · Réparation vélo à Gif-sur-Yvette">
+<meta property="og:description" content="Julien, mécanicien vélo de quartier : à l'atelier ou à domicile. Il regarde votre vélo, annonce le prix, et c'est vous qui décidez.">
+<meta property="og:image" content="https://baiji.fr/julien/icones/partage.png">
+<meta property="og:image:width" content="1600">
+<meta property="og:image:height" content="600">
+<meta property="og:image:alt" content="Logo TAC Vélo">
+<meta name="twitter:card" content="summary_large_image">
+<!-- Fiche d'identité pour Google (« données structurées », format JSON-LD).
+     Elle n'apparaît pas à l'écran : elle dit à Google, sans ambiguïté, qui est
+     l'entreprise, où elle est, son téléphone et ce qu'elle fait. C'est ce qui aide
+     à sortir dans les recherches locales (« réparation vélo près de moi »).
+     ⚠️ À garder identique à la fiche Google Business Profile (nom, adresse, tél.).
+     Pas d'horaires (« openingHours ») : choix de Julien, on n'en affiche pas. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "@id": "https://baiji.fr/julien/#entreprise",
+  "name": "TAC Vélo",
+  "description": "Mécanicien vélo de quartier à Gif-sur-Yvette : réparation et révision de vélos (ville, VTT, route, enfant, électrique), à l'atelier ou à domicile. Prix annoncé avant réparation.",
+  "url": "https://baiji.fr/julien/",
+  "logo": "https://baiji.fr/julien/icones/icone-512.png",
+  "image": "https://baiji.fr/julien/icones/partage.png",
+  "telephone": "+33658236740",
+  "email": "julien.vaugoude@gmail.com",
+  "founder": { "@type": "Person", "name": "Julien Vaugoude", "jobTitle": "Mécanicien vélo" },
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "9 avenue Lannes",
+    "postalCode": "91190",
+    "addressLocality": "Gif-sur-Yvette",
+    "addressRegion": "Île-de-France",
+    "addressCountry": "FR"
+  },
+  "areaServed": [
+    { "@type": "City", "name": "Gif-sur-Yvette" },
+    { "@type": "City", "name": "Gometz-le-Châtel" },
+    { "@type": "City", "name": "Gometz-la-Ville" },
+    { "@type": "City", "name": "Bures-sur-Yvette" }
+  ],
+  "priceRange": "€",
+  "knowsAbout": ["Réparation vélo", "Révision vélo", "Crevaison", "Freins de vélo", "Vélo électrique", "Vélo d'enfant", "Dérailleur", "Nettoyage vélo"],
+  "hasMap": "https://www.google.com/maps/search/?api=1&query=9+avenue+Lannes+91190+Gif-sur-Yvette",
+  "taxID": "99084432600019"
+}
+</script>
 <meta name="theme-color" content="#f4efe6">
 <!-- Petit vélo en guise d'icône d'onglet (SVG directement dans l'adresse) -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231b1d1a' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='24' height='24' rx='6' fill='%23f5c21b' stroke='none'/%3E%3Ccircle cx='7' cy='15' r='3.2'/%3E%3Ccircle cx='17' cy='15' r='3.2'/%3E%3Cpath d='M7 15l4-6h5l1 6M11 9l1 6h5'/%3E%3C/svg%3E">
@@ -535,6 +608,21 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 .barre-appel .btn-icone { background: var(--surface); color: var(--ink); width: 54px; height: 54px; }
 @media (min-width: 860px) { .barre-appel { display: none; } }
 
+/* ---------- Bandeau cookies (consentement) ----------
+   Règle de la CNIL : « Accepter » et « Refuser » aussi visibles l'un que l'autre,
+   et rien n'est déposé tant que le visiteur n'a pas répondu.
+   Il passe au-dessus de la barre d'appel (z-index plus grand). */
+.bandeau-cookies {
+  position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 30;
+  max-width: 560px; margin-inline: auto;
+  background: var(--surface); color: var(--ink); border: 2px solid var(--ink); border-radius: var(--radius);
+  box-shadow: 4px 4px 0 var(--ink); padding: 18px 20px; font-size: 15px; line-height: 1.45;
+}
+.bandeau-cookies p { margin: 0 0 14px; }
+.bandeau-cookies .choix { display: flex; gap: 10px; }
+.bandeau-cookies .btn { flex: 1; min-height: 46px; padding: 0 16px; font-size: 14px; }
+.lien-cookies { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline; cursor: pointer; }
+
 /* Apparition douce des blocs au défilement */
 .apparait { opacity: 0; transform: translateY(18px); transition: opacity .6s, transform .6s; }
 .apparait.vu { opacity: 1; transform: none; }
@@ -566,8 +654,9 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 <section class="hero">
   <div class="wrap">
     <div>
-      <span class="kicker">TAC Vélo · Julien, mécanicien vélo · Gif-sur-Yvette</span>
-      <h1>Le vélo doit être un <span class="surligne">plaisir.</span></h1>
+      <!-- Le grand titre (h1) est le plus important pour Google : il contient donc
+           « réparation vélo » + la ville (le sur-titre), en plus de la devise. -->
+      <h1><span class="kicker">Réparation vélo à Gif-sur-Yvette · atelier de quartier ou à domicile</span>Le vélo doit être un <span class="surligne">plaisir.</span></h1>
       <p class="lead">Un pneu à plat, une chaîne qui grince, ça ne devrait pas gâcher votre balade. Je vous montre <strong>comment vous dépanner vous-même</strong> quand c'est simple. Et quand c'est trop compliqué, ou que vous préférez rouler sans vous en soucier, je m'en occupe : <strong>je regarde votre vélo, je vous annonce le prix, et c'est vous qui décidez</strong>.</p>
       <div class="actions">
         <a class="btn btn-main js-appel" href="#contact">
@@ -827,7 +916,9 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     <div class="zone-bandeau apparait">
       <!-- picto repère (Lucide « map-pin », ISC) -->
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
-      Gif-sur-Yvette et communes voisines. Un doute sur votre adresse ? Demandez à Julien.
+      <!-- Les noms des communes aident Google à montrer TAC Vélo aux gens des alentours.
+           Liste validée par Julien (même liste que « areaServed » en haut). -->
+      <span>Gif-sur-Yvette, Gometz et Bures-sur-Yvette. Un doute sur votre adresse ? Demandez à Julien.</span>
     </div>
   </div>
 </section>
@@ -841,7 +932,8 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
         <p>Un appel, un WhatsApp, un SMS ou un e-mail suffit. Il vous répond lui-même, pas de standard, pas de formulaire. Parce que le vélo doit rester un plaisir.</p>
       </div>
       <div>
-        <a class="tel-grand js-appel" id="telGrand" href="#contact">Numéro bientôt en ligne</a>
+        <!-- Numéro écrit en dur (et pas seulement par le script) : Google le lit à coup sûr. -->
+        <a class="tel-grand js-appel" id="telGrand" href="tel:+33658236740">06 58 23 67 40</a>
         <ul class="coordonnees">
           <li id="ligneMail">
             <!-- picto enveloppe (Lucide « mail », ISC) -->
@@ -872,10 +964,24 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   <div class="wrap">
     <span>TAC Vélo · Julien, mécanicien vélo · Le vélo doit être un plaisir</span>
     <!-- Mention obligatoire pour une entreprise individuelle : nom + SIRET -->
-    <span>EI Julien Vaugoude · 9 avenue Lannes, 91190 Gif-sur-Yvette · SIRET 990 844 326 00019</span>
-    <span id="version"></span>
+    <!-- Nom + adresse + téléphone ensemble, écrits pareil que sur la fiche Google :
+         pour le référencement local, Google vérifie que ces trois infos concordent. -->
+    <span>EI Julien Vaugoude · 9 avenue Lannes, 91190 Gif-sur-Yvette · <a href="tel:+33658236740">06 58 23 67 40</a> · SIRET 990 844 326 00019</span>
+    <span><button class="lien-cookies" id="lienCookies" type="button">Cookies</button> · <span id="version"></span></span>
   </div>
 </footer>
+
+<!-- Bandeau cookies : caché au départ, le script l'affiche s'il faut demander l'accord.
+     Les deux boutons ont exactement le même style (exigence de la CNIL). -->
+<div class="bandeau-cookies" id="bandeauCookies" role="dialog" aria-labelledby="titreCookies" hidden>
+  <p><b id="titreCookies">Petits cookies, pour savoir si la pub sert à quelque chose.</b><br>
+  Avec votre accord, Google Analytics compte les visites et Google Ads mesure les clics sur « Appeler ».
+  Rien d'autre, et rien n'est revendu. Votre choix est gardé 6 mois ; vous pouvez le changer via « Cookies » en bas de page.</p>
+  <div class="choix">
+    <button class="btn btn-ghost" id="cookiesNon" type="button">Refuser</button>
+    <button class="btn btn-ghost" id="cookiesOui" type="button">Accepter</button>
+  </div>
+</div>
 
 <!-- Barre d'appel qui apparaît en bas de l'écran du téléphone quand on fait défiler -->
 <div class="barre-appel" id="barreAppel">
@@ -899,12 +1005,12 @@ const JULIEN = {
   telAffiche: "06 58 23 67 40",        // tel qu'on le lit
   whatsapp:   "33658236740",           // même numéro, chiffres seuls, sans le 0 ni le + (format exigé par WhatsApp)
   email:      "julien.vaugoude@gmail.com",
-  zone:       "Gif-sur-Yvette et communes voisines",
+  zone:       "Gif-sur-Yvette, Gometz et Bures-sur-Yvette",
   zoneDetail: "À l'atelier de quartier, ou à domicile : Julien se déplace chez vous.",
-  horaires:   "",            // ex. "Du mardi au samedi, 9 h – 19 h"
+  horaires:   "",            // volontairement vide : Julien ne veut pas afficher d'horaires
   horairesDetail: "Si je ne décroche pas, laissez un message : je rappelle.",
 };
-const VERSION = "1.9.1";     // ← à augmenter à chaque modification (voir l'historique en haut)
+const VERSION = "1.10.0";    // ← à augmenter à chaque modification (voir l'historique en haut)
 
 /* ------------------------------------------------------------
    Pictos (bibliothèque Lucide, licence ISC) — juste le dessin
@@ -1546,6 +1652,122 @@ window.addEventListener("pagehide", () => { if (conversation) conversation.endSe
 
 etatRayon("repos", "Appuyez, puis parlez normalement.", "Il faudra autoriser le micro.");
 brancherLiens();   // les boutons « Appeler / SMS » de fin d'appel reçoivent le bon lien
+</script>
+<script>
+/* ============================================================
+   📊 SUIVI DES VISITES ET DES APPELS (Google Analytics 4 + Google Ads)
+   ------------------------------------------------------------
+   À remplir avec les identifiants donnés par Google :
+   - ga4       : Google Analytics → Administration → Flux de données → « ID de mesure » (G-…)
+   - ads       : Google Ads → Objectifs → Conversions → balise Google (AW-…)
+   - adsAppel  : l'« étiquette » de la conversion « Clics sur le numéro de téléphone
+                 de votre site » (la fin de send_to, après le « / »)
+   Laisser "" = rien n'est chargé et aucun bandeau ne s'affiche.
+
+   Fonctionnement (« mode de base » du consentement, le plus prudent pour la CNIL) :
+   1. tant que le visiteur n'a pas cliqué « Accepter », AUCUN script Google
+      n'est chargé et aucun cookie n'est déposé ;
+   2. s'il accepte : on charge la balise Google (gtag.js) ;
+   3. s'il refuse : rien n'est chargé ; son choix est retenu 6 mois.
+   ============================================================ */
+const SUIVI = {
+  ga4:      "",   // ex. "G-AB12CD34EF"
+  ads:      "AW-1041764794",   // compte Google Ads de TAC Vélo (balise Google)
+  adsAppel: "YuqnCKST77UdELqj4PAD",   // étiquette de la conversion Google Ads « Click to call »
+};
+const CLE_CHOIX = "tacvelo-cookies";          // nom du choix enregistré dans le navigateur
+const DUREE_CHOIX = 182 * 24 * 3600 * 1000;    // 6 mois, en millisecondes (recommandation CNIL)
+const suiviActif = !!(SUIVI.ga4 || SUIVI.ads);
+
+// Lecture / écriture du choix. try/catch : en navigation privée, le stockage peut être bloqué.
+function lireChoix() {
+  try {
+    const c = JSON.parse(localStorage.getItem(CLE_CHOIX));
+    if (c && Date.now() - c.date < DUREE_CHOIX) return c.choix;   // "oui" ou "non"
+  } catch (e) {}
+  return null;   // pas encore répondu (ou réponse trop ancienne : on redemande)
+}
+function ecrireChoix(choix) {
+  try { localStorage.setItem(CLE_CHOIX, JSON.stringify({ choix, date: Date.now() })); } catch (e) {}
+}
+
+// gtag() : la fonction officielle de Google. Elle range les commandes dans « dataLayer » ;
+// le script gtag.js les lit dès qu'il est chargé.
+window.dataLayer = window.dataLayer || [];
+function gtag() { dataLayer.push(arguments); }
+let googleCharge = false;
+
+function chargerGoogle() {
+  if (googleCharge || !suiviActif) return;
+  googleCharge = true;
+  // Le visiteur a dit oui : on le signale à Google (Consent Mode v2)
+  gtag("consent", "default", {
+    ad_storage: "granted", analytics_storage: "granted",
+    ad_user_data: "granted", ad_personalization: "denied",   // pas de pub personnalisée
+  });
+  gtag("js", new Date());
+  if (SUIVI.ga4) gtag("config", SUIVI.ga4);
+  if (SUIVI.ads) gtag("config", SUIVI.ads);
+  const s = document.createElement("script");
+  s.async = true;
+  s.src = "https://www.googletagmanager.com/gtag/js?id=" + (SUIVI.ga4 || SUIVI.ads);
+  document.head.appendChild(s);
+}
+
+// Retrait de l'accord : on efface les cookies Google déjà posés (_ga, _gcl…)
+function effacerCookiesGoogle() {
+  const domaines = [location.hostname, "." + location.hostname.replace(/^www\./, "")];
+  document.cookie.split(";").map(c => c.split("=")[0].trim())
+    .filter(nom => /^(_ga|_gid|_gcl|_gat)/.test(nom))
+    .forEach(nom => domaines.forEach(d => {
+      document.cookie = nom + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=" + d;
+    }));
+}
+
+const bandeau = document.getElementById("bandeauCookies");
+function afficherBandeau() { bandeau.hidden = false; }
+document.getElementById("cookiesOui").addEventListener("click", () => {
+  ecrireChoix("oui"); bandeau.hidden = true; chargerGoogle();
+});
+document.getElementById("cookiesNon").addEventListener("click", () => {
+  const avait = googleCharge;
+  ecrireChoix("non"); bandeau.hidden = true;
+  if (avait) { effacerCookiesGoogle(); location.reload(); }   // on recharge pour couper la balise
+});
+// Lien « Cookies » du pied de page : permet de changer d'avis à tout moment
+const lienCookies = document.getElementById("lienCookies");
+if (suiviActif) lienCookies.addEventListener("click", afficherBandeau);
+else { lienCookies.nextSibling.remove(); lienCookies.remove(); }   // pas de suivi = ni lien, ni « · »
+
+// Au chargement : choix déjà fait → on l'applique ; sinon → on demande
+if (suiviActif) {
+  const choix = lireChoix();
+  if (choix === "oui") chargerGoogle();
+  else if (choix === null) afficherBandeau();
+}
+
+/* ---- Mesure des prises de contact ----
+   Un seul écouteur sur toute la page (même les boutons fabriqués plus tard
+   par le script sont couverts). On ne mesure que si le visiteur a accepté. */
+document.addEventListener("click", (e) => {
+  if (!googleCharge) return;
+  const a = e.target.closest("a[href]");
+  if (!a) return;
+  const href = a.getAttribute("href");
+  let moyen = null;
+  if (href.startsWith("tel:")) moyen = "appel";
+  else if (href.includes("wa.me/")) moyen = "whatsapp";
+  else if (href.startsWith("sms:")) moyen = "sms";
+  else if (href.startsWith("mailto:")) moyen = "email";
+  if (!moyen) return;
+  // Événement Analytics : visible dans GA4 → Rapports → Engagement → Événements
+  // « emplacement » = l'id du bloc où se trouve le bouton (hero, contact, rayon…), pour savoir lequel marche le mieux
+  gtag("event", "contact_" + moyen, { emplacement: a.closest("[id]")?.id || "page" });
+  // Conversion Google Ads : seulement pour les appels (c'est l'objectif de la pub)
+  if (moyen === "appel" && SUIVI.ads && SUIVI.adsAppel) {
+    gtag("event", "conversion", { send_to: SUIVI.ads + "/" + SUIVI.adsAppel });
+  }
+});
 </script>
 <script>
   // ---- Page installable : enregistrement du service worker (sw.js, même dossier) ----
