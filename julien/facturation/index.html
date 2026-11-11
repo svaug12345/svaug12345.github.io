@@ -3,7 +3,7 @@
 <head>
 <!--
   ============================================================
-  TAC Vélo — Facturation · version 1.1.0
+  TAC Vélo — Facturation · version 1.1.1
   Page fabriquée par construire-page-web.py (dossier facturation/ du projet TAC Vélo) :
   ne pas la modifier ici, modifier Index.html puis relancer le script.
   Les données (factures, clients, PDF) sont dans le Google Sheets / Drive de Seb ;
@@ -12,6 +12,8 @@
   Historique :
    • 1.0.0 : première version hébergée sur baiji.fr (plus de bandeau Google)
    • 1.1.0 : fiches atelier (enregistrer au fur et à mesure, statuts), devis, onglet Atelier
+   • 1.1.1 : indicateur d'enregistrement (barre animée, « Non enregistrée / Enregistrée à… »),
+             enregistrement des fiches plus rapide côté script Google (~3,4 s → ~2,1 s)
   ============================================================
 -->
 <!-- « noindex » : outil privé, il ne doit jamais apparaître sur Google -->
@@ -126,6 +128,18 @@
   .badge.st-pieces { background: #fbe7dd; color: #a2481f; }
   .badge.st-pret { background: #e3f1e8; color: var(--green); }
   .badge.st-devis { background: #fdf3cf; color: #7a5b00; }
+  /* Indicateurs d'enregistrement : barre animée sous l'en-tête + état sous le total + roue dans le bouton */
+  .busybar { position: fixed; top: 0; left: 0; right: 0; height: 4px; z-index: 40; overflow: hidden; display: none; background: rgba(245,194,27,.25); }
+  .busybar::before { content: ""; position: absolute; top: 0; bottom: 0; width: 40%; background: var(--yellow); animation: busy 1.1s ease-in-out infinite; }
+  @keyframes busy { from { left: -40%; } to { left: 100%; } }
+  body.busy .busybar { display: block; }
+  .savestate { display: block; font-size: 12px; font-weight: 600; margin-top: 2px; white-space: nowrap; }
+  .savestate.dirty { color: #b4532a; }
+  .savestate.saving { color: var(--muted); }
+  .savestate.saved { color: var(--green); }
+  .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent;
+          border-radius: 50%; animation: spin .7s linear infinite; vertical-align: -2px; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
   .toast { position: fixed; left: 50%; bottom: 92px; transform: translateX(-50%); background: var(--ink); color: #fff;
            padding: 10px 16px; border-radius: 10px; font-size: 15px; z-index: 30; display: none; max-width: 90vw; text-align: center; }
   .demo { background: var(--orange); color: #fff; text-align: center; font-size: 13px; padding: 4px; display: none; }
@@ -258,7 +272,7 @@
 
 <div class="totalbar" id="totalbar">
   <div class="in">
-    <div class="amount"><small id="totalLabel">Total à payer</small><span id="total">0,00 €</span></div>
+    <div class="amount"><small id="totalLabel">Total à payer</small><span id="total">0,00 €</span><small class="savestate" id="saveState"></small></div>
     <button class="btn ghost" id="previewBtn" type="button">Aperçu</button>
     <button class="btn ghost" id="factBtn" type="button">Facturer</button>
     <button class="btn primary" id="createBtn" type="button">Créer la facture</button>
@@ -266,6 +280,7 @@
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="busybar" id="busybar"></div>
 
 <div class="modal" id="modal">
   <div class="sheet">
@@ -280,7 +295,9 @@
   // mode = document en cours d'édition : 'fiche' (atelier), 'devis' ou 'facture'
   // current = fiche ou devis ouvert depuis l'onglet Atelier ({ numero, type, statut }), sinon null
   var state = { clients: [], catalogue: [], typeClient: 'Particulier', statut: 'Payée', mode: 'fiche', current: null,
-    ficheStatuts: ['En cours', 'En attente de pièces', 'Prêt à récupérer'], atelier: [] };
+    ficheStatuts: ['En cours', 'En attente de pièces', 'Prêt à récupérer'], atelier: [],
+    // suivi « enregistré ou pas » : edits = compteur de modifications, savedEdits = sa valeur au dernier enregistrement
+    edits: 0, savedEdits: 0, saving: false, savedAt: '' };
   var CHIPS = ['Prévoir plaquettes de frein prochainement', 'Prévoir une purge des freins', 'Pneus usés : à remplacer prochainement',
     'Chaîne usée : à remplacer à la prochaine révision', 'Prochaine révision conseillée dans 6 mois'];
   var DRAFT_KEY = 'tacvelo-facture-brouillon';
@@ -300,7 +317,14 @@
   var isGas = typeof google !== 'undefined' && google.script && google.script.run;
   var API = !isGas && window.TAC_API;
   var KEY = isGas ? '' : (window.TAC_KEY || '');
+  // Barre animée en haut de l'écran tant qu'au moins un échange avec le serveur est en cours
+  var busy = 0;
+  function setBusy(d) { busy = Math.max(0, busy + d); document.body.classList.toggle('busy', busy > 0); }
   function call(fn) {
+    setBusy(1);
+    return callRaw.apply(null, arguments).then(function (r) { setBusy(-1); return r; }, function (e) { setBusy(-1); throw e; });
+  }
+  function callRaw(fn) {
     var rest = Array.prototype.slice.call(arguments, 1);
     var args = [KEY].concat(rest);
     return new Promise(function (resolve, reject) {
@@ -402,6 +426,7 @@
     var cur = state.current;
     $('createBtn').textContent = state.mode === 'devis' && cur && cur.type === 'Devis' ? 'Mettre à jour le devis' : M.bouton;
     updateCurrentBar();
+    renderSaveState();
     saveDraft();
   }
   function updateCurrentBar() {
@@ -417,8 +442,9 @@
     }
   }
   function resetDoc(mode) {
-    state.current = null;
+    state.current = null; state.savedAt = '';
     fillForm({ mode: $('mode').value });
+    markClean();
     setMode(mode || 'fiche');
     $('err').style.display = 'none';
   }
@@ -490,8 +516,24 @@
     var hasMail = !!$('email').value.trim();
     $('envoyerEmail').disabled = !hasMail;
     if (!hasMail) $('envoyerEmail').checked = false;
+    if (!filling) state.edits++;
+    renderSaveState();
     saveDraft();
   }
+
+  /* ---------- État d'enregistrement de la fiche (sous le total) ---------- */
+  function isDirty() { return state.edits !== state.savedEdits; }
+  function markClean() { state.savedEdits = state.edits; renderSaveState(); }
+  function renderSaveState() {
+    var el = $('saveState');
+    if (state.mode !== 'fiche') { el.className = 'savestate'; el.textContent = ''; return; }
+    if (state.saving) { el.className = 'savestate saving'; el.innerHTML = '<span class="spin"></span>Enregistrement…'; return; }
+    if (isDirty() && $('nom').value.trim()) { el.className = 'savestate dirty'; el.textContent = '● Non enregistrée'; return; }
+    el.className = 'savestate saved';
+    el.textContent = state.current && state.savedAt ? '✓ Enregistrée à ' + state.savedAt : (state.current ? '✓ Enregistrée' : '');
+  }
+  // On prévient si on quitte la page pendant un enregistrement
+  window.addEventListener('beforeunload', function (e) { if (state.saving) { e.preventDefault(); e.returnValue = ''; } });
 
   /* ---------- Données du formulaire ---------- */
   function collect() {
@@ -517,7 +559,7 @@
   var filling = false;
   function saveDraft() {
     if (filling) return;
-    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: 2, data: collect(), mode: state.mode, current: state.current })); } catch (e) {}
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: 2, data: collect(), mode: state.mode, current: state.current, dirty: isDirty() })); } catch (e) {}
   }
   function loadDraft() {
     try {
@@ -593,9 +635,10 @@
     var dirty = $('nom').value.trim() && !(state.current && state.current.numero === numero);
     if (dirty && !confirm('Le formulaire contient déjà un document non enregistré. Le remplacer par ' + numero + ' ?')) return;
     call('getAtelierDoc', numero).then(function (r) {
-      state.current = { numero: r.numero, type: r.type, statut: r.statut };
+      state.current = { numero: r.numero, type: r.type, statut: r.statut }; state.savedAt = '';
       $('done').style.display = 'none'; $('form').style.display = '';
       fillForm(r.data);
+      markClean();
       setMode(r.type === 'Devis' ? 'devis' : 'fiche');
       showTab('new'); window.scrollTo(0, 0);
       toast((r.type === 'Devis' ? 'Devis ' : 'Fiche ') + r.numero + ' ouvert' + (r.type === 'Devis' ? '' : 'e'));
@@ -704,14 +747,20 @@
     if (state.mode === 'facture' && !confirm('Créer la facture définitive ' + $('next').textContent.replace('Prochaine : ', '') +
       ' pour ' + d.client.nom + ' (' + money(totalOf(d.lignes)) + ') ?\nUne facture ne peut plus être modifiée ensuite.')) return;
     $('err').style.display = 'none';
-    var b = this, label = b.textContent; b.disabled = true; b.textContent = state.mode === 'fiche' ? 'Enregistrement…' : 'Création…';
+    var b = this, label = b.textContent; b.disabled = true;
+    b.innerHTML = '<span class="spin"></span>' + (state.mode === 'fiche' ? 'Envoi…' : 'Création…');
     var cur = state.current, p;
     if (state.mode === 'fiche') {
+      var version = state.edits; // ce qui est envoyé ; une saisie pendant l'envoi restera « non enregistrée »
+      state.saving = true; renderSaveState();
       p = call('saveFiche', d, cur && cur.type === 'Fiche' ? cur.numero : '').then(function (r) {
         state.current = { numero: r.numero, type: 'Fiche', statut: r.statut };
-        renderAtelier(r.atelier); setMode('fiche'); rememberClient(d.client);
+        state.savedEdits = version;
+        state.savedAt = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        renderAtelier(r.atelier); rememberClient(d.client);
         toast('Fiche ' + r.numero + ' enregistrée ✓');
       });
+      p = p.then(function () { state.saving = false; }, function (e) { state.saving = false; throw e; });
     } else if (state.mode === 'devis') {
       p = call('createDevis', d, cur && cur.type === 'Devis' ? cur.numero : '').then(function (r) {
         renderAtelier(r.atelier); showDone('Devis', r, d);
@@ -760,6 +809,7 @@
   var initialDraft = loadDraft();
   state.current = initialDraft && initialDraft.current || null;
   fillForm(initialDraft && initialDraft.data);
+  if (initialDraft && initialDraft.dirty) state.edits = state.savedEdits + 1; else markClean();
   setMode(initialDraft && initialDraft.mode || 'fiche');
   call('getInitData').then(function (d) {
     state.clients = d.clients || []; state.catalogue = d.catalogue || [];
