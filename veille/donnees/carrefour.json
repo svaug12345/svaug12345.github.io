@@ -1,6 +1,6 @@
 {
- "version": "2.0.0",
- "maj": "2026-11-11T07:27+00:00",
+ "version": "2.1.0",
+ "maj": "2026-11-11T07:56+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -52,372 +52,446 @@
   {
    "id": "4a8abcce6eea",
    "titre": "Carrefour : voici la liste des magasins fermés ce 11 novembre 2026",
-   "lien": "https://news.google.com/rss/articles/CBMivwFBVV95cUxPSDRjYk1yT3ZFcXZOcmVSR2tsVXc5WHBXVU9mNXZwUS1USVYxVk5LZGJnbTFfb0VmNkF1V01iWG1XaV9oUHhUVkxWakpDZzdqbVJyVzR1bDRHcXpHRHI4R1RTRzY2ODR0dGl5NzJZWllFSXI3NWRRcUE5akQ2SmFWZHEyMVZTd215alUxejNSbkl4b2dsazN4NE90MjJVTWpJcF8zYnl2UWZJQVpidG05Mk90VXFOMmx5Nmh2eVVYNA?oc=5",
+   "lien": "https://www.marmiton.org/actus-supermarches/carrefour-voici-la-liste-des-magasins-fermes-ce-11-novembre-2026-s4140738.html",
    "source": "autres",
    "media": "Marmiton",
    "date": "2026-11-11T06:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "À la veille de l’Armistice, on se demande quels magasins Carrefour vont être fermés en ce jour du 11 novembre. Voici la situation à prévoir.",
+   "enrichi": "2026-11-11",
+   "image": "https://assets.afcdn.com/story/20261109/2334540_w1500h844c1cx2000cy1500cxt0cyt0cxb4000cyb3000.webp"
   },
   {
    "id": "2ed5e8639c1c",
    "titre": "Proximité : Les Mousquetaires et Francap prolongent leur partenariat pour dix ans",
-   "lien": "https://news.google.com/rss/articles/CBMivgFBVV95cUxNMXNfQjdHYlhDeFFkUG80aXZQc3RKWjZOaktDRzVnUmoxWkh4elJKUFNkeTRETklFRVg5Y0lMSDhnVlRVLXEyck9WaDBVSHJFX2pTRDlaUl96NDNKa1J3WUdmaldRc0ZYc1Q3MzBVMkRrMUxQUXJqSFdKd05nd1hDR1Npdnc3TGJiVWVnei0wNmx5Z3dGSF83dEc1dklPVGEtMnZmX1pKSjFXZUJmSkw3VGUtakJoQXpWWjFaU013?oc=5",
+   "lien": "https://www.lineaires.com/la-distribution/proximite-les-mousquetaires-et-francap-prolongent-leur-partenariat-pour-dix-ans",
    "source": "lineaires",
    "date": "2026-11-10T18:41+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "Le Groupement Mousquetaires et Francap Distribution reconduisent pour dix ans leur accord aux achats, noué en 2019. Un partenariat stratégique pour les deux acteurs de",
+   "enrichi": "2026-11-11",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/410b47a7-8e5c-4ddd-9319-bb8d55f480af.jpg.webp?itok=ugbFpsIF"
   },
   {
    "id": "9799dbc3cb18",
    "titre": "11 novembre : au moins 6 184 magasins recensés ouverts, mais pas forcément toute la journée",
-   "lien": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxObFUzcWFLel93dDFsQ1ZvaHJLT2xuT2VPMjhVNHYzYTU4cmxKdWM4UkIyaUVnU3Q1RWx5WUN6RVI3d0xzTVpFRWZVUDZBRTZfbjNnREF6V0JQZkFhdlJQdVc2Y2VMbWtxWUFyLVQ3M3VTZTZHc0t3T3Qyc0tCM0QxTEpzU1dtV3lfcmtV?oc=5",
+   "lien": "https://www.economiematin.fr/11-novembre-2026-6184-magasins-ouverts-horaires-feries",
    "source": "autres",
    "media": "GBV Dillenburg",
    "date": "2026-11-10T17:20+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "Le mercredi 11 novembre 2026 est férié, mais un recensement spécialisé signale plus de 6 000 commerces alimentaires ouverts. Lidl, Carrefour et Aldi figurent parmi les enseignes concernées. Les horaires restent propres à chaque magasin",
+   "enrichi": "2026-11-11",
+   "image": "https://www.economiematin.fr/wp-content/uploads/2026/11/e07e672c-magasins-ouverts-11-novembre-2026.jpg"
+  },
+  {
+   "id": "cef8dd94c3be",
+   "titre": "Supermarchés, centres commerciaux : quels sont les commerces ouverts ce mercredi 11 novembre à Caen et autour ?",
+   "lien": "https://actu.fr/normandie/caen_14118/supermarches-centres-commerciaux-quels-sont-les-commerces-ouverts-ce-mercredi-11-novembre-a-caen-et-autour_65039572.html",
+   "source": "autres",
+   "media": "Actu.fr",
+   "date": "2026-11-10T16:29+00:00",
+   "vu_le": "2026-11-11T07:56+00:00",
+   "resume": "Quels sont les commerces ouverts à Caen et autour (Calvados) ce mercredi 11 novembre 2026, jour férié ?",
+   "enrichi": "2026-11-11",
+   "image": "https://static.actu.fr/uploads/2026/11/1c91b6a513fa6ff91b6a513fa04a1bv.jpeg"
   },
   {
    "id": "b776d75ed65c",
    "titre": "Ducros cible les plus jeunes avec une nouvelle gamme d’épices",
-   "lien": "https://news.google.com/rss/articles/CBMiogFBVV95cUxOWVNUWEJRSFlKOEw5aHBXR2gzZTZLa18wcUwxODJBdDlPcTJKWkl0U1E5bTlFVy1jakozc2hoRFlUNlVrcnFaQUFTUFVINWRvaVhiblJ2enZ0M0FsTVhVNU9TYWdBX1N5T1Bvb1N4WlVYVUZ0ek1kanZoSUNEQ0QwbUVwSUZqMHMzanBwX1pGYm5oLXR3c082U3hnUGJFSkExckE?oc=5",
+   "lien": "https://www.lineaires.com/les-produits/ducros-cible-les-plus-jeunes-avec-une-nouvelle-gamme-d-epices",
    "source": "lineaires",
    "date": "2026-11-10T16:24+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "Ducros, le spécialiste des herbes aromatiques et des épices, lance une gamme inédite baptisée « Tendance ». Cette dernière présente sept saveurs inédites,",
+   "enrichi": "2026-11-11",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/d2574786-d331-476a-a70f-51fc63dfd664.jpg.webp?itok=P73Wlio9"
   },
   {
    "id": "828017cc11f9",
    "titre": "Grande distribution : les Mousquetaires (Intermarché et Netto) verrouillent pour dix ans une alliance stratégique dans la proximité avec Francap",
-   "lien": "https://news.google.com/rss/articles/CBMixwJBVV95cUxOUDVxMUVaOTZPVk4ySUxXZTBZWWtUM25hUUQ4QTVTQy1xOEtwU09IbzJyeWczZnhwZ0RXTFdPT25mMzNHZG1zV05SbHpwTUVkWHlpSmRrOWlLUlNjYkRYaDVLVW4wcXhzdHUzdTktZ0JmU2RkSlNBNWtPUW1JWWxpejV1VXdyeDZma0hxWDA5RE01ekcwRFg4Z0EtY0lXc0p4cktmLXBZTWw4SjFkVU5xQ1RtZFFmWnIwUzlvODVqUW1DbklGZGkxQ3dFTTBuaWE4ODk2VUVNbWMydS1vS1JNdkRZVklFeHZpWU15LTNzSnpGUXZobFpZckFwQ1MxUGxZUFBhNnNnWWNvNy1tMkphQnJWVXdqMXE0bGJFQzlsQ2Nia2p4MWtQOFFHX01hSWlBeGRrRElqZldZZDdVRjdHRkd5bTlSR2M?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/grande-distribution-les-mousquetaires-intermarche-et-netto-verrouillent-pour-dix-ans-une-alliance-strategique-dans-la-proximite-avec-francap.LSIPA2HZN5CGRJLKSYZIBQU6MA.html",
    "source": "lsa",
    "date": "2026-11-10T16:09+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "6b7ce39942fa",
    "titre": "11 novembre. Quels sont les supermarchés ouverts en Mayenne ce mercredi ?",
-   "lien": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxORlYwSGlpdHl2RUkyUVZRV191UTVFenNmLThaa2ZTMWlhSU0yV28yQUlKUG54ZlJ2ejlHZXdJdml3WWR0WGpZV1gzVnFoRDBQR0I3NTlXbnNqelB0UmhDZkNfYXFBTE1RU2l3LTZPVXBMZWlHemxnMTd5UUphQm9IUHBqazZ2WGY5UExCb0V2YV9aZUx1bnVkY2FlQlVLWmpiV0haZzdzODB3bnJBUWpETWNVSy0zWGNSc3kzdUNfNFA?oc=5",
+   "lien": "https://www.lecourrierdelamayenne.fr/actualite-42194-11-novembre-quels-sont-les-supermarches-ouverts-en-mayenne-ce-mercredi",
    "source": "autres",
    "media": "lecourrierdelamayenne.fr",
    "date": "2026-11-10T16:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "En Mayenne, plusieurs supermarchés, dont les enseignes Lidl, Carrefour et Intermarché, resteront ouverts mercredi 11 novembre, malgré la commémoration de l'armistice.",
+   "enrichi": "2026-11-11",
+   "image": "https://medias.lecourrierdelamayenne.fr/photos/1200/42194-les-cinq-magasins-lidl-seront-ouverts-en-mayenne-mercredi-11-novembre?v=1794319880"
   },
   {
    "id": "c8dbe8a6642e",
    "titre": "Pharmacies, supermarchés, administrations… voici tout ce qui est ouvert et fermé ce 11 novembre",
-   "lien": "https://news.google.com/rss/articles/CBMixwFBVV95cUxNaXh5NUJ2ZEpmcHlJYzVWTzV3bVhkcC11QmVXSGJqeEJZbzhfclRJTWN2X2Z3UzVObkxuOFJRcmRPZTVWVmpsM2dGUE44SlJRY0pVN2tGSXgxRmFUV2VqWTEwWGVNMmlka3gyMFF0UkpHQUdlWFUtZ0Q5MTU3SThIY2xiVmZKTDJHbWhFWnVxUHN5bW1MX0N5NXRxYzAwb1VpejgzLU5GbVZJSjk1ZWI1RzhLMEVkRFA2RW4tSHd3eVpqTnlnbWI0?oc=5",
+   "lien": "https://www.lesoir.be/782077/article/2026-11-10/pharmacies-supermarches-administrations-voici-tout-ce-qui-est-ouvert-et-ferme-ce",
    "source": "autres",
    "media": "Le Soir",
    "date": "2026-11-10T15:50+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "9014e3222863",
    "titre": "Lidl rachète deux magasins à Super U et Netto, dont un ancien Colruyt, pour 3,1 millions d’euros",
-   "lien": "https://news.google.com/rss/articles/CBMihwJBVV95cUxPTUVWQXp2aEoxa05HWFpVUFZrM053aEpyNlFtcTFwODlWY3VwUWptc2hLOFlhZ2pVUHlRaHZ4ZVZfRm1icGxCQzdmN2FUMjBWR2liZFkzSlZ5NE9TYVhnZW0xb1otNWNia0VpU1I4WmVoWUZDcEF6Q3p1WldZaXh0djladVFVU2h1NW96QmJObURJZjZtZGc4R2wxaWw1LXktZktLRjR2ejZqanRZZjNkWUI4VUtSNlY1SXlfYnZiZllORmEtNHBIZkNYQk9wZUJrSWNMSXU3ZUFDcUs1Tno3ZGxTRDBmNDkyV1BXa1h2cGQ3dVJFUXVjdkpFbW56ZjctSHN4N1hwYw?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/lidl-rachete-deux-magasins-a-super-u-et-netto-dont-un-ancien-colruyt-pour-31-millions-deuros.INKL4P4KJNB3JNKCXCC44KPWYI.html",
    "source": "lsa",
    "date": "2026-11-10T15:28+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "4e375ba76d41",
    "titre": "[ EXCLU ] Achats : Intermarché et Francap (re)signent pour 10 ans",
-   "lien": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQRHp4b3lxVGtpQVNGbmVIaHdfRUVscDlaYWwyM1hjZ1hvRmZWVC0wOEc5LWVUQmttR1JMOXlMWlRmNWFqX283NklrWV9KUHg5dkxpX3B4Z1RaNDViOE5OTWJpQUxNX2I0RFlJYjl2WTIwYXR6cE90RWlhVmRCTnRSZ3ZwX1NmZXdldUNrWE9ESGhjNnJZTFRQcFNKQ0RjdHlO?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/11/10/exclu-achats-intermarche-et-francap-resignent-pour-10-ans/",
    "source": "dauvers",
    "date": "2026-11-10T14:49+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "Ils s’étaient dit “oui” en juillet 2018 pour un mariage au 1er janvier 2019. Ils viennent de se redire “oui”, cette fois-ci pour 10 ans. Selon mes informations, Intermarché et Francap vont annoncer un nouveau – long – bail pour leur alliance à l’achat. Francap, qui fédère des grossistes régionaux (dont les affaires de la …",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/FacadeG20.jpg"
   },
   {
    "id": "75366f8e72ad",
    "titre": "Pourquoi l’hypermarché Carrefour de Margencel était-il fermé ce mardi matin ?",
-   "lien": "https://news.google.com/rss/articles/CBMiygFBVV95cUxQQ2NwQnlIYTZrTE1FbFM3cTJuUklyTTBaTEhVNU0xOS1yTXBRekZDZE1EVEpjdVBtZjFQcTVheUlkYVV3MUd6bzB2N1IyQU4zRkhQZlJWdjJfZUpmSGVtdU03WnpLX3AzczFyZGI4RjJCWEdoQzJfVnYtSHZ6SW0zOVd1TlFjaE1sN1JqY2pjR2tVaHhqR3pNRm5NY1YwTWM4YjYwdDRVdTduVW9mTXZUTmtRd25fbTBFYmVaVW1oT0lhYzFjVERacXFB?oc=5",
+   "lien": "https://www.lemessager.fr/649360169/article/2026-11-10/pourquoi-l-hypermarche-carrefour-de-margencel-etait-il-ferme-ce-mardi-matin",
    "source": "autres",
    "media": "Le Messager",
    "date": "2026-11-10T14:26+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "Le Carrefour de Margencel est resté fermé plus de deux heures ce mardi 10 novembre, alors que la galerie marchande était ouverte. Une panne électrique a retardé l’ouverture de l’hypermarché jusqu’à 10h45.",
+   "enrichi": "2026-11-11",
+   "image": "https://phrmeseng.rosselcdn.net/sites/default/files/dpistyles_v2/ena_16_9_extra_big/2026/11/10/node_649360169/439226/public/2026/11/10/112874975.jpeg?itok=MNy2zTlk1794320835"
   },
   {
    "id": "d05a5cf81457",
    "titre": "Le groupe Carrefour ouvre deux magasins Potager City à Angers : on vous dit dans quel quartier !",
-   "lien": "https://news.google.com/rss/articles/CBMixwFBVV95cUxNSjJVTFY1YWlpblM2MVREOWIwY2hBWmM2Mm03SWkzZm11UEQ5czhNX1RhRjJxWkhLU28zSmFBS0t2a09KdzFVeFJ1cW5kU3AtTnFRY1MtVXJ6a3JWeTdPQ3QwRUlXb0Vqam1VUVV5R0pHYlJXc1ptdHlEcXJYQmhxQ01zWTFPWG1QRm1zcEUyNUl6TU1rVTJSMlh6dVRsMHctRlNIM0hNMkxxMU1vMm1uMXBsMTFnVDd4cXRpZWJKdDZnMlJGekxz0gHMAUFVX3lxTE41aTFoT1UtTEt0ajJYYUVtQjZRbGJReWZYc1ZnWmNHaS1qMV9sQVJHN1NUOEx0VjBzNFkxU0JvdWV6X1NoTFM0NDJfeXc2emVnR3VWa3NiY0ZkaXlET0xncmc5WDhVWnY1cXhRbkQ2X2RYbzB3X1NTSDVIcVV3eThZN25vb3g1M19CU0hlYzNKNVhMc3BvVTNLMFJ3NDAwOFBzVElCWmp1NnpaZnFkbG5heGt1cjZqcElzalhTMXpIc3pSSFp1bW1FSGJwWg?oc=5",
+   "lien": "https://my-angers.info/11/10/le-groupe-carrefour-ouvre-deux-magasins-potager-city-a-angers-on-vous-dit-dans-quel-quartier/201174",
    "source": "autres",
    "media": "Angers Info",
    "date": "2026-11-10T14:15+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "Le groupe Carrefour poursuit son implantation dans les quartiers d’Angers. Deux magasins Potager City doivent prochainement ouvrir leurs portes, place Hérault et dans le quartier de la Doutre. Une enseigne qui remplacera finalement le Carrefour City initialement annoncé à cette seconde adresse.",
+   "enrichi": "2026-11-11",
+   "image": "https://my-angers.info/wp-content/uploads/2026/11/IMG_0471-scaled.jpg"
   },
   {
    "id": "35047ad1e43b",
    "titre": "Débauchage de franchisés : Casino gagne une manche contre Carrefour",
-   "lien": "https://news.google.com/rss/articles/CBMivwFBVV95cUxPYUItZmhxRjB3NjhKVVFKLWNSWjBPRkVJMmRKcFp5TFRZR2tMTzhZejJmVEFLbGIyZDd5OTU1dHdlOWlZcTkzVktBd29zaVBzcFA5ZWZYbHhnbS1RTXJfSVoxRDZrM3Ayb1BfX0g0S0ZQZzdfSm9vYnp1YnBRSHhuRmt0TGctRkxWVUlaYWN5WTk2M24wLXhqRTJvS1BrSWc0QzhMRFdUR3gtUmlmVGNBX2JYbGhqbEhlSy1EWFB0VQ?oc=5",
+   "lien": "https://www.linforme.com/grande-conso/article/debauchage-de-franchises-casino-gagne-une-manche-contre-carrefour_13958.html",
    "source": "autres",
    "media": "l'Informé",
    "date": "2026-11-10T13:44+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "Carrefour voulait faire annuler une saisie de documents dans ses locaux suite à une enquête déclenchée par son rival. Sans succès pour le moment.",
+   "enrichi": "2026-11-11",
+   "image": "https://linforme-focus.sirius.press/2026/11/10/0/0/0/0/1440/720/60/0/b758bf7_upload-1-whbipxdl76zs-afp-20260331-hl-rdoucelin-3114803-v1-highres-francecasinostoreinaugurationsteti.jpg"
   },
   {
    "id": "74acc3beb7c3",
    "titre": "Pourquoi Alexandre Bompard s’est-il rendu discrètement dans un Carrefour Market près d’Anvers",
-   "lien": "https://news.google.com/rss/articles/CBMivwFBVV95cUxQLUFBaGpZN21XeGJOZmFkcXI5T1dxcnEwMHBYVnBaZXdfQzNIN2xmNWhuR3dyRmlHY044MU9KMUVHUl9LUmJOTkxLTnV5b25USnU5Uld6bHVLeVdaZGVZMXNhRWxqZXZQZlFETDNsY0hLZ1RCckFGV1BNWHFxZTJLb053cENxZVZYUGJBV2RfMXdEVHBWMC1EUjBRWmFENG9rVUhtUzJQQVNhRTBaRDJUMUR0M1hPelA0U3NZZDRTSQ?oc=5",
+   "lien": "https://www.gondola.be/fr/news/pourquoi-alexandre-bompard-sest-il-rendu-discretement-dans-un-carrefour-market-pres-danvers",
    "source": "autres",
    "media": "Gondola Magazine",
    "date": "2026-11-10T13:28+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "Une photo publiée presque discrètement sur Facebook, des collaborateurs souriants et un visiteur que l'on ne croise pas tous les jours dans un supermarché belge : Alexandre Bompard, CEO du groupe Carrefour. C'est sur la page du Carrefour Market de Kontich, particulièrement active sur les réseaux sociaux, que l'on découvre le déplacement du patron du groupe en Belgique. Mais pourquoi avoir fait le…",
+   "enrichi": "2026-11-11",
+   "image": "https://images.gondola.be/2026-11/carrefour-kontich-edit.jpg?fit=max&h=630&ixlib=php-4.1.0&w=1200&s=cf999de810b9d345d3806b8d05a9a90d"
   },
   {
    "id": "2471fe7d61e1",
    "titre": "Coopérative U prolonge son moratoire sur les pénalités logistiques et renforce ses engagements envers les PME",
-   "lien": "https://news.google.com/rss/articles/CBMingJBVV95cUxOTDd0dDF0RjI2dE5CcTlEZDRwOENxWVRaR0pXQ1BzbmdWTENKVTUtUmE4Um9lZ2JtOFVqOVdLSmNTZ3dsTk5BSTNHZXBteFNmalZzbHBVakNkYmk5dFJZb1RJaF9NZ0pvYnEzSjJfdTJLbkxjaXplbkFKc3A1ek5fU255cWx2YWJIWFpDWjFpUkZJaVpsWGlUVUU1NU1NTE5kN3A5dVBWTzBlUTI2Y21KX2ljaHlvaDZSSTdGNzBQNnIzZjI2VUpWbWVMQXVTZGhYa0h2SXRPaXhXY1lMSXladTBsTWZZMVlJRm4tWktGd095Zk55cTB0cGFvRHN2T2VsUXpUT3Jma3hvczVXbzZGSEc0YmdoWGdjMGMzSjl3?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/cooperative-u-prolonge-son-moratoire-sur-les-penalites-logistiques-et-renforce-ses-engagements-envers-les-pme.KDUKHW27LFDHDB3SNSSU6UWBIY.html",
    "source": "lsa",
    "date": "2026-11-10T12:47+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "8fc59d0f8744",
    "titre": "Plesio (ex-Casino) : Daniel Kretinsky remet au pot 390 millions d’euros et monte à 84,9% du capital",
-   "lien": "https://news.google.com/rss/articles/CBMihwJBVV95cUxQZDVuSjY2T1JleldFMEZKRzJUTW5vc1FqNl82a0wxNnl5eXVwYUtTeDR3V0dVeDBndjdIdHlmaUY4MXRlUXA1YnpDZ0xEUGRjaURFbHgwNWh4Y3NVMW1nTWozT0s1cWtKZVB6Z0pTM0RkWDRydzROZmFucmoyaVhXS0gwUlNmTzZtM3c4dmxxdzdGcElPMU1zMHpMaWp3SGgyRkFaWmhYOFFsaGZ2WnRUVllzUkRGZ2huUnI4dTN0b1VEdXNXaVpLTzM3aGxpeVR6M2RkMVJobTZCaFpGRDdtMXJHRWZpeVk1bXBxV3F1MjZwR0lkZThyQUE3TlNvWEQ2ZmJxYjVsQQ?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/plesio-ex-casino-daniel-kretinsky-remet-au-pot-390-millions-deuros-et-monte-a-849-du-capital.BYYH4JMRVRGDJNYWRL72D2D7OY.html",
    "source": "lsa",
    "date": "2026-11-10T11:02+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "6699030c4107",
    "titre": "Publicité comparative : Action voulait faire taire Lidl, mais la justice donne l’avantage au discounter allemand",
-   "lien": "https://news.google.com/rss/articles/CBMinAJBVV95cUxQMnZZd3VEVkNSNzBjbE55YThoSzFtNkFTbEFrYlJ2S3QwTlJ0WTdvS0lDMURFS1JpQmhNTXVaQkp6TXJXeUNBVWYweS1CbUtjc1lzUGpCdHNOc3VNZlREb0RqRGEzR2ZEenpBYXFyTlVCVG9CY3JUa25YMEtJNXZ6RUk0VXJkVEpPVFh0NkpHelRDaXVxWXhKNS15cGcwd2lzN1ZaaENDVUFhMWZuRlViZWFkVjZhdUE4X3UxdDNNWkVuQU9DN0pOTldCSkR4cFBlVWw0XzdkMnh5a0JOaEJVWkdVaDh3WTdRZ0V4V3AwZ2NWbWtsaENWdjZJSGtPZ3N5MFRFZmJDeTBkcEw4R1RRTVVtSk53eVNTak9Peg?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/publicite-comparative-action-voulait-faire-taire-lidl-mais-la-justice-donne-lavantage-au-discounter-allemand.IGHPCIXEUBGLPF66QC3TSXC5LA.html",
    "source": "lsa",
    "date": "2026-11-10T09:30+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "a465e77af101",
    "titre": "11-Novembre : la liste des supermarchés ouverts dans la Marne ce mercredi et leurs horaires d’ouverture",
-   "lien": "https://news.google.com/rss/articles/CBMiygFBVV95cUxOUG5wRGpmX0l3NlpWX3ZZaTBnT0tPZVE4bDA2eEYzVjRzNFlyYUpSR1pfMVFJMTc5NUZfS1ZnR2JSZUQzM2lkbFQxRWRZMjdTRVlkcGtjakNyLXdWQWNQV3JFM0ZwekhmclNVczh0Sm9YS2QtSzhEOHRZS3RxR0l0TE9nT1I0bXBXeXdYRW4xY1VtYk1FNGNncm9JbnRtQXdBYm9mNjNBMFhqaHRyMnVoRVYtTEFZWktFdXF3c1lhWDlVZHhZR0gtbnVn?oc=5",
+   "lien": "https://www.lunion.fr/id839205/article/2026-11-10/11-novembre-la-liste-des-supermarches-ouverts-dans-la-marne-ce-mercredi-et-leurs",
    "source": "autres",
    "media": "L'Union",
    "date": "2026-11-10T08:41+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "Carrefour, Leclerc, Lidl… Voici les hypermarchés et supermarchés ouverts dans le département ce mercredi 11 novembre 2026. Liste non exhaustive.",
+   "enrichi": "2026-11-11",
+   "image": "https://remeng.rosselcdn.net/sites/default/files/dpistyles_v2/ena_16_9_extra_big/2024/11/15/node_839205/15550732/public/2024/11/15/29599223.jpeg?itok=eZaZ5l7A1794317214"
   },
   {
    "id": "6b03073f12e5",
    "titre": "Carrefour : ce que révèle la bataille judiciaire secrète avec E.Leclerc pour l’hypermarché de Plouzané",
-   "lien": "https://news.google.com/rss/articles/CBMinAJBVV95cUxPRXJBZkFVejRHN1FUckdGZzd6WGFCZmpVaEYxT3ZnYXU2QnNocDhBNl9UNFN3MEhmeFplYWtWU2EwVHBQSlJXdC1VREZ2RzJNMGJWMVJiVDdzUHR6aDE0MW96cE44TlVDSDk5NGxMak9lLUNsMjk5VkFKcklNYXZlek1fT1dBYXh5cVUxblNsNkxxdzkzcDNRTXhuenVjd3dFcW9kRVpZR0xPUFpoQlNwT0lueVFPTmFPaGNGTjlTQjBMWGt2QThnSnlublZyYl9IM3dfX1hPZlpvcGpfVkJmYUdudGlZTXBzN2hBTXZGMF9xVXBKaVQ5QS15SW45azVGc0Q2dzJHcUpnSmVnSDhZaXozWEZXREVqM0xKOQ?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/carrefour-ce-que-revele-la-bataille-judiciaire-secrete-avec-eleclerc-pour-lhypermarche-de-plouzane.A6PO3JIN4JDBNABCDVDAA3LTIM.html",
    "source": "lsa",
    "date": "2026-11-10T06:30+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "f3c7eb305af5",
    "titre": "« Redynamiser la surface de vente » : Quentin Roux prend la direction de l’hypermarché Carrefour sud du Mans",
-   "lien": "https://news.google.com/rss/articles/CBMikgJBVV95cUxOMzJnUTdZWmlHZTQyalg1cmxLOGpfSkloMmRUUllGQ2lTcS1oMjR2WkJkTFBkNUg2dUJZMkhobVdTQ3VCYXdQeTFoNDJjdkYxWXN5R3FkYVJlaEdrUkdPSDF1RWc1dkVFRmJVU0FPTTN2LXp3MkV0NV93a2tQYzBhSTkyZ1NoRXN1T2F1TDQ4R1RreGQwV21SVlhRb1Qxa0YxUk1UX184TkRKbkRlS1lSQzdNZFlXdVdXOHdBX2RzZTdfdUxZUnhwRFlzblRESWhUbnhWbU50Nm5fOVY3T1drbDQ1aW81aU1GenhTYXBtbkVOdzdDWmw5YWZzWEIzU1hzUzRxdlJjR2E1eFFGT2t0YWZR?oc=5",
+   "lien": "https://www.ouest-france.fr/economie/commerce/redynamiser-la-surface-de-vente-quentin-roux-prend-la-direction-de-lhypermarche-carrefour-sud-du-mans-03e5a750-dc3b-11f1-81f5-8e32b0872d76",
    "source": "autres",
    "media": "Ouest-France",
    "date": "2026-11-10T06:30+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "5dc7914e1e76",
    "titre": "Grand Frais : cette nouvelle société qui intrigue dans l’organisation de Prosol, son principal fournisseur et co-exploitant",
-   "lien": "https://news.google.com/rss/articles/CBMiqwJBVV95cUxQYWFVdS1PcnZQWkhaLVdFc3FvOG5jRTJFaWpSdkxXTHZkalJBbnI5eVhONjZJend6bGRMOGcwOGJGSnRLYjJqZUhNZXZwRVptQVkzMUJNMU1mRkRjaW80b0tXUjBDSmx0bnVoUktVRDRqMjlCaks5dmhpVE01Y2lSUGJWUEdSVnd4Q05UR3JzNU9FMFlQX0VpXzZ4d2xlbktMYUktYjhVM2xIaUhEX3BxajA3eEtIQTJhNlZHRC1LU2Z2OXpwenVxVkxXRVhmWVh3T2x4ektBMmQzYTNVM0JNV0RjbS1yYjRFUjFLZlZwQVQybmlhUE1BZlQ1NE44VERxSDUzLU1tZmVEelc2TUFuTE9neEJKMnZ2ek5pcEoyZEVYbllaQjZYVEFqSQ?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/grand-frais-cette-nouvelle-societe-qui-intrigue-dans-lorganisation-de-prosol-son-principal-fournisseur-et-co-exploitant.S2AN637CKBEEZKY4QJY3OCV3RM.html",
    "source": "lsa",
    "date": "2026-11-10T04:50+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "1f1ee38d7156",
    "titre": "Guinée : Carrefour annonce 4 nouveaux magasins et un hypermarché à Conakry-Mall",
-   "lien": "https://news.google.com/rss/articles/CBMirgFBVV95cUxNbXVGQ1BGU3Z4QmdLLWRxdGdMenZDUTAxRnpUaUxNSkE4LXRfQTJQS1o4Z0xDYjZOcE1rcjkwV1lhUERjZUV4UWRldVZwY1dsWFl3T0lzUjZTRHFTUGd5VDVlMEdPY1RKX0pVRHg3cnRfMzY1ekZEQ05WQ24wYVVZZmRGYi1xM0lhMTdkeF9Ld21vdUYzZXRlc3lsYldzWlRWV0REbGMxMlprOFZQQ3c?oc=5",
+   "lien": "https://africa-news-agency.com/guinee-carrefour-annonce-4-nouveaux-magasins-et-un-hypermarche-a-conakry-mall/",
    "source": "autres",
    "media": "Africa News Agency",
    "date": "2026-11-10T04:04+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "9ff8dcf3c67a",
    "titre": "Whisky, rhum, gin et vodka vendus en tube de 8 cl : le nouveau pari de Charles&César qui croit « au potentiel de développement du marché des petits formats »",
-   "lien": "https://news.google.com/rss/articles/CBMi3wJBVV95cUxQbXlsdW1CTjRsVTkwSWRfdUFlM1ZURk9HRlBvUVBQZXhQMk1pSkxpelpkV2ppUEFKRUFxYlFxRkJfeGRXN1VIbVc5UXBXUkNTQ01xbHp4cXlzQVZlTmk4c3JMVW9wYW1OVVhHYXFXZndjS2o1U1VLWWk2SldSWFRqRDBkcGE4TDhST3Npam0yVENSZGdZRG9lVm1CSGJSdW9QVzRHUGNVYkwyRlU1X0dIODhJOU16M0NBd0hxeTZNTGdpZWp3bEl1d3EtS2FpS2VHOVppbTNHQWRhODBocXpYY1pLVDBNRUVvM0xUXzQ1bWZjSVBxakhmTmJQN0RhNElyQmR1cFJYQTVtWDlCdG1aNVdNWWV3N196STdPTlhTN0oxQ3h2NnM3dnU2OGdXcUp2S1dfaTlqQ0w4OWhSblFtbXdSV0ZtX0pLRzhicEFVN0dyVkRyVnVzUTEyWHl3eTg?oc=5",
+   "lien": "https://www.lsa-conso.fr/agro-industriel/boissons-et-liquides/whisky-rhum-gin-et-vodka-vendus-en-tube-de-8-cl-le-nouveau-pari-de-charlescesar-qui-croit-au-potentiel-de-developpement-du-marche-des-petits-formats.I4XHR3BS2BB7DGSINNPH4NRUIE.html",
    "source": "lsa",
    "date": "2026-11-09T18:18+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "3945b0afc279",
    "titre": "11 novembre : quels sont les magasins ouverts à Metz en ce jour férié ? Voici la liste",
-   "lien": "https://news.google.com/rss/articles/CBMizgFBVV95cUxQd19GaHNXTEVfMzFDSUh3Um8wUkdOZ2xSUzNVT1NUR2F2b2dDLWdkcUxaM2xEcjUwbG1UZzB3Z2FMb01jcUhPR2lqcXl5Y29UNWdTMjZlc2FVREwxQkNZYVZ2azdHU2VYQkltRWxreVJHeWxDMjg1VEhKRk5UdzFyT2xxTEZTVjM2bWxUa1BlejhGYnFvU1hteDE1dzcwczgtRTBfUnVMcjB6Z084X29ic1dDOWRXc3h5RWhPRm1jUEREN0RnVmJhazNDYmRBZw?oc=5",
+   "lien": "https://actu.fr/grand-est/metz_57463/11-novembre-quels-sont-les-magasins-ouverts-a-metz-en-ce-jour-ferie-voici-la-liste_65034826.html",
    "source": "autres",
    "media": "Actu.fr",
    "date": "2026-11-09T15:43+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "Malgré le jour férié, certains commerces seront tout de même ouverts à Metz pour des courses de dernière minute ce mercredi 11 novembre 2026. Voici lesquels.",
+   "enrichi": "2026-11-11",
+   "image": "https://static.actu.fr/uploads/2026/03/leclerc-woippy.jpeg"
   },
   {
    "id": "b69d77db326f",
    "titre": "Béthune. Le supermarché Coccinelle ferme définitivement ses portes",
-   "lien": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQTFVDWl9CWmZZdUE1SnVlcEtJc0FCR2RsZENSbFdpcndRVldKUmE0NE9kU3ZWYzVXX0pCSmNjWk9xZ0pxaDk5MlFONm05XzRoZlZ4T2txMHptb1d4aElCeFl0b3FpUkY1MHFoVENiaElkYUxsWEtvcmV1MFFNN1I4Ymhtd09wNkZVdXl4aWVpWGd3QU5ZM2tHTGc5eDI2LS1iY0pXUlMycnZsR2U5?oc=5",
+   "lien": "https://www.horizonactu.fr/actualite-50407-bethune-le-supermarche-coccinelle-ferme-definitivement-ses-portes",
    "source": "autres",
    "media": "HorizonActu.fr",
    "date": "2026-11-09T14:16+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "Le supermarché Coccinelle de Béthune, situé place Georges-Clémenceau, va définitivement fermer ses portes ce mardi 10 novembre 2026.",
+   "enrichi": "2026-11-11",
+   "image": "https://medias.horizonactu.fr/photos/1200/50407-le-supermarche-coccinelle-de-bethune-va-definitivement-fermer-ses-portes-ce-mardi-10-novembre?v=1794309129"
   },
   {
    "id": "3455756ef5dc",
    "titre": "Jour férié du 11 novembre 2026 : voici les magasins qui seront ouverts à Nancy ce mercredi",
-   "lien": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxQSkJhS3A4Z0hla2xKUGN3Z1lISmhwX0twUkF1aG1PZ25xakZKeDRKbTVPUVpkR09wVjk3dXZCMnhYZ0pFVHpqUlZWNW5pUWJIMEplMW50cHJILW13eW1sQy1IRXpfTUJURGpWVERfMzRCREltdVI0elpVVzlfdHM5YzJ1OU5NOXZjYy1qa0RQV3p3cjRQdWRKZ3ZzTnJDd2NPQTFSSGktY0hCVFNmbjdTenBhanZwTDZTak5QUDJJVnBaZGJObFdKYlpGQVZXYlFjdDRBWEVFUQ?oc=5",
+   "lien": "https://actu.fr/grand-est/nancy_54395/jour-ferie-du-11-novembre-2026-voici-les-magasins-qui-seront-ouverts-a-nancy-ce-mercredi_65033888.html",
    "source": "autres",
    "media": "Actu.fr",
    "date": "2026-11-09T13:24+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "Le 11 novembre sera férié pour un grand nombre de salariés ce mercredi. Néanmoins, de nombreux commerces seront ouverts mercredi à Nancy (Meurthe-et-Moselle). On fait le point.",
+   "enrichi": "2026-11-11",
+   "image": "https://static.actu.fr/uploads/2025/11/auchan-lobau-nancy-parking.jpg"
   },
   {
    "id": "bbebfb49e44a",
    "titre": "Costco France : malgré les pertes, le géant américain remet encore 15 millions d’euros au pot",
-   "lien": "https://news.google.com/rss/articles/CBMigwJBVV95cUxPMjhkb0VWZE92V2tkNGF1bldDbFlGaXI3eks4clVoY0NMN3FZQnZkTDBPQmJUZHppV19YelJYVEdtSG5oM25jV2xjTExwQmNfNHYzSjMyek0zSk4wOGVkbWhyN1ZTeHRUUE5NUVVKMl9GVEN3ekQ5N0o2Z0N2UlZmWTl6UlZfbnJjQS0wOUV2dUxUSTdwNHlUTl9YZ0tkMFdaRjJSQ0lJeEs4Y0ZHVGk5alJCdW5MdDBaa0RYMGIyNXZBUi1VZ0dCb3FUM1lTWUdCQkVkVHptcGN5eU51ZmlCVXZEVVpBRDNWSVVlOUdFbFJXb2EwSF93TDRhZjUyOFFvMExJ?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/costco-france-malgre-les-pertes-le-geant-americain-remet-encore-15-millions-deuros-au-pot.O26LJSVXKFG3JH4XWVCDFM6XQ4.html",
    "source": "lsa",
    "date": "2026-11-09T12:30+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "33548f76adcc",
    "titre": "Grande distribution : Carrefour confie son rayon fruits et légumes au groupe Blachère, mais quels sont les premiers résultats ? [Reportage]",
-   "lien": "https://news.google.com/rss/articles/CBMiygJBVV95cUxORmdValpKX3pqTmpLaThwc0lDeVlYS2Y4OXJnN20wNWZBVXM2N2x4WHdnNnA0c21UWUhabWt4X0QzM1NrOFdBaTVoY3JERVFTTkc3Snd6NGExLW1XeDB6MWtCVXY3VThvSUxkbkhaaGJGZVRCZU11WEpfd1NEbi1iZGdEZkJFcmtoM0txa0RSS3pqUjBmWmQyaThaZTRLXzgzVzZ0Z0hPSFktRnMzRXVzVzI0VzlPdlRnMDJVOUJJN3R1d3J6RTFyMVJGRHgzc1ZvLTd1QlVXVE80VzJuR0ozekxEWHd2cWpxR04xdGpYcjA3YmhqMVh0TWNpdHdyaU5vemQ1aVJDRGN1SXkxRjVVQWhUTmhwRTdLUnBIZU9sMjZvRGNMOHhlMDI4U2ZVOHQ5N2ctcWJaYWU5TmpFY1Bma2hYelJQeXl3TXc?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/grande-distribution-carrefour-confie-son-rayon-fruits-et-legumes-au-groupe-blachere-mais-quels-sont-les-premiers-resultats-reportage.NQJBIODHBNCG5AJFQYTIJE2FOQ.html",
    "source": "lsa",
    "date": "2026-11-09T10:08+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "ee912ce7b145",
    "titre": "Carrefour baisse les lumières et coupe la musique quatre heures par jour dans ses magasins Market, voici pourquoi",
-   "lien": "https://news.google.com/rss/articles/CBMiqAJBVV95cUxQZW53czJxa2QxS19zcEd5V0dGTGdIZm83ODVoNUdYUjR6UU9HYnlaaDA1ZGRkQjJXbWxHVHdnQXdRaXhDZENvYnhXSFEtYTl2LTkxdXN6a0VJUjhQajlvY056V3F5Qy12aU5UbGpoZWM4aDNYaElsaERqbmktZzdFcUVOZGM0SHBRUHV3Y2RkdE1ycFp6QlZPYmdidk1pb2lyc0pFeC15QldoTmRpclg3RGxxcXBDTGVNRHZ1dDBfdFp4cXJ6ZWkzVC1PMjNsZ1VtTnV4ZGtsLTBDQjYxNFlpdHk0aHRWNzVLaWd3djNpYzFvVkVaZ3Rpb0xjeEttNkJTdXhEbzRxb0lPSzE1OVR6U0lxa2xhMl84c3RSQWhsWDZ5X2ZOc3U0WA?oc=5",
+   "lien": "https://www.demotivateur.fr/lifestyle/lumieres-baissees-plus-de-musique-ni-d-annonces-au-micro-carrefour-passe-a-quatre-heures-silencieuses-par-jour-dans-ses-magasins-pour-une-raison-bien-precise-51164",
    "source": "autres",
    "media": "Demotivateur",
    "date": "2026-11-09T08:50+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "En France, les supermarchés Carrefour Market proposent quatre heures silencieuses par jour pour faciliter les courses des personnes autistes.",
+   "enrichi": "2026-11-11",
+   "image": "https://www.demotivateur.fr/images-buzz/cover/enseigne-carrefour-777f99ae873a.jpg"
   },
   {
    "id": "387f1784f18e",
    "titre": "11-Novembre à Strasbourg : quels magasins et centres commerciaux seront ouverts ce jour férié ?",
-   "lien": "https://news.google.com/rss/articles/CBMi4gFBVV95cUxPZ3NPaGh4LXVvS3NYeG1RN0VfVHhrOF90eHJ6Z3hVY29nTjBibHJURVM3U0xLbEoxZklSQ1dZTm1sSmYxYmVjcDFTUkxwdE9KMzAtdjdTMzV1QldUMkhLM2lXaWxTc1o4dnJNT3VIMmpvb0ZWb0pXeXdxM1NxYXNIeTFjd05jZnpRSXZPSVFMNmZheGpKWkFoNTNCUWJIWkwyUkJ6VWI0SENXeUY4NUg4QXZVaXFzS3VUbjIyVGJXcEJoQXpyU1RHcGpJanc1U2l0TlhvdlRvekQ5Y2g4b3lIWGJB?oc=5",
+   "lien": "https://actu.fr/grand-est/strasbourg_67482/11-novembre-a-strasbourg-quels-magasins-et-centres-commerciaux-seront-ouverts-ce-jour-ferie_65025626.html",
    "source": "autres",
    "media": "Actu.fr",
    "date": "2026-11-09T06:10+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "Mercredi 11 novembre 2026, plusieurs commerces de Strasbourg ouvriront exceptionnellement ce jour férié. Centres commerciaux, supermarchés et grandes enseignes : voici lesquels.",
+   "enrichi": "2026-11-11",
+   "image": "https://static.actu.fr/uploads/2026/07/lidl-strasbourg-meinau.jpeg"
   },
   {
    "id": "ae55d189e012",
    "titre": "[ RELATION CLIENT ] Picnic passe à la fidélité version rétention…",
-   "lien": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQeG1aSWpMWEdEVm9HdzNURHVDQ1ZuN293eU1KdWwwZHp2WUFIc1ptYVplOUFwMU9CYzd1UW1TSW5qck1oVjBOX1g3YmEzQUlfeTdocDJ4TmRJRkJHRFdWTlY2LXhWTzllUUR0TTNGdElzd0Y3VnlWeVh3V0hCMnRsZmxlOW1jN29ERUFqMW5Xd2FVUUJLNzdoOTZyNW5KeHEzMFIwZA?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/11/08/relation-client-picnic-passe-a-la-fidelite-version-retention/",
    "source": "dauvers",
    "date": "2026-11-08T16:07+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "Vous connaissiez “Ikea family”, le programme de fidélité d’Ikea ? Voici “Picnic family”. Le LAD-iste néerlandais lance actuellement son programme de fidélité. D’abord dans le Nord (sa région d’implantation d’origine en France), ensuite en Ile-de-France. Originalité (en tous les cas pour le retail grande conso) : le programme est payant. 5,99 € par mois ou …",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/Picnic-Family.jpg"
   },
   {
    "id": "bc4b3c5f2295",
    "titre": "Carburants : la baisse des carburants beaucoup plus importante que promise, mais qui s'en rend (vraiment) compte",
-   "lien": "https://news.google.com/rss/articles/CBMi4gFBVV95cUxNQ2ZTakp3ZmhKdW5pNWx3WnRxTVhIdkJJZTZ4MzBIZDJXT05MdlNqSEYzaGJURTBFX3puYXhRZGc3Uk9KeWZXZTVIeWpvSFdWTGpScURfSE5MVVFEX3F2azlsTl93Z3FrRC0waVRiVEFyZW0xWEV6X3JrYlB3eG5QTzNQTWp2bS1JSVBBMHptR2FxTDFPTDRITUU0bDdMQWl1RGo3akdicW9mSEZqbkNtZG1DRk1ya1NjbjJLMi14N0lQVGQ4YVJLU296SS1FOTV3NUNycHNJbVNpbVF3LWZ5LVJn?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/11/08/carburants-la-baisse-des-carburants-beaucoup-plus-importante-que-promise-mais-qui-sen-rend-vraiment-compte/",
    "source": "dauvers",
    "date": "2026-11-08T15:42+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "C’est le principe des baisses de prix. Elles se remarquent tellement moins que les hausses… En voilà encore une extraordinaire démonstration. En libérant quelques millions de barils des stocks stratégiques de gazole, le gouvernement avait promis de 12 à 18 centimes de baisse à la pompe à partir du 1er novembre. Objectif : calmer “le …",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/IMG_0184-scaled.jpg"
   },
   {
    "id": "43366d0c14ad",
    "titre": "GTA 6 arrive chez Carrefour dès lundi, avec un bon d’achat de 10 €",
-   "lien": "https://news.google.com/rss/articles/CBMie0FVX3lxTE9scUVTZW8zNVZ6eFpqTkc0X2pVc2VsNTVpbDdGc3NlQV94RVpuVzluRUwwMU1qVXNiQ2VaSVNIR0NMT0FKMVpZWmFZeUlGU3h6V3dPYkE3Y1hkRGFsaG01ZGtfam5VcGZ0NDI5MklSUmlCaE5udU5UekZ5Yw?oc=5",
+   "lien": "https://touteslesbox.fr/carrefour-black-friday-2026-gta-6-bon-10-euros/",
    "source": "autres",
    "media": "Toutes les Box",
    "date": "2026-11-08T15:30+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "Carrefour ouvre lundi sa 2e vague Black Friday autour de GTA 6 : bon d’achat de 10 € hors marketplace, code dans la boîte dès le 12 novembre, PEGI 18.",
+   "enrichi": "2026-11-11",
+   "image": "https://media.touteslesbox.fr/2026/11/gta-6-carrefour-jaquette-officielle-une.jpg"
   },
   {
    "id": "4b3114ed22f9",
    "titre": "« Jusqu’à 3 000 sandwichs chaque heure » : Parmafood, le « Sodebo italien », rayonne hors de ses frontières grâce à la haute technologie",
-   "lien": "https://news.google.com/rss/articles/CBMiogJBVV95cUxPSHZ3Q25iWG9DdUgzSlRESDlvbWRmSmNCcEpzZEtJNGE1Vm56M29CRVJINnVkeDk0aDlUel9PempXaFh3ejVSSHRTbkxqay1pOVoyeHBiMFFMWUxHQnFaYWhTajFCX3NzZDNTbmxERHRfRUg0NkxFMlVoLUZiWUsyQ1NwRmVBZ0UteU1FeEJGSnhrX1k5WGVHMnMtMEl0bE1ib21sbkVLTHhnQlpyYkx5YzdxdEJGcko0YUpsblVWZHM0VlY5NDl4VDJOejBxS3A1aDc3eVVaakg2cDlXUFlQaHRxUHVqdUttcHpYbHY0cjczaDU3R1FaeW9oUHlHU1oxUUpVOU1iUDBwalZBZnR0clZ1SHhJTEVtLXJzNkROLU5Idw?oc=5",
+   "lien": "https://www.lsa-conso.fr/agro-industriel/jusqua-3-000-sandwichs-chaque-heure-parmafood-le-sodebo-italien-rayonne-hors-de-ses-frontieres-grace-a-la-haute-technologie.6AGZ2MXEVFOWTLLA5L33RLV3V4.html",
    "source": "lsa",
    "date": "2026-11-08T12:30+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "93de54d51f3b",
    "titre": "Archives des PARTS DE MARCHÉ RÉGION",
-   "lien": "https://news.google.com/rss/articles/CBMiaEFVX3lxTFA5dTlCVFJKNnpnLWJWV3RreFRyTTNzNHYwdE9DY3gwa1M0S0kzbTlPVXFrODJENXU4dnFwYmVUaEsyMy1EWVRtbjZ1NHpfWC11eXhqT1c5WTQ5ZG1fU0pPckNfckUtcWh2?oc=5",
+   "lien": "https://www.olivierdauvers.fr/tag/parts-de-marche-region/",
    "source": "dauvers",
    "date": "2026-11-08T12:27+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "33b46cd42916",
    "titre": "[ EXCLU ] Parts de marché : Leclerc 1er dans 5 régions sur 9",
-   "lien": "https://news.google.com/rss/articles/CBMinAFBVV95cUxQZUlUbVFoZEJaUV9ZRUF1cEdabllYT2wwajZDUkdyWU5vZ2s4VUhGZGdrMlE4ZmI0NnUyb1VmQjNDV2xBMHVjSGpmeXY4cUZueHQ3SzV0bFh0VF9CUVEzdmR0dU9mQmVJMGRwdFZPU19pTGViMzJETXJVQWF4UmxqQXdFTW9pczJaaTN6U0xsbUgwOVdBRjhmZEtoV1c?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/11/08/exclu-parts-de-marche-leclerc-1er-dans-5-regions-sur-9/",
    "source": "dauvers",
    "date": "2026-11-08T11:42+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "DIMANCHE INFOGRAPHIE, suite. Si Leclerc domine le classement national des parts de marché (quelle que soit la source), l’enseigne ne domine pas de manière uniforme. Sur les 9 régions NielsenIQ, Leclerc ne n’impose en effet “que” 5 fois, mais est systématiquement sur le podium. Sans surprise, la victoire la plus nette est dans l’Ouest. Leclerc …",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/Mise-en-page-1_Page-1-41-scaled.jpg"
   },
   {
    "id": "3e6be8edff9c",
    "titre": "Trafic des sites e-commerce : la gamelle des Chinois !",
-   "lien": "https://news.google.com/rss/articles/CBMilwFBVV95cUxNM1J6YVRuM25iWTEyc095MHFubE8wVk5jRC13OTdCMHhvRXI4Mm9iYTEtMXhjSHFtdW9BMDJ0cWw5R1JtUGllVjIxbVREdlJSZzVza3RlSkp0alZtQlZNZGxMeXZFbmZTWU5fQnNqUi1XY2dWVWE0MnRjYTlnRnNwNEJ5RFo5NXVZWVJIbUVORWg0STYwY29N?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/11/08/trafic-des-sites-e-commerce-la-gamelle-des-chinois/",
    "source": "dauvers",
    "date": "2026-11-08T10:32+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "DIMANCHE INFOGRAPHIE, suite. Le classement des sites e-commerce selon leur fréquentation à présent. Et la gamelle des Chinois. Selon le baromètre Fevad/Médiamétrie, les trois plateformes d’origine chinoises (Temu, Aliexpress et Shein) sont en net recul. Sur un trimestre (qui a vu la montée en puissance de la taxe petits colis) comme sur un an. Gadin …",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/DGC-Fevad-1-scaled.jpg"
   },
   {
    "id": "d4df05bd404e",
    "titre": "Expansion de « Carrefour » en Guinée : 4 nouveaux magasins annoncés et 1 000 emplois attendus",
-   "lien": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxQY0F0Z2FYRjVycE9EQ2JqX1FhTWdNUUxlVmkxZW8zTVF1UlEtS0V4REV3TERrbjN0TzdJWTRwVHVNdUR2TXBxRkVYWU9US0dOQ1d6N0xPNldjMEJZSmt5S2xlNGFoN280ejlLUFV1SDl5UEI2MTh4bnItX2dDMXFlV1Bnc2UxWWpaWkExdWZBeHZreW4zY2c2ejlyLWsxTndLWmtlVFFJV3d3c3dMdjhLTFVEdENzZ0xXZVFPVkJ6Z3Q?oc=5",
+   "lien": "https://guineematin.com/2026/11/08/expansion-de-carrefour-en-guinee-4-nouveaux-magasins-annonces-et-1-000-emplois-attendus/",
    "source": "autres",
    "media": "Guineematin.com",
    "date": "2026-11-08T08:16+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "Une nouvelle étape majeure s’ouvre dans le développement du commerce moderne en Guinée. À Paris, le 6 novembre 2026, Imperial Corporation Guinée (ICG), partenaire franchisé exclusif du Groupe Carrefour en Guinée, et les promoteurs du projet Conakry-Mall ont officialisé un protocole d’accord stratégique pour l’implantation d’un Hyper Carrefour au sein de ce futur complexe commercial",
+   "enrichi": "2026-11-11",
+   "image": "https://guineematin.com/wp-content/uploads/2026/11/signature-accord.jpeg"
   },
   {
    "id": "9f8a1885085e",
    "titre": "11 novembre 2026 : voici les grands magasins qui seront ouverts à Paris et en Ile-de-France",
-   "lien": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxQaWR3UGFaSXg3UGFBdVpZQTBaU3Vzc2diTnhaQmpOZmtrTGpYbE5MWG1nLXNyVUZfXzdUNTcyaDBuSlZiZ1JPdnRiUlJRMzFuZEpRdHA1T2lpdjRfUWY0bk95Q3g3UmN5OGg5SVZ3N1RLRVVOV1hWSVo5a25QS3pWR3BBeV9iMWpHdnQzdDVLOE9FYmFPZ0JWc0thbUJJemZHZkJzcXJoRXY1TmRta1doU2hRSHZCa2l1eDg40gHAAUFVX3lxTFB1ZnpJOGVGSENTLUVCR0FrRWJtTUF4OGNGeDJmbGxYMUVfNVhKWG9mY1hhSXF1WWh6eDFsbEtTbFlGYTJveWg5SFdnV3VGMVdROUEzRVZ6VFZBd1VPZ2hHX2RHa1ltT3c1RUl0eW5OcFlYNi1VYUhjV3VEYUxvQWUwWThvU0RfbVdFS1BJVU5KZmgwMVRPeVpxV0pKb2o2OHVZOFJGMG1FVEFhcnFlSklFMVVCQ1FGYXlGZnk3WFhpTg?oc=5",
+   "lien": "https://www.cnews.fr/france/2026-11-08/11-novembre-2026-voici-les-grands-magasins-qui-seront-ouverts-paris-et-en-ile-de",
    "source": "autres",
    "media": "CNews",
    "date": "2026-11-08T06:02+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "Qui dit 11 novembre dit jour férié. Certains d'entre vous en profiteront pour faire leur emplettes, à condition qu'une porte close ne vienne pas contrarier leurs",
+   "enrichi": "2026-11-11",
+   "image": "https://static.cnews.fr/sites/default/files/styles/image_1160_652/public/080_hl_rmilani_3249862-taille1200_6aecb30e769c5.jpg?itok=t1eG_W2X"
   },
   {
    "id": "9be7833fc05d",
    "titre": "Groupe Zouari et Stokomani/Maxi Bazar, Shein et centre logistique XXL, Quick en France... Les cinq infos à retenir dans la grande conso’ cette semaine",
-   "lien": "https://news.google.com/rss/articles/CBMivwJBVV95cUxQNTRFSFRBVVlIN1BLdlZWNDZhSWRCZXZGSGJPTHh3RkN5aUZDd0NnQk5ZazNZdUJTQVoxQkZKa3NoZnU2M2hIN0NFUWl1SkJiVDFobERRT29pWXUtRXpLMGduRF9FeWFUclZoRXhESUtvMWcweXZNS1JaWHFOVzJyQmZkX3lNZE0tSm1qVmp3cjNyZUtuWXVXWHhNV1c0djVFaElrVE5GWm5ocEFJRUtoeHQyY2EwNHRHX2MwbWZKOHdyZ2d4OGo2OHpQMXdVZUF6RTY1WDBMaUJMOGFRZzZfUHduTmpmRTZ4dkRLWVRTU05YYl9pT0FpcThEUndFai1OZHgzWE02VUFEVTg2OVM1cjJjenQzMHlwM01oZ1RmTjRYLXMzZjVWemg0dVh0cEdCaXd1RG81QWVfLXdQLW1V?oc=5",
+   "lien": "https://www.lsa-conso.fr/secteurs/commerce/groupe-zouari-et-stokomanimaxi-bazar-shein-et-centre-logistique-xxl-quick-en-france-les-cinq-infos-a-retenir-dans-la-grande-conso-cette-semaine.FSFTTCZI5JF7ZP5PEXUPDSGKN4.html",
    "source": "lsa",
    "date": "2026-11-08T06:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "12b7da3292c3",
