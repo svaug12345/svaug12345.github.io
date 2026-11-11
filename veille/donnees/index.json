@@ -1,0 +1,17 @@
+{
+ "version": "2.0.0",
+ "sujets": [
+  {
+   "id": "carrefour",
+   "nom": "Carrefour",
+   "nb": 129,
+   "maj": "2026-11-11T07:27+00:00"
+  },
+  {
+   "id": "elis",
+   "nom": "Elis",
+   "nb": 7,
+   "maj": "2026-11-11T07:38+00:00"
+  }
+ ]
+}

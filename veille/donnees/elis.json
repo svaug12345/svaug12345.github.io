@@ -1,0 +1,93 @@
+{
+ "version": "2.0.0",
+ "maj": "2026-11-11T07:38+00:00",
+ "id": "elis",
+ "nom": "Elis",
+ "mots_cles": [
+  "elis"
+ ],
+ "sources": [
+  {
+   "id": "presse",
+   "nom": "Presse",
+   "court": "Presse",
+   "site": "",
+   "couleur": "#5d7277",
+   "autres": true,
+   "ok": true,
+   "erreurs": []
+  }
+ ],
+ "articles": [
+  {
+   "id": "d4d07d7403fa",
+   "titre": "ELIS SA : Les résistances sont proches",
+   "lien": "https://news.google.com/rss/articles/CBMitAFBVV95cUxQQnA0WTBibEJFckZwQjJxYVlLTGpRUEhSa1ZvaEVERWVLeXhHZ2dGTkt6TFVmTHRvdExDU3RaSzlHb0EwOFRZR1VSbTFkOXlBdlFFMVN3ZkxaV2NNcmtobXpNeEhiQnpvbGpWcDJGUmdOUEdUeGlEOFp6eFpaRXU3NkxnVzAxUjRJQ2MzRmdFdWFUZkpoeUI1MXhoTDFNWkU1bmdRZEpSWC1ubW9XLWhiVC1hVETSAboBQVVfeXFMTzZTVFlQaXlKbDlaOXdLQUNRSFlMN3lmbXhGV0s2YlpsQ3RlNEJLOTBlRWFlMlJyaWphRUg2M01HdzFqeDJGXzRGTVlPNGpVU0xsZm5ra3lVUWRERGhSS18xYnF6eHFOWEJ4eU1HNFA5YjJfUlRWSWhRUFZHOVpvdnc4VU1ZSlZ1WFpnR3d2eTFFM0h0dGpSRzZTLVdxY19SQmFpLVkzN3QtdXNhUzIxcE15NlVudi1PUnJ3?oc=5",
+   "source": "presse",
+   "media": "Boursorama",
+   "date": "2026-11-05T06:26+00:00",
+   "vu_le": "2026-11-11T07:38+00:00",
+   "resume": ""
+  },
+  {
+   "id": "f9e028aba256",
+   "titre": "Elis habille le Grand Lyon",
+   "lien": "https://news.google.com/rss/articles/CBMipAFBVV95cUxOWU8ydVFfUWhyTHVEMWZIRVJ2STJSQ3BINHNsN3J1ejFnaC0tTEZwM0JNLWlOSUltTXZLNk5HaW4xRzhZWlZDeWdZeUQ0OVhaNk5RM2liNnBXUk51YXFVeVFYTHVRWHJPd0V5NnFzMDI4dVpGdTRwU2lWdUpjWWdudUt5cXBzMTR5RV9JLTBnZXg2bVg1R2w2T09kRU96Q2NHZExNVg?oc=5",
+   "source": "presse",
+   "media": "Entretien Textile",
+   "date": "2026-11-04T14:50+00:00",
+   "vu_le": "2026-11-11T07:38+00:00",
+   "resume": ""
+  },
+  {
+   "id": "676376d320d6",
+   "titre": "ELIS SA : L'analyse ne suggère pas de baisse à moyen terme",
+   "lien": "https://news.google.com/rss/articles/CBMizwFBVV95cUxOUlNibS0tYW1OWm9QcFRPMVh2dUIwczhqT01yMm10OG9GZjlfR1dIeHZzeHQyOHpVZS1pZHBKT0ZfUkdoOTRhWThpTjMtTVNmLW5tY0NfRmFRZFhGM3dsUnRZSlV3VmpNcVp6WVlLdHBvT0JqNkwxUktHU0w0S01URG1FUG9wRGlaYXpPU3RnZVdKZDJnelpEci1DVXRSNUR1cl9CaHdHQjNqNm5xSllZcXZSOUxEVWR1SDZUbFJwWU5oUExIcFFrV2xCbGlHd1nSAdQBQVVfeXFMTTcyVUhDdTJjQU5VZVo0SXMxclRrSEk3Tml6N1pQRXd1eHlTLVdGbTl4Ql9EaFFydHdaVTdZRnFGRGRuLXVXUFd6SlVGRjBPODFCcTQyUUxrQnE4OTlFMkkwQmhrZGVmMkRJSnVHUUMzMFp3OW5rdl9sa2ViWDFIZUljM1JzbzZkRTYwY3RPakRmbWItOW9faGRyaDJyZnV4QmIzLTFNWEk0dWJtbzN4M0wwcHRhOVNva1JycVZ3VGRFOGN6aFYyaDdHWC1PLXhZZC13R3I?oc=5",
+   "source": "presse",
+   "media": "Boursorama",
+   "date": "2026-10-26T07:00+00:00",
+   "vu_le": "2026-11-11T07:38+00:00",
+   "resume": ""
+  },
+  {
+   "id": "89df45c1ba7a",
+   "titre": "Elis SA Estimates – EURONEXT:ELIS",
+   "lien": "https://news.google.com/rss/articles/CBMiekFVX3lxTE5wWWpFSF9UdzZ6ek52ck5oZVNFR0RjMmFZOGJtWjVCUXBiVE5faHlBTnUzTFBrTEZ0NU1FNjM1VHlRZUtXWlg0S0NQc0tFa1hKdC1yd2UxcHBidWtfclNHWW9VeUo1NUszcTB5V3FQVE5lMDZXQzJDcmNR?oc=5",
+   "source": "presse",
+   "media": "TradingView",
+   "date": "2026-10-24T20:43+00:00",
+   "vu_le": "2026-11-11T07:38+00:00",
+   "resume": ""
+  },
+  {
+   "id": "5009633ceb8d",
+   "titre": "ELIS SA : Peu de risque à moyen terme",
+   "lien": "https://news.google.com/rss/articles/CBMiswFBVV95cUxOOVI3THdwWVBodTkzNXp4eEg4cU9STkkyYy1ERkhJZ1lydk5mLWZmZWxuRTdyQmxpWGdQb2wtNF9MVXBKZWVlYUNqOHNEZXpTQXgtYUxFWV9tQTVJVC0wWjcwMFNtNS1KTDRfSnVUblUzTnRIY0hOZFZ3dlhJN0Yydm12RlF1cmhiMk01OTY0SUYyODFyZU9vcVk0Z1ktdE9Ma25YRlBEM0lXZThxSm54RmZCc9IBuAFBVV95cUxNTUZlZC14T1dNY0FfcTBsdDhwX2JYd1dWZ0w3bU1TMThsMjA3TDBoZUNGNW5TaWhiUU9JemNEVEpVSndkbEtHUmJ2T1BraWgxczJvT09xbF92ZldOSHg4Y2tPNWtCU1d5cF9OVkRtdElobkFKRWY0T09ObHJ4d3R0YjlWenFxSUxNc1ktMm1fcDVKakFMTUd5REQtWFVRLURMN3NWU0RkdTFIbzYwa21QbGNMT1hWbTVO?oc=5",
+   "source": "presse",
+   "media": "Boursorama",
+   "date": "2026-10-19T07:00+00:00",
+   "vu_le": "2026-11-11T07:38+00:00",
+   "resume": ""
+  },
+  {
+   "id": "2b4370dba5f7",
+   "titre": "À Marseille, des riverains de l'ex-blanchisserie Elis à La Capelette demandent l'expulsion de 25 familles roms",
+   "lien": "https://news.google.com/rss/articles/CBMiggJBVV95cUxQMWJXdURLQks1dk9feEFlT2dtalJYcW1EU29UcnhmV2FuOFh2cm5oVGRodTRIaC11ZF9tZnlPcGhWNW91d3UwblZxQnlPZVlfRHdxUnYydFNLS1lHTWhYTnJCWEhlZ21RTEZvQW9rZ0JlYzl3dGFsTjBlYWpTQk82VTFaSWh0a1N4Rm5SdHVzRm9GZThwR0ZDRGliZUxJWGdqRzFfZjJVYWllUWNMRmFzQWYtQ24zZ3pkeVB0eFVHbjJmcUljV2szRjBsQ0lyTjBtQkc1ZUI2MFBlTG56WEtnVDl2Z2ZxT05vRWtqSE1tMGVGNlJhY0ZjckgxSjluWElKNHc?oc=5",
+   "source": "presse",
+   "media": "ici.fr",
+   "date": "2026-10-08T07:00+00:00",
+   "vu_le": "2026-11-11T07:38+00:00",
+   "resume": ""
+  },
+  {
+   "id": "c1bac9af2336",
+   "titre": "Morgane Dawant nommée Chief Data & AI Officer d’Elis",
+   "lien": "https://news.google.com/rss/articles/CBMixAFBVV95cUxPc29rMXdVLTRHUXJMdk12VzdRenRwa2FwV0Q3NklRNlAwMTlUWDVSNmptaDNndUtnalhqem8yY2c2Q1owTTRQR2hjNkV6RGdZSUpaeU1wWmw2LVE1TmtINUg3UHZvY002REVBV3RBT0xlcmJSVkhYeFNOM28wLVdvWERJamV4Q19Xa3RJZXZrQWdPQWZZNzY3NWNTQ2ZQdjlxRm8yOTN5YjRtN0N5Z296bnVSd2xQTVczMnVOV1NNekY1Z0Zu?oc=5",
+   "source": "presse",
+   "media": "https://www.republikgroup.com/",
+   "date": "2026-09-24T07:00+00:00",
+   "vu_le": "2026-11-11T07:38+00:00",
+   "resume": ""
+  }
+ ]
+}
