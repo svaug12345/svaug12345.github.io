@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-11T09:42+00:00",
+ "maj": "2026-11-11T15:25+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -50,6 +50,31 @@
  ],
  "articles": [
   {
+   "id": "d02425d7350c",
+   "titre": "“Wonka” déboule au rayon chocolat : oui, mais c’est bien sûr !",
+   "lien": "https://www.olivierdauvers.fr/2026/11/11/wonka-deboule-au-rayon-chocolat-oui-mais-cest-bien-sur/",
+   "source": "dauvers",
+   "media": "",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-11T14:11+00:00",
+   "vu_le": "2026-11-11T15:25+00:00",
+   "resume": "Côté chocolat, Wonka (Willy) en connaît un rayon ! Pour ceux qui seraient passés à côté du roman de Roald Dahl ou du film de Tim Burton, c’est le personnage principal de Charlie et la chocolaterie (qui revit actuellement via Netflix). Et c’est désormais une marque de chocolat largement mise en avant chez Carrefour ou …",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/IMG_0065-copie-scaled.jpg"
+  },
+  {
+   "id": "1a95f7d48d63",
+   "titre": "Pourquoi Zalando parie sur ses « tech hubs » : immersion dans son centre technologique implanté à Dublin",
+   "lien": "https://www.lsa-conso.fr/e-commerce/zalando/pourquoi-zalando-parie-sur-ses-tech-hubs-immersion-dans-son-centre-technologique-implante-a-dublin.QINXLTKULRJADLLVMUKJS22BSE.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-11T08:05+00:00",
+   "vu_le": "2026-11-11T15:25+00:00",
+   "resume": "",
+   "enrichi": "2026-11-11"
+  },
+  {
    "id": "4a8abcce6eea",
    "titre": "Carrefour : voici la liste des magasins fermés ce 11 novembre 2026",
    "lien": "https://www.marmiton.org/actus-supermarches/carrefour-voici-la-liste-des-magasins-fermes-ce-11-novembre-2026-s4140738.html",
@@ -61,6 +86,19 @@
    "enrichi": "2026-11-11",
    "image": "https://assets.afcdn.com/story/20261109/2334540_w1500h844c1cx2000cy1500cxt0cyt0cxb4000cyb3000.webp",
    "site": "marmiton.org"
+  },
+  {
+   "id": "93a4714de17b",
+   "titre": "11-Novembre dans l’Aisne : quels supermarchés et magasins seront ouverts ce mercredi ?",
+   "lien": "https://www.aisnenouvelle.fr/id758557/article/2026-11-10/11-novembre-dans-laisne-quels-supermarches-et-magasins-seront-ouverts-ce",
+   "source": "autres",
+   "media": "L'Aisne nouvelle",
+   "site": "aisnenouvelle.fr",
+   "date": "2026-11-10T19:07+00:00",
+   "vu_le": "2026-11-11T15:25+00:00",
+   "resume": "À l’occasion de l’Armistice, les habitudes de courses pourraient être bousculées dans le département. Si certains commerces baissent le rideau, d’autres accueilleront bien les clients ce mercredi 11 novembre. Voici où faire ses achats et à quelles heures.",
+   "enrichi": "2026-11-11",
+   "image": "https://prmeng.rosselcdn.net/sites/default/files/dpistyles_v2/ena_16_9_extra_big/2026/04/27/node_758557/63092302/public/2026/04/27/76346211.jpeg?itok=pJGqcQGe1794337633"
   },
   {
    "id": "2ed5e8639c1c",
@@ -172,6 +210,19 @@
    "site": "olivierdauvers.fr"
   },
   {
+   "id": "b37e5131f73b",
+   "titre": "11-Novembre : quels supermarchés ouverts dans les Ardennes ce mercredi et à quels horaires ?",
+   "lien": "https://www.lardennais.fr/id839284/article/2026-11-10/11-novembre-quels-supermarches-ouverts-dans-les-ardennes-ce-mercredi-et-quels",
+   "source": "autres",
+   "media": "L'Ardennais",
+   "site": "lardennais.fr",
+   "date": "2026-11-10T14:37+00:00",
+   "vu_le": "2026-11-11T15:25+00:00",
+   "resume": "Ce mercredi 11 novembre, jour férié, plusieurs hypermarchés, supermarchés et magasins de proximité des Ardennes restent ouverts, souvent avec des horaires réduits. Carrefour, Leclerc, Lidl, Auchan… voici le point magasin par magasin.",
+   "enrichi": "2026-11-11",
+   "image": "https://remeng.rosselcdn.net/sites/default/files/dpistyles_v2/ena_16_9_extra_big/2026/11/10/node_839284/15550778/public/2026/11/10/112853242.jpeg?itok=0QhGZy0A1794386521"
+  },
+  {
    "id": "75366f8e72ad",
    "titre": "Pourquoi l’hypermarché Carrefour de Margencel était-il fermé ce mardi matin ?",
    "lien": "https://www.lemessager.fr/649360169/article/2026-11-10/pourquoi-l-hypermarche-carrefour-de-margencel-etait-il-ferme-ce-mardi-matin",
@@ -224,6 +275,19 @@
    "site": "gondola.be"
   },
   {
+   "id": "3a072b9fc7ee",
+   "titre": "Carrefour Market ouvre à Ypres sur le site d’une muraille médiévale préservée",
+   "lien": "https://lexpress-franchise.com/fr-be/actualites/carrefour-market-ypres-vandenpeereboomplein/",
+   "source": "autres",
+   "media": "L’Express Franchise",
+   "site": "lexpress-franchise.com",
+   "date": "2026-11-10T13:23+00:00",
+   "vu_le": "2026-11-11T15:25+00:00",
+   "resume": "Carrefour Market ouvre le 10 novembre à Ypres, dans un bâtiment neuf avec six appartements. Une muraille médiévale trouvée sur place reste visible au sol.",
+   "enrichi": "2026-11-11",
+   "image": "https://lexpress-franchise.com/wp-content/uploads/2026/11/carrefour-market-storefront-hours.png"
+  },
+  {
    "id": "2471fe7d61e1",
    "titre": "Coopérative U prolonge son moratoire sur les pénalités logistiques et renforce ses engagements envers les PME",
    "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/cooperative-u-prolonge-son-moratoire-sur-les-penalites-logistiques-et-renforce-ses-engagements-envers-les-pme.KDUKHW27LFDHDB3SNSSU6UWBIY.html",
@@ -244,6 +308,19 @@
    "resume": "",
    "enrichi": "2026-11-11",
    "site": "lsa-conso.fr"
+  },
+  {
+   "id": "f6e5e41d0750",
+   "titre": "Le Carrefour Express de Halle rouvre en concept Express 4.0 avec de nouveaux services",
+   "lien": "https://lexpress-franchise.com/fr-be/actualites/carrefour-express-halle-concept-express-4-0/",
+   "source": "autres",
+   "media": "L’Express Franchise",
+   "site": "lexpress-franchise.com",
+   "date": "2026-11-10T10:29+00:00",
+   "vu_le": "2026-11-11T15:25+00:00",
+   "resume": "À Halle, le Carrefour Express a rouvert en concept Express 4.0 : stand de nouilles, imprimante photo et, dès 2027, consigne Vinted Go, selon Carrefour Belgique.",
+   "enrichi": "2026-11-11",
+   "image": "https://lexpress-franchise.com/wp-content/uploads/2026/11/carrefour-express-storefront-city-street.png"
   },
   {
    "id": "6699030c4107",
@@ -1081,319 +1158,376 @@
   {
    "id": "2645b19a36d3",
    "titre": "Parts de marché NielsenIQ P10 / Carrefour : le bouillon des hypers, l’envolée de la proxi !",
-   "lien": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxNRkV6cGpwUTd4ZVdmZlZQbVdJVWdBYzZvTnZwc0oyanZ4dkQyV05LS2JKeVdnUlZvQU9LS1RubWRLdUhWZ0dPUmV1cGZGdl9abGhaanZaQ0d0SkNmdDJVbV9ZQTNaa05QMVhpNXZLQTNVUjlQN0ZRWXd4WVJTcGRVNGtwemxZYWppdVlmNGtIQnNBOHJKc05oTHNlcjlHeXBCTEliZmJpN3pNZjAzYllJdERtR1VKZE56dnplTkI2cFNkREE?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/10/20/parts-de-marche-nielseniq-p10-carrefour-le-bouillon-des-hypers-lenvolee-de-la-proxi/",
    "source": "dauvers",
    "date": "2026-10-20T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": "",
-   "site": "olivierdauvers.fr"
+   "resume": "Publication cet après-midi des traditionnelles parts de marché des enseignes, calculées par NielsenIQ (avant, demain, la version Worldpanel). Une nouvelle fois, il y a tant à dire qu’il est difficile de ne retenir qu’une idée… En premier lieu : Carrefour. Les hypers prennent un bouillon (– 0,5 pt, conséquence d’un anniversaire 2026 qui repasse sur l’historique …",
+   "site": "olivierdauvers.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/10/PDM-N10-Nielsen-Enseignes.jpg"
   },
   {
    "id": "4ca369325c1a",
    "titre": "Carrefour : résultats T3 en croissance, mais des inquiétudes pour le T4 (au point de revenir sur les objectifs financiers annuels)",
-   "lien": "https://news.google.com/rss/articles/CBMi-wFBVV95cUxNcnRyTldRUmVucTAwajFVWC1LQnl4S0FaaUloeVNfM1JxRHZmTi11NmpoTlA4cERYNEozNzhnd29TNXlxT1NFeWlLUW5xNXFoRGhZaTNxd0hiYm9pWWsyaUVZckNoOU1aSlRhTmJZZVR6NHhjdlcyVkhxcjZ1Z3RGTjJoRlpnY0JCZHB0cU85YnVRbmltVnd2a0RlT2VMVnV0ZWRJemRFMFVvQ1YtVTllNE8tazlXV2NLTnR6ZHIwUXpUS0QzNEo1LWRFUWtjdTBtc09jQ0VWdk5MQzJlQ1pFdTB1WEp0VWZMZjBWUnhwYVduWGFoM0xPUmVBVQ?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/10/20/carrefour-resultats-t3-en-croissance-mais-des-inquietudes-pour-le-t4-au-point-de-revenir-sur-les-objectifs-financiers-annuels/",
    "source": "dauvers",
    "date": "2026-10-20T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": "",
-   "site": "olivierdauvers.fr"
+   "resume": "L’heure des bilans pour le T3 de Carrefour. Une fois n’est pas coutume, pour l’essentiel dans le vert. A l’échelle des pays, seule la Pologne détonne avec un important recul en comparable (sa place dans le groupe en apparaît plus menacée trimestre après trimestre). Pour le reste, des progressions : + 1,2 % en comparable …",
+   "site": "olivierdauvers.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/10/Carrefour-IMG_8326-scaled.jpg"
   },
   {
    "id": "3898d7a38399",
    "titre": "Rachat de Codifrance par Carrefour : la direction du grossiste écrit à ses clients pour les rassurer",
-   "lien": "https://news.google.com/rss/articles/CBMijwJBVV95cUxPTmdfQmlmT0F3Ri12ZzI1OWlwbUVFQ3RUUnNHWjQ1UUEwTF9IRGNSNWdOVUlxMmZUWExpUjJ5Y3pmQ2ctQXlrS1ZTbHlrdkJwZVUyYlFwTldKTkpVMnBKODVaSmM3Rk4tOHBNMGNnZmFDekNUYklqUnN5SHJnd0VtV1lVZFpYRkFMRjVPWWh2T05OQmdLNUNSblg1Z2U5bEYtYTY0eHZ2VTVMT2xBNmQ3X1lLdTgzY0RkQmVMMXI0c3M1cUVFMDVQZ0xyUDFFbmZreEVFT0Y5blMwc1VBd29IZlJSYUEtdzBrbm5jdWFiR2ZkRmZkanNqcTlxT1A4MWF6bDFEdFdUcnE0RGx5M01v?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/rachat-de-codifrance-par-carrefour-la-direction-du-grossiste-ecrit-a-ses-clients-pour-les-rassurer.N25AWN3IRNHZLFVBV5RL7PIMO4.html",
    "source": "lsa",
    "date": "2026-10-20T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "site": "lsa-conso.fr"
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "dcb48a14f471",
    "titre": "Carrefour révise ses objectifs de marge suite aux pillages",
-   "lien": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQYWpiaEk5SHJqaDNyelZKY0JfN2I4MmlKa251UHdRejVvQ3FBMjhaNWVPbnYtZkgwdDB5WVJDQXBQdlNFdWU4Z1BjdW9NanhMX3I3T3BsN2xsS1ZWRmhnZFVsTDB0cnJMdWN3MDBjaWduWG4tSTNPTHpIcU5MMHlST28wNmowSV9nZjdZMnVOaDBianZMeTdYcXphYjJ3RG5aUXc?oc=5",
+   "lien": "https://www.lineaires.com/la-distribution/carrefour-revise-ses-objectifs-de-marge-suite-aux-pillages",
    "source": "lineaires",
    "date": "2026-10-20T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": "",
-   "site": "lineaires.com"
+   "resume": "Les ventes de Carrefour ont progressé de +2,3% au troisième trimestre et de +1,2% en France à parc constant, dont +0,6% pour les hypers, avec un effet carburant",
+   "site": "lineaires.com",
+   "enrichi": "2026-11-11",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-10/27fb7622-dd66-48e7-be21-d3cd1ea77af8.jpg.webp?itok=mXf56jUz"
   },
   {
    "id": "c442751d3f0b",
    "titre": "[ EXCLU ] La visite de chantier du projet \"Carrefour Frais\"",
-   "lien": "https://news.google.com/rss/articles/CBMimwFBVV95cUxPUzg0V2daVkl1X0t5NkRxSUVBN09SYlA4YndxcHVMMFpVWm5aRGhwOHowU0JmQi01SlRVQ2FjUURtU2dMMnd0YW9TMTJyVWs1YkswWmVQQWZxRkJaX0FMaDlpcDFPNmlHTVlpUXB3UHB5a0lGX19YOTl3VDNESS1BOWpkZUVFUEFkQTNzNERUaFE0NkszT3l3U3Frcw?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/10/19/exclu-la-visite-de-chantier-du-projet-carrefour-frais/",
    "source": "dauvers",
    "date": "2026-10-19T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": "",
-   "site": "olivierdauvers.fr"
+   "resume": "Montigny-lès-Cormeilles (95) est le premier des dix hypermarchés Carrefour qu’Alexandre Bompard veut transformer en spécialiste “frais et discount”. C’était l’une des annonces de son plan pour 2030. Il s’appuie pour cela sur le savoir-faire de la famille Quattrucci, qui exploite déjà ses propres magasins Marché Frais by Carrefour et qui a prévu de reprendre en …",
+   "site": "olivierdauvers.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/10/montigny1.jpg"
   },
   {
    "id": "6f5645f2fc01",
    "titre": "Carrefour : focus sur ces 45 magasins réalisant plus de 700 millions d’euros de ventes dont les murs sont passés sous pavillon britannique",
-   "lien": "https://news.google.com/rss/articles/CBMikAJBVV95cUxOZ0FxWDBlOTFUNjE1ei1fbG9XQlNxVVdIR2YtM2hHZ1NPakU5bUpiTXlFZ29nZXc5MmlRbEtRa09xZmZKUU1RWmlRd0RnZGRuQzJzb3FodFpWNVFSWkNNQ3g4MUxfblNCNkwzaUlkdkNsYWk3aURzTzVqczROTjFVYWl0YlRSdGRIQy0tNGlXN21oeE5walFTLTliME94aEVzWmpUTUFlUXNmR2g5WW9YeGpmeFJqaXJiY0lTLWdONTJmUk1MZUs2TkZ5QS1nUXdndDdtNGw2ZGRyNlNmWTFNSE11aVJxanVQSUc5Wkl0Mkd0b2Njb1dtVWRNX0NzbUc4V3hVYUF5emFWRWR4SUlSWQ?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour-ces-45-magasins-aux-717-millions-deuros-de-ventes-dont-les-murs-ne-lui-appartiennent-plus.U7QE3WSJIJEX3CDZU4LJ463SVA.html",
    "source": "lsa",
    "date": "2026-10-19T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "site": "lsa-conso.fr"
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "149da074a755",
    "titre": "Grande distribution : Carrefour fait-il une bonne affaire en rachetant Codifrance, spécialiste de la proximité ?",
-   "lien": "https://news.google.com/rss/articles/CBMimwJBVV95cUxNMEd1NFJBQWdaWVNOeFkxZWdQMURVNHQwWVh2RWR0YlQwOVlnMWdzaUNGZWM4M1N6Y2d5YXYzNnVaUFpDYWFWekRpbUFLSTZ6a1c2NXl5NjlNZFF0Nlh6Q3ZNTkhLd3pna3pDeGpiVm9rMGNRYkVCRGVFUUV4NEw5QWtKc092VFItTDctakVCN3QzZTUwWTlhQ1pxMXFJdzZPXzlGVm9Fb3BVMEZsNkhYdzEwUVhoRlNjVWxFNmJXeFNib2hkbGp2LVNvdHNGSXdlNmpNaEYyLUc4Ulc5LVVUcm9KUVRhQm4yaFRjeVRqdlN4Z0NqNS1jOHZ3T25QQkdUcEQ2ZkpvOTZlalJ4NEZiQldDaGQwNHF6SndJ?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/grande-distribution-carrefour-fait-il-une-bonne-affaire-en-rachetant-codifrance-specialiste-de-la-proximite.4XALGR3U5BA6XJIOMETL34YTKQ.html",
    "source": "lsa",
    "date": "2026-10-19T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "site": "lsa-conso.fr"
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "a671bcc0d094",
    "titre": "Grande distribution : Carrefour officialise le rachat ferme pour 152 M€ du spécialiste de la proximité Codifrance",
-   "lien": "https://news.google.com/rss/articles/CBMinwJBVV95cUxQaXRmYjRadUtiWEVIWE5Rcl9XUjVib2tVWS1NSnhPaUhWdnpSZEZCRV8wclFUQWpnU1JPN1VvejdWRHhneGdaWDFoSVI4QWllS1kya2hMMFZxUDY0cUtSY0Y5TXk1RWRZalNfOGYwWUMza1lHZGFqTFFxNXJXZnB1dnJacEJLVzNiZW9hZ3ZHMEtxWDJzV0w3WEFyUng1ZEtQbExHRVd1SFF5RVI0aHRMUGFrZl9FejFjWDZlRTJXQ2p2dTd2eGFralZKRTJJaTJFbjZTa3hNU2pDOGtpMGtPWkYzMFRjQUFscEJHWWowSlRSZUI4dTlabUd3QnBkNTA0REtmVE9lV1ZVSTZ1Z3FaQjFQcW10VF90MDBUMmk0MA?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/grande-distribution-carrefour-officialise-le-rachat-ferme-pour-152-m-du-specialiste-de-la-proximite-codifrance.NVSSUVG4SVAOPHRLNBYZQ6MUXU.html",
    "source": "lsa",
    "date": "2026-10-19T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "site": "lsa-conso.fr"
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "3dff1e91859a",
    "titre": "Carrefour rachète Codifrance pour 152 M€",
-   "lien": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxObXlKX3ZXNmtZaWZ4TWkxdTN2M1ZWRUFwaENSZ3dLUDhlTU81ZmV4V095R3Jnb2QzbWNhNVQ2MGdYLUpBMmJtaTdLanJ6R0UzWmRudUlwNVlHSUd4SEw5Y2M0blg0dC1URHhta2E2OTNqSzRfSjNUcDNuUTZMSm1EdWFsSnpfekdFVm13?oc=5",
+   "lien": "https://www.lineaires.com/la-distribution/carrefour-rachete-codifrance-pour-152-meu",
    "source": "lineaires",
    "date": "2026-10-19T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": "",
-   "site": "lineaires.com"
+   "resume": "Carrefour a présenté une offre ferme de rachat au Belge Colruyt pour sa filiale de gros Codifrance qui approvisionne 3.100 magasins de petite proximité alimentaire en",
+   "site": "lineaires.com",
+   "enrichi": "2026-11-11",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-10/43506696-70fe-4304-927d-356a45c3c3a8.jpg.webp?itok=NDR_Lr2m"
   },
   {
    "id": "f01358788ff6",
    "titre": "Alexandre Bompard, PDG de Carrefour, dresse le bilan des dégradations commises le 17 octobre",
-   "lien": "https://news.google.com/rss/articles/CBMi4gFBVV95cUxPQ1JrR0lSdFBpMDFnZ2ZjRDd4bndLcnRIdXVjZ0lWSHhwSldfeVpCUW9MRXRQWUN5NnJhLTZfQ3ZlLVRxeEc2ZU1ETC1LeXBFUlJrUWdsaWlVcG9HZnZ6LXVjSlY2NWZ3RE9WWlJrVm9PT3RiOFVodmdsRC0xOFVQZENfbmloeWNwcTlUMENvQk92TXM3M2V0ZlVnN1lqOTNpOW5Ba0k5U2Utd3NoTkxmdnc4Z2tNeHVuNjVGaUxqQnIxTTQ5M1VhbVpLLWhhVGFQSHpHaG9FczBjRFAzQ0QxbTV3?oc=5",
+   "lien": "https://www.bfmtv.com/economie/video-alexandre-bompard-pdg-de-carrefour-dresse-le-bilan-des-degradations-commises-le-17-octobre_VN-202610180240.html",
    "source": "autres",
    "media": "BFM",
    "date": "2026-10-18T07:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": "",
-   "site": "bfmtv.com"
+   "resume": "VIDÉO - La journée d'hier marquée par une forte mobilisation contre la \"vie chère\" avec plusieurs centaines de milliers de personnes dans les rues, a aussi été émaillée de nombreux incidents à Paris et ailleurs en France, avec notamment des commerces vandalisés et pillés.",
+   "site": "bfmtv.com",
+   "enrichi": "2026-11-11",
+   "image": "https://io-fsly-bfmtv.cdn.nextradiotv.com/Bg21kh4ipNbHZFzxgyOhnWic5nM=/0x0:1280x720/1280x0/images/Alexandre-Bompard-PDG-de-Carrefour-dresse-le-bilan-des-degradations-commises-le-17-octobre-2367539.jpg"
   },
   {
    "id": "6468aa89c01d",
    "titre": "Alexandre Bompard, patron de Carrefour, chiffre les pillages de samedi «en centaines de millions d’euros",
-   "lien": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxQTFNnT2NKa2tpZzRKdXE3VF90SmN2YzBfaDQyUEp5U3htc0RsenpZUHg3MktzZ3JtS0dLb0JHY05aN2tQaU1fdG5VM0w1dUwzZTRJbmRNRXhfc0N5bkxRWm1xZDZtTGh4RVB2dDIyTGpFdkswNkVsYkxPQzJYWW5DSzBWRE91Vld0VFdfMWpuMjg1NWpJRldUMTBUUjl1bGcxRE1WUmVJZ3R5YWxYOVoyQk1yTEZQempUWWY1aG83NFlNbldXUzNFQkZoVmdyaTlCcHBBcUluam1XMUNQamlEMVdZeXY?oc=5",
+   "lien": "https://www.capital.fr/economie-politique/alexandre-bompard-patron-de-carrefour-chiffre-les-pillages-de-samedi-en-centaines-de-millions-deuros-1531085",
    "source": "autres",
    "media": "Capital.fr",
    "date": "2026-10-18T07:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": "",
-   "site": "capital.fr"
+   "resume": "En marge de la journée de mobilisation contre la vie chère, le samedi 17 octobre, des casseurs ont pris d’assaut près de 1 500 commerces, dont des supermarchés. Parmi eux, 50 magasins Carrefour ont été touchés. Alexandre Bompard chiffre ces pillages «en centaines de millions d’euros».",
+   "site": "capital.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.capital.fr/imgre/fit/~1~cap~2026~10~18~7f15f7f2-e6e7-4ef6-8286-503035380535.png/1200x630/focus-point/656%2C263/alexandre-bompard-patron-de-carrefour-chiffre-les-pillages-de-samedi-en-centaines-de-millions-d-euros.jpg"
   },
   {
    "id": "57022344a6d5",
    "titre": "Grande distribution : Carrefour sur tous les fronts, mais quelles sont les priorités de l’enseigne ?",
-   "lien": "https://news.google.com/rss/articles/CBMilwJBVV95cUxQaThWaXN3WDktZUFGVjhPbDVIODYyRktPdnJ1bW56Z1doYTFOXzRESDNhYVVOVURiV0phVENoTG52ZWJSZ2plRDJCZGFqbGVkdmRZN2xtMzBRZEh4Wi1fbHJpRUZOcUlfTmJGbDdRWWRmMFV5X2FjejhCNklqTzlzWWk2VjZGZW5SeHdGMXBfXzlDRTlsNFZwR1VKai1vQUZmN3A2SWRRRzFIRUpvRU5rVmYyWUE3aUFLVzZXRkN5cHNqeGdLUnBEcnZOY2V2Q195Y1hXQ3A4R2VtT1JUZzVQbnNyamhyblJjRGlBMnhOUjZTd1NtUWxlRlJGZ1otbjFhdXRLMWp1VTFlb1ZIbnotR0FjVUZLZ0U?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/grande-distribution-carrefour-sur-tous-les-fronts-mais-quelles-sont-les-priorites-de-lenseigne.YGGVP4E4QJI4BMCDNLLHVYTSKE.html",
    "source": "lsa",
    "date": "2026-10-16T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "site": "lsa-conso.fr"
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "38f31bf8bf8e",
    "titre": "[ CONCEPT ] Rideau pour Carrefour Occasion !",
-   "lien": "https://news.google.com/rss/articles/CBMihwFBVV95cUxPY0hfQjJFbXlIakV3Mm9fdFprRXd0UTBYWDFsOEZONEQ2dzFvZ29IRzhiYVpBQk5XOWkzOFVkM1M5WTBSRmZpX2o0enhvQWNlTWotelFlMDZiV0V0YktxZ19BaHI1YUo5TlRIZmctcTZzNHZpR0d0cUdkY1ZNYTBWOU16dnZGN0U?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/10/12/concept-rideau-pour-carrefour-occasion/",
    "source": "dauvers",
    "date": "2026-10-12T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": "",
-   "site": "olivierdauvers.fr"
+   "resume": "En 2020, Carrefour et Cash Converters étaient forts diserts pour le lancement de leur association. C’était aux Ulis en région parisienne (revoir ici). Le spécialiste de l’occasion épaulait Carrefour dans sa conquête du marché (prometteur pensaient-ils) de la seconde main. Six ans plus tard, l’occasion n’a pas tenu toutes ses promesses et chacun reprend ses …",
+   "site": "olivierdauvers.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/10/OEIL-CARREFOUR-OCCASION-scaled.jpg"
   },
   {
    "id": "a7e2480c2a51",
    "titre": "E.Leclerc, Intermarché, Coopérative U, Carrefour… La grande distribution victime d’une cyberattaque inédite sur ses réfrigérateurs",
-   "lien": "https://news.google.com/rss/articles/CBMivAJBVV95cUxOenR3VGJuaTJpV3RYYmpPc01JYjFvc3pnNnY1VlV4U1BzNkQ0NHJPc0hlSGFxQnpnd25QRTZmYTgzVktqZGVXRC1iODcyYjFXRWVDSTRTbWFRcXdOam8xWDlneElLZlBGNlpfTU1WYUpxYnlCRERZanY3ZWlWOWdsRHg0SzYzdmdSNHdGYjFFbmRLdXdwemF2QVJuNFh3dWRDa1h2WGVuVmVvS01xc04wdi15N2NzSC05b1F4TVdrR3RLcWktOVpqdUNTUHpCRFhCNVA4Mks3aWVCT0RfNnBXSEJmM1lhcy16bFI1dmc2SDRXaHNZazIxWTlMWm1Cekxpa1RqMFc1ZUQ3Ym12eUd5MFVEVkZMS1lxenFfRExFRG4ySkZvX2FuWjI1NjE2MnptaXl5VXhMdkFoelVB?oc=5",
+   "lien": "https://www.lsa-conso.fr/metiers/digital-tech/cybersecurite/eleclerc-intermarche-cooperative-u-carrefour-la-grande-distribution-victime-dune-cyberattaque-inedite-sur-ses-refrigerateurs.NNBAWH6RLZFQHHCAS4B3HIN7JY.html",
    "source": "lsa",
    "date": "2026-10-12T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "site": "lsa-conso.fr"
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "6a5f31629a4e",
    "titre": "Grande distribution : Carrefour vend les murs de 35 magasins pour 290 millions d’euros, ce que révèlent les comptes de sa filiale immobilière",
-   "lien": "https://news.google.com/rss/articles/CBMi0AJBVV95cUxOVHJHRWlIQndHUk02VEViQ2RwVTlyVkVLVTVMUU5HYzZlRTc4QW5rTjBwUTVyZnBXZnlqTExFUFVUdkV5VHpqeHVyUFUxWWQzQ0llQktqT2h4aEtKdHRoaG5oZjNGQTVZZTNVTVBTazU4WlN3RWRTalpKSHNjRkxXVFBQcWtzTjEzVTNta2lfZGRuN3FDLW4xcFI3eVAteE91WDB2QnlFbmtoOWhhbG9YQlNRNkJmYk9wVm1iN1pzUy1NV3hjU0pVeDhEUjVnTTFHTWlUb2UtUUkwY1preWwtTU84WTdKT3dGNFNHTTdpQjZORG05WWhFdGpQLWtiMk40bUMtMHhzQnNzY203X2c3YV9ldWNyTjNmZzk0UlU1WkwyWjJ4Q3ZCVFVIc2w0UTIzRWFLMW5DWDBwUUM5OXVBM2VIb1dzNW1PQ3B1UHRhcF8?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/grande-distribution-carrefour-vend-les-murs-de-35-magasins-pour-290-millions-deuros-ce-que-revelent-les-comptes-de-sa-filiale-immobiliere.Y4JKJG3GHVDMREIKXXVXGIE4GI.html",
    "source": "lsa",
    "date": "2026-10-12T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "site": "lsa-conso.fr"
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
+  },
+  {
+   "id": "2b2ea26f8208",
+   "titre": "LabelVie franchit le cap des 500 magasins Carrefour au Maroc",
+   "lien": "https://www.lineaires.com/la-distribution/labelvie-franchit-le-cap-des-500-magasins-carrefour-au-maroc",
+   "source": "lineaires",
+   "media": "Lineaires",
+   "site": "lineaires.com",
+   "date": "2026-10-12T07:00+00:00",
+   "vu_le": "2026-11-11T15:25+00:00",
+   "resume": "Au Maroc, les enseignes Carrefour sont en plein boom, tant en termes de créations de mètres carrés que de chiffre d'affaires ou de fréquentation. Le partenaire local,",
+   "enrichi": "2026-11-11",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-10/8cedb5cf-65de-481c-97f9-cd77e39f5a53.jpg.webp?itok=qnRWQ56a"
   },
   {
    "id": "2150f685cf3b",
    "titre": "Carrefour/Colruyt, Lidl ouvre désormais à 8 heures, entrepôts XXL Amazon et Zalando... Les cinq infos à retenir dans la grande conso’ cette semaine",
-   "lien": "https://news.google.com/rss/articles/CBMiuwJBVV95cUxPbHBHc3NkUTh5UDRWZnpZbXFLT1ZLWlFkbllFdEg5MTlycDVkNHAyeEdNT1V3QlV0WDBCa09OOWs1eTdfZ3NsVlVHOUI5eEJjcDJ6SF9vbXZXUFl5UmctTUpWYWZGQUFuM2s3NTBOQ1FBd2kxVXhOTVkzUzJMUUVOZUUtZUFoTjZVRTlMeDNXaHRIOWVsM05QVmtaUVVNSnhYVHhXbi1CZXVYQjNMSm9SbU1XSFFaMzVRTEJVR1hRVVlSaU9od1RZdDVXWG5FRTBWT0tOc2pubnkydHZsbHFGWXpMbUpBTVZ6UlFCMFR2VUN4MDZwWG1pNTRXU1NJdFQzczdZSnQ3cmFzZEgwLUxrcHhfU08yTS1nQUJUay1VQUlHbGVJN19heU9uNms4ZW1QWDJZclJaU1J4MXc?oc=5",
+   "lien": "https://www.lsa-conso.fr/secteurs/commerce/carrefourcolruyt-lidl-ouvre-desormais-a-8-heures-entrepots-xxl-amazon-et-zalando-les-cinq-infos-a-retenir-dans-la-grande-conso-cette-semaine.NMLOCF5KIZHAHCFXQEUOWMWRTY.html",
    "source": "lsa",
    "date": "2026-10-10T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "site": "lsa-conso.fr"
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "39889ed0dbae",
    "titre": "Parts de marché : le drive à Leclerc, la LAD à Carrefour",
-   "lien": "https://news.google.com/rss/articles/CBMimwFBVV95cUxPejAwOGRLZDd0VUFiYmtKTmdIajZMZkZiZVJOTVVWTFhyM1ozWEJLcDM1LUVodEttdW9YcFZUb1E5S2s2V3JRRldWenZReHNab0dOazFRam1uS3lyRm9YcVpINUFvc1UtRTlLTkxWUHpJSUprUUhNVXV0NzZIdHpPVXIxdlZoS1RSLURyZUJjaHRxQ3U4bUNyelBRVQ?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/10/09/parts-de-marche-le-drive-a-leclerc-la-lad-a-carrefour/",
    "source": "dauvers",
    "date": "2026-10-09T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": "",
-   "site": "olivierdauvers.fr"
+   "resume": "Et hop, une nouvelle p’tite infographie spéciale e-commerce alimentaire… Avec les parts de marché (dissociées) du drive et de la livraison à domicile. Avec deux leaders distincts et incontestés : Leclerc pour le drive, Carrefour pour la LAD. Mais lorsque Leclerc recule (- 1,4 pt sur un an selon Worldpanel), Carrefour progresse encore (+ 1,3 …",
+   "site": "olivierdauvers.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/10/DGC-Kantar-Drive-LAD-2-scaled.jpg"
   },
   {
    "id": "1969de968765",
    "titre": "Colruyt confirme négocier avec Carrefour pour lui vendre Codifrance",
-   "lien": "https://news.google.com/rss/articles/CBMirgFBVV95cUxQZEVnMjdmRm5YLWhFaENabnVzZ2NzdVlicXNSeVpqNGEtazhZZEtNUjdHR0p3MmVLZ1NzWHpiX2xrZU52NW1PaEpoWXZETS1KYld5M0V5Y093ZVNRRGdoMjJMcUg1MS1jUnpncF9hbkROTklDRVBQb212emNCNC1zS2VGbE53TEd6MEtrdld4cEVXNUl4VjQ1b0JlQmtNeGJxSGdudk5vRmZ0VXFNdGc?oc=5",
+   "lien": "https://www.lineaires.com/la-distribution/colruyt-confirme-negocier-avec-carrefour-pour-lui-vendre-codifrance",
    "source": "lineaires",
    "date": "2026-10-09T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": "",
-   "site": "lineaires.com"
+   "resume": "Ce 9 octobre, le groupe belge Colruyt a confirmé être entré \" en négociations exclusives avec Carrefour en vue d'une éventuelle cession de Codifrance \". Sa filiale",
+   "site": "lineaires.com",
+   "enrichi": "2026-11-11",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-10/43506696-70fe-4304-927d-356a45c3c3a8.jpg.webp?itok=NDR_Lr2m"
   },
   {
    "id": "1f1c20672c78",
    "titre": "Prix des carburants : Carrefour, Auchan, Lidl, les aides proposées aux salariés de la grande distribution",
-   "lien": "https://news.google.com/rss/articles/CBMikgJBVV95cUxNMC1mQ3B3ZFBoUlJ3NHBzdzJDUDFYM3hzZmI5UGIyU3Y3dzZGWExQUXE2NVEzZ1hzYVZNdGZwS1JDcG04WmdVeWN4MVpwZl8telNkWFFMYTdhZElsSUNaVGhrU2RGV1pTMlNHeFJlYzdFdkhXbzZOWEd0ak02bk1JWkZLdm5FYldVLU1yQmNKSkIyd2t5Q0xoR3RFTUxaMWJoUVRaN3pEWlI2ZXFfa0JUc0YxaHFveU94NnN2QktOcXNZM0pCRkg0NmEzalF2NjBjNGxvMTR4ek5LMGRTdVg4Z0N1Q3d1SlV1blNXbmVyeTk5bXJLRXdKNzBIdWF0al8tVno4cDdsWW42anZmRGREM2FR?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/prix-des-carburants-carrefour-auchan-lidl-les-aides-proposees-aux-salaries-de-la-grande-distribution.DA4BSEEZ6FCL5NCGM74OJ3IF5E.html",
    "source": "lsa",
    "date": "2026-10-08T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "site": "lsa-conso.fr"
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "33c0e10a4b2e",
    "titre": "Codifrance : Carrefour confirme être entré en négociations exclusives avec la filiale de Colruyt",
-   "lien": "https://news.google.com/rss/articles/CBMilwJBVV95cUxNcE5ERzhZT2hTX0l2Mlk5TGtfZlNoWldVbXk2TnR3enR0TE5DbVlxNXlCN0lycnZpUktyNDR2aEpIaFk0WVdQQndnNThtZWhEdG44LVBNcjFfSFMwak5nYVRNYkN3Q1RqYVlTMjhPQkhwQzdkWU9pTk9ENV9EQzBrOWRUcWw0RXhuOEw5cGFDaVNNck51U21RUzRCSkVCek1COFdZbExXbGRmZUlraUdGZG45LXI3bkhtaS1ST1g4R2FTOFFPXzJiNjgwWEFvQ2xQLS04V05ld1NGSnlqUm45RTUwUHRYTUVGODAwUXhqNnhQaEk3V19obnUtWTJ3Nkt4T25pNm1PMjljNFdOODN1REYtT2pQaXM?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/codifrance-carrefour-confirme-etre-entre-en-negociations-exclusives-avec-la-filiale-de-colruyt.QK2AH6KT4ZHGFH267AHSOTJYRQ.html",
    "source": "lsa",
    "date": "2026-10-08T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "site": "lsa-conso.fr"
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "5346339e8eb9",
    "titre": "Carrefour cède les murs de 35 magasins en France et en Espagne pour 290 millions d'euros",
-   "lien": "https://news.google.com/rss/articles/CBMi8gFBVV95cUxNaHVjbi1jenlueHphQmhRX19ZN21RQjJ1eXBpckRHSDJjN0VIa2hOR1pRTXZrc3l1OTBYcm5SQVNlcHJVaENaWm52UlFJdnFlN1JEN21ZSnBHOHU3aGlKU2RSWVNmUVdZdXFaT3NvbHBWS0FQTkZRODI3RkFETUZmeThCNmtJbjlqaVRkSElCa1F1ZFljejVYamNtU2NZeWVwSWZGcWNhSHJrSFJTNkxDMW5CV2ItTzVxa1FfYmJTS2hwMUJ5c1BrTmU0V1lSMjZfWTd5Mk9GYUZBYVF6ckdzWU1GdGIzMFlGZm5IdXNaLUJ3dw?oc=5",
+   "lien": "https://investir.lesechos.fr/actu-des-valeurs/la-vie-des-actions/carrefour-cede-les-murs-de-35-magasins-en-france-et-en-espagne-pour-290-millions-deuros-2255957",
    "source": "autres",
    "media": "Investir Les Echos",
    "date": "2026-10-08T07:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "",
-   "site": "investir.lesechos.fr"
+   "site": "investir.lesechos.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "3e16d58ff5b9",
    "titre": "Carrefour 2022",
-   "lien": "https://news.google.com/rss/articles/CBMiWEFVX3lxTFB3SUZHU1NJQWVid2tjNnlNQV9yNnBJV2FwT2ZlX1MwQVFDT3RvRDVzTm5UdmpUdTNVal9NdUZrR3NLV1hUUzl5bUxiVVlzMWVtay0zVk40Ymg?oc=5",
+   "lien": "https://www.carrefour.com/fr/groupe/strategie",
    "source": "autres",
    "media": "Carrefour Group",
    "date": "2026-10-08T07:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "",
-   "site": "carrefour.com"
+   "site": "carrefour.com",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "0a3b29d2039a",
    "titre": "Grande distribution : Alexandre Bompard inaugure un Carrefour City à Roissy-CDG, en exploitera neuf dans les aéroports parisiens et vise 100 ouvertures par an dans les transports",
-   "lien": "https://news.google.com/rss/articles/CBMigwNBVV95cUxOLUUyazlzbmxUUEhMN3VwR21DUXdrNGxCUWkwdVJoUDcyT3RiWHI2QUMzb3A1bVlITzFieDVNYW5MaUhhMGNTRXY0X0lKQU91bDF5aFJZWkYxeTVDQUpKcGJXU241WHdaeVBKZWU5Y0FQcGYtSmhZMXZLUmJHTDdkdzhxSzZoRDlwTVhlZGZ0MThHa1N2bUo4QUhCdkxRMU1VQmJ2dTR4RUhsd3ExSlRQakZQV2ZBei1HY3hGX09tTmpMaWM2cmlJQ2N0Z2lSQ1EyRGFfQnRhd1ozVlhlak9RamprWmNNZXBzWFhhMjc0Z05WVXdtZmRlNm5QdmNvOWJvaVJrQXVYTHJSSDljQlU4V3UwOWR2MXRHUzI2eTYxN0FWUVlhZHROTm0yUEw3d3owb0VERjVQYkk5SHVkcnBiYTd6UEUwQ2psTTRGWTByREc4UUlfclRJdEJUdkFlbGJvVVM1Q1BjcDB6S2VsWGNqQzZjdm82TmQyUEVsMUZoa1ZxcWc?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/grande-distribution-alexandre-bompard-inaugure-un-carrefour-city-a-roissy-cdg-en-exploitera-neuf-dans-les-aeroports-parisiens-et-vise-100-ouvertures-par-an-dans-les-transports.VULJAAYIPVE2DA2STF7LJ5U54I.html",
    "source": "lsa",
    "media": "LSA conso",
    "date": "2026-10-08T07:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "",
-   "site": "lsa-conso.fr"
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "36ef22324228",
    "titre": "Des casiers Carrefour City en gare : ça se tente, mais…",
-   "lien": "https://news.google.com/rss/articles/CBMimAFBVV95cUxQMzloVjVHNHhyTjRFS1hzZjI3ZWZNaGdlbUJJWG9UTlNCVHotTXFBOUQ2blZqSWNOY0pJSjM4aEtBemhnUV9fSUR2OXFRNVpvZElfQkh5V1BPazRIWkJ3dzA5MjZhLW9TU0ZyTEo0Vnd1c1NBSWE4emdQZVVQRF90QzdoZGtDRXlCRk5hSXMxS1JVQXU0NWFYaw?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/10/07/des-casiers-carrefour-city-en-gare-ca-se-tente-mais/",
    "source": "dauvers",
    "date": "2026-10-07T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": "",
-   "site": "olivierdauvers.fr"
+   "resume": "Carrefour a inauguré il y a quelques jours des casiers signés Carrefour City dans la gare de Lille Flandres. Ils ont une double vocation : servir à la fois de point de retrait pour des commandes e-commerce et de “distributeur automatique” pour des petits achats d’impulsion. Je vois bien l’idée : quand les casiers ne …",
+   "site": "olivierdauvers.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/10/casiers-Mise-en-page-1-scaled.jpg"
   },
   {
    "id": "86c3e0fb41d1",
    "titre": "Atacadão : l’avenir du magasin discount test de Carrefour en France se jouera cet automne",
-   "lien": "https://news.google.com/rss/articles/CBMijAJBVV95cUxQMVo4cmpvUkhZZHpJaHE1M1lRck5pTWJ6bVZoaWlkZWJXTTRNUjUwQV8xUExTOXRkWjVXYkJtV1lYTkNLY1NEM20wYUtnOEpxaktpZ0tLckRoc1MzbUtWNzVYeG9pd01mdWZiVXYtT05vdGpMSFlBSTFXRWswRUdQNzNJQ0RnMXZQYV9NanRXUWZ0bDNUYl8yUW0yMS1yb2t6QW5jaWVodlc0UTQ5VG9BdVdDTlVvaTZtNmt0NkJVTnN6YTNObWlFZXp0eFg1cVhEMUZpVzc2d3daeDBsVTRIVFhWMjU3XzQ4UVVGSVZVdnk5UEJGLTU2SWpMSldjcWM4Mk9qUWtuUFVVTkxx?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/atacadao-lavenir-du-magasin-discount-test-de-carrefour-en-france-se-jouera-cet-automne.VXBR4DZ2QVH4TJBRM3NZTRAAHE.html",
    "source": "lsa",
    "date": "2026-10-07T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "site": "lsa-conso.fr"
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "ab92a86be90f",
    "titre": "GBH (Groupe Bernard Hayot), principal franchisé Carrefour d’outre-mer, veut ouvrir 150 salles de fitness Neoness et Keepcool d’ici à 2030",
-   "lien": "https://news.google.com/rss/articles/CBMihAJBVV95cUxQUDF4YWV0MXFQdkE1NHIyRnNhT3hjTnhWdU8yMjFqd2hhdTRfempEVVJEbl9NQkZkTXZiNDRLQzJaNnAxcWNicVJlWjE0dUU2bUxCM2o3U1MyUFMzTHYzcnlUeG94QXZFOG4xVjRTUTlyWW5KeTQzcmh1dmZ2Q2I3cl9EWmpmN21xYVktVURUM1Nqbzg4V3dDOG5saGVRbHVJQVFVcVRIdkxfbDNSaDIxcjZOTlA4MWUwU3ZZMDY0ektLLVp4ZHNiVDk0Vmg0WDZaZVdldXZKVnk4RmVfWEhMTG1HdDVNdExOV00xZ0xiMW1nQTcyVndBWTF2OFlUcnpja3Atbw?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/gbh-groupe-bernard-hayot-veut-ouvrir-150-salles-de-fitness-neoness-et-keepcool-dici-a-2030.33DDZBQOGJCUFGLRNTBJNICBUM.html",
    "source": "lsa",
    "date": "2026-10-07T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "site": "lsa-conso.fr"
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "09d6496f8f0e",
    "titre": "Souveraineté alimentaire : Groupe Bernard Hayot (GBH), franchisé Carrefour, veut porter à 100 millions d’euros la part des produits ultra-marins dans ses achats [Reportage]",
-   "lien": "https://news.google.com/rss/articles/CBMi7wJBVV95cUxOenRRbmZiMEJ1dDNGS2Jub2FidGpRTk10ZFgwcE0wNkNjOTZzbkJEY05fWWR5NndTMmVYSWRnYmpXNWM0OVRicEFrRHlhR3ctZVlvSzlZVXQtTDFnYmlUZHpNTmRyQzlXS3dGeDltUEJaTnU3NVpCdkZRYnFFLTVpNHZRLTlvaDZ5d1Y2X2FHV2g5NG9qblk0bFhhX1o0MXZqUjFMbXMzTVVWRS14QmtWNFRrT2Nka0N5REc3WUdmM1JNUjYwYk1jUGdYY01zZ21ZN0NITmpMd3hXMmlRX3ZybENvbUtGNW1pc2xsQ2ZtaXNDSGk3X3BZUW9MMHgtUzFJekFVbEtlV3k4SS1ucmJ5UmFUenpwQ19HSnVYd1lOeHR2TEhxVFpkOGdOYWNUSTZYWEI5T0xsMUZLb0ZlX3l3ZHlEakZMb1BhbkVNR3J2VlFWUVp2ejh2NTN0anltX2luZXdPVXE4Z1h6a1dRUzRB?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/auchan/souverainete-alimentaire-groupe-bernard-hayot-gbh-franchise-carrefour-veut-porter-a-100-millions-deuros-la-part-des-produits-ultra-marins-dans-ses-achats-reportage.AP7U3TKZQNDIZF4JNVXCXJJQ4U.html",
    "source": "lsa",
    "date": "2026-10-05T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "site": "lsa-conso.fr"
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "fa61b597a228",
    "titre": "En Finistère, les salariés de deux magasins Carrefour en redressement judiciaire seront bientôt fixés sur leur sort",
-   "lien": "https://news.google.com/rss/articles/CBMitAJBVV95cUxPM1BHV19yS2ZOQThUenQ2eFhWLThONzZmbTJodm8tbU1DWGtSMU4tYmgxQUtMWGVMa0wwT3V0NkFfd0t5RDR3RjVzMnFOc18zdEhXZU1lZ3Boazl0bVNHa3VCV19HR2xUd0hiSnl0UGJLYUJ0Q0RfM0wydmFNMzA4UVBMRmQ0XzdnMXNyNzBoUkl5N3FtenkyNzYwS25pSWxleW5LRlpJamhCNEpYa0R6eTZVa1RhVHplb01YdHlOMjZjVnhjU0dJQkNnOFZxXzhTVElncU9lUlBCWlAzS2I2bkJjYWc4RGY5dEJURmwySWRWdFpya0VKZm9NcDA3RDRpZDRZRGJLbldBOEFCV2txeHRSX19EZzVfWnBObTZOT3VURm5xSmZvbnFXcFVSNFRiYkZXZQ?oc=5",
+   "lien": "https://www.ouest-france.fr/economie/entreprises/carrefour/en-finistere-les-salaries-de-deux-magasins-carrefour-en-redressement-judiciaire-seront-bientot-fixes-sur-leur-sort-725251e2-b1a8-11f1-926d-8837bd37b66e",
    "source": "autres",
    "media": "Ouest-France",
    "date": "2026-10-05T07:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "",
-   "site": "ouest-france.fr"
+   "site": "ouest-france.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "86f05a497e61",
    "titre": "J-1 pour Carrefour mobile. On en sait plus sur… “le forfait des pinces” !",
-   "lien": "https://news.google.com/rss/articles/CBMirgFBVV95cUxONl80b1lodTNMR205N2lubEV1R3N1VUdYUmtmTzVPUHhtZWkzSm9BX0NiMjFPOUdJSmhWeTZkV0l5R3JUMkF4WkIycU1WdTBMQ0lMdC1Mc3RGcXp4R1p2VjJGMGg3RUN2VlhubTk0RUNoWWwzNkstT0otUGdwU21SV0FEcWxwS0d3MVdGcWRxUDhOc1pFbDBDQjhHbzYxWWtUekRCWlF5SDJhcHRRX1E?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/10/04/j-1-pour-carrefour-mobile-on-en-sait-plus-sur-le-forfait-des-pinces/",
    "source": "dauvers",
    "date": "2026-10-04T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": "",
-   "site": "olivierdauvers.fr"
+   "resume": "C’est demain le D-day… : le retour de Carrefour sur la téléphonie mobile (via Orange), 14 ans après avoir quitté le marché. A la veille du lancement, j’en sais déjà pas mal. Déjà sur les forfaits… Selon mes informations, trois formules : 20 Go (à 6,90 € en 4G), 130 Go (à 10,90 €) et …",
+   "site": "olivierdauvers.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/10/CarrefourMobile-3.jpg"
   },
   {
    "id": "3904d6ecbb4d",
    "titre": "Pourquoi Damart fait son entrée en grande distribution, chez Carrefour, E. Leclerc, U ou encore La Halle ?",
-   "lien": "https://news.google.com/rss/articles/CBMipgJBVV95cUxQUDZHMlJycFlUb3ZyWWZoeG8wVmN4cGpxNVBuUDNxNWI1blh2aTZIdnlhcmY2ZkdrRzdZWF9PQ3lXZkVQNHNZbVJ6OHVKTm85N0NCTnFTcW0ybkk1RXFOM0NxdF9qZGZvSTc2UWg3T2FhLXRLRlBybTFNRjlnUldscDQ5MkZSM0p3Tm5sS292OHhVM3BJbE5FbHktSW1BVW1yT3BUWVl1UVNuT1VGQ3ZXRzAwbU02QVFqQlFKbDNmR2tucDhQR2VBZ0t2bEhlRkEwS29RM1lJam80N3dVSmlMWGxXbEt1WmRGTU1vazN3MFJTWm5fNTdMT3d3OVFIRDM1WUtYamZVZ0JybDU3SGJmMHZXYXZmcmloVG9BS3pQaDZ5NFY0SEE?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-non-alimentaires/mode-sport/pourquoi-damart-fait-son-entree-en-grande-distribution-chez-carrefour-e-leclerc-u-ou-encore-la-halle.MZAJKDGV55FPDBB67ZL2XLSZQI.html",
    "source": "lsa",
    "media": "LSA conso",
    "date": "2026-10-04T07:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "",
-   "site": "lsa-conso.fr"
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "f58b60389534",
    "titre": "Téléphonie mobile : Carrefour remet ça à partir de lundi",
-   "lien": "https://news.google.com/rss/articles/CBMinAFBVV95cUxPbGFKWDIzT3ozcWROR3ZMSTlPX21aZkFxZlVxNDNNZ0RNNXU4Sm5VbVBBeERacW1QQnV1YVRPdS1oUHVBc25naDRWRC16RGw1T2YtUUZ2WklkN1hvM1ViYUNlQktPbF9VRGRKVEdyTjNGUi04VFJTS3lITU5reHEtSHNhSHR0V2ZlaVpVNWhiMlV2WElaOXE5NFZoWUE?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/10/03/telephonie-mobile-carrefour-remet-ca-a-partir-de-lundi/",
    "source": "dauvers",
    "date": "2026-10-03T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": "",
-   "site": "olivierdauvers.fr"
+   "resume": "Il n’y a encore rien d’officiel, mais c’est bien un secret de polichinelle 😉 Lundi, Carrefour reviendra sur le marché de la téléphonie mobile, 14 ans après l’avoir quitté. L’enseigne s’appuiera sur le réseau d’Orange et – sans surprise – attaquera le marché par le prix. C’est l’argument n°1 à faire valoir face à la …",
+   "site": "olivierdauvers.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/10/Carrefour-Mobile.png"
   },
   {
    "id": "2d4993f88fc5",
