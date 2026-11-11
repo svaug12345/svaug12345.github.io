@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-11T15:25+00:00",
+ "maj": "2026-11-11T23:30+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -49,6 +49,31 @@
   }
  ],
  "articles": [
+  {
+   "id": "dfbdd727ed29",
+   "titre": "Sephora, Fnac, Shein... Analyse de ces enseignes qui font parler les influenceurs",
+   "lien": "https://www.lsa-conso.fr/mes-magazines/magazines-lsa/sephora-fnac-shein-analyse-de-ces-enseignes-qui-font-parler-les-influenceurs.3Y74PMKX2JLSPGK6KDXXCUZCS4.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-11T15:34+00:00",
+   "vu_le": "2026-11-11T23:30+00:00",
+   "resume": "",
+   "enrichi": "2026-11-11"
+  },
+  {
+   "id": "782a67503698",
+   "titre": "Carrefour, Intermarché, Leclerc, Darty : les données de 46 000 employés potentiellement exposées",
+   "lien": "https://frenchbreaches.com/blog/carrefour-intermarche-leclerc-darty-les-donnees-de-46-000-employes-potentiellement-exposees",
+   "source": "autres",
+   "media": "FrenchBreaches",
+   "site": "frenchbreaches.com",
+   "date": "2026-11-11T15:01+00:00",
+   "vu_le": "2026-11-11T23:30+00:00",
+   "resume": "Les données personnelles de plus de 46 000 salariés de Carrefour, Intermarché, Leclerc, Darty et d'autres enseignes seraient diffusées sur un forum de",
+   "enrichi": "2026-11-11",
+   "image": "https://frenchbreaches.com/social-image/assets/uploads/blog/blog_7ecb13b6db7fb35b527db51d.webp.jpg"
+  },
   {
    "id": "d02425d7350c",
    "titre": "“Wonka” déboule au rayon chocolat : oui, mais c’est bien sûr !",
@@ -607,7 +632,8 @@
    "date": "2026-11-08T06:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "enrichi": "2026-11-11"
+   "enrichi": "2026-11-11",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "12b7da3292c3",
@@ -1532,135 +1558,154 @@
   {
    "id": "2d4993f88fc5",
    "titre": "Carrefour lorgne sur Codifrance : pourquoi les plus petits magasins vont rester sur le carreau",
-   "lien": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxQRk1OM3dhOEJjYUdyVHprNEZWVFFmWklIQlY5OXptSThNT09jbGdUWWc2bTJYdWpfZjRELXA5QnZNZWxCV2JyM0JfMU92TjBKWGxQd0NtSWVJb0MyNnFkNl8xXzhFUmpUYWhCbkdMSldsbVZNcUFDak9zVmVuS2R5R2RqdFFYbHpGMmFzbnFxcXJQZHVkWjVQS3dSbzFuZEo2bkZQc2prOXlZeDdnaHVCTHRIY1ZIbWhfc1dMNEo1bjk?oc=5",
+   "lien": "https://www.lineaires.com/la-distribution/carrefour-lorgne-sur-codifrance-pourquoi-les-plus-petits-magasins-vont-rester-sur",
    "source": "lineaires",
    "date": "2026-10-02T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": "",
-   "site": "lineaires.com"
+   "resume": "Si Carrefour met la main sur Codifrance, les commerçants indépendants pourraient se tourner en masse vers Ségurel, autre distributeur affilié au réseau Francap. Mais",
+   "site": "lineaires.com",
+   "enrichi": "2026-11-11",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-10/91a33a87-7345-42c6-b92f-5f33b962afd9.jpg.webp?itok=fOo6uit-"
   },
   {
    "id": "7b0f3d26adba",
    "titre": "Prosol (Grand Frais) : deux nouveaux directeurs généraux nommés cet été, Michel Biero qui rentre au Codir, la gouvernance évolue notablement",
-   "lien": "https://news.google.com/rss/articles/CBMikwJBVV95cUxNOWxyYkkzcUFENmROOVRma2Z5QWlGaWljYlYwMXY0NGFqZmJyYjJBTHJKX0ZyWlBVQlFaX1dkMzZhcEt0NDA3Z0ZyV2NabnBnVlA4bUtob1NhX2p6TWUyTkhNcS1uWF9uUlB4eTlCS2hQSjFHaFVOaU1EVF8xZ05KVTJiNUF3WlJkaWFFeHk3X3A0ak52WXpEeXhiYnNoMV91anI3LUdJXzJaRWhZTHRYYk1yNV95YW5GS05CYUtCRkZ5OFdSckVzUzdoTENjWGRibk5lekNkZG5EbjNFRU1iUWdheFZfZGNWSWwzb1c5MGwwZEVIVHdBM3ROOUVDOFBqWFFPNFJ6NXVDdllLU0ZCc0pwWQ?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/prosol-grand-frais-deux-nouveaux-directeurs-generaux-nommes-cet-ete-la-gouvernance-evolue-notablement.ABC6DQZ2GFFX3GRIH257TJFDCU.html",
    "source": "lsa",
    "date": "2026-09-30T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "site": "lsa-conso.fr"
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "0b7daa9f6881",
    "titre": "Consigne chez Carrefour : les spiritueux montrent l’exemple",
-   "lien": "https://news.google.com/rss/articles/CBMinwFBVV95cUxNdU1qQ3ZqMWRralRwaG9GNkxjckhUY1EzNUl6bmJGUUhIQ19pMV9UbWgzWTVmOGRzME9LblIwcDNwQi1fNDlTSXUtbEE2U3BRU0k4ek1RdHViWUNBYVJaeUtiSDZWTzdaWUJQYzQ1NGhjbW9iNF9nbXR2SUNEaE02Vzh4TzhyQkU2ekR6VU95SURvUHQ3RXcwRDJnOC0weTQ?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/09/29/consigne-chez-carrefour-les-spiritueux-montrent-lexemple/",
    "source": "dauvers",
    "date": "2026-09-29T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": "",
-   "site": "olivierdauvers.fr"
+   "resume": "On ne pourra pas reprocher à Carrefour de ne pas se bouger pour essayer d’imposer la consigne dans le quotidien des Français ! En marge du test coordonné par Citeo dans trois régions, le groupe propose dans 8 de ses hypers d’Île-de-France (Massy, Athis-Mons, Auteuil, Claye-Souilly, Montesson, Ormesson, Pontault-Combault et Rambouillet) une nouvelle brèche dédiée …",
+   "site": "olivierdauvers.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/09/cave-consignee-Carrefou-Mise-en-page-1-2-scaled.jpg"
   },
   {
    "id": "aed4c0d6aa0a",
    "titre": "Carrefour prêt à reprendre Codifrance (Colruyt) : le billard à 4 bandes d’Alexandre Bompard",
-   "lien": "https://news.google.com/rss/articles/CBMisAFBVV95cUxQQktQU2d3b0FHOUVTRGYwZThSMHFJTkhjYnotTXlwbVlpdG80c3paNkMzekh6cElPN21xZDBIYU1QaE1kMmRwUm8xTENCYUVLeXNZaEdBQU5taW1UNFhoNDlieHFoOEgtQUd0TlFkdEp1MU9LSmUybk85Zm5ZZDFIMlZBTzdpWHlOazlybVU0bkVvRE9hSkZBcHAxeXlfN0VBaTh1VU0wMnFwdlVlYjJZNA?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/09/29/carrefour-codifrance-colruyt-le-billard-a-4-bandes-dalexandre-bompard/",
    "source": "dauvers",
    "date": "2026-09-29T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": "",
-   "site": "olivierdauvers.fr"
+   "resume": "C’est une information de La Lettre : Carrefour s’apprêterait à reprendre le réseau de proximité Codifrance (encore propriété de Colruyt) moyennant 150 millions d’euros. Derrière Codifrance : un chiffre d’affaires de 310 M€ et un réseau de 3 000 magasins dont un tiers sous enseignes Coccinelle, CocciMarket ou encore Viveco. Pas de quoi bouleverser le …",
+   "site": "olivierdauvers.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/09/Coccinelle.jpg"
   },
   {
    "id": "8806dfb9a3e4",
    "titre": "Commerce de proximité : Carrefour lorgnerait Codifrance (Coccinelle et CocciMarket) : Colruyt ne ferme pas la porte à une vente",
-   "lien": "https://news.google.com/rss/articles/CBMirgJBVV95cUxPd2pxX1ZCbDJYVnRCM0c5Q1NMLUJYUmxkX21xTDBlUzA1ZGRiNFBJUG9EcUVkekFwdHdpNmVOc25acWVuT1M3RUdjRjBTVEQyM2c1UnQ5c1E2LVNiTG5la1JIS1phYTkyT055dHF3Z29LQ2FRMkhER05pcjl2SThBY1FHcVJ0bW5HUTVZdVIzeDZDMnZ5MXJyNG50NXFvU0czemlBZTNNR2tkUzRKdWNxeWV4OGxEV1ZCeGhVN0VBamZwNmJ6QWRFOHJXd0FFSmh6WmlPZ3Y1TThsbkYzZlJYZnFPbXdCUTc5enZOZE9LV2pfLWVQWHpMai1pNy1aQWhBX3EyM09YNTJHS2l3Mlp3MmFLMzB1QVZaNlY5cGU0YWZlR3lpZWs5X1JvOGdKdw?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/commerce-de-proximite-carrefour-lorgnerait-codifrance-coccinelle-et-coccimarket-colruyt-ne-ferme-pas-la-porte-a-une-vente.BLFUPMJQWFFOLBUY2RAVWVFOWU.html",
    "source": "lsa",
    "date": "2026-09-29T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "site": "lsa-conso.fr"
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "71a86efa144b",
    "titre": "Carrefour améliore son assistant de courses par l’IA pour soutenir le « mieux manger »",
-   "lien": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxNVENNbGNsdUVPeXprNzJkbTBweWJjd25hRmNvWWNld2N1ZWc4S1AzMnBoSVZIS0JyV0tGZ0F4QW1VNkZYY21xc25wLTk3Q2pvRlMzZ1pXdUdMRXphQUpDNGdMVGloeGlfTVc4dnVvSjY1dV9aNzQwTXcxUjFsaFZPUHktcDN1eWM2Y2dRNG9hYlJZQThwN2toT3BFZHdaeVJIdFF0ZW5qa3pnRUVOVU9OVVJtM18yWFRTQzc2RUNhbzFQZw?oc=5",
+   "lien": "https://www.lineaires.com/la-distribution/carrefour-ameliore-son-assistant-de-courses-par-l-ia-pour-soutenir-le-mieux-manger",
    "source": "lineaires",
    "date": "2026-09-29T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": "",
-   "site": "lineaires.com"
+   "resume": "Déployé pour tous ses clients en avril, l’assistant de courses Hopla de Carrefour évolue encore, avec de nouvelles fonctionnalités autour du « mieux manger ».",
+   "site": "lineaires.com",
+   "enrichi": "2026-11-11",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-09/2be71a3f-7e4c-4ea8-b307-c0fd64486303.jpg.webp?itok=x6ekkpMG"
   },
   {
    "id": "fa1f35215d2d",
    "titre": "Grande distribution : Auchan décroche, Carrefour et Casino sous pression en cette fin d’été [Parts de marché Worldpanel]",
-   "lien": "https://news.google.com/rss/articles/CBMipAJBVV95cUxOaVNEZENvVFpNNGl2dnV4SnNIRmU0RE5XRGhyeXRwR2Jza3psUnU1UDlLN3htLU03enFZWWF1Y2ExZUpEQlBXeXRDU2hFWlVscGZBckRGZFFYODVLVVU4V3B2QXVtV2RMeDZBekRZSTBEZnNkdXJEX1YyUm9INHRNdnVKck54elZ3TnpUbng4dFNQYW8xNXNvVDNScEE2NWh0Ym1WUy1oUkxRN0xoM1JTanQ0Vnk5S0kxZjVBNE9VbDU2UHRNc3FvQkpvSXhDY3VQOXBkenFrLWF6N0s1bEJHcmNtWFJsRk9QWG1MbkhLdXB4bUlHWmFJSWp0Y0NpX1pyTmJQcU1hUVlXWDkyY0Z4R3pVdHNYcGJLMERPeFAzMFlkQUlv?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/grande-distribution-auchan-decroche-carrefour-et-casino-sous-pression-en-cette-fin-dete-parts-de-marche-worldpanel.IOSQ22CZKNEOZJB34OEOMK2PYY.html",
    "source": "lsa",
    "media": "LSA conso",
    "date": "2026-09-23T07:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "",
-   "site": "lsa-conso.fr"
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "06fbcc0fe1c6",
    "titre": "Grande distribution : les pertes des 107 hypermarchés Carrefour intégrés en France se creusent encore en 2025",
-   "lien": "https://news.google.com/rss/articles/CBMiqAJBVV95cUxPVjRXaWd4cFhsVWZfb0NwTzFyYUJVemNoeXNQMmI1SGVlRFZsRzVKc21HLWJQTXZHUF8wcUhsMXdaYVhqVW1lUldxX2J4aFo0QkpWemVkT0tOUC1iWmltRXF5TnA3LVNId1c4ZFBmZWR0STFuNnJmRmI5Q0E4WE1KS3NBQjk4TjRPOWZYaDVkNFV3bWdSSXNCeFdBdDNlOURDSUdFMlRmeFlOQmxQMkZEazV6NjRVOGRDVGxHOHU0LUQxclR4ZEQ2SHl2U1oxVVVFLUJCV1Njd0gwREoyR2FxaVRLTDBDT3BCVmxlb0hrR3BFNlh2ODcxYVdkN05YczRUOEdYMllmTmFZVWg0Tk5ad21BOUZCakNBSnloRnZvWHlEZ2VvSEVTNg?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/grande-distribution-les-pertes-des-107-hypermarches-carrefour-integres-en-france-se-creusent-encore-en-2025.PNP2ISVIIRFMLLKUPOZVZE6YFQ.html",
    "source": "lsa",
    "date": "2026-09-22T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "site": "lsa-conso.fr"
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "20d615b6b906",
    "titre": "Crise des carburants : le PDG de Carrefour Alexandre Bompard entrevoit un «plateau» à 2,50 euros le litre",
-   "lien": "https://news.google.com/rss/articles/CBMi3wFBVV95cUxPT2IxY0xNeVdaVUtELXJldU5HOUZ2THRNUnJCd2ZLVVJ1Zlc1ZDZGWWUzU09RbTZaQ3BxMHZLOHNGQVhuOHpLd3lCZnloOHJHZ3MxNkcxMzZ3QnUtUHVpdmhIYzBzaC1JZF9oVDllck1fMGpoQk41ZlJDRFRnb3dZWVVRbUNveXVMekN4TzJiNjM3bXYzMzhUY1NVbS1PellDclUxcFlWM2N0YUJuX0NXMEhoMDFYUDYzUDJfV3hJRDJVWTFVVVRuVzdBTlpnUGRIQjRHQlBmekcwWUt0U2Q0?oc=5",
+   "lien": "https://www.lefigaro.fr/conjoncture/crise-des-carburants-le-pdg-de-carrefour-alexandre-bompard-entrevoit-un-plateau-a-2-50-euros-le-litre-20260922",
    "source": "autres",
    "media": "Le Figaro",
    "date": "2026-09-22T07:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": "",
-   "site": "lefigaro.fr"
+   "resume": "«On a la conviction qu’on est dans un moment très haut, et qu’il faudrait des choses encore plus graves pour que ça monte», a affirmé le PDG de Carrefour, au sujet des prix du carburant.",
+   "site": "lefigaro.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://i.f1g.fr/media/cms/1200x630_crop/2026/09/22/4ea3fb0d5efa2c41b88b85389b08e350ac1ef47bcf10e0d1fb2154eada78abab.jpg"
   },
   {
    "id": "320ee1c834b5",
    "titre": "Inflation: \"Les fruits et légumes sont en hausse\", observe Alexandre Bompard, PDG de Carrefour",
-   "lien": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxNek1EaVE5QlI3bTVQRkdYVTgzMnVBUTZVdmVLdXc5UFEya0RPN3NOd09WZlhFSWNHdDVkdll4LVQ0SjU2RGx5d3FmZTNFMUFSLXFEN29MQVVKMHo0SE93akFUcmpjMlI2MUhxVHJFX1lLdldNTEVBU3NVZHRkOFNxMDlsYUlmTkc5R0IxU0Y1RjNjY2pxa0QtQjZfTjJVTDRRUGtSZVNHQ21EcW8zSEF0Vngzc1U2aVpwUDVZMDQ1cm1EMkJlRW9tZXBNdTE4cmtmd3oxWkNzUlpzNDY3MGliSA?oc=5",
+   "lien": "https://www.bfmtv.com/economie/video-inflation-les-fruits-et-legumes-sont-en-hausse-observe-alexandre-bompard-pdg-de-carrefour_VN-202609220880.html",
    "source": "autres",
    "media": "BFM",
    "date": "2026-09-22T07:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": "",
-   "site": "bfmtv.com"
+   "resume": "VIDÉO - Alexandre Bompard, PDG de Carrefour, était l'invité de BFMTV ce mardi 22 septembre",
+   "site": "bfmtv.com",
+   "enrichi": "2026-11-11",
+   "image": "https://io-fsly-bfmtv.cdn.nextradiotv.com/76VI2aSnFitNioDYYuacNs1CvUQ=/0x0:1280x720/1280x0/images/Inflation-Les-fruits-et-legumes-sont-en-hausse-observe-Alexandre-Bompard-PDG-de-Carrefour-2352707.jpg"
   },
   {
    "id": "0bc47ba93f84",
    "titre": "Le groupe GBH, distributeur de Carrefour en outre-mer, étoffe sa diversification en achetant les enseignes Keepcool et Neoness en France",
-   "lien": "https://news.google.com/rss/articles/CBMivwJBVV95cUxPbzFsT01XMDFNQVFHVkZFNFZ1MkNPQllVdHRqZHlMMXpFeldBRWtJdWl4alZWb3Y1UmM0YWhBNlI3T1NtR2lSYlFJOEZQcDB1RXRrcUJzQk1EUkVjLWRsYlpmZHRETlZXOVR5WWpRMGw0VjhmRUNUS1J6MTB5MDRPNEJXaTdnaXVVazROVjd0dWpYdkp5MzNaMkMyLXYxV0pCc0NNeEdWNjNEcFIydXl0QUNCelJLSXl0bGlJTkRoTjE1cGJiWmdxZlJfUWhib01vOEh3TDVpX3VXWmw2NW5tb19Kb0pxMTdPWS1HcVFZODZodDFRakd2WjVPakVqVS1sUTZNLUdzM3RYTTAzbnlZMG80eHFJdVF6RVZSYlBENDI1UTVpb3RxbHhpa3hiN3lYQ0RQS1hXR25UMXo5b004?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/le-groupe-gbh-distributeur-de-carrefour-en-outre-mer-etoffe-sa-diversification-en-achetant-les-enseignes-keepcool-et-neoness-en-france.RHW2MUO4IRGHVPMG3WSRZ4QFCY.html",
    "source": "lsa",
    "date": "2026-09-21T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "site": "lsa-conso.fr"
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "743a8f254cbf",
    "titre": "Carrefour",
-   "lien": "https://news.google.com/rss/articles/CBMib0FVX3lxTE1NQU9iN1JacWN3OTVIWVFUdGx5dDdwMENkRFNCNXUxWEdYLWxmeXUxX29GdkhtaHNoOV9weV9sSWo5eHdxV1NKczBDVHZzRUZkQnpPcVF3ZTRwV0QwX244eTZrNDFMOTlJbXo5ZGgtMA?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/",
    "source": "lsa",
    "date": "2026-09-15T15:42+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "site": "lsa-conso.fr"
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "22151b56e98e",
    "titre": "Grande distribution : que reste-t-il des quatre hypermarchés Carrefour de la famille Guillerm ?",
-   "lien": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxNZng2dWxjajZRV3dmVnJtTHpLUm1IZ0JiOFBYdmlXTE1iaDYwazZKOWppc0FBNElvdU9nTnEzbkZIZUphdG5ZVXVlLS1YNEFFcUFhQlB4QTlGNDFUeWlFZHBRQlFvTVVVa3lQeGZnLVFtS3VjcGVrQVlUS1kxUUhDQUMzNVB3b3JjYndPNmNTYTZvY0ZKM3haUmtyX1BRbmkzRWxseFA0X1dFcnYtUU5EN3FaaGZ5VW5tLVZmS3FpMXU?oc=5",
+   "lien": "https://www.lsa-conso.fr/grande-distribution-que-reste-t-il-des-quatre-hypermarches-carrefour-de-la-famille-guillerm.467138",
    "source": "lsa",
    "date": "2026-09-14T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "site": "lsa-conso.fr"
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   }
  ]
 }
