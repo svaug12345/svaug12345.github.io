@@ -50,6 +50,8 @@
               dont le lien mène directement au journal, l'appli les demande au script Google
               (6 à la fois), puis les garde dans le téléphone (veille.enrichis) ; les liens
               Google Actualités restent au robot (120 articles traités par passage)
+   • v3.1.2 : article sans photo → petit logo du journal (favicon) à la place, dans une case
+              grise ; domaine du journal (« site ») gardé pour les sujets perso
    • v3.1.1 : vue Cartes plus sobre, à la demande de Seb : cartes toutes de la même taille
               (172 px dès 2 colonnes : titre sur 3 lignes, chapeau sur 2), petite photo discrète dans le coin,
               plus de grands bandeaux ni d'article « à la une » ; moins de gras (titres en
@@ -262,6 +264,13 @@
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
     .vignette { flex: none; width: 76px; height: 76px; border-radius: 12px; object-fit: cover; background: var(--soft); }
+    /* Logo du journal quand l'article n'a pas de photo : petit, dans une case grise */
+    .logo-journal {
+      flex: none; width: 44px; height: 44px; border-radius: 10px; background: var(--soft);
+      display: grid; place-items: center;
+    }
+    .logo-journal img { width: 24px; height: 24px; border-radius: 4px; }
+    body.vue-liste .logo-journal { display: none; }
     .lien { color: inherit; text-decoration: none; }
     .glisse a, .glisse img { -webkit-user-drag: none; user-select: none; }
     mark { background: #ffe58a; color: #121212; border-radius: 3px; padding: 0 2px; }
@@ -592,7 +601,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = "3.1.1";
+    const VERSION = "3.1.2";
 
     // Sujets communs (robot) : d'abord la copie « brute » du dépôt GitHub (à jour 1 à 5 min
     // après chaque collecte), sinon les fichiers du site
@@ -836,7 +845,11 @@
         const maintenant = new Date().toISOString(), limite = Date.now() - JOURS_GARDES * 864e5;
         for (const x of j.articles) {
           const id = "p" + empreinte(simple(x.titre).replace(/[^a-z0-9]/g, ""));
-          if (!connus.has(id)) connus.set(id, { id, titre: x.titre, lien: x.lien, source: "presse", media: x.media, date: x.date, vu_le: maintenant, resume: "" });
+          // domaine du journal (« lesechos.fr ») tiré de son adresse : sert à afficher son logo
+          let site = "";
+          try { site = new URL(x.media_url).hostname.replace(/^www\./, ""); } catch (e) { /* pas d'adresse */ }
+          if (!connus.has(id)) connus.set(id, { id, titre: x.titre, lien: x.lien, source: "presse", media: x.media, site, date: x.date, vu_le: maintenant, resume: "" });
+          else if (!connus.get(id).site && site) connus.get(id).site = site;   // articles déjà gardés
         }
         const articles = [...connus.values()].filter((a) => new Date(a.date) >= limite).sort((a, b) => b.date.localeCompare(a.date));
         return {
@@ -1060,6 +1073,23 @@
       setTimeout(enrichirVisibles, 400);          // résumés / photos manquants, en arrière-plan
     }
 
+    // Domaine du journal de l'article (« ouest-france.fr ») : donné par le robot ou le script
+    // (champ « site »), sinon tiré du lien quand il mène directement au journal
+    function siteDe(a) {
+      if (a.site) return a.site;
+      try {
+        const h = new URL(a.lien).hostname.replace(/^www\./, "");
+        return h.includes("news.google.") ? "" : h;
+      } catch (e) { return ""; }
+    }
+    // Sans photo d'article : le petit logo du journal (son « favicon », servi par le service
+    // d'icônes de Google), dans une case grise discrète. Logo introuvable → la case disparaît.
+    function logoJournal(a) {
+      const site = siteDe(a);
+      if (!site) return "";
+      return `<span class="logo-journal"><img src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(site)}&sz=64" alt="" draggable="false" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"></span>`;
+    }
+
     // Couleurs pour les journaux qui ne sont pas des sites suivis (toujours la même pour un journal)
     const COULEURS_JOURNAUX = ["#004e9b", "#0f6e6e", "#7a3e9d", "#b4531a", "#2b7d5b", "#9b2242", "#3d5a80", "#6b5b2a"];
 
@@ -1107,7 +1137,7 @@
                 <h2>${titreSurligne(a.titre)}</h2>
                 ${a.resume ? `<p class="resume">${echap(a.resume)}</p>` : ""}
               </div>
-              ${a.image ? `<img class="vignette" src="${echap(a.image)}" alt="" draggable="false" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}
+              ${a.image ? `<img class="vignette" src="${echap(a.image)}" alt="" draggable="false" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : logoJournal(a)}
             </div>
           </a>
           ${boutons(a)}

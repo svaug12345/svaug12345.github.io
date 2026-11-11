@@ -2,7 +2,7 @@
 """
 ============================================================
 outils/veille.py — collecte de la « Veille » (plusieurs sujets)
-Version 2.3.0
+Version 2.4.0
 ------------------------------------------------------------
 Ce script tourne tout seul sur les serveurs de GitHub
 (workflow .github/workflows/veille.yml, toutes les 2 heures).
@@ -38,6 +38,10 @@ Historique :
             (ex. LSA trouvé par la recherche générale) est rangé sous ce site
  • v2.0.0 : plusieurs sujets (« sujets » dans sources.json) ; un fichier par sujet dans
             veille/donnees/, plus veille/donnees/index.json (liste des onglets)
+ • v2.4.0 : CORRECTION : les résumés / photos trouvés lors d'un passage sans nouvel article
+            n'étaient jamais enregistrés (la comparaison « rien n'a changé » regardait les
+            articles déjà modifiés) → seuls les tout derniers articles avaient un résumé ;
+            nouveau champ « site » (domaine du journal) pour afficher son logo dans l'appli
  • v2.3.0 : Google limite le rythme (réponse 429 « trop de demandes ») : 1,5 s entre deux
             décodages, arrêt du décodage dès le premier 429, et les articles non décodés ne
             sont plus marqués « tentés » (retentés au passage suivant ; 3 vrais échecs max) ;
@@ -65,7 +69,7 @@ from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 
-VERSION = "2.3.0"
+VERSION = "2.4.0"
 
 RACINE = Path(__file__).resolve().parent.parent      # racine du dépôt
 REGLAGES = RACINE / "veille" / "sources.json"
@@ -313,6 +317,8 @@ def enrichir(art: dict) -> None:
             return
         art.pop("essais", None)
         art["lien"] = lien = vrai
+        if not art.get("site"):
+            art["site"] = domaine(vrai)
     art["enrichi"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")   # tenté : on ne recommence pas
     try:
         req = urllib.request.Request(lien, headers={**ENTETES, "Accept": "text/html,*/*"})
@@ -365,15 +371,21 @@ def collecter_sujet(sujet: dict, reglages: dict, dossier_test) -> bool:
     # 1) Les articles déjà connus, rangés par clé de titre.
     #    On garde leur « vu_le » (date de première découverte) :
     #    c'est grâce à lui que l'appli sait ce qui est nouveau.
-    connus, ancien = {}, None
+    connus, ancien, avant = {}, None, None
     if sortie.exists():
         try:
-            ancien = json.loads(sortie.read_text(encoding="utf-8"))
+            texte_ancien = sortie.read_text(encoding="utf-8")
+            ancien = json.loads(texte_ancien)
+            # « avant » = une COPIE séparée du fichier, pour savoir à la fin si quelque chose a
+            # changé. (Avant la v2.4.0 on comparait avec « ancien », dont les articles sont les
+            # mêmes objets que ceux qu'on enrichit : la comparaison disait toujours « pareil »,
+            # et les résumés / photos trouvés sans nouvel article n'étaient jamais enregistrés.)
+            avant = json.loads(texte_ancien)
             for a in ancien.get("articles", []):
                 connus[cle_titre(a["titre"])] = a
         except (ValueError, KeyError):
             print(f"⚠ {sortie.name} illisible : on repart de zéro")
-            ancien = None
+            ancien = avant = None
 
     etat_sources = []      # pour afficher dans l'appli si un flux est en panne
     nouveaux = 0
@@ -422,6 +434,8 @@ def collecter_sujet(sujet: dict, reglages: dict, dossier_test) -> bool:
                         deja["lien"] = art["lien"]
                     if not deja.get("resume") and art["resume"]:
                         deja["resume"] = couper(art["resume"])
+                    if not deja.get("site") and domaine(art.get("source_url")):
+                        deja["site"] = domaine(art.get("source_url"))   # articles d'avant la v2.4.0
                     continue
                 connus[cle] = {
                     # identifiant court et stable (sert aux favoris, au « lu » et aux votes)
@@ -432,6 +446,9 @@ def collecter_sujet(sujet: dict, reglages: dict, dossier_test) -> bool:
                     # nom du journal tel que Google Actualités le donne (« Les Echos »…),
                     # affiché sur la carte pour les sources « autres »
                     "media": art.get("source_affichee", ""),
+                    # domaine du journal (« ouest-france.fr ») : l'appli s'en sert pour afficher
+                    # son logo quand l'article n'a pas de photo
+                    "site": domaine(art.get("source_url")) or ("" if "news.google." in art["lien"] else domaine(art["lien"])),
                     "date": date.isoformat(timespec="minutes"),
                     "vu_le": maintenant.isoformat(timespec="minutes"),
                     "resume": couper(art["resume"]),
@@ -450,8 +467,8 @@ def collecter_sujet(sujet: dict, reglages: dict, dossier_test) -> bool:
 
     # 4) Écriture. Si rien n'a changé, on ne touche pas au fichier : le workflow
     #    ne fera alors pas de commit (pas de bruit inutile).
-    if (ancien and ancien.get("articles") == garder and ancien.get("sources") == etat_sources
-            and ancien.get("nom") == sujet["nom"] and ancien.get("mots_cles") == mots):
+    if (avant and avant.get("articles") == garder and avant.get("sources") == etat_sources
+            and avant.get("nom") == sujet["nom"] and avant.get("mots_cles") == mots):
         print("= rien de nouveau, fichier inchangé")
         return False
     sortie.write_text(json.dumps({
