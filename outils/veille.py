@@ -2,7 +2,7 @@
 """
 ============================================================
 outils/veille.py — collecte de la « Veille » (plusieurs sujets)
-Version 2.2.0
+Version 2.3.0
 ------------------------------------------------------------
 Ce script tourne tout seul sur les serveurs de GitHub
 (workflow .github/workflows/veille.yml, toutes les 2 heures).
@@ -38,6 +38,10 @@ Historique :
             (ex. LSA trouvé par la recherche générale) est rangé sous ce site
  • v2.0.0 : plusieurs sujets (« sujets » dans sources.json) ; un fichier par sujet dans
             veille/donnees/, plus veille/donnees/index.json (liste des onglets)
+ • v2.3.0 : Google limite le rythme (réponse 429 « trop de demandes ») : 1,5 s entre deux
+            décodages, arrêt du décodage dès le premier 429, et les articles non décodés ne
+            sont plus marqués « tentés » (retentés au passage suivant ; 3 vrais échecs max) ;
+            les liens Google marqués « tentés » par erreur avant la v2.3.0 ont une 2e chance
  • v2.2.0 : 120 articles enrichis par sujet et par collecte (au lieu de 40) : les résumés et
             photos arrivent plus vite
  • v2.1.0 : « enrichissement » : pour chaque nouvel article, le vrai lien est retrouvé
@@ -61,7 +65,7 @@ from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 
-VERSION = "2.2.0"
+VERSION = "2.3.0"
 
 RACINE = Path(__file__).resolve().parent.parent      # racine du dépôt
 REGLAGES = RACINE / "veille" / "sources.json"
@@ -219,6 +223,7 @@ def parle_du_sujet(art: dict, mots: list) -> bool:
 # ------------------------------------------------------------
 # Enrichissement : vrai lien, chapeau et image de chaque article
 # ------------------------------------------------------------
+GOOGLE_FREINE = False       # devient vrai si Google répond 429 (« trop de demandes »)
 MAX_ENRICHIS = 120          # articles enrichis au plus par sujet et par collecte (politesse)
 TAILLE_PAGE = 600_000       # on ne lit que le début d'une page (les balises <meta> sont en haut)
 
@@ -269,7 +274,14 @@ def decoder_google(url: str) -> str:
         bloc = json.loads(texte.split("\n\n")[1])
         return json.loads(bloc[0][2])[1]
     except Exception as e:
-        print(f"   · lien Google non décodé : {str(e)[:80]}")
+        global GOOGLE_FREINE
+        if "429" in str(e):
+            # Google nous demande de ralentir : on arrête de décoder pour ce passage
+            # (les articles restants seront retentés au prochain passage, 2 h plus tard)
+            GOOGLE_FREINE = True
+            print("   · Google demande de ralentir (429) : décodage arrêté pour ce passage")
+        else:
+            print(f"   · lien Google non décodé : {str(e)[:80]}")
         return ""
 
 
@@ -287,13 +299,21 @@ def lire_meta(page: str, *noms) -> str:
 def enrichir(art: dict) -> None:
     """Complète l'article sur place : vrai lien, chapeau (« resume »), image.
     Ne lève jamais d'erreur : au pire, l'article reste comme il était."""
-    art["enrichi"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")   # tenté : on ne recommence pas
     lien = art["lien"]
     if id_google(lien):
+        if GOOGLE_FREINE:
+            return                   # pas tenté : on réessaiera au prochain passage
         vrai = decoder_google(lien)
+        time.sleep(1.5)              # Google limite le rythme : on espace les demandes
         if not vrai:
+            if not GOOGLE_FREINE:    # vrai échec (pas un simple « ralentissez ») :
+                art["essais"] = art.get("essais", 0) + 1   # 3 essais au plus, sur 3 passages
+                if art["essais"] >= 3:
+                    art["enrichi"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
             return
+        art.pop("essais", None)
         art["lien"] = lien = vrai
+    art["enrichi"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")   # tenté : on ne recommence pas
     try:
         req = urllib.request.Request(lien, headers={**ENTETES, "Accept": "text/html,*/*"})
         with urllib.request.urlopen(req, timeout=12) as rep:
@@ -315,8 +335,13 @@ def enrichir(art: dict) -> None:
 def enrichir_sujet(articles: list) -> int:
     """Enrichit les articles pas encore tentés, du plus récent au plus ancien,
     dans la limite de MAX_ENRICHIS. Renvoie le nombre d'articles tentés."""
-    a_faire = [a for a in articles if not a.get("enrichi")][:MAX_ENRICHIS]
+    # « à faire » = jamais tenté, ou lien Google pas encore décodé à cause d'un « ralentissez »
+    # de Google lors d'un passage précédent (avant la v2.3.0 ils étaient marqués « tentés »)
+    a_faire = [a for a in articles if not a.get("enrichi")
+               or (id_google(a["lien"]) and not a.get("image") and not a.get("resume") and not a.get("reessaye"))][:MAX_ENRICHIS]
     for a in a_faire:
+        if a.get("enrichi") and id_google(a["lien"]):
+            a.pop("enrichi"); a["reessaye"] = True      # une seule seconde chance
         enrichir(a)
         time.sleep(0.4)          # on ne bombarde pas les sites
     if a_faire:
