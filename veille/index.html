@@ -2,7 +2,7 @@
 <!--
   ============================================================
   Veille Carrefour — les articles sur Carrefour d'Olivier Dauvers, LSA et Linéaires
-  Version 1.0.0
+  Version 1.1.0
   ------------------------------------------------------------
   Comment ça marche :
    • un robot GitHub (.github/workflows/veille.yml) lance outils/veille.py
@@ -18,6 +18,8 @@
 
   Historique :
    • v1.0.0 : première version (Dauvers, LSA, Linéaires)
+   • v1.1.0 : pastille « 🎯 Dans le titre » (activée au départ) : seulement les articles dont le
+              titre parle du sujet ; Google Actualités remonte aussi ceux qui le citent en passant
   ============================================================
 -->
 <html lang="fr">
@@ -115,6 +117,9 @@
     .filtre .nb { font-family: "JetBrains Mono", monospace; font-weight: 500; color: var(--muted); font-size: 12px; }
     .filtre[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: #fff; }
     .filtre[aria-pressed="true"] .nb { color: #cfe3e3; }
+    /* L'interrupteur « Dans le titre » : teal quand il est actif, séparé des autres */
+    .filtre.bascule { margin-right: 6px; }
+    .filtre.bascule[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); }
 
     /* =========================================================
        3. LISTE DES ARTICLES, groupés par jour
@@ -235,7 +240,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = "1.0.0";
+    const VERSION = "1.1.0";
 
     // Où lire les articles. D'abord la copie « brute » du dépôt GitHub :
     // elle est à jour 1 à 5 min après chaque collecte, sans attendre que
@@ -252,7 +257,8 @@
       lus: "veille.lus",            // identifiants des articles ouverts
       favoris: "veille.favoris",    // identifiants des favoris
       visite: "veille.visite",      // date de la dernière visite
-      filtre: "veille.filtre"       // dernier filtre choisi
+      filtre: "veille.filtre",      // dernier filtre choisi
+      titre: "veille.titre"         // pastille « Dans le titre » activée ou non
     };
 
     /* =========================================================
@@ -323,6 +329,7 @@
     let lus = new Set(lire(CLE.lus, []));
     let favoris = new Set(lire(CLE.favoris, []));
     let filtre = lire(CLE.filtre, "tout");      // "tout", "favoris" ou l'id d'une source
+    let dansLeTitre = lire(CLE.titre, true);   // true = seulement le sujet dans le titre
     let recherche = "";
     let combien = PAR_PAGE;
 
@@ -391,24 +398,33 @@
 
     // Pastilles : Tout, chaque site (avec son nombre d'articles), Favoris
     function afficherFiltres() {
-      const arts = donnees.articles || [];
+      // Les nombres tiennent compte de la pastille « Dans le titre »
+      const arts = (donnees.articles || []).filter((a) => !dansLeTitre || sujetDansTitre(a));
       const compte = (fn) => arts.filter(fn).length;
       const boutons = [
         { id: "tout", nom: "Tout", nb: arts.length },
         ...(donnees.sources || []).map((s) => ({ id: s.id, nom: s.court || s.nom, couleur: s.couleur, nb: compte((a) => a.source === s.id) })),
         { id: "favoris", nom: "⭐ Favoris", nb: compte((a) => favoris.has(a.id)) }
       ];
-      $("#filtres").innerHTML = boutons.map((b) => `
+      // Pastille interrupteur, à part des autres (elle se combine avec elles)
+      const interrupteur = `<button class="filtre bascule" id="bascule-titre" aria-pressed="${dansLeTitre}"
+        title="Seulement les articles dont le titre parle de ${echap(donnees.sujet)}">🎯 Dans le titre</button>`;
+      $("#filtres").innerHTML = interrupteur + boutons.map((b) => `
         <button class="filtre" data-filtre="${b.id}" aria-pressed="${b.id === filtre}">
           ${b.couleur ? `<span class="pt" style="background:${b.couleur}"></span>` : ""}
           ${echap(b.nom)} <span class="nb">${b.nb}</span>
         </button>`).join("");
     }
 
+    // Le sujet (« Carrefour ») est-il dans le titre ? Google Actualités renvoie aussi
+    // des articles qui ne le citent qu'en passant (ex. un article sur Lidl).
+    const sujetDansTitre = (a) => simple(a.titre).includes(simple(donnees.sujet || ""));
+
     // Les articles qui passent le filtre et la recherche
     function articlesVisibles() {
       const mots = simple(recherche).split(/\s+/).filter(Boolean);
       return (donnees.articles || []).filter((a) => {
+        if (dansLeTitre && !sujetDansTitre(a)) return false;
         if (filtre === "favoris" && !favoris.has(a.id)) return false;
         if (filtre !== "tout" && filtre !== "favoris" && a.source !== filtre) return false;
         // tous les mots tapés doivent se trouver dans le titre ou le résumé
@@ -516,8 +532,13 @@
     $("#filtres").addEventListener("click", (e) => {
       const b = e.target.closest(".filtre");
       if (!b) return;
-      filtre = b.dataset.filtre;
-      ecrire(CLE.filtre, filtre);
+      if (b.id === "bascule-titre") {           // l'interrupteur : on l'inverse
+        dansLeTitre = !dansLeTitre;
+        ecrire(CLE.titre, dansLeTitre);
+      } else {
+        filtre = b.dataset.filtre;
+        ecrire(CLE.filtre, filtre);
+      }
       combien = PAR_PAGE;
       afficherFiltres();
       afficherListe();
