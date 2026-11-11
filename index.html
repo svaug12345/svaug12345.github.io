@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr — Page d'accueil des projets (marque SV)
-  Version 1.36.0
+  Version 1.37.0
   ------------------------------------------------------------
   Historique :
    • v1.0.0 : première page d'accueil
@@ -67,6 +67,7 @@
    • v1.34.0 : ajout de « Nexus · Prospection » (la même équipe vend Nexus aux fournisseurs) dans « Carrefour »
    • v1.35.0 : ajout de « Veille Carrefour » (articles de Dauvers, LSA, Linéaires) dans « Carrefour »
    • v1.36.0 : « Veille Carrefour » devient « Veille » (Carrefour, Elis… avec l'avis des lecteurs)
+   • v1.37.0 : « Veille » : Carrefour + les sujets que chacun ajoute
 
   À déposer dans le dépôt GitHub : svaug12345.github.io
   → c'est le fichier "index.html" à la racine.
@@ -813,8 +814,8 @@
 
       // ---------- Agents vocaux (ElevenLabs) ----------
       { id: "veille",      nom: "Veille", icone: "journal",
-        desc: "La presse sur Carrefour, Elis… au même endroit, triée par l'avis des lecteurs",
-        courte: "La presse sur Carrefour, Elis…",
+        desc: "La presse sur Carrefour et sur les fournisseurs ou sujets que chacun ajoute",
+        courte: "La presse sur Carrefour et tes sujets",
         url: "veille/" },                    // données : robot GitHub (outils/veille.py)
       { id: "pochpoch",    nom: "PochPoch",     icone: "cochon", vocal: true,
         desc: "Le cost killer vocal qui refuse vos dépenses",

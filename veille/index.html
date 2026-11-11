@@ -1,52 +1,43 @@
 <!DOCTYPE html>
 <!--
   ============================================================
-  Veille — la presse sur Carrefour, Elis… (un onglet par sujet)
-  Version 2.4.0
+  Veille — la presse sur Carrefour et sur les sujets de chacun
+  Version 3.0.0
   ------------------------------------------------------------
   Comment ça marche :
-   • un robot GitHub (.github/workflows/veille.yml) lance outils/veille.py
-     toutes les 2 heures : pour chaque sujet réglé dans veille/sources.json,
-     il lit les flux RSS / recherches Google Actualités, garde les articles
-     qui en parlent et les range dans veille/donnees/<sujet>.json
-     (+ veille/donnees/index.json = la liste des sujets = les onglets) ;
-   • cette page lit ces fichiers et les affiche : onglets par sujet, filtres
-     par site, recherche, favoris ⭐, nouveautés, partage ;
-   • AVIS 👍 / 👎 : chaque lecteur peut dire si un article est pertinent.
-     Un 👎 masque l'article. Et l'appli APPREND de tous les votes : elle
-     repère les mots et les journaux souvent rejetés ou appréciés, donne une
-     note à chaque article, et masque ceux qui ressemblent trop aux rejetés
-     (pastille « ✨ Filtre appris »). Les votes sont mis en commun entre tous
-     les lecteurs par le script Google « Veille - avis » (outils/veille-avis.gs,
-     adresse dans AVIS_URL). Sans ce script, ils restent dans le téléphone.
-  La page ne contacte jamais LSA ou les autres sites elle-même : un navigateur
-  n'en a pas le droit (règle « CORS »), c'est pour ça que le robot existe.
+   • SUJETS COMMUNS (Carrefour) : un robot GitHub (.github/workflows/veille.yml)
+     lance outils/veille.py toutes les 2 heures ; il lit les flux réglés dans
+     veille/sources.json, garde les articles qui parlent du sujet, retrouve leur
+     chapeau et leur image, et range tout dans veille/donnees/<sujet>.json
+     (+ veille/donnees/index.json = la liste des sujets communs).
+   • SUJETS PERSO : chaque lecteur ajoute les siens (un fournisseur, un thème…)
+     avec « ＋ Suivre un sujet ». Ils sont gardés dans SON téléphone, et cherchés
+     à la demande sur Google Actualités par le script Google « Veille - avis »
+     (outils/veille-avis.gs, adresse dans AVIS_URL) : un navigateur n'a pas le
+     droit d'interroger Google Actualités lui-même (règle « CORS »).
+   • AVIS 👍 / 👎 : un 👎 masque l'article ; l'appli APPREND de tous les votes
+     (mots et journaux souvent rejetés ou appréciés) et masque ce qui ressemble
+     aux articles rejetés (« Filtre appris »). Votes partagés par le même script.
+
+  Interface (v3) inspirée des lecteurs les plus appréciés (Feedly, Inoreader,
+  Reeder, Gmail) :
+   • ordinateur : colonne des sujets à gauche, barre d'outils fixe en haut,
+     fiche de l'article en panneau à droite, raccourcis clavier (touche « ? ») ;
+   • téléphone : cartes épurées (les actions passent par le GLISSER et la fiche),
+     onglets Tout / Non lus / Favoris, un seul bouton « Filtres » ;
+   • mode sombre automatique quand le téléphone ou l'ordinateur y est.
 
   Historique :
    • v1.0.0 : première version (Dauvers, LSA, Linéaires)
-   • v1.1.0 : pastille « 🎯 Dans le titre » (activée au départ) : seulement les articles dont le
-              titre parle du sujet ; Google Actualités remonte aussi ceux qui le citent en passant
-   • v1.2.0 : source « Autres médias » (toute la presse) : la carte affiche le nom du journal
-              (Les Echos, Le Parisien…) ; la recherche trouve aussi par nom de journal
-   • v2.0.0 : plusieurs sujets (onglets Carrefour, Elis…) ; avis 👍 / 👎 sur chaque article,
-              partagés entre lecteurs, et « ✨ Filtre appris » qui masque les articles
-              qui ressemblent à ceux jugés pas pertinents
-   • v2.1.0 : idées reprises de Feedly : filtre « Non lus », nombre de non lus sur chaque
-              onglet, « Tout marquer comme lu » (avec Annuler), vue compacte (une ligne par
-              article), mots masqués et mots surveillés (surlignés, pastille « 🔔 Surveillés »)
-              réglables par sujet dans « Sources et réglages »
-   • v2.2.0 : couleurs Carrefour (design system Marcel : bleus #0970e6 / #004e9b, police Ubuntu)
-              et bandeau « Achats Non Marchands · NTP » ; en-tête qui ne reste plus collé en
-              haut (la moitié de l'écran était prise) ; le bandeau des articles masqués devient
-              une petite pastille « 🙈 n » dans les filtres ; 🔒 sur les journaux souvent
-              réservés aux abonnés (liste PAYANTS)
-   • v2.3.0 : toucher un article ouvre sa FICHE (image, chapeau, date complète, avis, « Le même
-              sujet ailleurs » = articles d'autres journaux sur la même info, bouton « Lire
-              l'article ») ; vignette à droite du titre quand le robot a trouvé une image ;
-              chapeau et image viennent du robot v2.1.0 (lecture de la page du journal)
-   • v2.4.0 : GLISSER (swipe) : dans la liste, un article glissé vers la droite passe en ⭐,
-              vers la gauche en 👎 (masqué, avec Annuler) ; dans la fiche, glisser à gauche /
-              à droite ouvre l'article suivant / précédent de la liste
+   • v1.1.0 : pastille « 🎯 Dans le titre »
+   • v1.2.0 : source « Autres médias » (toute la presse), nom du journal sur la carte
+   • v2.0.0 : plusieurs sujets ; avis 👍 / 👎 partagés et « Filtre appris »
+   • v2.1.0 : non lus, tout marquer lu, vue compacte, mots masqués / surveillés
+   • v2.2.0 : couleurs Carrefour (Marcel, Ubuntu), bandeau NTP, 🔒 journaux payants
+   • v2.3.0 : fiche d'un article (image, chapeau, le même sujet ailleurs), vignettes
+   • v2.4.0 : glisser (⭐ / 👎 dans la liste, suivant / précédent dans la fiche)
+   • v3.0.0 : refonte de l'interface (voir plus haut) ; sujets perso ajoutés par chaque
+              lecteur ; Carrefour seul sujet commun (Elis devient un sujet perso à ajouter)
   ============================================================
 -->
 <html lang="fr">
@@ -63,14 +54,11 @@
   <link rel="icon" href="icones/icone-192.png">
   <meta name="theme-color" content="#004e9b">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="description" content="Veille presse : Carrefour, Elis… avec l'avis des lecteurs.">
-
+  <meta name="description" content="Veille presse : Carrefour et vos propres sujets, avec l'avis des lecteurs.">
   <!-- Outil perso : pas dans les moteurs de recherche -->
   <meta name="robots" content="noindex">
-
   <!-- Compteur de visites commun à baiji.fr -->
   <script src="/journal.js" defer></script>
-
   <!-- Police Ubuntu = celle du design system Marcel de Carrefour -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -78,412 +66,541 @@
 
   <style>
     /* =========================================================
-       1. COULEURS — charte SV (définies une fois, réutilisées partout)
+       1. COULEURS — design system « Marcel » de Carrefour
+       Toutes les couleurs passent par ces variables : le mode sombre
+       (plus bas) n'a qu'à les redéfinir.
        ========================================================= */
     :root {
-      /* Couleurs Carrefour, reprises du design system « Marcel » (comme la Salle de négociation) */
       --bg: #f5f7fa;        /* fond de page */
       --card: #ffffff;      /* fond des cartes */
-      --ink: #121212;       /* texte principal (Marcel content-default) */
-      --muted: #696969;     /* texte secondaire (Marcel content-subtler) */
+      --ink: #121212;       /* texte principal */
+      --ink2: #333;         /* texte des chapeaux */
+      --muted: #69707a;     /* texte secondaire */
       --line: #e3e8ef;      /* traits */
-      --soft: #f5faff;      /* fonds discrets (Marcel background-subtler) */
-      --brand: #004e9b;     /* bleu Carrefour foncé (Marcel brand-hover) */
-      --accent: #0970e6;    /* bleu Carrefour vif (Marcel brand-default) */
-      --nuit: #003161;      /* bleu nuit (Marcel brand-pressed) : bas du bandeau */
-      --rouge: #d30d1f;     /* rouge Carrefour (Marcel promo) : utilisé avec parcimonie */
-      --star: #d97706;      /* étoile des favoris */
-      --police: Ubuntu, system-ui, sans-serif;
-      --radius: 18px;
+      --soft: #eef4fb;      /* fonds discrets */
+      --brand: #004e9b;     /* bleu Carrefour foncé */
+      --accent: #0970e6;    /* bleu Carrefour vif */
+      --nuit: #003161;      /* bleu nuit */
+      --rouge: #d30d1f;     /* rouge Carrefour : « Nouveau » */
+      --star: #e08a00;      /* favoris */
+      --ok: #2b7d5b;
+      --radius: 16px;
+      --police: Ubuntu, system-ui, -apple-system, "Segoe UI", sans-serif;
+      --ombre: 0 1px 2px rgba(16, 24, 40, .05), 0 1px 3px rgba(16, 24, 40, .06);
+      --ombre-forte: 0 12px 32px rgba(16, 24, 40, .16);
+      color-scheme: light;
+    }
+    /* Mode sombre : automatique, selon le réglage du téléphone / de l'ordinateur */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d141c; --card: #151f2a; --ink: #e9eef4; --ink2: #c9d2dc; --muted: #93a0ae;
+        --line: #243243; --soft: #1b2836; --accent: #4c9bff; --star: #f5a623;
+        --ombre: 0 1px 2px rgba(0,0,0,.4); --ombre-forte: 0 12px 32px rgba(0,0,0,.5);
+        color-scheme: dark;
+      }
     }
     * { box-sizing: border-box; }
-    /* Indispensable : sans ça, un élément « hidden » en display:flex resterait visible */
-    [hidden] { display: none !important; }
+    [hidden] { display: none !important; }     /* indispensable avec les display:flex */
+    html { -webkit-text-size-adjust: 100%; }
     body {
       margin: 0; background: var(--bg); color: var(--ink);
-      font-family: var(--police); font-size: 16px;
-      -webkit-tap-highlight-color: transparent;
+      font: 400 16px/1.4 var(--police); -webkit-tap-highlight-color: transparent;
     }
-    .page { max-width: 640px; margin: 0 auto; padding: 0 14px 40px; }
+    button { font: inherit; color: inherit; }
+    kbd {
+      font: 500 11px var(--police); border: 1px solid var(--line); border-bottom-width: 2px;
+      border-radius: 5px; padding: 1px 5px; color: var(--muted); background: var(--card);
+    }
 
     /* =========================================================
-       2. EN-TÊTE = bandeau bleu Carrefour (titre, boutons, onglets)
-       Il défile avec la page (il ne reste plus collé en haut : sur téléphone,
-       il prenait la moitié de l'écran).
+       2. BANDEAU (téléphone : en haut, défile avec la page ;
+          ordinateur : devient la colonne des sujets, à gauche)
        ========================================================= */
-    header.bandeau {
-      background: linear-gradient(135deg, var(--brand), var(--nuit));
-      color: #fff;
-      padding: calc(env(safe-area-inset-top) + 14px) 0 12px;
+    .bandeau {
+      background: linear-gradient(150deg, var(--brand), var(--nuit));
+      color: #fff; padding: calc(env(safe-area-inset-top) + 14px) 16px 12px;
     }
-    .bandeau-in { max-width: 640px; margin: 0 auto; padding: 0 14px; }
-    .titre { display: flex; align-items: center; gap: 10px; }
-    .titre h1 { font-size: 22px; font-weight: 700; margin: 0; flex: 1; line-height: 1.15; }
-    .titre h1 span { color: #9cc9ff; }                /* le sujet, en bleu clair sur le bandeau */
-    .titre small { display: block; font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #cfe2fb; margin-top: 3px; }
-    .outils { padding-top: 10px; }
-    .btn-rond {
-      width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,.35);
-      background: rgba(255,255,255,.12); color: #fff; display: grid; place-items: center; cursor: pointer;
+    .marque { display: flex; align-items: center; gap: 10px; }
+    .marque h1 { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.1; flex: 1; }
+    .marque h1 span { color: #9cc9ff; }
+    .marque small {
+      display: block; margin-top: 4px; font-size: 10.5px; font-weight: 500;
+      letter-spacing: .1em; text-transform: uppercase; color: #cfe2fb;
     }
-    .btn-rond svg { width: 19px; height: 19px; }
-    .btn-rond.tourne svg { animation: tourne 0.8s linear infinite; }
+    .rond {
+      width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,.3);
+      background: rgba(255,255,255,.1); color: #fff; display: grid; place-items: center; cursor: pointer; flex: none;
+    }
+    .rond svg { width: 19px; height: 19px; }
+    .tourne svg { animation: tourne .8s linear infinite; }
     @keyframes tourne { to { transform: rotate(360deg); } }
-    .statut { color: var(--muted); font-size: 13px; margin: 4px 0 10px; }
-    .statut b { font-family: var(--police); font-weight: 500; color: var(--ink); }
-    .alerte { color: #b45309; }
 
-    /* Zone de recherche */
+    /* Les sujets : pastilles qui défilent à l'horizontale (téléphone) */
+    .sujets { display: flex; gap: 6px; margin-top: 12px; overflow-x: auto; scrollbar-width: none; }
+    .sujets::-webkit-scrollbar { display: none; }
+    .sujet {
+      flex: none; display: flex; align-items: center; gap: 7px; border: 0; cursor: pointer;
+      background: rgba(255,255,255,.12); color: #e3efff; border-radius: 999px; padding: 8px 14px;
+      font-size: 14px; font-weight: 500;
+    }
+    .sujet .nb { font-size: 12px; opacity: .8; }
+    .sujet[aria-current="true"] { background: #fff; color: var(--brand); font-weight: 700; }
+    .sujet.ajout { background: transparent; border: 1px dashed rgba(255,255,255,.5); }
+    .pied-nav { display: none; }                 /* liens du bas : ordinateur seulement */
+
+    /* =========================================================
+       3. BARRE D'OUTILS : recherche, Tout / Non lus / Favoris, Filtres
+       ========================================================= */
+    .principal { max-width: 720px; margin: 0 auto; padding: 0 14px 60px; }
+    .outils { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px 0 6px; }
     .recherche {
-      display: flex; align-items: center; gap: 8px; background: var(--card);
-      border: 1px solid var(--line); border-radius: 14px; padding: 0 12px; height: 44px;
+      flex: 1 1 100%; display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px;
+      background: var(--card); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--ombre);
     }
     .recherche svg { width: 18px; height: 18px; color: var(--muted); flex: none; }
-    .recherche input { border: 0; outline: 0; flex: 1; font: inherit; background: transparent; color: var(--ink); }
-
-    /* Pastilles de filtre (défilent à l'horizontale sur téléphone) */
-    .filtres { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0 2px; scrollbar-width: none; }
-    .filtres::-webkit-scrollbar { display: none; }
-    .filtre {
-      flex: none; border: 1px solid var(--line); background: var(--card); color: var(--ink);
-      border-radius: 999px; padding: 7px 13px; font: 700 13px var(--police); cursor: pointer;
-      display: flex; align-items: center; gap: 6px;
+    .recherche input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font: inherit; color: var(--ink); }
+    .recherche kbd { display: none; }
+    /* Contrôle segmenté (comme sur iPhone) */
+    .segments { display: flex; background: var(--soft); border-radius: 10px; padding: 3px; flex: 1; }
+    .segments button {
+      flex: 1; border: 0; background: none; border-radius: 8px; padding: 7px 10px; cursor: pointer;
+      font-size: 14px; font-weight: 500; color: var(--muted); white-space: nowrap;
     }
-    .filtre .pt { width: 9px; height: 9px; border-radius: 50%; }
-    .filtre .nb { font-family: var(--police); font-weight: 500; color: var(--muted); font-size: 12px; }
-    .filtre[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: #fff; }
-    .filtre[aria-pressed="true"] .nb { color: #d6e6fb; }
-    /* L'interrupteur « Dans le titre » : teal quand il est actif, séparé des autres */
-    .filtre.bascule { margin-right: 6px; }
-    .filtre.bascule[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); }
-    /* Pastille « 🙈 n masqués » : discrète, dans la rangée des filtres (remplace le grand bandeau) */
-    .filtre.masques-pastille { color: var(--muted); }
-    .filtre.masques-pastille[aria-pressed="true"] { background: var(--muted); border-color: var(--muted); color: #fff; }
-    /* 🔒 = journal souvent réservé aux abonnés */
-    .payant { font-size: 11px; color: var(--muted); white-space: nowrap; }
+    .segments button[aria-pressed="true"] { background: var(--card); color: var(--ink); font-weight: 700; box-shadow: var(--ombre); }
+    .segments .nb { font-size: 12px; color: var(--muted); margin-left: 3px; font-weight: 500; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--card);
+      border-radius: 10px; padding: 8px 12px; cursor: pointer; font-size: 14px; font-weight: 500; box-shadow: var(--ombre);
+    }
+    .btn svg { width: 17px; height: 17px; }
+    .btn .pastille { background: var(--accent); color: #fff; border-radius: 999px; font-size: 11px; padding: 1px 6px; font-weight: 700; }
+    .bureau { display: none; }                   /* boutons montrés sur ordinateur seulement */
+
+    .statut { margin: 4px 2px 0; font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+    .statut b { color: var(--ink); font-weight: 500; }
+    .statut .nouveau { color: var(--rouge); font-weight: 700; }
+    .lien-action { border: 0; background: none; color: var(--accent); font-weight: 500; padding: 0; cursor: pointer; font-size: 13px; }
+    .alerte { color: #b45309; }
+
+    /* Puces actives sous la barre (« LSA ✕ », « 🙈 3 masqués », « 🔔 Surveillés ») */
+    .puces { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .puce {
+      display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--card);
+      border-radius: 999px; padding: 5px 11px; font-size: 13px; cursor: pointer; color: var(--ink);
+    }
+    .puce[aria-pressed="true"] { background: var(--ink); color: var(--card); border-color: var(--ink); }
+    .puce .pt { width: 8px; height: 8px; border-radius: 50%; }
 
     /* =========================================================
-       3. LISTE DES ARTICLES, groupés par jour
+       4. LISTE DES ARTICLES
        ========================================================= */
     .jour {
-      font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+      font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
       color: var(--muted); margin: 22px 4px 8px;
     }
     .cartes { display: grid; gap: 10px; }
-    .article {
-      background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
-      padding: 13px 14px 10px; position: relative;
-      display: flex; flex-direction: column;     /* pour pousser les boutons tout en bas */
-    }
-    .article.lu { opacity: .62; }                    /* déjà ouvert : grisé */
-    .meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
-    .source { font-weight: 800; color: #fff; border-radius: 6px; padding: 2px 7px; font-size: 11px; letter-spacing: .02em; }
-    .heure { font-family: var(--police); }
-    .nouveau { color: var(--rouge); font-weight: 700; }
-    .nouveau::before { content: "● "; }
-    .article a.lien { color: var(--ink); text-decoration: none; display: block; margin-top: 7px; }
-    .article h2 { font-size: 16px; line-height: 1.35; margin: 0; font-weight: 700; }
-    .resume {
-      font-size: 14px; color: var(--muted); line-height: 1.45; margin: 6px 0 0;
-      /* 2 lignes maximum, avec « … » */
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-    }
-    .actions { display: flex; justify-content: flex-end; gap: 2px; margin-top: auto; padding-top: 4px; }
-    .actions button {
-      border: 0; background: transparent; color: var(--muted); width: 38px; height: 34px;
-      border-radius: 10px; display: grid; place-items: center; cursor: pointer;
-    }
-    .actions button:active { background: var(--soft); }
-    .actions svg { width: 18px; height: 18px; }
-    .actions .fav[aria-pressed="true"] { color: var(--star); }
-    .actions .fav[aria-pressed="true"] svg { fill: var(--star); }
-
-    .vide { text-align: center; color: var(--muted); padding: 50px 20px; line-height: 1.5; }
-    .vide .gros { font-size: 40px; display: block; margin-bottom: 8px; }
-    .plus {
-      display: block; margin: 18px auto 0; border: 1px solid var(--line); background: var(--card);
-      color: var(--brand); font: 800 12px var(--police); letter-spacing: .1em; text-transform: uppercase;
-      padding: 12px 20px; border-radius: 12px; cursor: pointer;
-    }
-
-    /* =========================================================
-       4. PIED DE PAGE : sources suivies et réglages
-       ========================================================= */
-    details.reglages {
-      margin-top: 30px; background: var(--card); border: 1px solid var(--line);
-      border-radius: var(--radius); padding: 4px 16px; font-size: 14px; color: var(--muted);
-    }
-    details.reglages summary { cursor: pointer; padding: 12px 0; font-weight: 800; color: var(--ink); }
-    details.reglages ul { padding-left: 18px; margin: 4px 0 10px; }
-    details.reglages li { margin: 5px 0; }
-    details.reglages a { color: var(--accent); font-weight: 700; }
-    footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 20px; }
-
-
-    /* =========================================================
-       ONGLETS DES SUJETS (Carrefour, Elis…)
-       ========================================================= */
-    .sujets { display: flex; gap: 4px; background: rgba(255,255,255,.12); border-radius: 14px; padding: 4px; margin: 12px 0 0; overflow-x: auto; scrollbar-width: none; }
-    .sujets::-webkit-scrollbar { display: none; }
-    .onglet {
-      flex: 1 0 auto; border: 0; background: transparent; color: #dbe9fb; border-radius: 10px;
-      padding: 9px 14px; font: 800 12px var(--police); letter-spacing: .1em; text-transform: uppercase; cursor: pointer;
-    }
-    .onglet[aria-selected="true"] { background: #fff; color: var(--brand); box-shadow: 0 1px 3px rgba(0,0,0,.18); }
-    .onglet .nb { font-family: var(--police); font-weight: 500; letter-spacing: 0; margin-left: 4px; }
-
-    /* =========================================================
-       AVIS 👍 / 👎 et filtre appris
-       ========================================================= */
-    .actions .avis { width: auto; padding: 0 9px; gap: 4px; display: flex; align-items: center; font: 700 12px var(--police); }
-    .actions .avis[aria-pressed="true"].oui { color: #15803d; background: #e8f5ec; }
-    .actions .avis[aria-pressed="true"].non { color: #b91c1c; background: #fdecec; }
-    .actions .espace { flex: 1; }                    /* pousse partage + étoile à droite */
-    .note { font-size: 11px; font-weight: 800; border-radius: 6px; padding: 1px 6px; }
-    .note.bonne { color: #15803d; background: #e8f5ec; }
-    .note.basse { color: #b45309; background: #fdf3e6; }
-    .article.rejete { border-style: dashed; }        /* visible seulement si on affiche les masqués */
-
-    /* =========================================================
-       v2.1.0 — non lus, vue compacte, mots masqués / surveillés
-       ========================================================= */
-    .titre .btn-rond + .btn-rond { margin-left: -2px; }
-    .lien-action { border: 0; background: none; color: var(--accent); font: 700 13px var(--police); padding: 0; cursor: pointer; }
-    .reglage-mots { display: block; font-weight: 800; color: var(--ink); margin: 12px 0; }
-    .reglage-mots span { font-weight: 600; color: var(--muted); }
-    .reglage-mots input {
-      display: block; width: 100%; margin-top: 6px; height: 40px; border: 1px solid var(--line);
-      border-radius: 10px; padding: 0 10px; font: 400 14px var(--police); color: var(--ink);
-    }
-    mark { background: #ffe58a; color: inherit; border-radius: 3px; padding: 0 2px; }
-    .suivi { border-left: 4px solid #f59e0b; }        /* article qui contient un mot surveillé */
-    /* Vue compacte : une ligne par article, sans résumé ni boutons (sauf ⭐), cartes collées */
-    body.compact .cartes { gap: 0; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
-    body.compact .article { border: 0; border-bottom: 1px solid var(--line); border-radius: 0; padding: 9px 12px; flex-direction: row; align-items: center; gap: 10px; }
-    body.compact .glisse:last-child .article { border-bottom: 0; }
-    body.compact .glisse { border-radius: 0; }
-    body.compact .article .meta { flex: none; flex-direction: column; align-items: flex-start; gap: 2px; width: 74px; }
-    body.compact .article .meta .source { max-width: 74px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    body.compact .article .meta .nouveau, body.compact .article .note { display: none; }
-    body.compact .article a.lien { margin: 0; flex: 1; min-width: 0; }
-    body.compact .article h2 { font-size: 14px; font-weight: 600; }
-    body.compact .resume, body.compact .actions > :not(.fav) { display: none; }
-    body.compact .actions { margin: 0; padding: 0; }
-    body.compact .suivi { box-shadow: inset 4px 0 0 #f59e0b; }
-
-    /* =========================================================
-       v2.3.0 — vignette et fiche d'un article
-       ========================================================= */
-    .corps { display: flex; gap: 12px; align-items: flex-start; }
-    .corps > div { flex: 1; min-width: 0; }
-    .vignette {
-      flex: none; width: 76px; height: 76px; border-radius: 12px; object-fit: cover;
-      background: var(--soft); margin-top: 2px;
-    }
-    body.compact .vignette { display: none; }
-
-    /* La fiche : feuille qui monte du bas sur téléphone, fenêtre centrée sur tablette */
-    dialog#fiche {
-      border: 0; padding: 0; width: 100%; max-width: 640px; max-height: 92vh; margin: auto auto 0;
-      border-radius: 22px 22px 0 0; background: var(--card); color: var(--ink);
-      box-shadow: 0 -10px 40px rgba(0,0,0,.25); overflow: auto;
-    }
-    dialog#fiche::backdrop { background: rgba(0, 25, 50, .5); }
-    .fiche-in { padding: 10px 18px calc(env(safe-area-inset-bottom) + 18px); }
-    .poignee { width: 42px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto 10px; }
-    .fiche-haut { display: flex; align-items: center; gap: 8px; }
-    .fiche-haut .meta { flex: 1; flex-wrap: wrap; }
-    .fermer { border: 0; background: var(--soft); width: 36px; height: 36px; border-radius: 50%; font-size: 18px; color: var(--muted); cursor: pointer; }
-    .fiche-image { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 14px; margin-top: 12px; background: var(--soft); }
-    .fiche-in h2 { font-size: 20px; line-height: 1.3; margin: 12px 0 8px; }
-    .fiche-chapeau { font-size: 15px; line-height: 1.55; color: #333; margin: 0; }
-    .fiche-vide { font-size: 14px; color: var(--muted); font-style: italic; margin: 0; }
-    .fiche-payant { font-size: 13px; color: var(--muted); margin: 10px 0 0; }
-    .lire {
-      display: block; text-align: center; margin: 16px 0 6px; padding: 14px; border-radius: 14px;
-      background: var(--accent); color: #fff; text-decoration: none;
-      font: 700 13px var(--police); letter-spacing: .1em; text-transform: uppercase;
-    }
-    .lire small { display: block; font-weight: 400; letter-spacing: 0; text-transform: none; opacity: .85; margin-top: 2px; }
-    .fiche-in .actions { margin-top: 4px; }
-    .proches h3 { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 18px 0 6px; }
-    .proche {
-      display: flex; gap: 10px; align-items: baseline; width: 100%; text-align: left; border: 0; border-top: 1px solid var(--line);
-      background: none; padding: 10px 0; font: 500 14px var(--police); color: var(--ink); cursor: pointer;
-    }
-    .proche .source { flex: none; }
-
-    /* =========================================================
-       v2.4.0 — GLISSER (swipe)
-       Chaque carte est posée dans un « .glisse » : quand on fait glisser la
-       carte, le fond coloré de .glisse apparaît derrière, avec l'action
-       qui sera faite si on lâche assez loin (⭐ à gauche, 👎 à droite).
-       ========================================================= */
+    /* Chaque carte est posée dans un « .glisse » : son fond coloré apparaît quand on glisse */
     .glisse { position: relative; display: flex; border-radius: var(--radius); }
-    .glisse > .article { flex: 1; min-width: 0; touch-action: pan-y; }  /* pan-y : le navigateur garde le défilement vertical, on gère l'horizontal */
     .glisse .fond {
       position: absolute; inset: 0; border-radius: inherit; display: flex; align-items: center;
-      padding: 0 22px; font: 700 14px var(--police); color: #fff; opacity: 0; pointer-events: none;
+      padding: 0 22px; font-weight: 700; font-size: 14px; color: #fff; opacity: 0; pointer-events: none;
     }
-    .glisse .fond.favori { background: var(--star); justify-content: flex-start; }
+    .glisse .fond.favori { background: var(--star); }
     .glisse .fond.masquer { background: #b91c1c; justify-content: flex-end; }
     .glisse.vers-droite .fond.favori, .glisse.vers-gauche .fond.masquer { opacity: 1; }
     .glisse .fond b { transition: transform .15s; }
-    .glisse.pret .fond b { transform: scale(1.25); }                 /* assez loin : l'action va se faire */
-    .glisse.vers-droite > .article, .glisse.vers-gauche > .article { position: relative; z-index: 1; }
+    .glisse.pret .fond b { transform: scale(1.25); }
+
+    .article {
+      flex: 1; min-width: 0; position: relative; z-index: 1; touch-action: pan-y;
+      background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 13px 14px; box-shadow: var(--ombre); cursor: pointer;
+      transition: border-color .15s, box-shadow .15s;
+    }
     .article.revient { transition: transform .2s ease; }
-    /* Sinon, à la souris, le navigateur « attrape » le lien ou l'image au lieu de glisser la carte */
-    .glisse a, .glisse img { -webkit-user-drag: none; user-select: none; }             /* retour en place en douceur */
-    /* Fiche : petite glissade à l'arrivée d'un autre article */
-    .fiche-in.entre-droite { animation: entreDroite .22s ease; }
-    .fiche-in.entre-gauche { animation: entreGauche .22s ease; }
+    .article.lu .corps { opacity: .55; }
+    .article.choisi { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent); }
+    .article.rejete { border-style: dashed; }
+    .article.suivi { box-shadow: inset 4px 0 0 #f59e0b, var(--ombre); }
+    .meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); min-width: 0; }
+    .source {
+      font-weight: 700; color: #fff; border-radius: 6px; padding: 2px 7px; font-size: 11px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;
+    }
+    .nouveau-pt { color: var(--rouge); font-weight: 700; }
+    .nouveau-pt::before { content: "● "; }
+    .payant { font-size: 11px; }
+    .note { font-size: 11px; font-weight: 700; border-radius: 6px; padding: 1px 6px; }
+    .note.bonne { color: var(--ok); background: color-mix(in srgb, var(--ok) 14%, transparent); }
+    .note.basse { color: #b45309; background: color-mix(in srgb, #b45309 14%, transparent); }
+    .corps { display: flex; gap: 12px; align-items: flex-start; margin-top: 7px; }
+    .corps > div { flex: 1; min-width: 0; }
+    .article h2 { font-size: 16px; line-height: 1.35; margin: 0; font-weight: 700; }
+    .resume {
+      font-size: 14px; color: var(--muted); line-height: 1.45; margin: 5px 0 0;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .vignette { flex: none; width: 76px; height: 76px; border-radius: 12px; object-fit: cover; background: var(--soft); }
+    .lien { color: inherit; text-decoration: none; }
+    .glisse a, .glisse img { -webkit-user-drag: none; user-select: none; }
+    mark { background: #ffe58a; color: #121212; border-radius: 3px; padding: 0 2px; }
+
+    /* Actions sur la carte : CACHÉES sur écran tactile (on glisse, ou on ouvre la fiche),
+       visibles au survol de la souris sur ordinateur (comme Gmail / Feedly) */
+    .actions { display: flex; align-items: center; gap: 2px; }
+    .actions button {
+      border: 0; background: transparent; color: var(--muted); height: 34px; min-width: 36px; padding: 0 8px;
+      border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; font-size: 12px;
+    }
+    .actions button:hover { background: var(--soft); color: var(--ink); }
+    .actions svg { width: 18px; height: 18px; }
+    .actions .espace { flex: 1; }
+    .actions .fav[aria-pressed="true"] { color: var(--star); }
+    .actions .fav[aria-pressed="true"] svg { fill: var(--star); }
+    .actions .oui[aria-pressed="true"] { color: var(--ok); background: color-mix(in srgb, var(--ok) 14%, transparent); }
+    .actions .non[aria-pressed="true"] { color: #b91c1c; background: color-mix(in srgb, #b91c1c 12%, transparent); }
+    .article > .actions { display: none; }
+    .etoile-fixe { position: absolute; top: 12px; right: 12px; color: var(--star); font-size: 14px; }
+    @media (hover: hover) and (pointer: fine) {
+      .article > .actions { display: flex; position: absolute; right: 8px; top: 6px; background: var(--card); border-radius: 10px; opacity: 0; transition: opacity .12s; box-shadow: var(--ombre); }
+      .article:hover .etoile-fixe { visibility: hidden; }          /* la vraie étoile est dans les boutons */
+      .article:hover > .actions, .article.choisi > .actions { opacity: 1; }
+      .article:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+    }
+
+    /* Vue compacte : une ligne par article (comme la vue « Titres » de Feedly) */
+    body.compact .cartes { gap: 0; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--ombre); }
+    body.compact .glisse { border-radius: 0; }
+    body.compact .article { border: 0; border-bottom: 1px solid var(--line); border-radius: 0; box-shadow: none; padding: 10px 12px; display: flex; gap: 10px; align-items: center; }
+    body.compact .glisse:last-child .article { border-bottom: 0; }
+    body.compact .article .meta { flex: none; width: 92px; flex-direction: column; align-items: flex-start; gap: 2px; }
+    body.compact .article .meta .source { max-width: 92px; }
+    body.compact .article .meta .note, body.compact .article .meta .nouveau-pt { display: none; }
+    body.compact .corps { margin: 0; flex: 1; min-width: 0; }
+    body.compact .article h2 { font-size: 14px; font-weight: 500; }
+    body.compact .resume, body.compact .vignette { display: none; }
+    body.compact .article.suivi { box-shadow: inset 4px 0 0 #f59e0b; }
+
+    /* Chargement : cartes grises qui « brillent » (au lieu d'un simple « Chargement… ») */
+    .squelette { height: 104px; border-radius: var(--radius); background: linear-gradient(90deg, var(--card) 25%, var(--soft) 50%, var(--card) 75%); background-size: 200% 100%; animation: brille 1.2s infinite; border: 1px solid var(--line); margin-top: 10px; }
+    @keyframes brille { to { background-position: -200% 0; } }
+
+    .vide { text-align: center; color: var(--muted); padding: 50px 20px; line-height: 1.55; }
+    .vide .gros { font-size: 42px; display: block; margin-bottom: 8px; }
+    .vide .btn { margin-top: 14px; }
+    .plus { display: block; margin: 20px auto 0; }
+    footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 28px; }
+
+    /* =========================================================
+       5. FEUILLES (fiche, filtres, sujets, raccourcis) — <dialog>
+       Téléphone : montent du bas ; ordinateur : fiche = panneau à droite,
+       les autres = fenêtres centrées.
+       ========================================================= */
+    dialog {
+      border: 0; padding: 0; width: 100%; max-width: 640px; max-height: 90vh; margin: auto auto 0;
+      border-radius: 22px 22px 0 0; background: var(--card); color: var(--ink); box-shadow: var(--ombre-forte); overflow: auto;
+    }
+    dialog::backdrop { background: rgba(0, 20, 45, .45); }
+    .feuille { padding: 10px 18px calc(env(safe-area-inset-bottom) + 20px); }
+    .poignee { width: 42px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto 10px; }
+    .tete { display: flex; align-items: center; gap: 8px; }
+    .tete h2 { flex: 1; margin: 0; font-size: 18px; }
+    .fermer { border: 0; background: var(--soft); width: 36px; height: 36px; border-radius: 50%; font-size: 17px; color: var(--muted); cursor: pointer; flex: none; }
+    .feuille h3 { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 20px 0 8px; }
+    .feuille p.aide { font-size: 13px; color: var(--muted); margin: 6px 0; line-height: 1.5; }
+    .feuille a { color: var(--accent); }
+
+    /* Interrupteurs (comme les réglages d'un téléphone) */
+    .interrupteur { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); cursor: pointer; }
+    .interrupteur span { flex: 1; font-size: 15px; }
+    .interrupteur small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .interrupteur input { appearance: none; width: 44px; height: 26px; border-radius: 13px; background: var(--line); position: relative; cursor: pointer; transition: background .15s; flex: none; margin: 0; }
+    .interrupteur input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.3); transition: left .15s; }
+    .interrupteur input:checked { background: var(--accent); }
+    .interrupteur input:checked::after { left: 21px; }
+    .choix { display: flex; flex-wrap: wrap; gap: 6px; }
+    .champ { display: block; width: 100%; height: 44px; border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; font: inherit; color: var(--ink); background: var(--bg); }
+    .champ-titre { display: block; font-size: 14px; font-weight: 500; margin: 14px 0 6px; }
+    .principal-btn {
+      display: block; width: 100%; text-align: center; border: 0; margin: 16px 0 4px; padding: 14px; border-radius: 12px;
+      background: var(--accent); color: #fff; text-decoration: none; cursor: pointer;
+      font-weight: 700; font-size: 13px; letter-spacing: .1em; text-transform: uppercase;
+    }
+    .feuille a.principal-btn { color: #fff; }        /* sinon la couleur des liens de la feuille l'emporte */
+    .principal-btn small { display: block; font-weight: 400; letter-spacing: 0; text-transform: none; opacity: .85; margin-top: 2px; }
+    .encadre { background: var(--soft); border-radius: 12px; padding: 12px 14px; font-size: 13px; line-height: 1.5; margin-top: 12px; }
+    .mes-sujets li { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--line); list-style: none; font-size: 15px; }
+    .mes-sujets li span { flex: 1; }
+    .mes-sujets li small { color: var(--muted); }
+    .mes-sujets { padding: 0; margin: 0; }
+
+    /* La fiche d'un article */
+    .fiche-image { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 14px; margin-top: 12px; background: var(--soft); }
+    #fiche-in h2.titre-fiche { font-size: 21px; line-height: 1.3; margin: 14px 0 8px; }
+    .chapeau { font-size: 16px; line-height: 1.6; color: var(--ink2); margin: 0; }
+    .chapeau.vide-chapeau { font-size: 14px; color: var(--muted); font-style: italic; }
+    #fiche-in .actions { margin-top: 2px; }
+    .fiche-nav { text-align: center; font-size: 12px; color: var(--muted); margin-top: 14px; }
+    .proche {
+      display: flex; gap: 10px; align-items: baseline; width: 100%; text-align: left; border: 0; border-top: 1px solid var(--line);
+      background: none; padding: 10px 0; font-size: 14px; cursor: pointer;
+    }
+    .proche .source { flex: none; }
+    #fiche-in { touch-action: pan-y; }
+    #fiche-in.entre-droite { animation: entreDroite .22s ease; }
+    #fiche-in.entre-gauche { animation: entreGauche .22s ease; }
     @keyframes entreDroite { from { transform: translateX(40px); opacity: 0; } }
     @keyframes entreGauche { from { transform: translateX(-40px); opacity: 0; } }
-    .fiche-in { touch-action: pan-y; }
-    .fiche-nav { text-align: center; font-size: 12px; color: var(--muted); margin-top: 14px; }
+    .raccourcis { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .raccourcis td { padding: 7px 0; border-bottom: 1px solid var(--line); }
+    .raccourcis td:first-child { width: 90px; }
 
-    /* Petit message en bas (« Lien copié », etc.) */
     #toast {
       position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 20px); transform: translateX(-50%);
-      background: var(--nuit); color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 14px;
-      font-weight: 700; z-index: 10; display: flex; align-items: center; white-space: nowrap;
+      background: #10233a; color: #fff; padding: 11px 16px; border-radius: 12px; font-size: 14px; font-weight: 500;
+      z-index: 100; display: flex; gap: 14px; align-items: center; white-space: nowrap; box-shadow: var(--ombre-forte);
+    }
+    #toast button { border: 0; background: none; color: #9cc9ff; font-weight: 700; cursor: pointer; }
+
+    /* =========================================================
+       6. TABLETTE (≥ 760 px) : page élargie, cartes en 2 colonnes
+       ========================================================= */
+    @media (min-width: 760px) {
+      .principal { max-width: 1180px; padding: 0 28px 60px; }
+      .bandeau { padding-left: 28px; padding-right: 28px; }
+      .recherche { flex: 1 1 320px; }
+      .segments { flex: 0 0 auto; }
+      .cartes { grid-template-columns: repeat(2, 1fr); }
+      body.compact .cartes { grid-template-columns: 1fr; }
+      dialog { margin: auto; border-radius: 20px; max-height: 86vh; }
+      .poignee { display: none; }
     }
 
     /* =========================================================
-       5. TABLETTE — le téléphone (< 760 px) ne change jamais.
-       Page élargie, articles sur 2 colonnes (3 en paysage).
+       7. ORDINATEUR (≥ 1024 px) — disposition « 3 panneaux » :
+       colonne des sujets fixe à gauche | barre d'outils collée en haut
+       + liste | fiche en panneau à droite (comme Inoreader / Gmail)
        ========================================================= */
-    @media (min-width: 760px) {
-      .page { max-width: 1180px; padding: 0 28px 50px; }
-      .bandeau-in { max-width: 1180px; padding: 0 28px; }
-      .sujets { display: inline-flex; }
-      /* ligne d'état à gauche, recherche à droite, filtres dessous */
-      .outils { display: grid; grid-template-columns: 1fr 380px; column-gap: 20px; align-items: center; }
-      .statut { grid-column: 1; }
-      .recherche { grid-column: 2; grid-row: 1; }
-      .filtres { grid-column: 1 / -1; }
+    @media (min-width: 1024px) {
+      body { padding-left: 260px; }
+      .bandeau {
+        position: fixed; inset: 0 auto 0 0; width: 260px; padding: 22px 14px 16px;
+        display: flex; flex-direction: column; overflow-y: auto;
+      }
+      .bandeau .marque .rond { display: none; }        /* les boutons passent dans la barre d'outils */
+      .sujets { flex-direction: column; overflow: visible; gap: 2px; margin-top: 22px; }
+      .sujet { width: 100%; border-radius: 10px; padding: 10px 12px; background: transparent; justify-content: space-between; font-size: 15px; }
+      .sujet:hover { background: rgba(255,255,255,.1); }
+      .sujet[aria-current="true"] { background: rgba(255,255,255,.95); }
+      .sujet.ajout { justify-content: flex-start; border: 1px dashed rgba(255,255,255,.35); margin-top: 8px; }
+      .pied-nav { display: flex; flex-direction: column; gap: 2px; margin-top: auto; padding-top: 16px; }
+      .pied-nav button { text-align: left; border: 0; background: none; color: #cfe2fb; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+      .pied-nav button:hover { background: rgba(255,255,255,.1); color: #fff; }
+
+      /* La barre d'outils reste collée en haut de l'écran pendant le défilement */
+      .outils {
+        position: sticky; top: 0; z-index: 20; flex-wrap: nowrap; padding: 12px 0;
+        background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px);
+      }
+      .recherche { flex: 1 1 auto; max-width: 460px; }
+      .recherche kbd { display: inline; }
+      .bureau { display: inline-flex; }
+      .principal { max-width: 1240px; }
       .cartes { grid-template-columns: repeat(2, 1fr); }
+
+      /* La fiche devient un panneau à droite, sur toute la hauteur */
+      dialog#fiche { margin: 0 0 0 auto; height: 100vh; max-height: 100vh; width: 560px; max-width: 92vw; border-radius: 0; }
+      dialog#fiche[open] { animation: panneau .2s ease; }
+      dialog#fiche::backdrop { background: rgba(0, 20, 45, .25); }
+      @keyframes panneau { from { transform: translateX(40px); opacity: 0; } }
+      #fiche .feuille { padding: 20px 28px 28px; }
     }
-    @media (min-width: 760px) {
-      dialog#fiche { margin: auto; border-radius: 22px; max-height: 86vh; }
-      .poignee { display: none; }
-    }
-    @media (min-width: 1100px) {
+    @media (min-width: 1500px) {
       .cartes { grid-template-columns: repeat(3, 1fr); }
     }
   </style>
 </head>
 <body>
+  <!-- ===================== BANDEAU / COLONNE DES SUJETS ===================== -->
   <header class="bandeau">
-    <div class="bandeau-in">
-      <div class="titre">
-        <h1>Veille <span id="sujet"></span><small>Achats Non Marchands · NTP</small></h1>
-        <button class="btn-rond" id="vue" title="Vue compacte / cartes" aria-label="Changer de vue">
-          <!-- picto rows-3 (Lucide, ISC) : vue en lignes -->
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M21 9H3"/><path d="M21 15H3"/></svg>
-        </button>
-        <button class="btn-rond" id="actualiser" title="Actualiser" aria-label="Actualiser">
-          <!-- picto refresh-cw (Lucide, ISC) -->
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
-        </button>
-      </div>
-      <nav class="sujets" id="sujets" role="tablist" aria-label="Sujets suivis" hidden></nav>
+    <div class="marque">
+      <h1>Veille <span id="titre-sujet"></span><small>Achats Non Marchands · NTP</small></h1>
+      <button class="rond btn-vue" title="Vue compacte / cartes" aria-label="Changer de vue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M21 9H3"/><path d="M21 15H3"/></svg>
+      </button>
+      <button class="rond btn-actu" title="Actualiser" aria-label="Actualiser">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+      </button>
+    </div>
+    <nav class="sujets" id="sujets" aria-label="Sujets suivis"></nav>
+    <div class="pied-nav">
+      <button data-ouvrir="filtres">⚙️ Filtres et réglages</button>
+      <button data-ouvrir="clavier">⌨️ Raccourcis clavier <kbd>?</kbd></button>
     </div>
   </header>
-  <div class="page">
+
+  <!-- ===================== CONTENU ===================== -->
+  <div class="principal">
     <div class="outils">
-      <p class="statut" id="statut">Chargement…</p>
       <label class="recherche">
-        <!-- picto search -->
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <input id="cherche" type="search" placeholder="Chercher (ex. « drive », « Bompard »)" autocomplete="off">
+        <input id="cherche" type="search" placeholder="Chercher dans les articles" autocomplete="off">
+        <kbd>/</kbd>
       </label>
-      <div class="filtres" id="filtres" role="toolbar" aria-label="Filtrer par site"></div>
+      <div class="segments" id="segments" role="group" aria-label="Afficher">
+        <button data-vue="tout">Tout</button>
+        <button data-vue="nonlus">Non lus <span class="nb" id="nb-nonlus"></span></button>
+        <button data-vue="favoris">⭐ <span class="nb" id="nb-favoris"></span></button>
+      </div>
+      <button class="btn" data-ouvrir="filtres" title="Filtres et réglages">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></svg>
+        Filtres <span class="pastille" id="nb-filtres" hidden></span>
+      </button>
+      <button class="btn bureau btn-vue" title="Vue compacte / cartes (touche c)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M21 9H3"/><path d="M21 15H3"/></svg>
+      </button>
+      <button class="btn bureau btn-actu" title="Actualiser (touche r)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+      </button>
     </div>
-
-    <main id="liste"></main>
-
-    <details class="reglages" id="reglages">
-      <summary>Sources et réglages</summary>
-      <ul id="liste-sources"></ul>
-      <p>Les articles sont collectés automatiquement toutes les 2 heures, de 6 h à 22 h.
-         Pour lancer une collecte tout de suite : <a href="https://github.com/svaug12345/svaug12345.github.io/actions/workflows/veille.yml" target="_blank" rel="noopener">GitHub → Run workflow</a>.</p>
-      <p id="aide-avis"></p>
-      <!-- Mots réglés par le lecteur, pour le sujet affiché (séparés par des virgules) -->
-      <label class="reglage-mots">🔕 Mots masqués <span id="mots-sujet-1"></span>
-        <input id="mots-masques" placeholder="ex. bourse, jour férié, Boursorama" autocomplete="off"></label>
-      <label class="reglage-mots">🔔 Mots surveillés <span id="mots-sujet-2"></span>
-        <input id="mots-suivis" placeholder="ex. Bompard, drive, franchise" autocomplete="off"></label>
-      <p>Ajouter un sujet ou un site : <a href="https://github.com/svaug12345/svaug12345.github.io/edit/main/veille/sources.json" target="_blank" rel="noopener">modifier sources.json</a>.</p>
-      <p>« Autres médias » cherche Carrefour dans toute la presse : la pastille grise donne le nom du journal.
-         Un article de LSA, Linéaires ou Dauvers trouvé par cette recherche est rangé sous son site.</p>
-      <p>🔒 = journal qui réserve souvent ses articles aux abonnés (LSA, Les Echos, l'Informé…).
-         C'est une indication par journal : certains articles restent gratuits.</p>
-      <p>LSA et Linéaires passent par Google Actualités : un lien ouvre d'abord une page Google, qui renvoie vers l'article. Certains articles sont réservés aux abonnés.</p>
-    </details>
-
+    <p class="statut" id="statut"></p>
+    <div class="puces" id="puces"></div>
+    <main id="liste"><div class="squelette"></div><div class="squelette"></div><div class="squelette"></div></main>
     <footer>Veille · <span id="version"></span> · baiji.fr</footer>
   </div>
-  <!-- Fiche d'un article (remplie par ouvrirFiche) -->
-  <dialog id="fiche" aria-label="Détail de l'article"><div class="fiche-in" id="fiche-in"></div></dialog>
+
+  <!-- ===================== FEUILLES ===================== -->
+  <!-- Fiche d'un article (remplie par remplirFiche) -->
+  <dialog id="fiche" aria-label="Article"><div class="feuille" id="fiche-in"></div></dialog>
+
+  <!-- Filtres et réglages du sujet affiché -->
+  <dialog id="filtres" aria-label="Filtres et réglages">
+    <div class="feuille">
+      <div class="poignee"></div>
+      <div class="tete"><h2>Filtres et réglages</h2><button class="fermer" data-fermer aria-label="Fermer">✕</button></div>
+      <h3>Journaux</h3>
+      <div class="choix" id="choix-sources"></div>
+      <h3>Affichage</h3>
+      <label class="interrupteur"><span>🎯 Sujet dans le titre<small>Masque les articles qui ne citent le sujet qu'en passant</small></span><input type="checkbox" id="opt-titre"></label>
+      <label class="interrupteur"><span>✨ Filtre appris<small>Masque ce qui ressemble aux articles jugés 👎 (dès 5 votes)</small></span><input type="checkbox" id="opt-appris"></label>
+      <label class="interrupteur"><span>🙈 Montrer les articles masqués<small id="opt-masques-aide"></small></span><input type="checkbox" id="opt-masques"></label>
+      <h3>Mots <span id="mots-sujet"></span></h3>
+      <label class="champ-titre" for="mots-suivis">🔔 Mots surveillés (surlignés)</label>
+      <input class="champ" id="mots-suivis" placeholder="ex. Bompard, drive, franchise" autocomplete="off">
+      <label class="champ-titre" for="mots-masques">🔕 Mots masqués</label>
+      <input class="champ" id="mots-masques" placeholder="ex. bourse, jour férié, Boursorama" autocomplete="off">
+      <p class="aide">Séparés par des virgules ; enregistrés en quittant la case.</p>
+      <h3>À propos</h3>
+      <p class="aide" id="aide-avis"></p>
+      <p class="aide">🔒 = journal qui réserve souvent ses articles aux abonnés (indication par journal).</p>
+      <p class="aide">Gestes : glisser un article → ⭐ favori, ← 👎 masquer. Dans la fiche, glisser pour passer d'un article à l'autre.</p>
+      <p class="aide" id="aide-robot"></p>
+    </div>
+  </dialog>
+
+  <!-- Suivre un sujet (sujets perso) -->
+  <dialog id="ajout" aria-label="Suivre un sujet">
+    <div class="feuille">
+      <div class="poignee"></div>
+      <div class="tete"><h2>Suivre un sujet</h2><button class="fermer" data-fermer aria-label="Fermer">✕</button></div>
+      <p class="aide">Un fournisseur, un concurrent, un thème… L'appli cherche dans toute la presse (Google Actualités).</p>
+      <form id="form-ajout">
+        <label class="champ-titre" for="ajout-nom">Nom</label>
+        <input class="champ" id="ajout-nom" placeholder="ex. Elis, Sodexo, prix de l'électricité" autocomplete="off" required>
+        <label class="champ-titre" for="ajout-precis">Préciser (facultatif)</label>
+        <input class="champ" id="ajout-precis" placeholder="ex. blanchisserie, linge, vêtements de travail" autocomplete="off">
+        <p class="aide">Un article est gardé s'il contient le nom ET l'un de ces mots. Utile quand le nom est ambigu.</p>
+        <div class="choix" id="suggestions"></div>
+        <button class="principal-btn" type="submit">Suivre</button>
+      </form>
+      <div class="encadre" id="ajout-script" hidden></div>
+      <h3>Mes sujets</h3>
+      <ul class="mes-sujets" id="mes-sujets"></ul>
+    </div>
+  </dialog>
+
+  <!-- Raccourcis clavier (ordinateur) -->
+  <dialog id="clavier" aria-label="Raccourcis clavier">
+    <div class="feuille">
+      <div class="tete"><h2>Raccourcis clavier</h2><button class="fermer" data-fermer aria-label="Fermer">✕</button></div>
+      <table class="raccourcis">
+        <tr><td><kbd>j</kbd> <kbd>k</kbd></td><td>Article suivant / précédent</td></tr>
+        <tr><td><kbd>Entrée</kbd> <kbd>o</kbd></td><td>Ouvrir la fiche</td></tr>
+        <tr><td><kbd>v</kbd></td><td>Lire l'article sur le site du journal</td></tr>
+        <tr><td><kbd>s</kbd></td><td>⭐ Favori</td></tr>
+        <tr><td><kbd>x</kbd></td><td>👎 Pas pertinent (masquer)</td></tr>
+        <tr><td><kbd>+</kbd></td><td>👍 Pertinent</td></tr>
+        <tr><td><kbd>m</kbd></td><td>Lu / non lu</td></tr>
+        <tr><td><kbd>⇧</kbd> <kbd>a</kbd></td><td>Tout marquer lu</td></tr>
+        <tr><td><kbd>/</kbd></td><td>Chercher</td></tr>
+        <tr><td><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></td><td>Tout / Non lus / Favoris</td></tr>
+        <tr><td><kbd>c</kbd></td><td>Vue compacte / cartes</td></tr>
+        <tr><td><kbd>r</kbd></td><td>Actualiser</td></tr>
+        <tr><td><kbd>Échap</kbd></td><td>Fermer</td></tr>
+      </table>
+    </div>
+  </dialog>
+
   <div id="toast" hidden></div>
 
   <script>
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = "2.4.0";
+    const VERSION = "3.0.0";
 
-    // Où lire les données. D'abord la copie « brute » du dépôt GitHub :
-    // elle est à jour 1 à 5 min après chaque collecte, sans attendre que
-    // GitHub Pages republie tout le site. Si elle ne répond pas, le site lui-même.
+    // Sujets communs (robot) : d'abord la copie « brute » du dépôt GitHub (à jour 1 à 5 min
+    // après chaque collecte), sinon les fichiers du site
     const BASES_DONNEES = [
       "https://raw.githubusercontent.com/svaug12345/svaug12345.github.io/main/veille/donnees/",
       "donnees/"
     ];
-    const PAR_PAGE = 60;            // articles affichés avant le bouton « Voir plus »
+    const PAR_PAGE = 60;            // articles affichés avant « Voir plus »
+    const JOURS_GARDES = 60;        // sujets perso : articles gardés dans le téléphone
 
     // Adresse /exec du script Google « Veille - avis » (outils/veille-avis.gs).
-    // Vide = les votes restent dans ce téléphone (l'apprentissage marche quand même,
-    // mais seulement avec ses propres votes).
+    // Il sert aux avis partagés ET aux sujets perso. Vide = votes gardés dans le
+    // téléphone, et pas de sujets perso.
     const AVIS_URL = "";
 
-    // Apprentissage : un article est masqué par le filtre si sa note est sous ce seuil,
-    // et seulement une fois qu'il y a assez de votes pour que la note veuille dire quelque chose.
-    // Journaux dont la plupart des articles sont réservés aux abonnés : un 🔒 l'indique.
-    // On ne peut pas le savoir article par article (Google Actualités ne le dit pas) : c'est
-    // une indication par journal. Ajouter ici un id de source (ex. "lsa") ou un nom de journal
-    // tel qu'il s'affiche (ex. "Les Echos"), sans se soucier des majuscules ni des accents.
-    const PAYANTS = ["lsa", "lineaires", "les echos", "le monde", "le figaro", "l'informe", "challenges",
-      "l'opinion", "la lettre", "mediapart", "l'usine nouvelle", "la tribune", "investir", "le point", "l'express"];
-    const estPayant = (a) => PAYANTS.includes(simple(a.media || "")) || PAYANTS.includes(a.source);
-
+    // Apprentissage : seuil sous lequel un article est masqué, et nombre de votes minimum
     const SEUIL_MASQUE = -1.5;
     const VOTES_MINI = 5;
+    const SEUIL_GLISSE = 90;        // pixels à glisser pour déclencher ⭐ / 👎
+
+    // Journaux dont la plupart des articles sont réservés aux abonnés (🔒). Id de source
+    // ou nom de journal, sans se soucier des majuscules ni des accents.
+    const PAYANTS = ["lsa", "lineaires", "les echos", "le monde", "le figaro", "l'informe", "challenges",
+      "l'opinion", "la lettre", "mediapart", "l'usine nouvelle", "la tribune", "investir", "le point", "l'express"];
+
+    // Suggestions dans « Suivre un sujet » : grands fournisseurs des achats non marchands
+    const SUGGESTIONS = ["Elis", "Sodexo", "Onet", "Securitas", "Engie", "EDF", "Orange Business", "Manpower", "Dalkia", "Veolia"];
 
     // Clés de stockage dans le téléphone (localStorage)
     const CLE = {
-      cache: "veille.cache.",       // + id du sujet : derniers articles reçus (hors-ligne)
-      index: "veille.index",        // liste des sujets (hors-ligne)
-      sujet: "veille.sujet",        // onglet choisi
+      cache: "veille.cache.",       // + id du sujet : derniers articles (hors-ligne)
+      index: "veille.index",        // liste des sujets communs (hors-ligne)
+      perso: "veille.perso",        // mes sujets perso [{id, nom, precis}]
+      sujet: "veille.sujet",        // sujet affiché
       lus: "veille.lus",            // identifiants des articles ouverts
       favoris: "veille.favoris",    // identifiants des favoris
       visite: "veille.visite.",     // + id du sujet : date de la dernière visite
-      filtre: "veille.filtre",      // dernier filtre de site choisi
-      titre: "veille.titre",        // pastille « 🎯 Dans le titre »
-      appris: "veille.appris",      // pastille « ✨ Filtre appris »
-      mesAvis: "veille.avis",       // mes votes {sujet: {idArticle: {vote, titre, media}}}
-      cleAvis: "veille.cle",        // clé du script des avis (donnée par ?cle=)
-      qui: "veille.qui",            // identifiant anonyme de ce téléphone (pour les votes)
-      nonLus: "veille.nonlus",      // pastille « Non lus »
-      compact: "veille.compact",    // vue compacte (une ligne par article)
-      mots: "veille.mots"           // {sujet: {masques: [...], suivis: [...]}} mots réglés par le lecteur
+      vue: "veille.vue",            // "tout" | "nonlus" | "favoris"
+      titre: "veille.titre",        // 🎯 sujet dans le titre
+      appris: "veille.appris",      // ✨ filtre appris
+      mesAvis: "veille.avis",       // mes votes {sujet: {id: {vote, titre, media}}}
+      cleAvis: "veille.cle",        // clé du script (donnée par ?cle=)
+      qui: "veille.qui",            // identifiant anonyme de ce téléphone (votes)
+      compact: "veille.compact",    // vue compacte
+      mots: "veille.mots",          // {sujet: {masques: [...], suivis: [...]}}
+      astuce: "veille.astuce-v3"    // astuce des gestes déjà montrée
     };
 
     /* =========================================================
        PETITS OUTILS
        ========================================================= */
     const $ = (s) => document.querySelector(s);
+    const $$ = (s) => [...document.querySelectorAll(s)];
 
     // Lecture / écriture prudentes du localStorage (il peut être plein ou interdit)
     function lire(cle, defaut) {
@@ -494,15 +611,23 @@
       try { localStorage.setItem(cle, JSON.stringify(valeur)); } catch { /* tant pis */ }
     }
 
-    // Protège un texte avant de le mettre dans du HTML (évite qu'un titre
-    // contenant « < » casse la page ou injecte du code)
+    // Protège un texte avant de le mettre dans du HTML
     const echap = (t) => String(t ?? "").replace(/[&<>"']/g, (c) =>
       ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-    // Texte « aplati » pour chercher sans se soucier des accents ni des majuscules
+    // Texte « aplati » : minuscules, sans accents
     const simple = (t) => String(t || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
-    // « il y a 25 min », « il y a 3 h », « il y a 2 j »
+    // « Elis » → « elis », « Prix de l'électricité » → « prix-de-l-electricite »
+    const slug = (t) => simple(t).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "sujet";
+
+    // Petite empreinte d'un texte (FNV-1a 32 bits) : identifiant stable d'un article perso
+    function empreinte(t) {
+      let h = 0x811c9dc5;
+      for (const c of t) { h ^= c.codePointAt(0); h = Math.imul(h, 0x01000193) >>> 0; }
+      return h.toString(36);
+    }
+
     function ilYa(date) {
       const min = Math.round((Date.now() - date) / 60000);
       if (min < 1) return "à l'instant";
@@ -511,11 +636,10 @@
       return `il y a ${Math.round(min / 1440)} j`;
     }
 
-    // Titre d'un groupe : « Aujourd'hui », « Hier », sinon « mardi 10 novembre »
     const FORMAT_JOUR = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Paris" });
     const FORMAT_HEURE = new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" });
-    // Clé de jour à l'heure de Paris (AAAA-MM-JJ), pour grouper
-    const cleJour = (d) => d.toLocaleDateString("sv-SE", { timeZone: "Europe/Paris" });
+    const FORMAT_LONG = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" });
+    const cleJour = (d) => d.toLocaleDateString("sv-SE", { timeZone: "Europe/Paris" });   // AAAA-MM-JJ
     function nomDuJour(d) {
       const k = cleJour(d);
       if (k === cleJour(new Date())) return "Aujourd'hui";
@@ -523,10 +647,11 @@
       return FORMAT_JOUR.format(d);
     }
 
+    // Petit message en bas de l'écran, avec un bouton facultatif (« Annuler »)
     let minuteurToast;
     function toast(msg, action) {
       const t = $("#toast");
-      t.innerHTML = echap(msg) + (action ? ` <button id="toast-action" style="margin-left:10px;border:0;background:none;color:#9cc9ff;font:800 13px var(--police);cursor:pointer">${echap(action.texte)}</button>` : "");
+      t.innerHTML = `<span>${echap(msg)}</span>` + (action ? `<button id="toast-action">${echap(action.texte)}</button>` : "");
       t.hidden = false;
       if (action) $("#toast-action").onclick = () => { t.hidden = true; action.faire(); };
       clearTimeout(minuteurToast);
@@ -541,56 +666,61 @@
     const PICTO_PARTAGE = SVG(`<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98"/><path d="m15.41 6.51-6.82 3.98"/>`);
     const PICTO_OUI = SVG(`<path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/>`);
     const PICTO_NON = SVG(`<path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"/>`);
+    const PICTO_LIEN = SVG(`<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>`);
 
     /* =========================================================
        ÉTAT DE L'APPLI
        ========================================================= */
-    let index = null;                           // liste des sujets (donnees/index.json)
-    let sujetId = lire(CLE.sujet, null);        // onglet affiché
-    let donnees = null;                         // contenu de donnees/<sujet>.json
-    let sources = {};                           // id → {nom, court, couleur…}
+    let index = lire(CLE.index, null);          // sujets communs (donnees/index.json)
+    let perso = lire(CLE.perso, []);            // mes sujets perso
+    let sujetId = lire(CLE.sujet, "carrefour");
+    let donnees = null;                         // articles du sujet affiché (même forme pour tous)
+    let sources = {};                           // id de source → {nom, court, couleur…}
     let lus = new Set(lire(CLE.lus, []));
     let favoris = new Set(lire(CLE.favoris, []));
-    let filtre = "tout";                        // "tout", "favoris" ou l'id d'une source
-    let dansLeTitre = lire(CLE.titre, true);    // true = seulement le sujet dans le titre
-    let filtreAppris = lire(CLE.appris, true);  // true = masquer les articles mal notés
-    let voirMasques = false;                    // le lecteur a demandé à voir les masqués
-    let seulementNonLus = lire(CLE.nonLus, false);
+    let vue = lire(CLE.vue, "tout");            // "tout" | "nonlus" | "favoris"
+    let filtreSource = "tout";                  // un journal en particulier
+    let filtreSuivis = false;                   // seulement les articles avec un mot surveillé
+    let dansLeTitre = lire(CLE.titre, true);
+    let filtreAppris = lire(CLE.appris, true);
+    let voirMasques = false;
     let compact = lire(CLE.compact, false);
-    let mots = lire(CLE.mots, {});              // mots masqués / surveillés, par sujet
-    const motsDu = (type) => mots[sujetId]?.[type] || [];
     let recherche = "";
     let combien = PAR_PAGE;
-    let visitePrecedente = null;                // pour savoir ce qui est « nouveau »
+    let visitePrecedente = null;
+    let choisi = null;                          // article sélectionné au clavier (id)
+    let mots = lire(CLE.mots, {});
+    let mesAvis = lire(CLE.mesAvis, {});
+    let avisCommuns = [];
+    let modele = { oui: {}, non: {}, parArticle: {}, nbVotes: 0 };
 
-    // Avis : les miens (toujours dans le téléphone) et ceux de tout le monde (script Google)
-    let mesAvis = lire(CLE.mesAvis, {});        // {sujet: {id: {vote, titre, media}}}
-    let avisCommuns = [];                       // [{id, titre, media, vote, qui}] du sujet affiché
-    let modele = null;                          // ce que l'appli a appris (voir apprendre())
-
-    // Identifiant anonyme de ce téléphone : sert au script pour qu'un lecteur n'ait
-    // qu'UN vote par article (un nouveau vote remplace l'ancien). Rien de personnel.
+    // Identifiant anonyme du téléphone : un seul vote par lecteur et par article
     let qui = lire(CLE.qui, null);
     if (!qui) { qui = Math.random().toString(36).slice(2, 12); ecrire(CLE.qui, qui); }
 
-    // ?cle=… dans l'adresse (lien envoyé par Seb) : on garde la clé, puis on l'efface de l'adresse
-    // (?sujet=elis ouvre directement un onglet)
+    // ?cle=… (lien envoyé par Seb) et ?sujet=… dans l'adresse
     (function lireAdresse() {
       const p = new URLSearchParams(location.search);
       if (p.get("cle")) ecrire(CLE.cleAvis, p.get("cle"));
       if (p.get("sujet")) sujetId = p.get("sujet");
       if (p.has("cle") || p.has("sujet")) history.replaceState(null, "", location.pathname);
     })();
-    const partage = () => AVIS_URL !== "" && lire(CLE.cleAvis, "") !== "";
+    const scriptBranche = () => AVIS_URL !== "" && lire(CLE.cleAvis, "") !== "";
+    const motsDu = (type) => mots[sujetId]?.[type] || [];
+
+    // Tous les sujets, communs puis perso, sous une même forme
+    function tousLesSujets() {
+      const communs = (index?.sujets || []).map((s) => ({ ...s, type: "commun" }));
+      return [...communs, ...perso.map((s) => ({ ...s, type: "perso" }))];
+    }
+    const sujetCourant = () => tousLesSujets().find((s) => s.id === sujetId);
 
     /* =========================================================
        CHARGEMENT
        ========================================================= */
-    // Télécharge un fichier de données en essayant les adresses l'une après l'autre
     async function telecharger(nom) {
       for (const base of BASES_DONNEES) {
         try {
-          // « ?t=… » change à chaque fois : on évite ainsi une vieille copie en cache
           const r = await fetch(base + nom + "?t=" + Date.now(), { cache: "no-store" });
           if (r.ok) return await r.json();
         } catch (e) { console.warn("Veille : échec de", base + nom, e); }
@@ -598,117 +728,110 @@
       return null;
     }
 
-    // 1) la liste des sujets, puis 2) le sujet choisi
     async function charger() {
-      $("#actualiser").classList.add("tourne");
+      $$(".btn-actu").forEach((b) => b.classList.add("tourne"));
       const recu = await telecharger("index.json");
       if (recu) { index = recu; ecrire(CLE.index, recu); }
-      else index = lire(CLE.index, null);
-      if (!index || !index.sujets?.length) {
-        $("#actualiser").classList.remove("tourne");
-        $("#statut").textContent = "Impossible de charger la veille.";
-        $("#liste").innerHTML = `<p class="vide"><span class="gros">📡</span>Pas de connexion, et rien en mémoire.<br>Réessaie avec le bouton ⟳.</p>`;
-        return;
-      }
-      if (!index.sujets.some((s) => s.id === sujetId)) sujetId = index.sujets[0].id;
-      afficherOnglets();
+      if (!tousLesSujets().some((s) => s.id === sujetId)) sujetId = tousLesSujets()[0]?.id || "carrefour";
+      afficherSujets();
       await chargerSujet();
-      $("#actualiser").classList.remove("tourne");
+      $$(".btn-actu").forEach((b) => b.classList.remove("tourne"));
     }
 
     async function chargerSujet() {
       ecrire(CLE.sujet, sujetId);
-      const recu = await telecharger(sujetId + ".json");
+      const s = sujetCourant();
+      if (!s) return;
+      if (!donnees || donnees.id !== sujetId) {
+        $("#liste").innerHTML = `<div class="squelette"></div><div class="squelette"></div><div class="squelette"></div>`;
+      }
+      let recu = s.type === "perso" ? await chargerPerso(s) : await telecharger(sujetId + ".json");
       if (recu) { donnees = recu; ecrire(CLE.cache + sujetId, recu); }
       else {
-        donnees = lire(CLE.cache + sujetId, null);   // hors ligne : la dernière copie du téléphone
-        if (donnees) toast("Hors ligne : derniers articles connus");
+        donnees = lire(CLE.cache + sujetId, null);
+        if (donnees && navigator.onLine === false) toast("Hors ligne : derniers articles connus");
       }
-      if (!donnees) {
-        $("#liste").innerHTML = `<p class="vide"><span class="gros">⏳</span>Ce sujet n'a pas encore été collecté.</p>`;
-        return;
-      }
-      // Date de la visite PRÉCÉDENTE de ce sujet : tout ce que le robot a trouvé depuis
-      // est « nouveau ». On enregistre la visite d'aujourd'hui pour la prochaine fois.
+      if (!donnees) donnees = { id: sujetId, nom: s.nom, mots_cles: [s.nom], sources: [], articles: [], attente: s.type === "perso" };
+
       visitePrecedente = lire(CLE.visite + sujetId, null);
       ecrire(CLE.visite + sujetId, new Date().toISOString());
-
-      sources = Object.fromEntries((donnees.sources || []).map((s) => [s.id, s]));
-      if (filtre !== "tout" && filtre !== "favoris" && !sources[filtre]) filtre = "tout";
-      $("#sujet").textContent = donnees.nom || "";
-      document.title = "Veille " + (donnees.nom || "");
-      combien = PAR_PAGE; voirMasques = false;
-      apprendre();                         // d'abord avec les votes du téléphone…
+      sources = Object.fromEntries((donnees.sources || []).map((x) => [x.id, x]));
+      if (filtreSource !== "tout" && !sources[filtreSource]) filtreSource = "tout";
+      $("#titre-sujet").textContent = donnees.nom || s.nom;
+      document.title = "Veille " + (donnees.nom || s.nom);
+      combien = PAR_PAGE; voirMasques = false; choisi = null;
+      apprendre();
       toutAfficher();
-      chargerAvisCommuns();                // …puis avec ceux de tout le monde, dès qu'ils arrivent
+      chargerAvisCommuns();
+    }
+
+    // Sujet perso : recherche Google Actualités par le script, puis fusion avec les
+    // articles déjà connus du téléphone (pour garder leur date de découverte et l'historique)
+    async function chargerPerso(s) {
+      if (!scriptBranche()) return null;
+      const q = `"${s.nom}"` + (s.precis ? " (" + s.precis.split(",").map((m) => m.trim()).filter(Boolean)
+        .map((m) => (m.includes(" ") ? `"${m}"` : m)).join(" OR ") + ")" : "");
+      try {
+        const r = await fetch(`${AVIS_URL}?action=flux&cle=${encodeURIComponent(lire(CLE.cleAvis, ""))}&q=${encodeURIComponent(q)}`);
+        const j = await r.json();
+        if (!j.ok) { toast("Recherche : " + (j.erreur || "erreur")); return null; }
+        const avant = lire(CLE.cache + s.id, null);
+        const connus = new Map((avant?.articles || []).map((a) => [a.id, a]));
+        const maintenant = new Date().toISOString(), limite = Date.now() - JOURS_GARDES * 864e5;
+        for (const x of j.articles) {
+          const id = "p" + empreinte(simple(x.titre).replace(/[^a-z0-9]/g, ""));
+          if (!connus.has(id)) connus.set(id, { id, titre: x.titre, lien: x.lien, source: "presse", media: x.media, date: x.date, vu_le: maintenant, resume: "" });
+        }
+        const articles = [...connus.values()].filter((a) => new Date(a.date) >= limite).sort((a, b) => b.date.localeCompare(a.date));
+        return {
+          id: s.id, nom: s.nom, mots_cles: [s.nom], maj: maintenant, perso: true,
+          sources: [{ id: "presse", nom: "Presse", court: "Presse", couleur: "#5d6b7a", autres: true, ok: true }],
+          articles
+        };
+      } catch (e) {
+        console.warn("Veille : sujet perso", e);
+        return null;
+      }
     }
 
     /* =========================================================
-       AVIS ET APPRENTISSAGE
-       ---------------------------------------------------------
-       Principe (une version simple de ce qu'on appelle un « classifieur
-       bayésien naïf ») :
-        • chaque article voté est découpé en « indices » : les mots de son
-          titre (sans accents, 3 lettres ou plus, sans les petits mots comme
-          « pour ») et le nom de son journal ;
-        • pour chaque indice, on compte combien de fois il apparaît dans des
-          articles 👍 et dans des articles 👎 ;
-        • la note d'un NOUVEL article = somme, sur ses indices déjà vus, de
-          log((👍 + 1) / (👎 + 1)). Un mot souvent rejeté fait baisser la note,
-          un mot souvent apprécié la fait monter ; les mots jamais vus ne
-          comptent pas. Le « + 1 » évite de diviser par zéro.
-       Plus il y a de votes, plus les notes sont justes.
+       AVIS ET APPRENTISSAGE (classifieur bayésien naïf)
+       Chaque article voté est découpé en « indices » (mots du titre + journal) ;
+       on compte combien de fois chaque indice apparaît dans des articles 👍 et 👎.
+       Note d'un article = Σ log((👍 + 1) / (👎 + 1)) sur ses indices déjà vus.
        ========================================================= */
     const MOTS_VIDES = new Set(("les des une pour par sur avec dans aux est son ses qui que quoi mais plus ont pas "
       + "cette ces leur leurs elle ils sont été comme tout tous fait faire entre vers chez sans sous après avant "
       + "deux trois depuis encore aussi bien très nouveau nouvelle nouvelles quand dont the and").split(" "));
 
     function indices(titre, media) {
-      const mots = simple(titre).split(/[^a-z0-9]+/).filter((m) => m.length >= 3 && !MOTS_VIDES.has(m));
-      const liste = [...new Set(mots)];
+      const liste = [...new Set(simple(titre).split(/[^a-z0-9]+/).filter((m) => m.length >= 3 && !MOTS_VIDES.has(m)))];
       if (media) liste.push("journal:" + simple(media));
       return liste;
     }
-
-    // Tous les votes du sujet affiché : ceux de tout le monde + les miens
-    // (les miens d'abord en local, pour qu'un vote compte tout de suite, même hors ligne)
     function tousLesVotes() {
-      const miens = mesAvis[sujetId] || {};
       const liste = avisCommuns.filter((a) => a.qui !== qui);
-      for (const [id, a] of Object.entries(miens)) liste.push({ id, titre: a.titre, media: a.media, vote: a.vote, qui });
+      for (const [id, a] of Object.entries(mesAvis[sujetId] || {})) liste.push({ id, titre: a.titre, media: a.media, vote: a.vote, qui });
       return liste;
     }
-
     function apprendre() {
+      const oui = {}, non = {}, parArticle = {};
       const votes = tousLesVotes();
-      const oui = {}, non = {};               // indice → nombre de 👍 / de 👎
-      const parArticle = {};                  // id → somme des votes (+1 / -1)
       for (const v of votes) {
         parArticle[v.id] = (parArticle[v.id] || 0) + v.vote;
-        for (const i of indices(v.titre, v.media)) {
-          if (v.vote > 0) oui[i] = (oui[i] || 0) + 1;
-          else non[i] = (non[i] || 0) + 1;
-        }
+        for (const i of indices(v.titre, v.media)) (v.vote > 0 ? oui : non)[i] = ((v.vote > 0 ? oui : non)[i] || 0) + 1;
       }
       modele = { oui, non, parArticle, nbVotes: votes.length };
     }
-
-    // Note d'un article (0 = neutre) ; « vus » = indices qui ont compté, pour l'expliquer
     function noter(a) {
       let note = 0;
       for (const i of indices(a.titre, a.media)) {
         const o = modele.oui[i] || 0, n = modele.non[i] || 0;
-        if (o + n === 0) continue;            // jamais vu : ne compte pas
-        note += Math.log((o + 1) / (n + 1));
+        if (o + n) note += Math.log((o + 1) / (n + 1));
       }
       return note;
     }
-
-    // Statut d'un article vis-à-vis des avis :
-    //  "rejete" = au moins autant de 👎 que de 👍 sur CET article → toujours masqué
-    //  "aime"   = plus de 👍 que de 👎 → toujours montré
-    //  "masque" = pas de vote, mais note trop basse (filtre appris)
-    //  ""       = rien de spécial
+    // "rejete" (plus de 👎 que de 👍), "aime", "masque" (filtre appris) ou ""
     function statut(a) {
       const v = modele.parArticle[a.id];
       if (v !== undefined && v <= 0) return "rejete";
@@ -717,22 +840,20 @@
       return "";
     }
 
-    // Votes de tout le monde, lus dans le script Google (si réglé)
     async function chargerAvisCommuns() {
-      if (!partage()) return;
+      if (!scriptBranche()) return;
       const sujet = sujetId;
       try {
         const r = await fetch(`${AVIS_URL}?cle=${encodeURIComponent(lire(CLE.cleAvis, ""))}&sujet=${encodeURIComponent(sujet)}`);
         const j = await r.json();
-        if (!j.ok) { toast("Avis : " + (j.erreur || "erreur")); return; }
-        if (sujet !== sujetId) return;        // on a changé d'onglet entre-temps
+        if (!j.ok || sujet !== sujetId) return;
         avisCommuns = j.avis || [];
         apprendre();
         toutAfficher();
       } catch (e) { console.warn("Veille : avis indisponibles", e); }
     }
 
-    // Mon vote : +1, -1, ou 0 (je retire mon vote en retouchant le même bouton)
+    // Mon vote : +1, -1, ou 0 (retirer)
     function voter(a, vote) {
       const miens = (mesAvis[sujetId] ||= {});
       if (vote === 0) delete miens[a.id];
@@ -740,145 +861,48 @@
       ecrire(CLE.mesAvis, mesAvis);
       apprendre();
       toutAfficher();
-      if (partage()) {
-        // « text/plain » : le navigateur n'a pas besoin de demander la permission au script
-        // avant d'envoyer (pas de pré-requête CORS), c'est ce que Google Apps Script accepte.
+      if (scriptBranche()) {
+        // « text/plain » : pas de pré-requête CORS, c'est ce que Google Apps Script accepte
         fetch(AVIS_URL, { method: "POST", headers: { "Content-Type": "text/plain" },
-          body: JSON.stringify({ cle: lire(CLE.cleAvis, ""), sujet: sujetId, id: a.id, titre: a.titre,
-                                 media: miens[a.id]?.media || "", vote, qui }) })
+          body: JSON.stringify({ cle: lire(CLE.cleAvis, ""), sujet: sujetId, id: a.id, titre: a.titre, media: miens[a.id]?.media || "", vote, qui }) })
           .catch(() => toast("Avis gardé dans le téléphone (envoi impossible)"));
       }
     }
 
     /* =========================================================
-       AFFICHAGE
+       FILTRES
        ========================================================= */
-    function toutAfficher() {
-      document.body.classList.toggle("compact", compact);
-      afficherOnglets(); afficherStatut(); afficherFiltres(); afficherListe(); afficherSources();
-    }
-
-    // Les onglets des sujets (cachés s'il n'y en a qu'un)
-    // Le nombre affiché = articles NON LUS, comme dans Feedly (calculé avec les articles
-    // gardés dans le téléphone ; pour un sujet jamais ouvert, le nombre total d'articles)
-    function afficherOnglets() {
-      const nav = $("#sujets");
-      nav.hidden = index.sujets.length < 2;
-      nav.innerHTML = index.sujets.map((s) => {
-        const d = s.id === sujetId && donnees ? donnees : lire(CLE.cache + s.id, null);
-        const nb = d ? (d.articles || []).filter((a) => !lus.has(a.id) && (!dansLeTitre || sujetDansTitre(a, d))).length : s.nb;
-        return `<button class="onglet" role="tab" data-sujet="${echap(s.id)}" aria-selected="${s.id === sujetId}">
-          ${echap(s.nom)}<span class="nb">${nb}</span></button>`;
-      }).join("");
-    }
-
-    // Ligne sous le titre : nombre d'articles, nouveautés, flux en panne
-    function afficherStatut() {
-      const arts = donnees.articles || [];
-      const nouveaux = arts.filter(estNouveau).length;
-      let t = `<b>${arts.length}</b> articles`;
-      if (nouveaux) t += ` · <span class="nouveau">${nouveaux} nouveau${nouveaux > 1 ? "x" : ""}</span>`;
-      // « maj » = dernière collecte qui a trouvé quelque chose (le robot ne réécrit
-      // pas le fichier quand il n'y a rien de neuf)
-      if (donnees.maj) t += ` · dernier ajout ${ilYa(new Date(donnees.maj))}`;
-      const enPanne = (donnees.sources || []).filter((s) => !s.ok).map((s) => s.court || s.nom);
-      if (enPanne.length) t += ` · <span class="alerte">⚠ ${echap(enPanne.join(", "))} indisponible</span>`;
-      // « Tout marquer comme lu » : seulement s'il reste des non lus parmi ceux affichés
-      if (articlesFiltres().some((a) => !lus.has(a.id))) t += ` · <button class="lien-action" id="tout-lu">✓ Tout marquer lu</button>`;
-      $("#statut").innerHTML = t;
-    }
-
     const estNouveau = (a) => visitePrecedente && a.vu_le > visitePrecedente && !lus.has(a.id);
+    const estPayant = (a) => PAYANTS.includes(simple(a.media || "")) || PAYANTS.includes(a.source);
 
-    // Le sujet est-il dans le titre ? (un des mots-clés du sujet, en mot entier)
-    // Google Actualités renvoie aussi des articles qui ne le citent qu'en passant.
-    function sujetDansTitre(a, d = donnees) {
-      const mc = d.mots_cles?.length ? d.mots_cles : [d.nom];
-      return mc.some((m) => contientMot(a.titre, m));
-    }
-
-    // Le texte contient-il ce mot (ou cette expression), en mots entiers, sans tenir
-    // compte des accents ni des majuscules ? « drive » trouve « Drive » mais pas « drives ».
+    // Le texte contient-il ce mot / cette expression, en mots entiers, sans accents ni majuscules ?
     function contientMot(texte, mot) {
       const t = " " + simple(texte).replace(/[^a-z0-9]+/g, " ") + " ";
       const m = simple(mot).replace(/[^a-z0-9]+/g, " ").trim();
       return m !== "" && t.includes(" " + m + " ");
     }
+    const sujetDansTitre = (a, d = donnees) => (d.mots_cles?.length ? d.mots_cles : [d.nom]).some((m) => contientMot(a.titre, m));
     const aMotMasque = (a) => motsDu("masques").some((m) => contientMot(a.titre + " " + (a.media || ""), m));
     const aMotSuivi = (a) => motsDu("suivis").some((m) => contientMot(a.titre, m));
 
-    // Le titre, protégé, avec les mots surveillés surlignés (<mark>). On cherche sur la
-    // version sans accents, puis on surligne les MÊMES positions dans le vrai titre
-    // (enlever les accents ne change pas la longueur des lettres courantes).
-    function titreSurligne(titre) {
-      const suivis = motsDu("suivis").map((m) => simple(m).trim()).filter(Boolean);
-      if (!suivis.length) return echap(titre);
-      const plat = simple(titre);
-      if (plat.length !== titre.length) return echap(titre);   // cas rare (œ, ligatures…) : pas de surlignage
-      const zones = [];
-      for (const m of suivis) {
-        let i = plat.indexOf(m);
-        while (i >= 0) { zones.push([i, i + m.length]); i = plat.indexOf(m, i + m.length); }
-      }
-      zones.sort((x, y) => x[0] - y[0]);
-      let html = "", pos = 0;
-      for (const [d, f] of zones) {
-        if (d < pos) continue;                 // chevauchement : on garde la première zone
-        html += echap(titre.slice(pos, d)) + "<mark>" + echap(titre.slice(d, f)) + "</mark>";
-        pos = f;
-      }
-      return html + echap(titre.slice(pos));
-    }
-
-    // Pastilles : 🎯 / ✨ (interrupteurs), puis Tout, chaque site, Favoris
-    function afficherFiltres() {
-      // Les nombres tiennent compte des interrupteurs et des avis
-      const arts = articlesFiltres({ ignorerSite: true });
-      const compte = (fn) => arts.filter(fn).length;
-      const boutons = [
-        { id: "tout", nom: "Tout", nb: arts.length },
-        ...(donnees.sources || []).map((s) => ({ id: s.id, nom: s.court || s.nom, couleur: s.couleur, nb: compte((a) => a.source === s.id) })),
-        { id: "favoris", nom: "⭐ Favoris", nb: compte((a) => favoris.has(a.id)) }
-      ];
-      // Pastille « 🔔 Surveillés » seulement si des mots surveillés sont réglés
-      if (motsDu("suivis").length) boutons.splice(1, 0, { id: "suivis", nom: "🔔 Surveillés", nb: compte(aMotSuivi) });
-      const interrupteurs = `
-        <button class="filtre bascule" id="bascule-titre" aria-pressed="${dansLeTitre}"
-          title="Seulement les articles dont le titre parle de ${echap(donnees.nom)}">🎯 Dans le titre</button>
-        <button class="filtre bascule" id="bascule-appris" aria-pressed="${filtreAppris}"
-          title="Masquer les articles qui ressemblent à ceux jugés pas pertinents">✨ Filtre appris</button>
-        <button class="filtre bascule" id="bascule-nonlus" aria-pressed="${seulementNonLus}"
-          title="Seulement les articles pas encore ouverts">○ Non lus</button>`;
-      // Pastille des masqués (son nombre est mis à jour par afficherListe)
-      const masques = `<button class="filtre masques-pastille" id="voir-masques" aria-pressed="${voirMasques}" hidden
-          title="Articles masqués par les avis 👎, le filtre appris ou tes mots masqués : toucher pour les voir">🙈 Masqués <span class="nb">0</span></button>`;
-      $("#filtres").innerHTML = interrupteurs + masques + boutons.map((b) => `
-        <button class="filtre" data-filtre="${b.id}" aria-pressed="${b.id === filtre}">
-          ${b.couleur ? `<span class="pt" style="background:${b.couleur}"></span>` : ""}
-          ${echap(b.nom)} <span class="nb">${b.nb}</span>
-        </button>`).join("");
-    }
-
-    // Les articles qui passent les interrupteurs, la recherche, le filtre de site et les avis.
-    // Renvoie aussi, dans .masques, le nombre d'articles cachés par les avis.
-    function articlesFiltres({ ignorerSite = false } = {}) {
+    // Les articles à afficher. « sauf » permet d'ignorer un critère (pour les compteurs).
+    // Renvoie aussi .masques = nombre d'articles cachés par les avis / mots masqués.
+    function articlesFiltres(sauf = {}) {
       const mots = simple(recherche).split(/\s+/).filter(Boolean);
       let masques = 0;
-      const liste = (donnees.articles || []).filter((a) => {
-        if (dansLeTitre && !sujetDansTitre(a) && !favoris.has(a.id)) return false;
-        if (seulementNonLus && lus.has(a.id) && !favoris.has(a.id)) return false;
-        if (!ignorerSite) {
-          if (filtre === "favoris" && !favoris.has(a.id)) return false;
-          if (filtre === "suivis" && !aMotSuivi(a)) return false;
-          if (!["tout", "favoris", "suivis"].includes(filtre) && a.source !== filtre) return false;
+      const liste = (donnees?.articles || []).filter((a) => {
+        const fav = favoris.has(a.id);
+        if (dansLeTitre && !sujetDansTitre(a) && !fav) return false;
+        if (!sauf.vue) {
+          if (vue === "nonlus" && lus.has(a.id)) return false;
+          if (vue === "favoris" && !fav) return false;
         }
-        // tous les mots tapés doivent se trouver dans le titre, le résumé ou le journal
+        if (!sauf.source && filtreSource !== "tout" && a.source !== filtreSource) return false;
+        if (filtreSuivis && !aMotSuivi(a)) return false;
         const texte = simple(a.titre + " " + a.resume + " " + (a.media || ""));
         if (!mots.every((m) => texte.includes(m))) return false;
-        // les avis : un favori n'est jamais masqué
-        // … et les mots masqués comptent comme un avis 👎 donné d'avance
         const st = statut(a);
-        if ((st === "rejete" || st === "masque" || aMotMasque(a)) && !favoris.has(a.id)) {
+        if ((st === "rejete" || st === "masque" || aMotMasque(a)) && !fav) {
           masques++;
           if (!voirMasques) return false;
         }
@@ -888,447 +912,539 @@
       return liste;
     }
 
-    // La liste, groupée par jour
+    /* =========================================================
+       AFFICHAGE
+       ========================================================= */
+    function toutAfficher() {
+      document.body.classList.toggle("compact", compact);
+      if (!donnees) { afficherSujets(); return; }     // sujet en cours de chargement
+      afficherSujets(); afficherBarre(); afficherListe(); afficherFiltres();
+    }
+
+    // Nombre de non lus d'un sujet (avec les articles gardés dans le téléphone)
+    function nonLusDe(s) {
+      const d = s.id === sujetId && donnees ? donnees : lire(CLE.cache + s.id, null);
+      if (!d) return s.nb ?? "";
+      return (d.articles || []).filter((a) => !lus.has(a.id) && (!dansLeTitre || sujetDansTitre(a, d))).length;
+    }
+
+    function afficherSujets() {
+      $("#sujets").innerHTML = tousLesSujets().map((s) => `
+        <button class="sujet" data-sujet="${echap(s.id)}" aria-current="${s.id === sujetId}">
+          <span>${echap(s.nom)}</span><span class="nb">${nonLusDe(s) || ""}</span></button>`).join("")
+        + `<button class="sujet ajout" data-ouvrir="ajout">＋ Suivre un sujet</button>`;
+    }
+
+    // Segments, statut, puces actives, pastille du bouton Filtres
+    function afficherBarre() {
+      $$("#segments button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.vue === vue));
+      const base = articlesFiltres({ vue: true });
+      $("#nb-nonlus").textContent = base.filter((a) => !lus.has(a.id)).length || "";
+      $("#nb-favoris").textContent = base.filter((a) => favoris.has(a.id)).length || "";
+
+      const arts = donnees.articles || [];
+      const visibles = articlesFiltres();
+      const nouveaux = arts.filter(estNouveau).length;
+      let t = `<span><b>${visibles.length}</b> article${visibles.length > 1 ? "s" : ""}</span>`;
+      if (nouveaux) t += `<span class="nouveau">● ${nouveaux} nouveau${nouveaux > 1 ? "x" : ""}</span>`;
+      if (donnees.maj) t += `<span>${donnees.perso ? "cherché" : "dernier ajout"} ${ilYa(new Date(donnees.maj))}</span>`;
+      const enPanne = (donnees.sources || []).filter((s) => !s.ok).map((s) => s.court || s.nom);
+      if (enPanne.length) t += `<span class="alerte">⚠ ${echap(enPanne.join(", "))} indisponible</span>`;
+      if (visibles.some((a) => !lus.has(a.id))) t += `<button class="lien-action" id="tout-lu">✓ Tout marquer lu</button>`;
+      $("#statut").innerHTML = t;
+
+      // Puces : filtre de journal actif, masqués, mots surveillés
+      let puces = "";
+      if (filtreSource !== "tout") {
+        const s = sources[filtreSource];
+        puces += `<button class="puce" aria-pressed="true" data-puce="source"><span class="pt" style="background:${s?.couleur}"></span>${echap(s?.court || s?.nom)} ✕</button>`;
+      }
+      if (motsDu("suivis").length) puces += `<button class="puce" aria-pressed="${filtreSuivis}" data-puce="suivis">🔔 Surveillés ${articlesFiltres({}).filter(aMotSuivi).length}</button>`;
+      if (visibles.masques || voirMasques) puces += `<button class="puce" aria-pressed="${voirMasques}" data-puce="masques">🙈 ${visibles.masques} masqué${visibles.masques > 1 ? "s" : ""}</button>`;
+      $("#puces").innerHTML = puces;
+
+      // Pastille du bouton Filtres : nombre de réglages qui s'écartent des valeurs de départ
+      const ecarts = (filtreSource !== "tout") + !dansLeTitre + !filtreAppris + voirMasques;
+      $("#nb-filtres").hidden = !ecarts;
+      $("#nb-filtres").textContent = ecarts;
+    }
+
     function afficherListe() {
       const arts = articlesFiltres();
-      // Nombre d'articles masqués (avis 👎, filtre appris, mots masqués) : affiché dans la
-      // pastille « 🙈 » de la rangée des filtres, qui les montre / les cache
-      const pastille = $("#voir-masques");
-      if (pastille) {
-        pastille.hidden = !arts.masques && !voirMasques;
-        pastille.querySelector(".nb").textContent = arts.masques;
-      }
-
-      if (!arts.length) {
-        let msg;
-        if (!(donnees.articles || []).length) msg = `<span class="gros">⏳</span>Pas encore d'articles : la prochaine collecte arrive dans moins de 2 heures.`;
-        else if (seulementNonLus && !recherche) msg = `<span class="gros">🎉</span>Tout est lu !`;
-        else if (filtre === "favoris" && !recherche) msg = `<span class="gros">⭐</span>Aucun favori pour l'instant.<br>Touche l'étoile d'un article pour le garder ici.`;
-        else msg = `<span class="gros">🔍</span>Aucun article ne correspond.`;
-        $("#liste").innerHTML = `<p class="vide">${msg}</p>`;
+      if (donnees.attente && !arts.length) {
+        $("#liste").innerHTML = `<div class="vide"><span class="gros">🔌</span>Pour suivre tes propres sujets, le script Google de la veille doit être branché.<br>
+          <button class="btn" data-ouvrir="ajout">En savoir plus</button></div>`;
         return;
       }
-      let html = "", jourCourant = null, ouvert = false;
+      if (!arts.length) {
+        let msg;
+        if (!(donnees.articles || []).length) msg = `<span class="gros">⏳</span>Pas encore d'articles sur ce sujet.`;
+        else if (vue === "nonlus" && !recherche) msg = `<span class="gros">🎉</span>Tout est lu !`;
+        else if (vue === "favoris" && !recherche) msg = `<span class="gros">⭐</span>Aucun favori.<br>Glisse un article vers la droite pour le garder ici.`;
+        else msg = `<span class="gros">🔍</span>Aucun article ne correspond.`;
+        $("#liste").innerHTML = `<div class="vide">${msg}</div>`;
+        return;
+      }
+      let html = "", jourCourant = null;
       for (const a of arts.slice(0, combien)) {
         const d = new Date(a.date);
-        const k = cleJour(d);
-        if (k !== jourCourant) {                 // nouveau jour → nouveau groupe
-          if (ouvert) html += `</div>`;
+        if (cleJour(d) !== jourCourant) {
+          if (jourCourant) html += `</div>`;
           html += `<h3 class="jour">${nomDuJour(d)}</h3><div class="cartes">`;
-          jourCourant = k; ouvert = true;
+          jourCourant = cleJour(d);
         }
         html += `<div class="glisse">
             <div class="fond favori"><b>⭐ ${favoris.has(a.id) ? "Retirer" : "Favori"}</b></div>
             <div class="fond masquer"><b>👎 Masquer</b></div>
             ${carte(a, d)}</div>`;
       }
-      if (ouvert) html += `</div>`;
-      if (arts.length > combien) html += `<button class="plus" id="plus">Voir plus (${arts.length - combien})</button>`;
+      html += `</div>`;
+      if (arts.length > combien) html += `<button class="btn plus" id="plus">Voir plus (${arts.length - combien})</button>`;
       $("#liste").innerHTML = html;
     }
 
-    // Une carte d'article
+    function pastilleSource(a) {
+      const s = sources[a.source] || { court: a.source, couleur: "#69707a" };
+      const etiquette = (s.autres && a.media) ? a.media : (s.court || s.nom);
+      return `<span class="source" style="background:${s.couleur}">${echap(etiquette)}</span>`;
+    }
+
+    // Titre protégé, avec les mots surveillés surlignés
+    function titreSurligne(titre) {
+      const suivis = motsDu("suivis").map((m) => simple(m).trim()).filter(Boolean);
+      const plat = simple(titre);
+      if (!suivis.length || plat.length !== titre.length) return echap(titre);
+      const zones = [];
+      for (const m of suivis) for (let i = plat.indexOf(m); i >= 0; i = plat.indexOf(m, i + m.length)) zones.push([i, i + m.length]);
+      zones.sort((x, y) => x[0] - y[0]);
+      let html = "", pos = 0;
+      for (const [d, f] of zones) {
+        if (d < pos) continue;
+        html += echap(titre.slice(pos, d)) + "<mark>" + echap(titre.slice(d, f)) + "</mark>";
+        pos = f;
+      }
+      return html + echap(titre.slice(pos));
+    }
+
     function carte(a, d) {
-      // Note apprise, montrée seulement quand elle est nette (et qu'il y a assez de votes)
       const note = modele.nbVotes >= VOTES_MINI ? noter(a) : 0;
-      const pastilleNote = note >= 1.5 ? `<span class="note bonne" title="Ressemble aux articles appréciés">✨ pertinent</span>`
-                         : note <= SEUIL_MASQUE ? `<span class="note basse" title="Ressemble aux articles rejetés">peu pertinent ?</span>` : "";
       const st = statut(a);
       return `
-        <article class="article ${lus.has(a.id) ? "lu" : ""} ${st === "rejete" || st === "masque" || aMotMasque(a) ? "rejete" : ""} ${aMotSuivi(a) ? "suivi" : ""}" data-id="${a.id}">
+        <article class="article ${lus.has(a.id) ? "lu" : ""} ${st === "rejete" || st === "masque" || aMotMasque(a) ? "rejete" : ""} ${aMotSuivi(a) ? "suivi" : ""} ${a.id === choisi ? "choisi" : ""}" data-id="${a.id}">
           <div class="meta">
             ${pastilleSource(a)}
-            ${estPayant(a) ? `<span class="payant" title="Ce journal réserve souvent ses articles aux abonnés">🔒</span>` : ""}
-            <span class="heure">${FORMAT_HEURE.format(d)}</span>
-            ${estNouveau(a) ? `<span class="nouveau">Nouveau</span>` : ""}
-            ${pastilleNote}
+            ${estPayant(a) ? `<span class="payant" title="Souvent réservé aux abonnés">🔒</span>` : ""}
+            <span>${FORMAT_HEURE.format(d)}</span>
+            ${estNouveau(a) ? `<span class="nouveau-pt">Nouveau</span>` : ""}
+            ${note >= 1.5 ? `<span class="note bonne">✨ pertinent</span>` : note <= SEUIL_MASQUE ? `<span class="note basse">peu pertinent ?</span>` : ""}
           </div>
+          ${favoris.has(a.id) ? `<span class="etoile-fixe" aria-label="Favori">★</span>` : ""}
           <a class="lien" href="${echap(a.lien)}" target="_blank" rel="noopener" draggable="false">
             <div class="corps">
               <div>
                 <h2>${titreSurligne(a.titre)}</h2>
                 ${a.resume ? `<p class="resume">${echap(a.resume)}</p>` : ""}
               </div>
-              ${vignette(a)}
+              ${a.image ? `<img class="vignette" src="${echap(a.image)}" alt="" draggable="false" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}
             </div>
           </a>
           ${boutons(a)}
         </article>`;
     }
 
-    // Petite image à droite du titre. « no-referrer » : certains journaux refusent
-    // d'afficher leurs images sur un autre site quand on leur dit d'où l'on vient.
-    // Si l'image ne se charge pas, on la retire (onerror).
-    const vignette = (a) => a.image
-      ? `<img class="vignette" src="${echap(a.image)}" alt="" draggable="false" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : "";
-
-    // Rangée de boutons 👍 👎 … partage ⭐ (cartes ET fiche)
-    function boutons(a) {
+    // Boutons 👍 👎 … partage ⭐ (survol des cartes sur ordinateur, et fiche)
+    function boutons(a, avecLien = false) {
       const monVote = mesAvis[sujetId]?.[a.id]?.vote || 0;
       const votes = tousLesVotes().filter((v) => v.id === a.id);
       const nbOui = votes.filter((v) => v.vote > 0).length, nbNon = votes.length - nbOui;
       return `
           <div class="actions">
-            <button class="avis oui" data-vote="1" aria-pressed="${monVote === 1}" title="Pertinent">${PICTO_OUI}${nbOui || ""}</button>
-            <button class="avis non" data-vote="-1" aria-pressed="${monVote === -1}" title="Pas pertinent (masque l'article)">${PICTO_NON}${nbNon || ""}</button>
+            <button class="oui" data-action="oui" aria-pressed="${monVote === 1}" title="Pertinent (+)">${PICTO_OUI}${nbOui || ""}</button>
+            <button class="non" data-action="non" aria-pressed="${monVote === -1}" title="Pas pertinent, masquer (x)">${PICTO_NON}${nbNon || ""}</button>
             <span class="espace"></span>
-            <button class="partage" title="Partager" aria-label="Partager">${PICTO_PARTAGE}</button>
-            <button class="fav" title="Favori" aria-label="Favori" aria-pressed="${favoris.has(a.id)}">${PICTO_ETOILE}</button>
+            ${avecLien ? "" : `<button data-action="site" title="Lire sur le site (v)">${PICTO_LIEN}</button>`}
+            <button data-action="partage" title="Partager">${PICTO_PARTAGE}</button>
+            <button class="fav" data-action="favori" aria-pressed="${favoris.has(a.id)}" title="Favori (s)">${PICTO_ETOILE}</button>
           </div>`;
     }
 
-    // Pastille du journal (la même sur les cartes, la fiche et « le même sujet ailleurs »)
-    function pastilleSource(a) {
-      const s = sources[a.source] || { court: a.source, couleur: "#696969" };
-      const etiquette = (s.autres && a.media) ? a.media : (s.court || s.nom);
-      return `<span class="source" style="background:${s.couleur}">${echap(etiquette)}</span>`;
+    // Feuille « Filtres et réglages »
+    function afficherFiltres() {
+      const base = articlesFiltres({ source: true });
+      $("#choix-sources").innerHTML = [{ id: "tout", court: "Tous", nb: base.length },
+        ...(donnees.sources || []).map((s) => ({ ...s, nb: base.filter((a) => a.source === s.id).length }))]
+        .map((s) => `<button class="puce" data-source="${s.id}" aria-pressed="${filtreSource === s.id}">
+          ${s.couleur ? `<span class="pt" style="background:${s.couleur}"></span>` : ""}${echap(s.court || s.nom)} <small>${s.nb}</small></button>`).join("");
+      $("#opt-titre").checked = dansLeTitre;
+      $("#opt-appris").checked = filtreAppris;
+      $("#opt-masques").checked = voirMasques;
+      $("#opt-masques-aide").textContent = `${articlesFiltres().masques} masqué(s) par les avis 👎 ou les mots masqués`;
+      $("#mots-sujet").textContent = "· " + (donnees.nom || "");
+      $("#mots-suivis").value = motsDu("suivis").join(", ");
+      $("#mots-masques").value = motsDu("masques").join(", ");
+      const n = modele.nbVotes;
+      $("#aide-avis").textContent = `Avis : ${n} vote${n > 1 ? "s" : ""} sur ce sujet, `
+        + (scriptBranche() ? "partagés avec les autres lecteurs." : "gardés dans ce téléphone.")
+        + (n < VOTES_MINI ? ` Le filtre appris démarre à ${VOTES_MINI} votes.` : "");
+      $("#aide-robot").innerHTML = donnees.perso
+        ? "Sujet perso : cherché sur Google Actualités à chaque ouverture (résultats gardés 20 min)."
+        : `Sujet commun : collecté toutes les 2 heures de 6 h à 22 h. <a href="https://github.com/svaug12345/svaug12345.github.io/actions/workflows/veille.yml" target="_blank" rel="noopener">Lancer une collecte</a> · <a href="https://github.com/svaug12345/svaug12345.github.io/edit/main/veille/sources.json" target="_blank" rel="noopener">Modifier les sources</a>`;
+    }
+
+    // Feuille « Suivre un sujet »
+    function afficherAjout() {
+      $("#suggestions").innerHTML = SUGGESTIONS.filter((n) => !perso.some((p) => p.nom === n))
+        .map((n) => `<button type="button" class="puce" data-suggestion="${echap(n)}">${echap(n)}</button>`).join("");
+      $("#mes-sujets").innerHTML = tousLesSujets().map((s) => `
+        <li><span>${echap(s.nom)} ${s.precis ? `<small>· ${echap(s.precis)}</small>` : ""}</span>
+          ${s.type === "commun" ? `<small>commun</small>` : `<button class="fermer" data-retirer="${echap(s.id)}" aria-label="Ne plus suivre ${echap(s.nom)}" title="Ne plus suivre">✕</button>`}</li>`).join("");
+      const encadre = $("#ajout-script");
+      encadre.hidden = scriptBranche();
+      encadre.innerHTML = AVIS_URL
+        ? `🔑 Ouvre une fois le lien de la veille envoyé par Sébastien (il contient la clé) : tes sujets apparaîtront alors.`
+        : `🔌 Tes sujets sont bien gardés, mais leurs articles n'apparaîtront qu'une fois le <b>script Google de la veille</b> branché (une seule fois, environ 5 minutes : voir <code>outils/veille-avis.gs</code>).`;
     }
 
     /* =========================================================
        FICHE D'UN ARTICLE
        ========================================================= */
-    // « Le même sujet ailleurs » : les articles d'AUTRES journaux dont le titre partage
-    // beaucoup de mots avec celui-ci, publiés à 4 jours d'écart au plus.
-    // Mesure : indice de Jaccard = mots communs / mots différents au total (0 à 1).
-    // Les mots-clés du sujet (« carrefour ») sont retirés : ils sont dans tous les titres.
+    // « Le même sujet ailleurs » : articles d'autres journaux dont le titre partage
+    // beaucoup de mots (indice de Jaccard), à 4 jours d'écart au plus
     function prochesDe(a) {
       const ignorer = new Set((donnees.mots_cles || []).map(simple));
-      const mots = (x) => new Set(indices(x.titre, "").filter((m) => !ignorer.has(m)));
-      const ref = mots(a), t0 = new Date(a.date);
+      const motsDe = (x) => new Set(indices(x.titre, "").filter((m) => !ignorer.has(m)));
+      const ref = motsDe(a), t0 = new Date(a.date);
       if (ref.size < 2) return [];
       return (donnees.articles || [])
         .filter((b) => b.id !== a.id && Math.abs(new Date(b.date) - t0) < 4 * 864e5)
-        .map((b) => {
-          const mb = mots(b);
-          const communs = [...ref].filter((m) => mb.has(m)).length;
-          return { b, communs, score: communs / (ref.size + mb.size - communs) };
-        })
-        .filter((x) => x.communs >= 2 && x.score >= 0.25)
-        .sort((x, y) => y.score - x.score)
-        .slice(0, 5)
-        .map((x) => x.b);
+        .map((b) => { const mb = motsDe(b), c = [...ref].filter((m) => mb.has(m)).length; return { b, c, s: c / (ref.size + mb.size - c) }; })
+        .filter((x) => x.c >= 2 && x.s >= 0.25).sort((x, y) => y.s - x.s).slice(0, 5).map((x) => x.b);
     }
 
-    const FORMAT_DATE_LONGUE = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" });
+    let listeFiche = [];        // la liste parcourue en glissant (photographiée à l'ouverture)
 
-    // La liste parcourue en glissant dans la fiche : photographiée à l'ouverture depuis la
-    // liste (sinon, avec « Non lus », l'article ouvert — donc lu — disparaîtrait de la liste)
-    let listeFiche = [];
-
-    function ouvrirFiche(a) {
-      const fiche = $("#fiche");
-      // Ouvrir la fiche = l'article est lu (comme dans Feedly)
-      if (!lus.has(a.id)) {
-        lus.add(a.id);
-        ecrire(CLE.lus, [...lus].slice(-3000));
-      }
+    function ouvrirFiche(a, depuisListe = true) {
+      if (depuisListe) listeFiche = articlesFiltres();
+      if (!lus.has(a.id)) { lus.add(a.id); ecrire(CLE.lus, [...lus].slice(-4000)); }
+      choisi = a.id;
       remplirFiche(a);
-      if (!fiche.open) {
-        fiche.showModal();
-        // Le bouton « retour » du téléphone doit fermer la fiche, pas quitter l'appli :
-        // on ajoute une étape dans l'historique, que « popstate » retire.
-        history.pushState({ fiche: true }, "");
-      }
+      const f = $("#fiche");
+      if (!f.open) { f.showModal(); history.pushState({ feuille: true }, ""); }
     }
 
     function remplirFiche(a) {
-      const d = new Date(a.date);
-      let domaineLien = "";
-      try { domaineLien = new URL(a.lien).hostname.replace(/^www\./, ""); } catch { /* lien bizarre */ }
-      const viaGoogle = domaineLien.startsWith("news.google.");
+      let domaine = "";
+      try { domaine = new URL(a.lien).hostname.replace(/^www\./, ""); } catch { /* lien bizarre */ }
       const proches = prochesDe(a);
+      const i = listeFiche.findIndex((x) => x.id === a.id);
       const fi = $("#fiche-in");
       fi.dataset.id = a.id;
       fi.innerHTML = `
         <div class="poignee"></div>
-        <div class="fiche-haut">
-          <div class="meta">${pastilleSource(a)}
-            ${estPayant(a) ? `<span class="payant">🔒</span>` : ""}
-            <span class="heure">${FORMAT_DATE_LONGUE.format(d)}</span></div>
-          <button class="fermer" id="fermer-fiche" aria-label="Fermer">✕</button>
-        </div>
+        <div class="tete"><div class="meta" style="flex:1;flex-wrap:wrap">${pastilleSource(a)}
+            ${estPayant(a) ? `<span class="payant">🔒</span>` : ""}<span>${FORMAT_LONG.format(new Date(a.date))}</span></div>
+          <button class="fermer" data-fermer aria-label="Fermer">✕</button></div>
         ${a.image ? `<img class="fiche-image" src="${echap(a.image)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}
-        <h2>${titreSurligne(a.titre)}</h2>
-        ${a.resume ? `<p class="fiche-chapeau">${echap(a.resume)}</p>`
-                   : `<p class="fiche-vide">Pas de résumé disponible : le journal ne l'a pas donné.</p>`}
-        ${estPayant(a) ? `<p class="fiche-payant">🔒 Ce journal réserve souvent ses articles aux abonnés.</p>` : ""}
-        <a class="lire" href="${echap(a.lien)}" target="_blank" rel="noopener">Lire l'article ↗
-          <small>${viaGoogle ? "via Google Actualités" : "sur " + echap(domaineLien)}</small></a>
-        ${boutons(a)}
-        ${(() => {
-          // « 3 / 42 · glisse pour passer à l'article suivant » (position dans la liste affichée)
-          const liste = listeFiche, i = liste.findIndex((x) => x.id === a.id);
-          return i >= 0 && liste.length > 1 ? `<p class="fiche-nav">${i + 1} / ${liste.length} · ‹ glisse pour changer d'article ›</p>` : "";
-        })()}
-        ${proches.length ? `<div class="proches"><h3>Le même sujet ailleurs</h3>
-          ${proches.map((b) => `<button class="proche" data-proche="${b.id}">${pastilleSource(b)}<span>${echap(b.titre)}</span></button>`).join("")}
-        </div>` : ""}`;
-      fi.scrollTop = 0;
+        <h2 class="titre-fiche">${titreSurligne(a.titre)}</h2>
+        ${a.resume ? `<p class="chapeau">${echap(a.resume)}</p>` : `<p class="chapeau vide-chapeau">Pas de résumé : le journal ne l'a pas donné.</p>`}
+        <a class="principal-btn" href="${echap(a.lien)}" target="_blank" rel="noopener">Lire l'article ↗
+          <small>${domaine.startsWith("news.google.") ? "via Google Actualités" : "sur " + echap(domaine)}${estPayant(a) ? " · souvent réservé aux abonnés" : ""}</small></a>
+        ${boutons(a, true)}
+        ${i >= 0 && listeFiche.length > 1 ? `<p class="fiche-nav">${i + 1} / ${listeFiche.length} · ‹ glisse ou <kbd>j</kbd> <kbd>k</kbd> pour changer d'article ›</p>` : ""}
+        ${proches.length ? `<h3>Le même sujet ailleurs</h3>${proches.map((b) => `<button class="proche" data-proche="${b.id}">${pastilleSource(b)}<span>${echap(b.titre)}</span></button>`).join("")}` : ""}`;
       $("#fiche").scrollTop = 0;
     }
 
-    /* =========================================================
-       GLISSER (swipe), avec les « pointer events » : ils marchent pareil au
-       doigt et à la souris. On suit le doigt ; si le geste est surtout
-       horizontal, on déplace la carte. Au lâcher, au-delà de SEUIL_GLISSE
-       pixels, l'action est faite ; sinon la carte revient à sa place.
-       ========================================================= */
-    const SEUIL_GLISSE = 90;
-    let geste = null;            // { el, x0, y0, dx, horizontal, cible }
-    let ignorerClic = false;     // un glisser ne doit pas aussi « cliquer » sur l'article
+    // Article suivant / précédent dans la fiche (glisser, j / k)
+    function ficheVoisine(sens) {
+      const i = listeFiche.findIndex((x) => x.id === $("#fiche-in").dataset.id);
+      const j = i + sens;
+      if (i < 0 || j < 0 || j >= listeFiche.length) { toast(sens > 0 ? "C'était le dernier article" : "C'était le premier article"); return; }
+      ouvrirFiche(listeFiche[j], false);
+      const fi = $("#fiche-in");
+      fi.classList.remove("entre-droite", "entre-gauche"); void fi.offsetWidth;
+      fi.classList.add(sens > 0 ? "entre-droite" : "entre-gauche");
+    }
 
+    /* =========================================================
+       FEUILLES : ouvrir / fermer (le bouton « retour » du téléphone ferme)
+       ========================================================= */
+    function ouvrirFeuille(nom) {
+      const d = $("#" + nom);
+      if (nom === "ajout") afficherAjout();
+      if (nom === "filtres") afficherFiltres();
+      if (!d.open) { d.showModal(); history.pushState({ feuille: true }, ""); }
+    }
+    function fermerFeuilles() { if ($$("dialog[open]").length) history.back(); }   // → popstate
+    window.addEventListener("popstate", () => {
+      const ouvertes = $$("dialog[open]");
+      ouvertes.forEach((d) => d.close());
+      if (ouvertes.length) toutAfficher();
+    });
+    // Échap ferme une <dialog> toute seule ; on passe par l'historique pour rester cohérent
+    $$("dialog").forEach((d) => {
+      d.addEventListener("cancel", (e) => { e.preventDefault(); fermerFeuilles(); });
+      d.addEventListener("click", (e) => { if (e.target === d) fermerFeuilles(); });   // clic sur le fond
+    });
+
+    /* =========================================================
+       ACTIONS SUR UN ARTICLE (liste, fiche, clavier, gestes)
+       ========================================================= */
+    async function agir(a, action, dansFiche = false) {
+      if (!a) return;
+      const id = a.id;
+      if (action === "favori") {
+        const etait = favoris.has(id);
+        etait ? favoris.delete(id) : favoris.add(id);
+        ecrire(CLE.favoris, [...favoris]);
+        toast(etait ? "Retiré des favoris" : "⭐ Ajouté aux favoris");
+        toutAfficher();
+      } else if (action === "oui" || action === "non") {
+        const vote = action === "oui" ? 1 : -1;
+        const avant = mesAvis[sujetId]?.[id]?.vote || 0;
+        voter(a, avant === vote ? 0 : vote);
+        if (vote === -1 && avant !== -1) toast("Article masqué", { texte: "Annuler", faire: () => { voter(a, avant); if (dansFiche) remplirFiche(a); } });
+      } else if (action === "lu") {
+        lus.has(id) ? lus.delete(id) : lus.add(id);
+        ecrire(CLE.lus, [...lus].slice(-4000));
+        toutAfficher();
+      } else if (action === "site") {
+        lus.add(id); ecrire(CLE.lus, [...lus].slice(-4000));
+        window.open(a.lien, "_blank", "noopener");
+        toutAfficher();
+      } else if (action === "partage") {
+        const texte = `${a.titre} (${a.media || sources[a.source]?.nom || ""})`;
+        try {
+          if (navigator.share) await navigator.share({ title: a.titre, text: texte, url: a.lien });
+          else { await navigator.clipboard.writeText(texte + "\n" + a.lien); toast("Lien copié"); }
+        } catch { /* partage annulé */ }
+      }
+      if (dansFiche && $("#fiche").open) remplirFiche(a);
+    }
+    const article = (id) => donnees?.articles?.find((x) => x.id === id);
+
+    // Un seul écouteur pour tous les clics de la page (« délégation »)
+    document.addEventListener("click", (e) => {
+      const t = e.target;
+      const ouvrir = t.closest("[data-ouvrir]");
+      if (ouvrir) { if ($$("dialog[open]").length && ouvrir.closest("dialog")) { $$("dialog[open]").forEach((d) => d.close()); history.back(); setTimeout(() => ouvrirFeuille(ouvrir.dataset.ouvrir), 50); } else ouvrirFeuille(ouvrir.dataset.ouvrir); return; }
+      if (t.closest("[data-fermer]")) { fermerFeuilles(); return; }
+      if (t.closest(".btn-actu")) { charger(); return; }
+      if (t.closest(".btn-vue")) { compact = !compact; ecrire(CLE.compact, compact); toutAfficher(); return; }
+      if (t.closest("#plus")) { combien += PAR_PAGE; afficherListe(); return; }
+      if (t.closest("#tout-lu")) { toutMarquerLu(); return; }
+
+      const sujet = t.closest("[data-sujet]");
+      if (sujet && sujet.dataset.sujet !== sujetId) {
+        sujetId = sujet.dataset.sujet; filtreSource = "tout"; filtreSuivis = false; avisCommuns = []; donnees = null;
+        afficherSujets(); window.scrollTo({ top: 0 }); chargerSujet(); return;
+      }
+      const seg = t.closest("[data-vue]");
+      if (seg) { vue = seg.dataset.vue; ecrire(CLE.vue, vue); combien = PAR_PAGE; toutAfficher(); window.scrollTo({ top: 0 }); return; }
+      const puce = t.closest("[data-puce]");
+      if (puce) {
+        if (puce.dataset.puce === "source") filtreSource = "tout";
+        if (puce.dataset.puce === "suivis") filtreSuivis = !filtreSuivis;
+        if (puce.dataset.puce === "masques") voirMasques = !voirMasques;
+        toutAfficher(); return;
+      }
+      const src = t.closest("[data-source]");
+      if (src) { filtreSource = src.dataset.source; toutAfficher(); return; }
+      const sugg = t.closest("[data-suggestion]");
+      if (sugg) { $("#ajout-nom").value = sugg.dataset.suggestion; $("#ajout-nom").focus(); return; }
+      const retirer = t.closest("[data-retirer]");
+      if (retirer) { retirerSujet(retirer.dataset.retirer); return; }
+      const proche = t.closest("[data-proche]");
+      if (proche) { ouvrirFiche(article(proche.dataset.proche), false); return; }
+
+      // Boutons d'action (carte ou fiche)
+      const bouton = t.closest("[data-action]");
+      const conteneur = t.closest("[data-id]");
+      if (bouton && conteneur) { e.preventDefault(); agir(article(conteneur.dataset.id), bouton.dataset.action, conteneur.id === "fiche-in"); return; }
+      // Toucher une carte → sa fiche (au lieu d'aller directement sur le site)
+      const carteEl = t.closest(".article");
+      if (carteEl) {
+        if (e.ctrlKey || e.metaKey || e.button === 1) return;   // Ctrl + clic : ouvre le site dans un onglet
+        e.preventDefault();
+        ouvrirFiche(article(carteEl.dataset.id));
+      }
+    });
+
+    // Réglages de la feuille Filtres
+    $("#opt-titre").addEventListener("change", (e) => { dansLeTitre = e.target.checked; ecrire(CLE.titre, dansLeTitre); toutAfficher(); });
+    $("#opt-appris").addEventListener("change", (e) => {
+      filtreAppris = e.target.checked; ecrire(CLE.appris, filtreAppris); toutAfficher();
+      if (filtreAppris && modele.nbVotes < VOTES_MINI) toast(`Le filtre apprend dès ${VOTES_MINI} votes 👍 / 👎`);
+    });
+    $("#opt-masques").addEventListener("change", (e) => { voirMasques = e.target.checked; toutAfficher(); });
+    for (const [champ, type] of [["#mots-masques", "masques"], ["#mots-suivis", "suivis"]]) {
+      $(champ).addEventListener("change", (e) => {
+        (mots[sujetId] ||= {})[type] = [...new Set(e.target.value.split(",").map((m) => m.trim()).filter(Boolean))];
+        ecrire(CLE.mots, mots);
+        if (type === "suivis" && !mots[sujetId].suivis.length) filtreSuivis = false;
+        toutAfficher();
+        toast("Enregistré");
+      });
+    }
+
+    // Recherche : on attend 200 ms après la dernière touche
+    let minuteurRecherche;
+    $("#cherche").addEventListener("input", (e) => {
+      clearTimeout(minuteurRecherche);
+      minuteurRecherche = setTimeout(() => { recherche = e.target.value; combien = PAR_PAGE; afficherBarre(); afficherListe(); }, 200);
+    });
+
+    function toutMarquerLu() {
+      const ids = articlesFiltres().map((a) => a.id).filter((id) => !lus.has(id));
+      if (!ids.length) return;
+      ids.forEach((id) => lus.add(id));
+      ecrire(CLE.lus, [...lus].slice(-4000));
+      toutAfficher();
+      toast(`${ids.length} article${ids.length > 1 ? "s" : ""} marqué${ids.length > 1 ? "s" : ""} lu${ids.length > 1 ? "s" : ""}`,
+        { texte: "Annuler", faire: () => { ids.forEach((id) => lus.delete(id)); ecrire(CLE.lus, [...lus]); toutAfficher(); } });
+    }
+
+    /* =========================================================
+       SUJETS PERSO : ajouter / retirer
+       ========================================================= */
+    $("#form-ajout").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const nom = $("#ajout-nom").value.trim();
+      const precis = $("#ajout-precis").value.trim();
+      if (!nom) return;
+      const id = "p-" + slug(nom);
+      if (tousLesSujets().some((s) => s.id === id || simple(s.nom) === simple(nom))) { toast("Ce sujet est déjà suivi"); return; }
+      perso.push({ id, nom, precis });
+      ecrire(CLE.perso, perso);
+      $("#ajout-nom").value = $("#ajout-precis").value = "";
+      fermerFeuilles();
+      sujetId = id; filtreSource = "tout"; donnees = null; avisCommuns = [];
+      setTimeout(() => { afficherSujets(); chargerSujet(); }, 60);
+      toast(`« ${nom} » ajouté`);
+    });
+    function retirerSujet(id) {
+      const s = perso.find((p) => p.id === id);
+      if (!s) return;
+      perso = perso.filter((p) => p.id !== id);
+      ecrire(CLE.perso, perso);
+      if (sujetId === id) { sujetId = tousLesSujets()[0]?.id || "carrefour"; donnees = null; chargerSujet(); }
+      afficherAjout(); afficherSujets();
+      toast(`« ${s.nom} » n'est plus suivi`, { texte: "Annuler", faire: () => { perso.push(s); ecrire(CLE.perso, perso); afficherAjout(); afficherSujets(); } });
+    }
+
+    /* =========================================================
+       CLAVIER (ordinateur) — comme Gmail / Feedly
+       ========================================================= */
+    function bougerChoix(sens) {
+      const ids = $$("#liste .article").map((el) => el.dataset.id);
+      if (!ids.length) return;
+      let i = ids.indexOf(choisi);
+      i = i < 0 ? 0 : Math.min(ids.length - 1, Math.max(0, i + sens));
+      choisi = ids[i];
+      $$("#liste .article.choisi").forEach((el) => el.classList.remove("choisi"));
+      const el = $(`#liste .article[data-id="${choisi}"]`);
+      el.classList.add("choisi");
+      el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+    document.addEventListener("keydown", (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const dansChamp = e.target.matches("input, textarea");
+      if (dansChamp) { if (e.key === "Escape") e.target.blur(); return; }
+      const ficheOuverte = $("#fiche").open;
+      if ($$("dialog[open]").length && !ficheOuverte && e.key !== "Escape") return;
+      const a = article(ficheOuverte ? $("#fiche-in").dataset.id : choisi);
+      const k = e.key;
+      let fait = true;
+      if (k === "j" || k === "ArrowDown" && !ficheOuverte) ficheOuverte ? ficheVoisine(1) : bougerChoix(1);
+      else if (k === "k" || k === "ArrowUp" && !ficheOuverte) ficheOuverte ? ficheVoisine(-1) : bougerChoix(-1);
+      else if (ficheOuverte && k === "ArrowRight") ficheVoisine(1);
+      else if (ficheOuverte && k === "ArrowLeft") ficheVoisine(-1);
+      else if ((k === "Enter" || k === "o") && a && !ficheOuverte) ouvrirFiche(a);
+      else if (k === "v" && a) agir(a, "site", ficheOuverte);
+      else if (k === "s" && a) agir(a, "favori", ficheOuverte);
+      else if (k === "x" && a) agir(a, "non", ficheOuverte);
+      else if ((k === "+" || k === "=") && a) agir(a, "oui", ficheOuverte);
+      else if (k === "m" && a) agir(a, "lu", ficheOuverte);
+      else if (k === "A") toutMarquerLu();
+      else if (k === "/") $("#cherche").focus();
+      else if (k === "c") { compact = !compact; ecrire(CLE.compact, compact); toutAfficher(); }
+      else if (k === "r") charger();
+      else if (["1", "2", "3"].includes(k)) { vue = ["tout", "nonlus", "favoris"][+k - 1]; ecrire(CLE.vue, vue); toutAfficher(); }
+      else if (k === "?") ouvrirFeuille("clavier");
+      else fait = false;
+      if (fait) e.preventDefault();
+    });
+
+    /* =========================================================
+       GLISSER (swipe) — « pointer events » : doigt et souris pareil.
+       Liste : → ⭐ favori, ← 👎 masquer. Fiche : ← / → article suivant / précédent.
+       ========================================================= */
+    let geste = null, ignorerClic = false;
     function debutGeste(e, el, cible) {
       if (e.pointerType === "mouse" && e.button !== 0) return;
       geste = { el, cible, x0: e.clientX, y0: e.clientY, dx: 0, horizontal: null };
     }
-    function suiteGeste(e) {
+    document.addEventListener("pointermove", (e) => {
       if (!geste) return;
       const dx = e.clientX - geste.x0, dy = e.clientY - geste.y0;
       if (geste.horizontal === null) {
-        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;      // pas encore assez bougé pour décider
-        geste.horizontal = Math.abs(dx) > Math.abs(dy) * 1.3;  // surtout horizontal ? sinon c'est un défilement
+        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+        geste.horizontal = Math.abs(dx) > Math.abs(dy) * 1.3;   // surtout horizontal ? sinon c'est un défilement
         if (!geste.horizontal) { geste = null; return; }
-        geste.el.setPointerCapture?.(e.pointerId);              // le doigt peut sortir de la carte
+        geste.el.setPointerCapture?.(e.pointerId);
       }
       geste.dx = dx;
       if (geste.cible === "carte") {
-        const enveloppe = geste.el.parentElement;
+        const env = geste.el.parentElement;
         geste.el.classList.remove("revient");
         geste.el.style.transform = `translateX(${dx}px)`;
-        enveloppe.classList.toggle("vers-droite", dx > 0);
-        enveloppe.classList.toggle("vers-gauche", dx < 0);
-        enveloppe.classList.toggle("pret", Math.abs(dx) > SEUIL_GLISSE);
-      } else {
-        geste.el.style.transform = `translateX(${dx * 0.5}px)`;   // la fiche suit le doigt, freinée
-      }
-    }
-    function finGeste() {
+        env.classList.toggle("vers-droite", dx > 0);
+        env.classList.toggle("vers-gauche", dx < 0);
+        env.classList.toggle("pret", Math.abs(dx) > SEUIL_GLISSE);
+      } else geste.el.style.transform = `translateX(${dx * 0.5}px)`;
+    });
+    document.addEventListener("pointerup", () => {
       if (!geste) return;
       const { el, dx, cible, horizontal } = geste;
       geste = null;
       if (!horizontal) return;
       ignorerClic = true; setTimeout(() => (ignorerClic = false), 350);
-      el.classList.add("revient");
-      el.style.transform = "";
+      el.classList.add("revient"); el.style.transform = "";
       if (cible === "carte") {
-        const enveloppe = el.parentElement;
-        setTimeout(() => enveloppe.classList.remove("vers-droite", "vers-gauche", "pret"), 200);
-        if (Math.abs(dx) < SEUIL_GLISSE) return;
-        const a = donnees.articles.find((x) => x.id === el.dataset.id);
-        if (dx > 0) {                                             // → ⭐ favori (ou retirer)
-          const etait = favoris.has(a.id);
-          etait ? favoris.delete(a.id) : favoris.add(a.id);
-          ecrire(CLE.favoris, [...favoris]);
-          toast(etait ? "Retiré des favoris" : "⭐ Ajouté aux favoris");
-          toutAfficher();
-        } else {                                                  // ← 👎 masquer
-          const avant = mesAvis[sujetId]?.[a.id]?.vote || 0;
-          voter(a, -1);
-          toast("Article masqué", { texte: "Annuler", faire: () => voter(a, avant) });
-        }
-      } else if (Math.abs(dx) > SEUIL_GLISSE * 0.8) {             // fiche : suivant / précédent
-        const liste = listeFiche;
-        const i = liste.findIndex((x) => x.id === $("#fiche-in").dataset.id);
-        const j = i + (dx < 0 ? 1 : -1);
-        if (i < 0 || j < 0 || j >= liste.length) { toast(dx < 0 ? "C'était le dernier article" : "C'était le premier article"); return; }
-        el.classList.remove("revient");
-        ouvrirFiche(liste[j]);
-        el.classList.remove("entre-droite", "entre-gauche");
-        void el.offsetWidth;                                      // relance l'animation
-        el.classList.add(dx < 0 ? "entre-droite" : "entre-gauche");
-      }
-    }
-    $("#liste").addEventListener("pointerdown", (e) => {
-      const carte = e.target.closest(".glisse > .article");
-      if (carte) debutGeste(e, carte, "carte");
+        setTimeout(() => el.parentElement?.classList.remove("vers-droite", "vers-gauche", "pret"), 200);
+        if (Math.abs(dx) >= SEUIL_GLISSE) agir(article(el.dataset.id), dx > 0 ? "favori" : "non");
+      } else if (Math.abs(dx) > SEUIL_GLISSE * 0.8) { el.classList.remove("revient"); ficheVoisine(dx < 0 ? 1 : -1); }
     });
-    $("#fiche-in").addEventListener("pointerdown", (e) => {
-      if (e.target.closest("a, button")) return;                  // pas sur les boutons
-      debutGeste(e, $("#fiche-in"), "fiche");
-    });
-    document.addEventListener("pointermove", suiteGeste);
-    document.addEventListener("pointerup", finGeste);
-    document.addEventListener("pointercancel", () => {             // geste interrompu : tout remettre
+    document.addEventListener("pointercancel", () => {
       if (geste) { geste.el.style.transform = ""; geste.el.parentElement?.classList.remove("vers-droite", "vers-gauche", "pret"); geste = null; }
     });
-    // Le clic qui suit un glisser est annulé (sinon l'article s'ouvrirait en plus)
+    $("#liste").addEventListener("pointerdown", (e) => {
+      const c = e.target.closest(".glisse > .article");
+      if (c && !e.target.closest("[data-action]")) debutGeste(e, c, "carte");
+    });
+    $("#fiche-in").addEventListener("pointerdown", (e) => {
+      if (!e.target.closest("a, button")) debutGeste(e, $("#fiche-in"), "fiche");
+    });
+    // Le clic qui suit un glisser est annulé (sinon la fiche s'ouvrirait en plus)
     document.addEventListener("click", (e) => { if (ignorerClic) { e.preventDefault(); e.stopPropagation(); } }, true);
 
-    // Astuce montrée une seule fois
-    if (!lire("veille.astuce-glisser", false)) {
-      setTimeout(() => toast("Astuce : glisse un article → ⭐ favori, ← 👎 masquer"), 2500);
-      ecrire("veille.astuce-glisser", true);
-    }
-
-    function fermerFiche() {
-      if ($("#fiche").open) history.back();     // → popstate → close()
-    }
-    window.addEventListener("popstate", () => {
-      if ($("#fiche").open) { $("#fiche").close(); toutAfficher(); }
-    });
-    // Toucher le fond sombre autour de la fiche la ferme aussi
-    $("#fiche").addEventListener("click", (e) => { if (e.target.id === "fiche") fermerFiche(); });
-
-    // Les sources suivies et l'état des avis, dans « Sources et réglages »
-    function afficherSources() {
-      $("#mots-masques").value = motsDu("masques").join(", ");
-      $("#mots-suivis").value = motsDu("suivis").join(", ");
-      $("#mots-sujet-1").textContent = $("#mots-sujet-2").textContent = "(" + (donnees.nom || "") + ")";
-      $("#liste-sources").innerHTML = (donnees.sources || []).map((s) => `
-        <li>${s.site ? `<a href="${echap(s.site)}" target="_blank" rel="noopener">${echap(s.nom)}</a>`
-                     : `<b>${echap(s.nom)}</b> (toute la presse, via Google Actualités)`}
-          ${s.ok ? "" : ` — <span class="alerte">flux indisponible à la dernière collecte</span>`}</li>`).join("");
-      const n = modele.nbVotes;
-      $("#aide-avis").innerHTML = `Avis : <b>${n}</b> vote${n > 1 ? "s" : ""} sur ce sujet, `
-        + (partage() ? "partagés avec les autres lecteurs." : "gardés dans ce téléphone (pas encore partagés).")
-        + (n < VOTES_MINI ? ` Le filtre appris démarre à ${VOTES_MINI} votes.` : " ✨ Le filtre apprend de tous ces votes.");
-    }
-
     /* =========================================================
-       ACTIONS DE L'UTILISATEUR
-       Un seul écouteur sur toute la liste (« délégation ») : plus simple
-       que d'en poser un sur chaque bouton, et ça marche après chaque redessin.
+       DÉMARRAGE
        ========================================================= */
-    // Le même écouteur sert pour la liste et pour la fiche : chacune porte data-id
-    async function gererClic(e) {
-      if (e.target.closest("#plus")) { combien += PAR_PAGE; afficherListe(); return; }
-      if (e.target.closest("#fermer-fiche")) { fermerFiche(); return; }
-      const proche = e.target.closest("[data-proche]");
-      if (proche) { ouvrirFiche(donnees.articles.find((x) => x.id === proche.dataset.proche)); return; }
-      const carteEl = e.target.closest("[data-id]");
-      if (!carteEl) return;
-      const id = carteEl.dataset.id;
-      const a = donnees.articles.find((x) => x.id === id);
-      const dansFiche = carteEl.id === "fiche-in";
-
-      // Toucher l'article dans la liste → sa fiche (au lieu d'aller directement sur le site)
-      if (e.target.closest("a.lien")) {
-        e.preventDefault();
-        carteEl.classList.add("lu");
-        carteEl.querySelector(".nouveau")?.remove();
-        listeFiche = articlesFiltres();
-        ouvrirFiche(a);
-        return;
-      }
-      // Dans la fiche, après une action (vote, favori), on redessine la fiche
-      const rafraichir = () => { if (dansFiche) remplirFiche(a); };
-      // 👍 / 👎 : retoucher le même bouton retire le vote
-      const bAvis = e.target.closest(".avis");
-      if (bAvis) {
-        const vote = Number(bAvis.dataset.vote);
-        const avant = mesAvis[sujetId]?.[id]?.vote || 0;
-        voter(a, avant === vote ? 0 : vote);
-        if (vote === -1 && avant !== -1) toast("Article masqué", { texte: "Annuler", faire: () => { voter(a, avant); rafraichir(); } });
-        rafraichir();
-        return;
-      }
-      // Étoile : ajouter / retirer des favoris
-      if (e.target.closest(".fav")) {
-        favoris.has(id) ? favoris.delete(id) : favoris.add(id);
-        ecrire(CLE.favoris, [...favoris]);
-        e.target.closest(".fav").setAttribute("aria-pressed", favoris.has(id));
-        afficherFiltres();
-        if (filtre === "favoris") afficherListe();
-        rafraichir();
-        return;
-      }
-      // Partager : feuille de partage du téléphone, sinon copie du lien
-      if (e.target.closest(".partage")) {
-        const texte = `${a.titre} (${a.media || sources[a.source]?.nom || ""})`;
-        try {
-          if (navigator.share) await navigator.share({ title: a.titre, text: texte, url: a.lien });
-          else { await navigator.clipboard.writeText(texte + "\n" + a.lien); toast("Lien copié"); }
-        } catch { /* partage annulé : rien à faire */ }
-      }
-    }
-    $("#liste").addEventListener("click", gererClic);
-    $("#fiche").addEventListener("click", gererClic);
-
-    // Onglets des sujets
-    $("#sujets").addEventListener("click", (e) => {
-      const b = e.target.closest(".onglet");
-      if (!b || b.dataset.sujet === sujetId) return;
-      sujetId = b.dataset.sujet;
-      filtre = "tout"; avisCommuns = [];
-      afficherOnglets();
-      $("#liste").innerHTML = "";
-      window.scrollTo({ top: 0 });
-      chargerSujet();
-    });
-
-    // Pastilles de filtre et interrupteurs
-    $("#filtres").addEventListener("click", (e) => {
-      const b = e.target.closest(".filtre");
-      if (!b) return;
-      if (b.id === "voir-masques") { voirMasques = !voirMasques; b.setAttribute("aria-pressed", voirMasques); afficherListe(); return; }
-      if (b.id === "bascule-titre") { dansLeTitre = !dansLeTitre; ecrire(CLE.titre, dansLeTitre); }
-      else if (b.id === "bascule-appris") {
-        filtreAppris = !filtreAppris; ecrire(CLE.appris, filtreAppris);
-        if (filtreAppris && modele.nbVotes < VOTES_MINI) toast(`Le filtre apprend dès ${VOTES_MINI} votes 👍 / 👎`);
-      }
-      else if (b.id === "bascule-nonlus") { seulementNonLus = !seulementNonLus; ecrire(CLE.nonLus, seulementNonLus); }
-      else filtre = b.dataset.filtre;
-      combien = PAR_PAGE;
-      afficherFiltres();
-      afficherListe();
-      window.scrollTo({ top: 0 });
-    });
-
-    // « Afficher / Cacher » les articles masqués par les avis
-    // (géré dans l'écouteur des filtres, plus bas : c'est une pastille comme les autres)
-
-    // Recherche : on attend 200 ms après la dernière touche avant de redessiner
-    let minuteurRecherche;
-    $("#cherche").addEventListener("input", (e) => {
-      clearTimeout(minuteurRecherche);
-      minuteurRecherche = setTimeout(() => { recherche = e.target.value; combien = PAR_PAGE; afficherFiltres(); afficherListe(); }, 200);
-    });
-
-    $("#actualiser").addEventListener("click", charger);
-
-    // Vue compacte / cartes
-    $("#vue").addEventListener("click", () => {
-      compact = !compact; ecrire(CLE.compact, compact);
-      document.body.classList.toggle("compact", compact);
-    });
-
-    // « ✓ Tout marquer lu » : les articles AFFICHÉS (filtres compris), avec Annuler
-    $("#statut").addEventListener("click", (e) => {
-      if (!e.target.closest("#tout-lu")) return;
-      const ids = articlesFiltres().map((a) => a.id).filter((id) => !lus.has(id));
-      ids.forEach((id) => lus.add(id));
-      ecrire(CLE.lus, [...lus].slice(-3000));
-      toutAfficher();
-      toast(`${ids.length} article${ids.length > 1 ? "s" : ""} marqué${ids.length > 1 ? "s" : ""} lu${ids.length > 1 ? "s" : ""}`, {
-        texte: "Annuler",
-        faire: () => { ids.forEach((id) => lus.delete(id)); ecrire(CLE.lus, [...lus]); toutAfficher(); }
-      });
-    });
-
-    // Mots masqués / surveillés : enregistrés quand on quitte la case (ou touche « OK » du clavier)
-    for (const [champ, type] of [["#mots-masques", "masques"], ["#mots-suivis", "suivis"]]) {
-      $(champ).addEventListener("change", (e) => {
-        const liste = e.target.value.split(",").map((m) => m.trim()).filter(Boolean);
-        (mots[sujetId] ||= {})[type] = [...new Set(liste)];
-        ecrire(CLE.mots, mots);
-        if (type === "suivis" && !liste.length && filtre === "suivis") filtre = "tout";
-        toutAfficher();
-        toast(type === "masques" ? "Mots masqués enregistrés" : "Mots surveillés enregistrés");
-      });
-    }
-
-    // Retour dans l'appli après un moment (appli installée laissée ouverte) : on recharge
+    // Retour dans l'appli après 15 min : on recharge
     let cacheeDepuis = 0;
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) cacheeDepuis = Date.now();
       else if (cacheeDepuis && Date.now() - cacheeDepuis > 15 * 60000) charger();
     });
-
+    // Astuce montrée une fois (gestes sur écran tactile, raccourcis sur ordinateur)
+    if (!lire(CLE.astuce, false)) {
+      setTimeout(() => toast(matchMedia("(pointer: fine)").matches ? "Astuce : touche ? pour les raccourcis clavier" : "Astuce : glisse un article → ⭐ favori, ← 👎 masquer"), 2500);
+      ecrire(CLE.astuce, true);
+    }
     $("#version").textContent = "v" + VERSION;
-
-    // PWA : enregistrement du service worker (rend la page installable)
     if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
-
+    if (index) afficherSujets();
     charger();
   </script>
 </body>

@@ -1,6 +1,6 @@
 /* ============================================================
-   Veille — avis des lecteurs (👍 / 👎) — script Google Apps Script
-   Version 1.0.0
+   Veille — avis des lecteurs (👍 / 👎) et sujets perso — script Google Apps Script
+   Version 1.1.0
    ------------------------------------------------------------
    Met en commun les votes de tous les lecteurs de baiji.fr/veille/ :
    quand quelqu'un dit qu'un article n'est « pas pertinent », il est
@@ -30,16 +30,22 @@
 
    Historique :
     • 1.0.0 : lecture des votes d'un sujet (GET), vote / changement / retrait (POST)
+    • 1.1.0 : GET ?action=flux&q=… = recherche Google Actualités pour les sujets que
+              chaque lecteur ajoute lui-même dans l'appli (le navigateur ne peut pas
+              interroger Google Actualités directement : règle « CORS ») ; réponse
+              gardée 20 min en cache pour ne pas solliciter Google à chaque ouverture
    ============================================================ */
 
 const ONGLET = "Avis";
 const COLONNES = ["quand", "sujet", "id", "titre", "media", "vote", "qui"];
 const MAX_LIGNES = 20000;      // garde-fou : au-delà, on refuse les nouveaux votes
 
-/* ---- Lecture : GET ?cle=…&sujet=carrefour → { ok, avis: [{id, titre, media, vote, qui}] } ---- */
+/* ---- Lecture : GET ?cle=…&sujet=carrefour → { ok, avis: [{id, titre, media, vote, qui}] }
+        ou GET ?cle=…&action=flux&q=… → { ok, articles: [...] } (voir flux() plus bas) ---- */
 function doGet(e) {
   const p = (e && e.parameter) || {};
   if (!cleValide(p.cle)) return repondre({ ok: false, erreur: "clé incorrecte" });
+  if (p.action === "flux") return repondre(flux(p.q));
   const lignes = toutesLesLignes();
   const avis = lignes
     .filter((l) => !p.sujet || l[1] === p.sujet)
@@ -84,6 +90,42 @@ function doPost(e) {
     verrou.releaseLock();
   }
   return repondre({ ok: true });
+}
+
+/* ---- Sujets perso : recherche Google Actualités ----
+   q = la recherche, comme sur news.google.com (ex. "Elis" (blanchisserie OR linge)).
+   Renvoie { ok, articles: [{titre, lien, date, media, media_url}] } (100 au plus). */
+function flux(q) {
+  q = String(q || "").trim().slice(0, 300);
+  if (!q) return { ok: false, erreur: "recherche vide" };
+  const cache = CacheService.getScriptCache();
+  const cleCache = "flux:" + Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, q));
+  const deja = cache.get(cleCache);
+  if (deja) return JSON.parse(deja);
+
+  const url = "https://news.google.com/rss/search?hl=fr&gl=FR&ceid=FR:fr&q=" + encodeURIComponent(q);
+  const rep = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+  if (rep.getResponseCode() !== 200) return { ok: false, erreur: "Google Actualités : erreur " + rep.getResponseCode() };
+
+  const canal = XmlService.parse(rep.getContentText()).getRootElement().getChild("channel");
+  const articles = canal.getChildren("item").slice(0, 100).map((it) => {
+    const source = it.getChild("source");
+    const media = source ? source.getText() : "";
+    let titre = it.getChildText("title") || "";
+    // Google ajoute « - Nom du journal » à la fin du titre : on l'enlève
+    if (media && titre.endsWith(" - " + media)) titre = titre.slice(0, -(" - " + media).length);
+    return {
+      titre: titre,
+      lien: it.getChildText("link") || "",
+      date: new Date(it.getChildText("pubDate")).toISOString(),
+      media: media,
+      media_url: source ? (source.getAttribute("url") || { getValue: () => "" }).getValue() : ""
+    };
+  });
+  const resultat = { ok: true, articles: articles };
+  const texte = JSON.stringify(resultat);
+  if (texte.length < 95000) cache.put(cleCache, texte, 20 * 60);   // 20 min (limite du cache : 100 Ko)
+  return resultat;
 }
 
 /* ---- Petits outils ---- */

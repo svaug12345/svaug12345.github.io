@@ -1,7 +1,7 @@
 {
   "_aide": [
     "Réglages de la veille (lus par outils/veille.py à chaque collecte).",
-    "« sujets » : un bloc par sujet suivi = un onglet dans l'appli. Pour un nouveau sujet : copier le bloc « elis », changer id (court, sans espace ni accent), nom, mots_cles et les recherches.",
+    "« sujets » : sujets collectés par le robot pour TOUT LE MONDE (un onglet chacun ; Carrefour seul par défaut). Chaque lecteur ajoute ses propres sujets dans l'appli (« ＋ Suivre un sujet »), cherchés via le script Google « Veille - avis ». Pour un nouveau sujet commun : copier le bloc « carrefour », changer id, nom, mots_cles et les recherches.",
     "mots_cles : servent à la pastille « 🎯 Dans le titre » de l'appli, et à trier les flux « filtrer: true » (un article n'est gardé que s'il contient l'un de ces mots, sans tenir compte des accents ni des majuscules).",
     "Chaque source a un ou plusieurs flux : « url » = adresse d'un flux RSS ; « google » = une recherche Google Actualités (même syntaxe que sur news.google.com : guillemets, OR, parenthèses, site:).",
     "Une source avec « autres »: true cherche dans TOUTE la presse : chaque article garde le nom de son journal, et ceux d'un site déjà suivi par le sujet sont rangés sous ce site.",
@@ -70,31 +70,6 @@
             },
             {
               "google": "\"groupe Carrefour\" OR \"Alexandre Bompard\""
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "elis",
-      "nom": "Elis",
-      "mots_cles": [
-        "elis"
-      ],
-      "sources": [
-        {
-          "id": "presse",
-          "nom": "Presse",
-          "court": "Presse",
-          "site": "",
-          "couleur": "#5d7277",
-          "autres": true,
-          "flux": [
-            {
-              "google": "\"groupe Elis\" OR \"Elis SA\" OR \"Xavier Martiré\""
-            },
-            {
-              "google": "Elis (blanchisserie OR linge OR \"vêtements de travail\" OR hygiène OR textile OR \"location-entretien\")"
             }
           ]
         }
