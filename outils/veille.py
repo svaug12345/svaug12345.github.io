@@ -2,7 +2,7 @@
 """
 ============================================================
 outils/veille.py — collecte de la « Veille » (plusieurs sujets)
-Version 2.0.0
+Version 2.1.0
 ------------------------------------------------------------
 Ce script tourne tout seul sur les serveurs de GitHub
 (workflow .github/workflows/veille.yml, toutes les 2 heures).
@@ -38,13 +38,19 @@ Historique :
             (ex. LSA trouvé par la recherche générale) est rangé sous ce site
  • v2.0.0 : plusieurs sujets (« sujets » dans sources.json) ; un fichier par sujet dans
             veille/donnees/, plus veille/donnees/index.json (liste des onglets)
+ • v2.1.0 : « enrichissement » : pour chaque nouvel article, le vrai lien est retrouvé
+            derrière le lien Google Actualités, puis la page du journal est lue pour en
+            garder le chapeau (og:description) et l'image (og:image) → fiche détaillée
+            dans l'appli. 40 articles au plus par sujet et par collecte.
 ============================================================
 """
+import base64
 import hashlib
 import html
 import json
 import re
 import sys
+import time
 import unicodedata
 import urllib.parse
 import urllib.request
@@ -53,7 +59,7 @@ from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 
-VERSION = "2.0.0"
+VERSION = "2.1.0"
 
 RACINE = Path(__file__).resolve().parent.parent      # racine du dépôt
 REGLAGES = RACINE / "veille" / "sources.json"
@@ -209,6 +215,115 @@ def parle_du_sujet(art: dict, mots: list) -> bool:
 
 
 # ------------------------------------------------------------
+# Enrichissement : vrai lien, chapeau et image de chaque article
+# ------------------------------------------------------------
+MAX_ENRICHIS = 40           # articles enrichis au plus par sujet et par collecte (politesse)
+TAILLE_PAGE = 600_000       # on ne lit que le début d'une page (les balises <meta> sont en haut)
+
+
+def id_google(url: str) -> str:
+    """« https://news.google.com/rss/articles/CBMi…?oc=5 » → « CBMi… » (ou "" si pas Google)."""
+    m = re.search(r"news\.google\.com/(?:rss/)?articles/([^?/#]+)", url or "")
+    return m.group(1) if m else ""
+
+
+def decoder_google(url: str) -> str:
+    """Retrouve l'adresse du journal cachée derrière un lien Google Actualités.
+    Deux formats existent :
+      • ancien : l'identifiant est du base64 qui contient l'adresse en clair ;
+      • récent (« AU_yqL… ») : il faut demander à Google, en 2 temps — lire la page
+        de l'article pour y prendre une signature et une date (data-n-a-sg / data-n-a-ts),
+        puis appeler le service interne « batchexecute » de Google Actualités, qui
+        renvoie l'adresse. C'est ce que fait la bibliothèque « googlenewsdecoder ».
+    Renvoie "" si on n'y arrive pas (l'article garde alors son lien Google)."""
+    ident = id_google(url)
+    if not ident:
+        return ""
+    # 1) ancien format : base64 « url-safe » (on rajoute les « = » de fin qui manquent)
+    try:
+        brut = base64.urlsafe_b64decode(ident + "=" * (-len(ident) % 4))
+        m = re.search(rb"https?://[\x21-\x7e]+", brut)
+        if m and not ident.startswith("AU_yqL"):
+            return m.group(0).decode("ascii", "ignore")
+    except (ValueError, base64.binascii.Error):
+        pass
+    # 2) format récent : signature + date lues dans la page Google de l'article
+    try:
+        page = telecharger(f"https://news.google.com/articles/{ident}?hl=fr&gl=FR&ceid=FR:fr").decode("utf-8", "ignore")
+        sg = re.search(r'data-n-a-sg="([^"]+)"', page)
+        ts = re.search(r'data-n-a-ts="([^"]+)"', page)
+        if not (sg and ts):
+            return ""
+        demande = ('["garturlreq",[["X","X",["X","X"],null,null,1,1,"US:en",null,1,null,null,null,null,null,0,1],'
+                   '"X","X",1,[1,1,1],1,1,null,0,0,null,0],"%s",%s,"%s"]' % (ident, ts.group(1), sg.group(1)))
+        corps = "f.req=" + urllib.parse.quote(json.dumps([[["Fbv4je", demande]]]))
+        req = urllib.request.Request(
+            "https://news.google.com/_/DotsSplashUi/data/batchexecute",
+            data=corps.encode(), method="POST",
+            headers={**ENTETES, "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"})
+        with urllib.request.urlopen(req, timeout=15) as rep:
+            texte = rep.read().decode("utf-8", "ignore")
+        # Réponse : une ligne « )]}' », puis du JSON dont la 3e case contient encore du JSON
+        bloc = json.loads(texte.split("\n\n")[1])
+        return json.loads(bloc[0][2])[1]
+    except Exception as e:
+        print(f"   · lien Google non décodé : {str(e)[:80]}")
+        return ""
+
+
+def lire_meta(page: str, *noms) -> str:
+    """Contenu d'une balise <meta property|name="…" content="…">, dans n'importe quel ordre."""
+    for nom in noms:
+        for motif in (rf'<meta[^>]+(?:property|name)=["\']{nom}["\'][^>]*content=["\']([^"\']+)',
+                      rf'<meta[^>]+content=["\']([^"\']+)["\'][^>]*(?:property|name)=["\']{nom}["\']'):
+            m = re.search(motif, page, re.I)
+            if m:
+                return html.unescape(m.group(1)).strip()
+    return ""
+
+
+def enrichir(art: dict) -> None:
+    """Complète l'article sur place : vrai lien, chapeau (« resume »), image.
+    Ne lève jamais d'erreur : au pire, l'article reste comme il était."""
+    art["enrichi"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")   # tenté : on ne recommence pas
+    lien = art["lien"]
+    if id_google(lien):
+        vrai = decoder_google(lien)
+        if not vrai:
+            return
+        art["lien"] = lien = vrai
+    try:
+        req = urllib.request.Request(lien, headers={**ENTETES, "Accept": "text/html,*/*"})
+        with urllib.request.urlopen(req, timeout=12) as rep:
+            page = rep.read(TAILLE_PAGE).decode(rep.headers.get_content_charset() or "utf-8", "ignore")
+    except Exception as e:
+        print(f"   · page illisible ({domaine(lien)}) : {str(e)[:60]}")
+        return
+    chapeau = sans_html(lire_meta(page, "og:description", "twitter:description", "description"))
+    # On garde le chapeau seulement s'il apporte quelque chose de plus que le titre
+    if chapeau and cle_titre(chapeau)[:40] != cle_titre(art["titre"])[:40]:
+        art["resume"] = couper(chapeau, 400)
+    image = lire_meta(page, "og:image", "twitter:image")
+    if image.startswith("//"):
+        image = "https:" + image
+    if image.startswith("http"):
+        art["image"] = image
+
+
+def enrichir_sujet(articles: list) -> int:
+    """Enrichit les articles pas encore tentés, du plus récent au plus ancien,
+    dans la limite de MAX_ENRICHIS. Renvoie le nombre d'articles tentés."""
+    a_faire = [a for a in articles if not a.get("enrichi")][:MAX_ENRICHIS]
+    for a in a_faire:
+        enrichir(a)
+        time.sleep(0.4)          # on ne bombarde pas les sites
+    if a_faire:
+        ok = sum(1 for a in a_faire if a.get("image") or (a.get("resume") and "news.google." not in a["lien"]))
+        print(f"✦ {len(a_faire)} articles enrichis ({ok} avec chapeau ou image)")
+    return len(a_faire)
+
+
+# ------------------------------------------------------------
 # Un sujet
 # ------------------------------------------------------------
 def collecter_sujet(sujet: dict, reglages: dict, dossier_test) -> bool:
@@ -301,6 +416,10 @@ def collecter_sujet(sujet: dict, reglages: dict, dossier_test) -> bool:
     garder = [a for a in connus.values() if (lire_date(a["date"]) or maintenant) >= limite]
     garder.sort(key=lambda a: a["date"], reverse=True)
     garder = garder[: reglages.get("max_articles", 600)]
+
+    # 3 bis) Enrichissement (pas en mode test : il faut internet)
+    if not dossier_test:
+        enrichir_sujet(garder)
 
     # 4) Écriture. Si rien n'a changé, on ne touche pas au fichier : le workflow
     #    ne fera alors pas de commit (pas de bruit inutile).

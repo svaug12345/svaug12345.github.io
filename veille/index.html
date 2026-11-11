@@ -2,7 +2,7 @@
 <!--
   ============================================================
   Veille — la presse sur Carrefour, Elis… (un onglet par sujet)
-  Version 2.2.0
+  Version 2.3.0
   ------------------------------------------------------------
   Comment ça marche :
    • un robot GitHub (.github/workflows/veille.yml) lance outils/veille.py
@@ -40,6 +40,10 @@
               haut (la moitié de l'écran était prise) ; le bandeau des articles masqués devient
               une petite pastille « 🙈 n » dans les filtres ; 🔒 sur les journaux souvent
               réservés aux abonnés (liste PAYANTS)
+   • v2.3.0 : toucher un article ouvre sa FICHE (image, chapeau, date complète, avis, « Le même
+              sujet ailleurs » = articles d'autres journaux sur la même info, bouton « Lire
+              l'article ») ; vignette à droite du titre quand le robot a trouvé une image ;
+              chapeau et image viennent du robot v2.1.0 (lecture de la page du journal)
   ============================================================
 -->
 <html lang="fr">
@@ -263,6 +267,48 @@
     body.compact .actions { margin: 0; padding: 0; }
     body.compact .suivi { box-shadow: inset 4px 0 0 #f59e0b; }
 
+    /* =========================================================
+       v2.3.0 — vignette et fiche d'un article
+       ========================================================= */
+    .corps { display: flex; gap: 12px; align-items: flex-start; }
+    .corps > div { flex: 1; min-width: 0; }
+    .vignette {
+      flex: none; width: 76px; height: 76px; border-radius: 12px; object-fit: cover;
+      background: var(--soft); margin-top: 2px;
+    }
+    body.compact .vignette { display: none; }
+
+    /* La fiche : feuille qui monte du bas sur téléphone, fenêtre centrée sur tablette */
+    dialog#fiche {
+      border: 0; padding: 0; width: 100%; max-width: 640px; max-height: 92vh; margin: auto auto 0;
+      border-radius: 22px 22px 0 0; background: var(--card); color: var(--ink);
+      box-shadow: 0 -10px 40px rgba(0,0,0,.25); overflow: auto;
+    }
+    dialog#fiche::backdrop { background: rgba(0, 25, 50, .5); }
+    .fiche-in { padding: 10px 18px calc(env(safe-area-inset-bottom) + 18px); }
+    .poignee { width: 42px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto 10px; }
+    .fiche-haut { display: flex; align-items: center; gap: 8px; }
+    .fiche-haut .meta { flex: 1; flex-wrap: wrap; }
+    .fermer { border: 0; background: var(--soft); width: 36px; height: 36px; border-radius: 50%; font-size: 18px; color: var(--muted); cursor: pointer; }
+    .fiche-image { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 14px; margin-top: 12px; background: var(--soft); }
+    .fiche-in h2 { font-size: 20px; line-height: 1.3; margin: 12px 0 8px; }
+    .fiche-chapeau { font-size: 15px; line-height: 1.55; color: #333; margin: 0; }
+    .fiche-vide { font-size: 14px; color: var(--muted); font-style: italic; margin: 0; }
+    .fiche-payant { font-size: 13px; color: var(--muted); margin: 10px 0 0; }
+    .lire {
+      display: block; text-align: center; margin: 16px 0 6px; padding: 14px; border-radius: 14px;
+      background: var(--accent); color: #fff; text-decoration: none;
+      font: 700 13px var(--police); letter-spacing: .1em; text-transform: uppercase;
+    }
+    .lire small { display: block; font-weight: 400; letter-spacing: 0; text-transform: none; opacity: .85; margin-top: 2px; }
+    .fiche-in .actions { margin-top: 4px; }
+    .proches h3 { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 18px 0 6px; }
+    .proche {
+      display: flex; gap: 10px; align-items: baseline; width: 100%; text-align: left; border: 0; border-top: 1px solid var(--line);
+      background: none; padding: 10px 0; font: 500 14px var(--police); color: var(--ink); cursor: pointer;
+    }
+    .proche .source { flex: none; }
+
     /* Petit message en bas (« Lien copié », etc.) */
     #toast {
       position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 20px); transform: translateX(-50%);
@@ -284,6 +330,10 @@
       .recherche { grid-column: 2; grid-row: 1; }
       .filtres { grid-column: 1 / -1; }
       .cartes { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 760px) {
+      dialog#fiche { margin: auto; border-radius: 22px; max-height: 86vh; }
+      .poignee { display: none; }
     }
     @media (min-width: 1100px) {
       .cartes { grid-template-columns: repeat(3, 1fr); }
@@ -341,13 +391,15 @@
 
     <footer>Veille · <span id="version"></span> · baiji.fr</footer>
   </div>
+  <!-- Fiche d'un article (remplie par ouvrirFiche) -->
+  <dialog id="fiche" aria-label="Détail de l'article"><div class="fiche-in" id="fiche-in"></div></dialog>
   <div id="toast" hidden></div>
 
   <script>
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = "2.2.0";
+    const VERSION = "2.3.0";
 
     // Où lire les données. D'abord la copie « brute » du dépôt GitHub :
     // elle est à jour 1 à 5 min après chaque collecte, sans attendre que
@@ -841,13 +893,6 @@
 
     // Une carte d'article
     function carte(a, d) {
-      const s = sources[a.source] || { court: a.source, couleur: "#5d7277" };
-      // Pour une source « autres », on affiche le vrai journal (« Les Echos »…) plutôt que « Autres »
-      const etiquette = (s.autres && a.media) ? a.media : (s.court || s.nom);
-      const monVote = mesAvis[sujetId]?.[a.id]?.vote || 0;
-      // Compte des votes de tout le monde sur cet article
-      const votes = tousLesVotes().filter((v) => v.id === a.id);
-      const nbOui = votes.filter((v) => v.vote > 0).length, nbNon = votes.length - nbOui;
       // Note apprise, montrée seulement quand elle est nette (et qu'il y a assez de votes)
       const note = modele.nbVotes >= VOTES_MINI ? noter(a) : 0;
       const pastilleNote = note >= 1.5 ? `<span class="note bonne" title="Ressemble aux articles appréciés">✨ pertinent</span>`
@@ -856,25 +901,135 @@
       return `
         <article class="article ${lus.has(a.id) ? "lu" : ""} ${st === "rejete" || st === "masque" || aMotMasque(a) ? "rejete" : ""} ${aMotSuivi(a) ? "suivi" : ""}" data-id="${a.id}">
           <div class="meta">
-            <span class="source" style="background:${s.couleur}">${echap(etiquette)}</span>
+            ${pastilleSource(a)}
             ${estPayant(a) ? `<span class="payant" title="Ce journal réserve souvent ses articles aux abonnés">🔒</span>` : ""}
             <span class="heure">${FORMAT_HEURE.format(d)}</span>
             ${estNouveau(a) ? `<span class="nouveau">Nouveau</span>` : ""}
             ${pastilleNote}
           </div>
           <a class="lien" href="${echap(a.lien)}" target="_blank" rel="noopener">
-            <h2>${titreSurligne(a.titre)}</h2>
-            ${a.resume ? `<p class="resume">${echap(a.resume)}</p>` : ""}
+            <div class="corps">
+              <div>
+                <h2>${titreSurligne(a.titre)}</h2>
+                ${a.resume ? `<p class="resume">${echap(a.resume)}</p>` : ""}
+              </div>
+              ${vignette(a)}
+            </div>
           </a>
+          ${boutons(a)}
+        </article>`;
+    }
+
+    // Petite image à droite du titre. « no-referrer » : certains journaux refusent
+    // d'afficher leurs images sur un autre site quand on leur dit d'où l'on vient.
+    // Si l'image ne se charge pas, on la retire (onerror).
+    const vignette = (a) => a.image
+      ? `<img class="vignette" src="${echap(a.image)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : "";
+
+    // Rangée de boutons 👍 👎 … partage ⭐ (cartes ET fiche)
+    function boutons(a) {
+      const monVote = mesAvis[sujetId]?.[a.id]?.vote || 0;
+      const votes = tousLesVotes().filter((v) => v.id === a.id);
+      const nbOui = votes.filter((v) => v.vote > 0).length, nbNon = votes.length - nbOui;
+      return `
           <div class="actions">
             <button class="avis oui" data-vote="1" aria-pressed="${monVote === 1}" title="Pertinent">${PICTO_OUI}${nbOui || ""}</button>
             <button class="avis non" data-vote="-1" aria-pressed="${monVote === -1}" title="Pas pertinent (masque l'article)">${PICTO_NON}${nbNon || ""}</button>
             <span class="espace"></span>
             <button class="partage" title="Partager" aria-label="Partager">${PICTO_PARTAGE}</button>
             <button class="fav" title="Favori" aria-label="Favori" aria-pressed="${favoris.has(a.id)}">${PICTO_ETOILE}</button>
-          </div>
-        </article>`;
+          </div>`;
     }
+
+    // Pastille du journal (la même sur les cartes, la fiche et « le même sujet ailleurs »)
+    function pastilleSource(a) {
+      const s = sources[a.source] || { court: a.source, couleur: "#696969" };
+      const etiquette = (s.autres && a.media) ? a.media : (s.court || s.nom);
+      return `<span class="source" style="background:${s.couleur}">${echap(etiquette)}</span>`;
+    }
+
+    /* =========================================================
+       FICHE D'UN ARTICLE
+       ========================================================= */
+    // « Le même sujet ailleurs » : les articles d'AUTRES journaux dont le titre partage
+    // beaucoup de mots avec celui-ci, publiés à 4 jours d'écart au plus.
+    // Mesure : indice de Jaccard = mots communs / mots différents au total (0 à 1).
+    // Les mots-clés du sujet (« carrefour ») sont retirés : ils sont dans tous les titres.
+    function prochesDe(a) {
+      const ignorer = new Set((donnees.mots_cles || []).map(simple));
+      const mots = (x) => new Set(indices(x.titre, "").filter((m) => !ignorer.has(m)));
+      const ref = mots(a), t0 = new Date(a.date);
+      if (ref.size < 2) return [];
+      return (donnees.articles || [])
+        .filter((b) => b.id !== a.id && Math.abs(new Date(b.date) - t0) < 4 * 864e5)
+        .map((b) => {
+          const mb = mots(b);
+          const communs = [...ref].filter((m) => mb.has(m)).length;
+          return { b, communs, score: communs / (ref.size + mb.size - communs) };
+        })
+        .filter((x) => x.communs >= 2 && x.score >= 0.25)
+        .sort((x, y) => y.score - x.score)
+        .slice(0, 5)
+        .map((x) => x.b);
+    }
+
+    const FORMAT_DATE_LONGUE = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" });
+
+    function ouvrirFiche(a) {
+      const fiche = $("#fiche");
+      // Ouvrir la fiche = l'article est lu (comme dans Feedly)
+      if (!lus.has(a.id)) {
+        lus.add(a.id);
+        ecrire(CLE.lus, [...lus].slice(-3000));
+      }
+      remplirFiche(a);
+      if (!fiche.open) {
+        fiche.showModal();
+        // Le bouton « retour » du téléphone doit fermer la fiche, pas quitter l'appli :
+        // on ajoute une étape dans l'historique, que « popstate » retire.
+        history.pushState({ fiche: true }, "");
+      }
+    }
+
+    function remplirFiche(a) {
+      const d = new Date(a.date);
+      let domaineLien = "";
+      try { domaineLien = new URL(a.lien).hostname.replace(/^www\./, ""); } catch { /* lien bizarre */ }
+      const viaGoogle = domaineLien.startsWith("news.google.");
+      const proches = prochesDe(a);
+      const fi = $("#fiche-in");
+      fi.dataset.id = a.id;
+      fi.innerHTML = `
+        <div class="poignee"></div>
+        <div class="fiche-haut">
+          <div class="meta">${pastilleSource(a)}
+            ${estPayant(a) ? `<span class="payant">🔒</span>` : ""}
+            <span class="heure">${FORMAT_DATE_LONGUE.format(d)}</span></div>
+          <button class="fermer" id="fermer-fiche" aria-label="Fermer">✕</button>
+        </div>
+        ${a.image ? `<img class="fiche-image" src="${echap(a.image)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}
+        <h2>${titreSurligne(a.titre)}</h2>
+        ${a.resume ? `<p class="fiche-chapeau">${echap(a.resume)}</p>`
+                   : `<p class="fiche-vide">Pas de résumé disponible : le journal ne l'a pas donné.</p>`}
+        ${estPayant(a) ? `<p class="fiche-payant">🔒 Ce journal réserve souvent ses articles aux abonnés.</p>` : ""}
+        <a class="lire" href="${echap(a.lien)}" target="_blank" rel="noopener">Lire l'article ↗
+          <small>${viaGoogle ? "via Google Actualités" : "sur " + echap(domaineLien)}</small></a>
+        ${boutons(a)}
+        ${proches.length ? `<div class="proches"><h3>Le même sujet ailleurs</h3>
+          ${proches.map((b) => `<button class="proche" data-proche="${b.id}">${pastilleSource(b)}<span>${echap(b.titre)}</span></button>`).join("")}
+        </div>` : ""}`;
+      fi.scrollTop = 0;
+      $("#fiche").scrollTop = 0;
+    }
+
+    function fermerFiche() {
+      if ($("#fiche").open) history.back();     // → popstate → close()
+    }
+    window.addEventListener("popstate", () => {
+      if ($("#fiche").open) { $("#fiche").close(); toutAfficher(); }
+    });
+    // Toucher le fond sombre autour de la fiche la ferme aussi
+    $("#fiche").addEventListener("click", (e) => { if (e.target.id === "fiche") fermerFiche(); });
 
     // Les sources suivies et l'état des avis, dans « Sources et réglages »
     function afficherSources() {
@@ -896,29 +1051,36 @@
        Un seul écouteur sur toute la liste (« délégation ») : plus simple
        que d'en poser un sur chaque bouton, et ça marche après chaque redessin.
        ========================================================= */
-    $("#liste").addEventListener("click", async (e) => {
+    // Le même écouteur sert pour la liste et pour la fiche : chacune porte data-id
+    async function gererClic(e) {
       if (e.target.closest("#plus")) { combien += PAR_PAGE; afficherListe(); return; }
-      const carteEl = e.target.closest(".article");
+      if (e.target.closest("#fermer-fiche")) { fermerFiche(); return; }
+      const proche = e.target.closest("[data-proche]");
+      if (proche) { ouvrirFiche(donnees.articles.find((x) => x.id === proche.dataset.proche)); return; }
+      const carteEl = e.target.closest("[data-id]");
       if (!carteEl) return;
       const id = carteEl.dataset.id;
       const a = donnees.articles.find((x) => x.id === id);
+      const dansFiche = carteEl.id === "fiche-in";
 
-      // Ouvrir l'article → il passe en « lu » (le lien s'ouvre normalement)
+      // Toucher l'article dans la liste → sa fiche (au lieu d'aller directement sur le site)
       if (e.target.closest("a.lien")) {
-        lus.add(id);
-        ecrire(CLE.lus, [...lus].slice(-3000));  // on ne garde que les 3000 derniers
+        e.preventDefault();
         carteEl.classList.add("lu");
         carteEl.querySelector(".nouveau")?.remove();
-        setTimeout(() => { afficherStatut(); afficherOnglets(); }, 300);
+        ouvrirFiche(a);
         return;
       }
+      // Dans la fiche, après une action (vote, favori), on redessine la fiche
+      const rafraichir = () => { if (dansFiche) remplirFiche(a); };
       // 👍 / 👎 : retoucher le même bouton retire le vote
       const bAvis = e.target.closest(".avis");
       if (bAvis) {
         const vote = Number(bAvis.dataset.vote);
         const avant = mesAvis[sujetId]?.[id]?.vote || 0;
         voter(a, avant === vote ? 0 : vote);
-        if (vote === -1 && avant !== -1) toast("Article masqué", { texte: "Annuler", faire: () => voter(a, avant) });
+        if (vote === -1 && avant !== -1) toast("Article masqué", { texte: "Annuler", faire: () => { voter(a, avant); rafraichir(); } });
+        rafraichir();
         return;
       }
       // Étoile : ajouter / retirer des favoris
@@ -928,6 +1090,7 @@
         e.target.closest(".fav").setAttribute("aria-pressed", favoris.has(id));
         afficherFiltres();
         if (filtre === "favoris") afficherListe();
+        rafraichir();
         return;
       }
       // Partager : feuille de partage du téléphone, sinon copie du lien
@@ -938,7 +1101,9 @@
           else { await navigator.clipboard.writeText(texte + "\n" + a.lien); toast("Lien copié"); }
         } catch { /* partage annulé : rien à faire */ }
       }
-    });
+    }
+    $("#liste").addEventListener("click", gererClic);
+    $("#fiche").addEventListener("click", gererClic);
 
     // Onglets des sujets
     $("#sujets").addEventListener("click", (e) => {
