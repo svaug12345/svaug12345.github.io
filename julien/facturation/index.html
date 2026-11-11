@@ -3,7 +3,7 @@
 <head>
 <!--
   ============================================================
-  TAC Vélo — Facturation · version 1.2.0
+  TAC Vélo — Facturation · version 1.3.0
   Page fabriquée par construire-page-web.py (dossier facturation/ du projet TAC Vélo) :
   ne pas la modifier ici, modifier Index.html puis relancer le script.
   Les données (factures, clients, PDF) sont dans le Google Sheets / Drive de Seb ;
@@ -16,6 +16,9 @@
              enregistrement des fiches plus rapide côté script Google (~3,4 s → ~2,1 s)
    • 1.2.0 : ordre logique 1 Devis › 2 Fiche atelier › 3 Facture (chaque étape facultative),
              bouton « Accepté › créer la fiche atelier » sur un devis ouvert
+   • 1.3.0 : rubriques Devis / Fiches atelier / Factures dans l'en-tête, « + Nouveau » dans chaque rubrique
+             (nouvelle fiche à partir d'un devis, nouvelle facture à partir d'une fiche ou d'un devis),
+             factures en cartes (PDF lisible sur téléphone), numérotation par jour F-AAMMJJ-01
   ============================================================
 -->
 <!-- « noindex » : outil privé, il ne doit jamais apparaître sur Google -->
@@ -50,17 +53,29 @@
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.4 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
-  header { background: var(--ink); color: #fff; padding: 14px 16px 0; position: sticky; top: 0; z-index: 5; }
-  .brand { display: flex; align-items: baseline; gap: 10px; max-width: 820px; margin: 0 auto; }
-  .brand b { font-size: 20px; letter-spacing: 1px; white-space: nowrap; }
-  .brand .next { white-space: nowrap; }
-  @media (max-width: 400px) { .brand span:not(.next) { display: none; } }
-  .brand span { color: #b9b5aa; font-size: 14px; }
-  .brand .next { margin-left: auto; font-size: 13px; color: var(--yellow); }
-  nav { display: flex; gap: 4px; max-width: 820px; margin: 10px auto 0; }
-  nav button { background: none; border: 0; color: #b9b5aa; font: inherit; padding: 8px 14px 10px; border-bottom: 3px solid transparent; cursor: pointer; }
+
+  /* ---- En-tête : logo à gauche, rubriques à droite ---- */
+  header { background: var(--ink); color: #fff; padding: 0 16px; position: sticky; top: 0; z-index: 5; }
+  .hd { display: flex; align-items: stretch; gap: 12px; max-width: 820px; margin: 0 auto; min-height: 56px; }
+  .logo { align-self: center; font-size: 20px; font-weight: 800; letter-spacing: 1px; white-space: nowrap; }
+  nav { display: flex; margin-left: auto; }
+  nav button { background: none; border: 0; color: #b9b5aa; font: inherit; font-size: 15px; padding: 0 12px; border-bottom: 3px solid transparent;
+               cursor: pointer; white-space: nowrap; }
   nav button.on { color: #fff; border-color: var(--yellow); }
+  nav .cnt { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 5px; border-radius: 9px; background: var(--yellow); color: var(--ink);
+             font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; vertical-align: 2px; }
+  nav .cnt:empty { display: none; }
+  nav .sm { display: none; }
+  @media (max-width: 520px) {
+    header { padding: 0 8px; }
+    .logo { font-size: 17px; }
+    nav button { padding: 0 8px; font-size: 14px; }
+    nav .lg { display: none; } nav .sm { display: inline; }
+  }
+
   main { max-width: 820px; margin: 0 auto; padding: 16px 16px 120px; }
+  .viewhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 0 14px; }
+  .viewhead h1 { font-size: 22px; margin: 0; }
   section.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
   h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 0 0 12px; }
   label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
@@ -80,62 +95,61 @@
   .add { background: none; border: 1px dashed var(--muted); border-radius: 8px; padding: 9px 14px; font: inherit; color: var(--ink); cursor: pointer; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
   .chip { border: 1px solid var(--line); background: var(--paper); border-radius: 999px; padding: 5px 10px; font-size: 13px; cursor: pointer; }
-  .totalbar { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid var(--line); padding: 12px 16px; z-index: 5; }
+
+  .btn { border: 0; border-radius: 10px; padding: 12px 18px; font: inherit; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
+  .btn.primary { background: var(--yellow); color: var(--ink); }
+  .btn.ghost { background: var(--paper); color: var(--ink); border: 1px solid var(--line); }
+  .btn.sm { padding: 7px 12px; font-size: 14px; }
+  .btn.go { background: #e3f1e8; color: var(--green); }
+  .btn:disabled { opacity: .5; cursor: wait; }
+  .linkbtn { background: none; border: 0; color: var(--ink); text-decoration: underline; font: inherit; font-size: 14px; cursor: pointer; padding: 0; }
+  .muted { color: var(--muted); }
+
+  /* ---- Barre du bas (formulaire) ---- */
+  .totalbar { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid var(--line); padding: 12px 16px; z-index: 5; display: none; }
   .totalbar .in { max-width: 820px; margin: 0 auto; display: flex; align-items: center; gap: 10px; }
   .totalbar .amount { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; margin-right: auto; }
   .totalbar .amount span { white-space: nowrap; }
-  @media (max-width: 420px) { .totalbar .amount { font-size: 18px; } .totalbar .btn { padding: 11px 12px; } .totalbar .in { gap: 6px; } }
   .totalbar .amount small { display: block; font-size: 12px; font-weight: 400; color: var(--muted); }
-  .btn { border: 0; border-radius: 10px; padding: 12px 18px; font: inherit; font-weight: 600; cursor: pointer; }
-  .btn.primary { background: var(--yellow); color: var(--ink); }
-  .btn.ghost { background: var(--paper); color: var(--ink); border: 1px solid var(--line); }
-  .btn:disabled { opacity: .5; cursor: wait; }
+  @media (max-width: 420px) { .totalbar .amount { font-size: 18px; } .totalbar .btn { padding: 11px 12px; } .totalbar .in { gap: 6px; } }
+
+  /* ---- Document en cours ---- */
+  .doctop { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .doctitle { font-size: 20px; font-weight: 800; }
+  .help { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .current { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-top: 12px; padding: 10px 12px; background: var(--paper); border-radius: 8px; }
+  .current select { width: auto; padding: 6px 8px; }
   .check { display: flex; gap: 8px; align-items: center; font-size: 15px; color: var(--ink); }
   .check input { width: auto; }
   .ok { border-left: 5px solid var(--green); }
   .ok h3 { margin: 0 0 6px; }
   .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-  .actions a { text-decoration: none; }
   .err { background: #fdecea; color: var(--red); border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; display: none; }
-  .hist { width: 100%; border-collapse: collapse; font-size: 15px; }
-  .hist td { padding: 10px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
-  .hist .r { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+  /* ---- Listes (devis, fiches, factures) en cartes : rien ne déborde sur téléphone ---- */
+  .item { border-bottom: 1px solid var(--line); padding: 12px 0; }
+  .item:last-child { border-bottom: 0; }
+  .item-top { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .item-top .amt { margin-left: auto; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .item-sub { font-size: 14px; margin-top: 2px; overflow-wrap: anywhere; }
+  .item-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; align-items: center; }
+  .item-actions select { width: auto; padding: 7px 8px; font-size: 14px; }
   .badge { font-size: 12px; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
-  .badge.paid { background: #e3f1e8; color: var(--green); }
-  .badge.due { background: #fbe7dd; color: #a2481f; }
-  .linkbtn { background: none; border: 0; color: var(--ink); text-decoration: underline; font: inherit; font-size: 13px; cursor: pointer; padding: 0; }
-  .muted { color: var(--muted); }
-  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: none; z-index: 20; padding: 16px; }
-  .modal .sheet { background: #fff; max-width: 860px; height: 100%; margin: 0 auto; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
-  .modal .bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); }
-  .modal iframe { flex: 1; border: 0; width: 100%; }
-  /* Choix du document + barre « document ouvert » */
-  .modeseg { display: flex; width: 100%; align-items: stretch; }
-  .modeseg button { flex: 1; padding: 11px 4px; font-weight: 600; white-space: nowrap; }
-  .modeseg .step { display: inline-block; width: 18px; height: 18px; line-height: 18px; border-radius: 50%; font-size: 11px;
-                   background: var(--line); color: var(--ink); margin-right: 6px; vertical-align: 1px; }
-  .modeseg button.on .step { background: var(--yellow); }
-  .modeseg .chev { display: flex; align-items: center; color: var(--muted); background: #fff; padding: 0 2px; font-size: 18px; }
-  @media (max-width: 400px) { .modeseg button { font-size: 14px; } .modeseg .step { display: none; } }
-  .help { font-size: 13px; color: var(--muted); margin-top: 8px; }
-  .current { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-top: 12px; padding: 10px 12px;
-             background: var(--paper); border-radius: 8px; }
-  .current select { width: auto; padding: 6px 8px; }
-  /* Onglet Atelier */
-  .at-item { border-bottom: 1px solid var(--line); padding: 12px 0; }
-  .at-item:last-child { border-bottom: 0; }
-  .at-top { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .at-top .amt { margin-left: auto; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .at-sub { font-size: 14px; margin-top: 2px; }
-  .at-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; align-items: center; }
-  .at-actions select { width: auto; padding: 7px 8px; font-size: 14px; }
-  .btn.sm { padding: 7px 12px; font-size: 14px; }
-  .btn.sm.ok2 { background: #e3f1e8; color: var(--green); border: 0; }
+  .badge.paid, .badge.st-pret { background: #e3f1e8; color: var(--green); }
+  .badge.due, .badge.st-pieces { background: #fbe7dd; color: #a2481f; }
   .badge.st-cours { background: #e8eef9; color: #2c4a86; }
-  .badge.st-pieces { background: #fbe7dd; color: #a2481f; }
-  .badge.st-pret { background: #e3f1e8; color: var(--green); }
   .badge.st-devis { background: #fdf3cf; color: #7a5b00; }
-  /* Indicateurs d'enregistrement : barre animée sous l'en-tête + état sous le total + roue dans le bouton */
+  .empty { color: var(--muted); padding: 4px 0; }
+
+  /* ---- Choix du point de départ ---- */
+  .choice { display: block; width: 100%; text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px;
+            font: inherit; cursor: pointer; margin-bottom: 8px; }
+  .choice:hover { border-color: var(--yellow); }
+  .choice b { display: block; }
+  .choice .muted { font-size: 14px; }
+  .choice.blank { border-style: dashed; }
+
+  /* ---- Indicateurs d'enregistrement ---- */
   .busybar { position: fixed; top: 0; left: 0; right: 0; height: 4px; z-index: 40; overflow: hidden; display: none; background: rgba(245,194,27,.25); }
   .busybar::before { content: ""; position: absolute; top: 0; bottom: 0; width: 40%; background: var(--yellow); animation: busy 1.1s ease-in-out infinite; }
   @keyframes busy { from { left: -40%; } to { left: 100%; } }
@@ -149,50 +163,94 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .toast { position: fixed; left: 50%; bottom: 92px; transform: translateX(-50%); background: var(--ink); color: #fff;
            padding: 10px 16px; border-radius: 10px; font-size: 15px; z-index: 30; display: none; max-width: 90vw; text-align: center; }
+
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: none; z-index: 20; padding: 16px; }
+  .modal .sheet { background: #fff; max-width: 860px; height: 100%; margin: 0 auto; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
+  .modal .bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+  .modal iframe { flex: 1; border: 0; width: 100%; }
   .demo { background: var(--orange); color: #fff; text-align: center; font-size: 13px; padding: 4px; display: none; }
   @media (max-width: 640px) {
     .grid { grid-template-columns: 1fr; }
     .line { grid-template-columns: 1fr 64px 86px 30px; grid-template-areas: "d d d d" "q p t x"; row-gap: 6px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
     .line .d { grid-area: d; } .line .q { grid-area: q; } .line .p { grid-area: p; } .line .tot { grid-area: t; } .line .del { grid-area: x; }
     .heads { display: none !important; }
-    .hist .hide-s { display: none; }
   }
 </style>
 </head>
 <body>
 <div class="demo" id="demo">Mode démonstration — rien n’est enregistré</div>
 <header>
-  <div class="brand"><b>TAC VÉLO</b><span>Facturation</span><span class="next" id="next"></span></div>
-  <nav><button class="on" data-tab="new">Nouveau</button><button data-tab="atelier">Atelier<span id="atCount"></span></button><button data-tab="hist">Factures</button></nav>
+  <div class="hd">
+    <div class="logo">TAC VÉLO</div>
+    <!-- Les trois rubriques, dans l'ordre logique : Devis › Fiches atelier › Factures -->
+    <nav id="nav">
+      <button data-tab="devis">Devis<span class="cnt" id="cntDevis"></span></button>
+      <button data-tab="fiches"><span class="lg">Fiches atelier</span><span class="sm">Atelier</span><span class="cnt" id="cntFiches"></span></button>
+      <button data-tab="factures">Factures</button>
+    </nav>
+  </div>
 </header>
 
 <main>
-  <!-- ============ NOUVELLE FACTURE ============ -->
-  <div id="tab-new">
-    <div class="err" id="err"></div>
+  <div class="err" id="err"></div>
 
+  <!-- ============ RUBRIQUE DEVIS ============ -->
+  <div class="view" id="view-devis" style="display:none">
+    <div class="viewhead"><h1>Devis</h1><button class="btn primary" data-new="devis">+ Nouveau devis</button></div>
+    <section class="card"><h2>En attente de réponse du client</h2><div id="listDevis"></div></section>
+  </div>
+
+  <!-- ============ RUBRIQUE FICHES ATELIER ============ -->
+  <div class="view" id="view-fiches" style="display:none">
+    <div class="viewhead"><h1>Fiches atelier</h1><button class="btn primary" data-new="fiche">+ Nouvelle fiche</button></div>
+    <section class="card"><h2>Vélos à l’atelier</h2><div id="listFiches"></div></section>
+  </div>
+
+  <!-- ============ RUBRIQUE FACTURES ============ -->
+  <div class="view" id="view-factures" style="display:none">
+    <div class="viewhead"><h1>Factures</h1><button class="btn primary" data-new="facture">+ Nouvelle facture</button></div>
+    <section class="card">
+      <h2>Dernières factures</h2>
+      <div id="listFactures"></div>
+      <div class="actions">
+        <a class="btn ghost sm" id="sheetLink" target="_blank">Ouvrir la feuille Google</a>
+        <a class="btn ghost sm" id="folderLink" target="_blank">Dossier Drive des PDF</a>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ CHOIX DU POINT DE DÉPART (nouvelle fiche / nouvelle facture) ============ -->
+  <div class="view" id="view-start" style="display:none">
+    <div class="viewhead"><h1 id="startTitle">Nouvelle fiche</h1><button class="linkbtn" data-back>Annuler</button></div>
+    <section class="card">
+      <button type="button" class="choice blank" id="startBlank"><b id="startBlankLabel">Fiche vierge</b><span class="muted">Partir de zéro</span></button>
+      <div id="startFrom"></div>
+    </section>
+  </div>
+
+  <!-- ============ FORMULAIRE (devis, fiche ou facture) ============ -->
+  <div class="view" id="view-form" style="display:none">
     <section class="card ok" id="done" style="display:none">
       <h3 id="doneTitle"></h3>
       <div class="muted" id="doneText"></div>
       <div class="actions">
         <a class="btn primary" id="dlBtn" download>Télécharger le PDF</a>
         <a class="btn ghost" id="driveBtn" target="_blank">Ouvrir dans Drive</a>
-        <button class="btn ghost" id="againBtn">Nouveau document</button>
+        <button class="btn ghost" id="doneBack" type="button">Retour à la liste</button>
       </div>
     </section>
 
     <form id="form" autocomplete="off">
       <section class="card">
-        <div class="seg modeseg" id="modeSeg">
-          <!-- Ordre logique Devis › Fiche atelier › Facture ; chaque étape est facultative (on peut commencer par n'importe laquelle) -->
-          <button type="button" data-v="devis"><span class="step">1</span>Devis</button><span class="chev">›</span><button type="button" data-v="fiche"><span class="step">2</span>Fiche atelier</button><span class="chev">›</span><button type="button" data-v="facture"><span class="step">3</span>Facture</button>
+        <div class="doctop">
+          <button type="button" class="linkbtn" data-back>← <span id="backLabel">Retour</span></button>
         </div>
+        <div class="doctitle" id="docTitle" style="margin-top:8px">Nouvelle fiche atelier</div>
         <div class="help" id="modeHelp"></div>
         <div class="current" id="currentBar" style="display:none">
-          <b id="currentLabel"></b>
           <select id="ficheStatut" title="Statut de la fiche"></select>
-          <button type="button" class="btn sm ok2" id="acceptBtn" style="display:none">Accepté › créer la fiche atelier</button>
-          <button type="button" class="linkbtn" id="newDocBtn" style="margin-left:auto">Nouveau document</button>
+          <button type="button" class="btn sm go" id="acceptBtn" style="display:none">Accepté › convertir en fiche atelier</button>
+          <span class="muted" id="currentNote" style="font-size:14px"></span>
         </div>
       </section>
 
@@ -210,14 +268,14 @@
           <div class="full"><label for="adresse">Adresse</label><input id="adresse" placeholder="N° et rue"></div>
           <div><label for="ville">Code postal et ville</label><input id="ville" placeholder="91190 Gif-sur-Yvette"></div>
           <div><label for="telephone">Téléphone</label><input id="telephone" type="tel" inputmode="tel"></div>
-          <div class="full"><label for="email">Email</label><input id="email" type="email" inputmode="email" placeholder="pour envoyer la facture"></div>
+          <div class="full"><label for="email">Email</label><input id="email" type="email" inputmode="email" placeholder="pour envoyer le devis ou la facture"></div>
         </div>
       </section>
 
       <section class="card">
         <h2>Prestation</h2>
         <div class="grid">
-          <div><label for="date" id="dateLabel">Date de la facture</label><input id="date" type="date"></div>
+          <div><label for="date" id="dateLabel">Date</label><input id="date" type="date"></div>
           <div><label for="datePrestation" id="datePrestLabel">Date de la prestation</label><input id="datePrestation" type="date"></div>
           <div class="full">
             <label>Vélo(s) concerné(s)</label>
@@ -248,43 +306,19 @@
           <div class="full pay"><div class="seg" id="statutSeg"><button type="button" class="on" data-v="Payée">Payée</button><button type="button" data-v="À payer">À payer</button></div></div>
           <div class="pay"><label for="mode">Mode de paiement</label><select id="mode"></select></div>
           <div id="echeanceWrap" style="display:none"><label for="echeance">À régler avant le</label><input id="echeance" type="date"></div>
-          <div class="full"><label class="check"><input type="checkbox" id="envoyerEmail"> <span id="emailLabel">Envoyer la facture par email au client</span></label></div>
+          <div class="full"><label class="check"><input type="checkbox" id="envoyerEmail"> <span id="emailLabel">Envoyer par email au client</span></label></div>
         </div>
       </section>
     </form>
-  </div>
-
-  <!-- ============ ATELIER : fiches en cours + devis en attente ============ -->
-  <div id="tab-atelier" style="display:none">
-    <section class="card">
-      <h2>1 · Devis en attente de réponse</h2>
-      <div id="atDevis"></div>
-    </section>
-    <section class="card">
-      <h2>2 · Vélos à l’atelier</h2>
-      <div id="atFiches"></div>
-    </section>
-  </div>
-
-  <!-- ============ HISTORIQUE ============ -->
-  <div id="tab-hist" style="display:none">
-    <section class="card">
-      <h2>Dernières factures</h2>
-      <table class="hist"><tbody id="histBody"></tbody></table>
-      <div class="actions">
-        <a class="btn ghost" id="sheetLink" target="_blank">Ouvrir la feuille Google</a>
-        <a class="btn ghost" id="folderLink" target="_blank">Dossier Drive des factures</a>
-      </div>
-    </section>
   </div>
 </main>
 
 <div class="totalbar" id="totalbar">
   <div class="in">
-    <div class="amount"><small id="totalLabel">Total à payer</small><span id="total">0,00 €</span><small class="savestate" id="saveState"></small></div>
+    <div class="amount"><small id="totalLabel">Total</small><span id="total">0,00 €</span><small class="savestate" id="saveState"></small></div>
     <button class="btn ghost" id="previewBtn" type="button">Aperçu</button>
     <button class="btn ghost" id="factBtn" type="button">Facturer</button>
-    <button class="btn primary" id="createBtn" type="button">Créer la facture</button>
+    <button class="btn primary" id="createBtn" type="button">Enregistrer</button>
   </div>
 </div>
 
@@ -301,32 +335,32 @@
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
-  // mode = document en cours d'édition : 'fiche' (atelier), 'devis' ou 'facture'
-  // current = fiche ou devis ouvert depuis l'onglet Atelier ({ numero, type, statut }), sinon null
-  var state = { clients: [], catalogue: [], typeClient: 'Particulier', statut: 'Payée', mode: 'fiche', current: null,
-    ficheStatuts: ['En cours', 'En attente de pièces', 'Prêt à récupérer'], atelier: [],
-    // suivi « enregistré ou pas » : edits = compteur de modifications, savedEdits = sa valeur au dernier enregistrement
+  // view    = écran affiché : liste 'devis' / 'fiches' / 'factures', 'start' (choix du point de départ) ou 'form'
+  // mode    = document édité dans le formulaire : 'devis', 'fiche' ou 'facture'
+  // current = devis ou fiche ouvert (ou servant de base à une facture) : { numero, type, statut }, sinon null
+  var state = { view: 'fiches', mode: 'fiche', current: null, clients: [], catalogue: [], typeClient: 'Particulier', statut: 'Payée',
+    ficheStatuts: ['En cours', 'En attente de pièces', 'Prêt à récupérer'], atelier: [], factures: [],
     edits: 0, savedEdits: 0, saving: false, savedAt: '' };
   var CHIPS = ['Prévoir plaquettes de frein prochainement', 'Prévoir une purge des freins', 'Pneus usés : à remplacer prochainement',
     'Chaîne usée : à remplacer à la prochaine révision', 'Prochaine révision conseillée dans 6 mois'];
   var DRAFT_KEY = 'tacvelo-facture-brouillon';
+  var LIST_OF = { devis: 'devis', fiche: 'fiches', facture: 'factures' };      // mode → rubrique
+  var LIST_NAME = { devis: 'Devis', fiches: 'Fiches atelier', factures: 'Factures' };
 
   // Textes qui changent selon le document
   var MODES = {
-    devis: { help: 'Étape 1 (facultative) : estimation envoyée au client avant les travaux. Une fois acceptée, elle devient une fiche atelier.',
+    devis: { nouveau: 'Nouveau devis', help: 'Estimation envoyée au client avant les travaux. Une fois acceptée, elle se convertit en fiche atelier.',
       date: 'Date du devis', datePrest: 'Intervention prévue le', total: 'Total du devis', bouton: 'Créer le devis' },
-    fiche: { help: 'Étape 2 : le vélo est à l’atelier, on note le travail au fur et à mesure (pièces en attente…). Rien n’est envoyé au client. Quand c’est fini : « Facturer ».',
+    fiche: { nouveau: 'Nouvelle fiche atelier', help: 'Le vélo est à l’atelier : on note le travail au fur et à mesure. Rien n’est envoyé au client. Quand c’est fini : « Facturer ».',
       date: 'Date de dépôt du vélo', datePrest: 'Date d’intervention', total: 'Total provisoire', bouton: 'Enregistrer la fiche' },
-    facture: { help: 'Étape 3 : facture définitive (numéro attribué, PDF enregistré), elle ne pourra plus être modifiée. Possible directement pour une vente ou une réparation minute.',
+    facture: { nouveau: 'Nouvelle facture', help: 'Facture définitive : numéro attribué et PDF enregistré. Elle ne pourra plus être modifiée.',
       date: 'Date de la facture', datePrest: 'Date de la prestation', total: 'Total à payer', bouton: 'Créer la facture' }
   };
 
-  /* ---------- API : Apps Script ou démo locale ---------- */
-  // Trois modes : servi par Google (google.script.run), page hébergée ailleurs (window.TAC_API → fetch), ou démo locale.
+  /* ---------- API : Apps Script, page hébergée (fetch) ou démo locale ---------- */
   var isGas = typeof google !== 'undefined' && google.script && google.script.run;
   var API = !isGas && window.TAC_API;
   var KEY = isGas ? '' : (window.TAC_KEY || '');
-  // Barre animée en haut de l'écran tant qu'au moins un échange avec le serveur est en cours
   var busy = 0;
   function setBusy(d) { busy = Math.max(0, busy + d); document.body.classList.toggle('busy', busy > 0); }
   function call(fn) {
@@ -353,24 +387,24 @@
   }
 
   /* ---------- Démo locale (fichier ouvert hors Google) ---------- */
-  var demoN = 1, demoAt = [], demoDocs = {};
+  var demoN = 1, demoAt = [], demoDocs = {}, demoFact = [{ numero: 'F-261110-01', date: '10/11/2026', client: 'Exemple avec un nom assez long', total: 87.5, statut: 'À payer', pdf: '#' }];
+  var demoSeq = 0; function demoNum(p) { return p + '-261111-' + ('0' + (++demoSeq)).slice(-2); }
   var DEMO = {
     getInitData: function () {
-      return { prochainNumero: 'F2026-00' + demoN, modes: ['Carte bancaire', 'Espèces', 'Virement', 'Chèque', 'Wero / Lydia'], delai: 0,
+      return { modes: ['Carte bancaire', 'Espèces', 'Virement', 'Chèque', 'Wero / Lydia'], delai: 0,
         clients: [{ nom: 'Martin Dupont', type: 'Particulier', adresse: '12 rue de Chevry', ville: '91190 Gif-sur-Yvette', email: 'martin@example.com', telephone: '06 00 00 00 00' }],
         catalogue: [{ designation: 'Main d’œuvre (1 h)', prix: 30 }, { designation: 'Déplacement / livraison', prix: 25 }, { designation: 'Chaîne', prix: 17.98 }, { designation: 'Cassette', prix: 32 }],
-        recent: [{ numero: 'F2026-000', date: '09/11/2026', client: 'Exemple', total: 87.5, statut: 'À payer', pdf: '#' }],
-        atelier: demoAt, ficheStatuts: ['En cours', 'En attente de pièces', 'Prêt à récupérer'], sheetUrl: '#', folderUrl: '#' };
+        recent: demoFact, atelier: demoAt, ficheStatuts: ['En cours', 'En attente de pièces', 'Prêt à récupérer'], sheetUrl: '#', folderUrl: '#' };
     },
     previewInvoice: function () { return '<p style="font-family:Arial;padding:20px">En mode démo, l’aperçu réel est généré par Google.</p>'; },
     createInvoice: function (k, d) {
       demoAt = demoAt.filter(function (a) { return a.numero !== d.source; });
-      var n = 'F2026-00' + demoN++; return { numero: n, total: totalOf(d.lignes), url: '#', fileName: n + '.pdf', pdfBase64: '', emailEnvoye: d.envoyerEmail ? d.client.email : '', prochainNumero: 'F2026-00' + demoN, recent: DEMO.getInitData().recent, atelier: demoAt };
+      var n = demoNum('F'); demoFact.unshift({ numero: n, date: '11/11/2026', client: d.client.nom, total: totalOf(d.lignes), statut: d.statut, pdf: '#' });
+      return { numero: n, total: totalOf(d.lignes), url: '#', fileName: n + '.pdf', pdfBase64: '', emailEnvoye: '', recent: demoFact, atelier: demoAt };
     },
-    markPaid: function () { return DEMO.getInitData().recent; },
+    markPaid: function (k, n) { demoFact.forEach(function (f) { if (f.numero === n) f.statut = 'Payée'; }); return demoFact; },
     saveFiche: function (k, d, numero) {
-      numero = numero || 'AT2026-00' + (demoAt.length + 1);
-      demoDocs[numero] = JSON.parse(JSON.stringify(d));
+      numero = numero || demoNum('AT'); demoDocs[numero] = JSON.parse(JSON.stringify(d));
       demoAt = demoAt.filter(function (a) { return a.numero !== numero; });
       demoAt.unshift({ numero: numero, type: 'Fiche', statut: d.statutFiche || 'En cours', client: d.client.nom, velos: d.velos.filter(Boolean).join(' | '), total: totalOf(d.lignes), modifie: 'à l’instant' });
       return { numero: numero, statut: d.statutFiche || 'En cours', atelier: demoAt };
@@ -378,13 +412,13 @@
     getAtelierDoc: function (k, n) { var a = demoAt.filter(function (x) { return x.numero === n; })[0]; return { numero: n, type: a.type, statut: a.statut, data: demoDocs[n] }; },
     setAtelierStatus: function (k, n, st) { demoAt.forEach(function (a) { if (a.numero === n) a.statut = st; }); demoAt = demoAt.filter(function (a) { return ['Abandonnée', 'Refusé'].indexOf(a.statut) === -1; }); return demoAt; },
     createDevis: function (k, d, numero) {
-      numero = numero || 'D2026-00' + (demoAt.length + 1); demoDocs[numero] = JSON.parse(JSON.stringify(d));
+      numero = numero || demoNum('D'); demoDocs[numero] = JSON.parse(JSON.stringify(d));
       demoAt = demoAt.filter(function (a) { return a.numero !== numero; });
-      demoAt.unshift({ numero: numero, type: 'Devis', statut: 'Envoyé', client: d.client.nom, velos: '', total: totalOf(d.lignes), modifie: 'à l’instant', pdf: '#' });
+      demoAt.unshift({ numero: numero, type: 'Devis', statut: 'Envoyé', client: d.client.nom, velos: d.velos.filter(Boolean).join(' | '), total: totalOf(d.lignes), modifie: 'à l’instant', pdf: '#' });
       return { numero: numero, total: totalOf(d.lignes), url: '#', fileName: numero + '.pdf', pdfBase64: '', emailEnvoye: '', atelier: demoAt };
     },
     acceptDevis: function (k, n) {
-      var a = demoAt.filter(function (x) { return x.numero === n; })[0]; var f = 'AT2026-0' + (90 + demoAt.length);
+      var a = demoAt.filter(function (x) { return x.numero === n; })[0]; var f = demoNum('AT');
       demoDocs[f] = demoDocs[n]; demoAt = demoAt.filter(function (x) { return x.numero !== n; });
       demoAt.unshift({ numero: f, type: 'Fiche', statut: 'En cours', client: a.client, velos: a.velos, total: a.total, modifie: 'à l’instant', lie: n });
       return { fiche: f, atelier: demoAt };
@@ -398,17 +432,15 @@
   function iso(d) { var z = function (x) { return ('0' + x).slice(-2); }; return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()); }
   function totalOf(lines) { return lines.reduce(function (s, l) { return s + Math.round(num(l.quantite) * num(l.prix) * 100) / 100; }, 0); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-  function showErr(e) { var el = $('err'); el.textContent = (e && e.message) || String(e); el.style.display = 'block'; showTab('new'); window.scrollTo(0, 0); }
+  function showErr(e) { var el = $('err'); el.textContent = (e && e.message) || String(e); el.style.display = 'block'; window.scrollTo(0, 0); }
+  function hideErr() { $('err').style.display = 'none'; }
   var toastTimer;
   function toast(msg) {
     var t = $('toast'); t.textContent = msg; t.style.display = 'block';
     clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.style.display = 'none'; }, 3500);
   }
   function seg(id, key) {
-    $(id).addEventListener('click', function (ev) {
-      var b = ev.target.closest('button'); if (!b) return;
-      setSeg(id, key, b.dataset.v);
-    });
+    $(id).addEventListener('click', function (ev) { var b = ev.target.closest('button'); if (b) setSeg(id, key, b.dataset.v); });
   }
   function setSeg(id, key, v) {
     state[key] = v;
@@ -417,11 +449,36 @@
     saveDraft();
   }
 
-  /* ---------- Mode : fiche atelier / devis / facture ---------- */
+  /* ---------- Écrans ---------- */
+  function showView(v) {
+    state.view = v;
+    ['devis', 'fiches', 'factures', 'start', 'form'].forEach(function (x) { $('view-' + x).style.display = x === v ? '' : 'none'; });
+    // la rubrique allumée dans l'en-tête : celle de la liste, ou celle du document édité
+    var tab = v === 'form' || v === 'start' ? LIST_OF[state.mode] : v;
+    [].forEach.call(document.querySelectorAll('#nav button'), function (b) { b.classList.toggle('on', b.dataset.tab === tab); });
+    $('totalbar').style.display = v === 'form' && $('form').style.display !== 'none' ? 'block' : 'none';
+    hideErr();
+    window.scrollTo(0, 0);
+    saveDraft();
+  }
+  function formIsBusy() { return state.view === 'form' && $('form').style.display !== 'none' && isDirty() && $('nom').value.trim(); }
+  function leaveForm(target) {
+    if (formIsBusy() && !confirm('Le document en cours n’est pas enregistré. Le quitter quand même ?\n(Il reste en brouillon sur cet appareil.)')) return false;
+    showView(target);
+    return true;
+  }
+  $('nav').addEventListener('click', function (ev) {
+    var b = ev.target.closest('button'); if (b) leaveForm(b.dataset.tab);
+  });
+  document.addEventListener('click', function (ev) {
+    if (ev.target.closest('[data-back]')) leaveForm(LIST_OF[state.mode]);
+  });
+
+  /* ---------- Mode du formulaire : devis / fiche / facture ---------- */
   function setMode(m) {
     state.mode = MODES[m] ? m : 'fiche';
-    var M = MODES[state.mode];
-    [].forEach.call($('modeSeg').children, function (x) { x.classList.toggle('on', x.dataset.v === state.mode); });
+    var M = MODES[state.mode], c = state.current;
+    $('backLabel').textContent = LIST_NAME[LIST_OF[state.mode]];
     $('modeHelp').textContent = M.help;
     $('dateLabel').textContent = M.date; $('datePrestLabel').textContent = M.datePrest;
     $('totalLabel').textContent = M.total;
@@ -432,32 +489,119 @@
     $('emailLabel').textContent = state.mode === 'devis' ? 'Envoyer le devis par email au client' : 'Envoyer la facture par email au client';
     $('previewBtn').style.display = state.mode === 'fiche' ? 'none' : '';
     $('factBtn').style.display = state.mode === 'fiche' ? '' : 'none';
-    var cur = state.current;
-    $('createBtn').textContent = state.mode === 'devis' && cur && cur.type === 'Devis' ? 'Mettre à jour le devis' : M.bouton;
+    $('createBtn').textContent = state.mode === 'devis' && c && c.type === 'Devis' ? 'Mettre à jour le devis' : M.bouton;
+    // titre : « Nouvelle facture », « Fiche AT-… », « Facture à partir de la fiche AT-… »
+    var title = M.nouveau;
+    if (c && state.mode === 'fiche' && c.type === 'Fiche') title = 'Fiche ' + c.numero;
+    if (c && state.mode === 'devis' && c.type === 'Devis') title = 'Devis ' + c.numero;
+    $('docTitle').textContent = title;
     updateCurrentBar();
     renderSaveState();
     saveDraft();
   }
   function updateCurrentBar() {
-    var c = state.current;
-    $('currentBar').style.display = c ? '' : 'none';
-    if (!c) return;
-    $('currentLabel').textContent = (c.type === 'Devis' ? 'Devis ' : 'Fiche ') + c.numero + (c.type === 'Devis' ? ' — ' + c.statut.toLowerCase() : '');
-    var sel = $('ficheStatut');
-    sel.style.display = c.type === 'Fiche' ? '' : 'none';
-    $('acceptBtn').style.display = c.type === 'Devis' && c.statut === 'Envoyé' ? '' : 'none';
-    if (c.type === 'Fiche') {
+    var c = state.current, sel = $('ficheStatut');
+    var showStatut = !!(c && c.type === 'Fiche' && state.mode === 'fiche');
+    var showAccept = !!(c && c.type === 'Devis' && c.statut === 'Envoyé' && state.mode === 'devis');
+    var note = '';
+    if (c && state.mode === 'facture') note = c.type === 'Devis' ? 'À partir du devis ' + c.numero + ' (il sera marqué accepté)'
+      : 'À partir de la fiche ' + c.numero + ' (elle sera clôturée)';
+    if (c && state.mode === 'devis' && c.type === 'Devis') note = c.statut === 'Envoyé' ? 'Envoyé au client' : c.statut;
+    $('currentBar').style.display = showStatut || showAccept || note ? '' : 'none';
+    sel.style.display = showStatut ? '' : 'none';
+    if (showStatut) {
       sel.innerHTML = state.ficheStatuts.map(function (s) { return '<option>' + esc(s) + '</option>'; }).join('');
       sel.value = c.statut;
     }
+    $('acceptBtn').style.display = showAccept ? '' : 'none';
+    $('currentNote').textContent = note;
   }
-  function resetDoc(mode) {
+
+  /* ---------- Ouvrir / créer un document ---------- */
+  // Formulaire vide du type demandé
+  function newDoc(mode) {
     state.current = null; state.savedAt = '';
+    $('done').style.display = 'none'; $('form').style.display = '';
     fillForm({ mode: $('mode').value });
-    markClean();
-    setMode(mode || 'fiche');
-    $('err').style.display = 'none';
+    state.mode = mode; markClean();
+    setMode(mode);
+    showView('form');
   }
+  // Formulaire rempli avec une fiche ou un devis, dans le mode voulu (ex. une fiche ouverte « pour facturer »)
+  function openDoc(numero, mode) {
+    return call('getAtelierDoc', numero).then(function (r) {
+      state.current = { numero: r.numero, type: r.type, statut: r.statut }; state.savedAt = '';
+      $('done').style.display = 'none'; $('form').style.display = '';
+      fillForm(r.data);
+      var m = mode || (r.type === 'Devis' ? 'devis' : 'fiche');
+      if (m === 'facture') { $('date').value = iso(new Date()); }
+      state.mode = m; markClean();
+      setMode(m);
+      showView('form');
+      if (m === 'facture') state.edits++; // une facture à partir d'une fiche n'existe pas encore : « à créer »
+    }).catch(showErr);
+  }
+  // « + Nouvelle fiche » / « + Nouvelle facture » : choisir de partir de zéro ou d'un document existant
+  function startNew(mode) {
+    var devis = state.atelier.filter(function (a) { return a.type === 'Devis'; });
+    var fiches = state.atelier.filter(function (a) { return a.type === 'Fiche'; });
+    var groups = [];
+    if (mode === 'facture' && fiches.length) groups.push({ titre: 'À partir d’une fiche atelier', items: fiches });
+    if (mode !== 'devis' && devis.length) groups.push({ titre: 'À partir d’un devis' + (mode === 'fiche' ? ' accepté' : ''), items: devis });
+    if (!groups.length) { newDoc(mode); return; }
+    state.mode = mode;
+    $('startTitle').textContent = MODES[mode].nouveau;
+    $('startBlankLabel').textContent = mode === 'facture' ? 'Facture vierge' : 'Fiche vierge';
+    $('startFrom').innerHTML = groups.map(function (g) {
+      return '<h2 style="margin-top:16px">' + esc(g.titre) + '</h2>' + g.items.map(function (a) {
+        return '<button type="button" class="choice" data-from="' + esc(a.numero) + '" data-type="' + esc(a.type) + '"><b>' + esc(a.numero) + ' · ' + esc(a.client) +
+          '</b><span class="muted">' + (a.velos ? esc(a.velos) + ' · ' : '') + money(a.total) + (a.type === 'Fiche' ? ' · ' + esc(a.statut) : '') + '</span></button>';
+      }).join('');
+    }).join('');
+    showView('start');
+  }
+  $('startBlank').addEventListener('click', function () { newDoc(state.mode); });
+  $('startFrom').addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-from]'); if (!b) return;
+    var n = b.dataset.from, type = b.dataset.type;
+    if (state.mode === 'fiche') acceptDevis(n);       // devis → fiche atelier
+    else openDoc(n, 'facture');                         // fiche ou devis → facture
+  });
+  [].forEach.call(document.querySelectorAll('[data-new]'), function (b) {
+    b.addEventListener('click', function () { startNew(b.dataset.new); });
+  });
+
+  // Devis accepté → fiche atelier (créée côté serveur avec le même contenu), ouverte dans le formulaire
+  function acceptDevis(numero) {
+    var keepForm = state.view === 'form' && state.current && state.current.numero === numero;
+    var wasDirty = keepForm && isDirty();
+    return call('acceptDevis', numero).then(function (r) {
+      renderAtelier(r.atelier);
+      toast('Devis ' + numero + ' accepté : fiche ' + r.fiche + ' créée');
+      if (keepForm) {
+        // on garde ce qui est à l'écran (y compris les dernières retouches) dans la nouvelle fiche
+        state.current = { numero: r.fiche, type: 'Fiche', statut: 'En cours' }; state.savedAt = '';
+        state.mode = 'fiche'; if (!wasDirty) markClean();
+        setMode('fiche'); showView('form');
+      } else {
+        return openDoc(r.fiche, 'fiche');
+      }
+    }).catch(showErr);
+  }
+  $('acceptBtn').addEventListener('click', function () {
+    var c = state.current; if (!c) return;
+    var msg = 'Le client a accepté le devis ' + c.numero + ' ?\nIl va être converti en fiche atelier.';
+    if (isDirty()) msg += '\n\nVos dernières retouches seront reprises dans la fiche : pensez à l’enregistrer.';
+    if (confirm(msg)) acceptDevis(c.numero);
+  });
+  // « Facturer » depuis une fiche ouverte : même contenu, passe en facture (la fiche sera clôturée)
+  $('factBtn').addEventListener('click', function () {
+    setMode('facture');
+    $('date').value = iso(new Date()); refresh();
+    showView('form');
+    $('payCard').scrollIntoView({ behavior: 'smooth' });
+    toast('Vérifiez le paiement puis « Créer la facture »');
+  });
 
   /* ---------- Lignes ---------- */
   function addLine(l) {
@@ -542,7 +686,6 @@
     el.className = 'savestate saved';
     el.textContent = state.current && state.savedAt ? '✓ Enregistrée à ' + state.savedAt : (state.current ? '✓ Enregistrée' : '');
   }
-  // On prévient si on quitte la page pendant un enregistrement
   window.addEventListener('beforeunload', function (e) { if (state.saving) { e.preventDefault(); e.returnValue = ''; } });
 
   /* ---------- Données du formulaire ---------- */
@@ -569,12 +712,15 @@
   var filling = false;
   function saveDraft() {
     if (filling) return;
-    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: 2, data: collect(), mode: state.mode, current: state.current, dirty: isDirty() })); } catch (e) {}
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: 3, data: collect(), mode: state.mode, current: state.current,
+        dirty: isDirty(), inForm: state.view === 'form' && $('form').style.display !== 'none', view: state.view }));
+    } catch (e) {}
   }
   function loadDraft() {
     try {
       var d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
-      if (d && !d.v) d = { data: d, mode: 'facture', current: null }; // ancien brouillon (avant les fiches)
+      if (d && !d.v) d = { data: d, mode: 'facture', current: null, inForm: true, dirty: true }; // très ancien brouillon
       return d;
     } catch (e) { return null; }
   }
@@ -603,128 +749,78 @@
     refresh();
   }
 
-  /* ---------- Onglets ---------- */
-  function showTab(name) {
-    [].forEach.call(document.querySelectorAll('nav button'), function (x) { x.classList.toggle('on', x.dataset.tab === name); });
-    ['new', 'atelier', 'hist'].forEach(function (t) { $('tab-' + t).style.display = t === name ? '' : 'none'; });
-    $('totalbar').style.display = name === 'new' && $('form').style.display !== 'none' ? '' : 'none';
-  }
-  document.querySelector('nav').addEventListener('click', function (ev) {
-    var b = ev.target.closest('button'); if (b) showTab(b.dataset.tab);
-  });
-
-  /* ---------- Onglet Atelier ---------- */
+  /* ---------- Listes ---------- */
   function badgeClass(st) {
-    return { 'En cours': 'st-cours', 'En attente de pièces': 'st-pieces', 'Prêt à récupérer': 'st-pret', 'Envoyé': 'st-devis' }[st] || '';
+    return { 'En cours': 'st-cours', 'En attente de pièces': 'st-pieces', 'Prêt à récupérer': 'st-pret', 'Envoyé': 'st-devis', 'Payée': 'paid', 'À payer': 'due' }[st] || '';
+  }
+  function itemHead(numero, statut, label, total, sub, note) {
+    return '<div class="item-top"><b>' + esc(numero) + '</b><span class="badge ' + badgeClass(statut) + '">' + esc(label) + '</span>' +
+      '<span class="amt">' + money(total) + '</span></div><div class="item-sub">' + sub + '</div>' +
+      (note ? '<div class="muted" style="font-size:13px">' + note + '</div>' : '');
   }
   function renderAtelier(list) {
     state.atelier = list || [];
     var fiches = state.atelier.filter(function (a) { return a.type === 'Fiche'; });
     var devis = state.atelier.filter(function (a) { return a.type === 'Devis'; });
-    $('atCount').textContent = fiches.length ? ' (' + fiches.length + ')' : '';
-    function item(a) {
-      var head = '<div class="at-top"><b>' + esc(a.numero) + '</b><span class="badge ' + badgeClass(a.statut) + '">' +
-        esc(a.type === 'Devis' ? 'Devis envoyé' : a.statut) + '</span><span class="amt">' + money(a.total) + '</span></div>' +
-        '<div class="at-sub">' + esc(a.client) + (a.velos ? ' · ' + esc(a.velos) : '') + '</div>' +
-        '<div class="muted" style="font-size:13px">Modifié ' + esc(a.modifie) + (a.lie ? ' · issu du devis ' + esc(a.lie) : '') + '</div>';
-      var act = '<button type="button" class="btn ghost sm" data-open="' + esc(a.numero) + '">Ouvrir</button>';
-      if (a.type === 'Fiche') {
-        act += '<select data-st="' + esc(a.numero) + '">' + state.ficheStatuts.concat(['Abandonnée']).map(function (s) {
-          return '<option' + (s === a.statut ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('') + '</select>';
-      } else {
-        if (a.pdf) act += '<a class="btn ghost sm" href="' + esc(a.pdf) + '" target="_blank" style="text-decoration:none">PDF</a>';
-        act += '<button type="button" class="btn sm ok2" data-accept="' + esc(a.numero) + '">Accepté</button>' +
-          '<button type="button" class="linkbtn" data-refuse="' + esc(a.numero) + '">Refusé</button>';
-      }
-      return '<div class="at-item">' + head + '<div class="at-actions">' + act + '</div></div>';
-    }
-    $('atFiches').innerHTML = fiches.length ? fiches.map(item).join('') : '<div class="muted">Aucun vélo en cours. Créez une fiche depuis « Nouveau ».</div>';
-    $('atDevis').innerHTML = devis.length ? devis.map(item).join('') : '<div class="muted">Aucun devis en attente.</div>';
+    $('cntFiches').textContent = fiches.length || '';
+    $('cntDevis').textContent = devis.length || '';
+    $('listDevis').innerHTML = devis.length ? devis.map(function (a) {
+      return '<div class="item">' + itemHead(a.numero, a.statut, 'Envoyé', a.total, esc(a.client) + (a.velos ? ' · ' + esc(a.velos) : ''), 'Modifié ' + esc(a.modifie)) +
+        '<div class="item-actions"><button type="button" class="btn ghost sm" data-open="' + esc(a.numero) + '">Ouvrir</button>' +
+        (a.pdf ? '<a class="btn ghost sm" href="' + esc(a.pdf) + '" target="_blank">PDF</a>' : '') +
+        '<button type="button" class="btn sm go" data-accept="' + esc(a.numero) + '">Accepté › convertir en fiche</button>' +
+        '<button type="button" class="linkbtn" data-refuse="' + esc(a.numero) + '">Refusé</button></div></div>';
+    }).join('') : '<div class="empty">Aucun devis en attente.</div>';
+    $('listFiches').innerHTML = fiches.length ? fiches.map(function (a) {
+      return '<div class="item">' + itemHead(a.numero, a.statut, a.statut, a.total, esc(a.client) + (a.velos ? ' · ' + esc(a.velos) : ''),
+          'Modifiée ' + esc(a.modifie) + (a.lie ? ' · issue du devis ' + esc(a.lie) : '')) +
+        '<div class="item-actions"><button type="button" class="btn ghost sm" data-open="' + esc(a.numero) + '">Ouvrir</button>' +
+        '<button type="button" class="btn sm go" data-invoice="' + esc(a.numero) + '">Facturer</button>' +
+        '<select data-st="' + esc(a.numero) + '">' + state.ficheStatuts.concat(['Abandonnée']).map(function (s) {
+          return '<option' + (s === a.statut ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('') + '</select></div></div>';
+    }).join('') : '<div class="empty">Aucun vélo à l’atelier.</div>';
   }
-  function openDoc(numero) {
-    var dirty = $('nom').value.trim() && !(state.current && state.current.numero === numero);
-    if (dirty && !confirm('Le formulaire contient déjà un document non enregistré. Le remplacer par ' + numero + ' ?')) return;
-    call('getAtelierDoc', numero).then(function (r) {
-      state.current = { numero: r.numero, type: r.type, statut: r.statut }; state.savedAt = '';
-      $('done').style.display = 'none'; $('form').style.display = '';
-      fillForm(r.data);
-      markClean();
-      setMode(r.type === 'Devis' ? 'devis' : 'fiche');
-      showTab('new'); window.scrollTo(0, 0);
-      toast((r.type === 'Devis' ? 'Devis ' : 'Fiche ') + r.numero + ' ouvert' + (r.type === 'Devis' ? '' : 'e'));
-    }).catch(showErr);
+  function renderFactures(list) {
+    state.factures = list || [];
+    $('listFactures').innerHTML = state.factures.length ? state.factures.map(function (f) {
+      var paid = f.statut === 'Payée';
+      return '<div class="item">' + itemHead(f.numero, f.statut, f.statut || '', f.total, esc(f.client), esc(f.date)) +
+        '<div class="item-actions">' + (f.pdf ? '<a class="btn ghost sm" href="' + esc(f.pdf) + '" target="_blank">PDF</a>' : '') +
+        (paid ? '' : '<button type="button" class="btn sm go" data-paid="' + esc(f.numero) + '">Marquer payée</button>') + '</div></div>';
+    }).join('') : '<div class="empty">Aucune facture pour l’instant.</div>';
   }
-  ['atFiches', 'atDevis'].forEach(function (id) {
+
+  // Actions des listes (délégation : un seul écouteur par liste)
+  ['listDevis', 'listFiches'].forEach(function (id) {
     $(id).addEventListener('click', function (ev) {
       var t = ev.target, d = t.dataset || {};
       if (d.open) openDoc(d.open);
-      if (d.accept) {
-        if (!confirm('Le client a accepté le devis ' + d.accept + ' ?\nUne fiche atelier va être créée avec le même contenu.')) return;
-        t.disabled = true;
-        call('acceptDevis', d.accept).then(function (r) { renderAtelier(r.atelier); toast('Devis accepté : fiche ' + r.fiche + ' créée'); })
-          .catch(function (e) { alert(e.message || e); t.disabled = false; });
-      }
-      if (d.refuse) {
-        if (!confirm('Marquer le devis ' + d.refuse + ' comme refusé ? Il disparaîtra de la liste (il reste dans la feuille).')) return;
-        call('setAtelierStatus', d.refuse, 'Refusé').then(renderAtelier).catch(function (e) { alert(e.message || e); });
+      if (d.invoice) openDoc(d.invoice, 'facture');
+      if (d.accept && confirm('Le client a accepté le devis ' + d.accept + ' ?\nIl va être converti en fiche atelier.')) acceptDevis(d.accept);
+      if (d.refuse && confirm('Marquer le devis ' + d.refuse + ' comme refusé ? Il disparaîtra de la liste (il reste dans la feuille).')) {
+        call('setAtelierStatus', d.refuse, 'Refusé').then(renderAtelier).catch(showErr);
       }
     });
     $(id).addEventListener('change', function (ev) {
       var n = ev.target.dataset && ev.target.dataset.st; if (!n) return;
       var st = ev.target.value;
       if (st === 'Abandonnée' && !confirm('Abandonner la fiche ' + n + ' ? Elle disparaîtra de la liste (elle reste dans la feuille).')) { renderAtelier(state.atelier); return; }
-      call('setAtelierStatus', n, st).then(function (list) {
-        renderAtelier(list);
-        if (state.current && state.current.numero === n) { state.current.statut = st; if (st === 'Abandonnée') resetDoc(); else updateCurrentBar(); }
-        toast(n + ' : ' + st.toLowerCase());
-      }).catch(function (e) { alert(e.message || e); });
+      call('setAtelierStatus', n, st).then(function (list) { renderAtelier(list); toast(n + ' : ' + st.toLowerCase()); }).catch(showErr);
     });
   });
-
-  /* ---------- Historique des factures ---------- */
-  function renderHist(list) {
-    $('histBody').innerHTML = list.length ? list.map(function (f) {
-      var paid = f.statut === 'Payée';
-      return '<tr><td><b>' + esc(f.numero) + '</b><br><span class="muted" style="font-size:13px">' + esc(f.date) + '</span></td>' +
-        '<td>' + esc(f.client) + '</td>' +
-        '<td class="r">' + money(f.total) + '</td>' +
-        '<td class="r"><span class="badge ' + (paid ? 'paid' : 'due') + '">' + esc(f.statut || '') + '</span>' +
-        (paid ? '' : '<br><button class="linkbtn" data-paid="' + esc(f.numero) + '">Marquer payée</button>') + '</td>' +
-        '<td class="r">' + (f.pdf ? '<a href="' + esc(f.pdf) + '" target="_blank">PDF</a>' : '') + '</td></tr>';
-    }).join('') : '<tr><td class="muted">Aucune facture pour l’instant.</td></tr>';
-  }
-  $('histBody').addEventListener('click', function (ev) {
+  $('listFactures').addEventListener('click', function (ev) {
     var n = ev.target.dataset && ev.target.dataset.paid; if (!n) return;
     var mode = prompt('Facture ' + n + ' payée.\nMode de paiement ?', 'Virement'); if (mode === null) return;
     ev.target.disabled = true;
-    call('markPaid', n, mode).then(renderHist).catch(function (e) { alert(e.message || e); ev.target.disabled = false; });
+    call('markPaid', n, mode).then(renderFactures).catch(function (e) { showErr(e); ev.target.disabled = false; });
   });
 
-  /* ---------- Actions du formulaire ---------- */
+  /* ---------- Formulaire ---------- */
   seg('typeSeg', 'typeClient'); seg('statutSeg', 'statut');
-  $('modeSeg').addEventListener('click', function (ev) { var b = ev.target.closest('button'); if (b) setMode(b.dataset.v); });
-  // Devis ouvert → « Accepté » : le devis devient une fiche atelier, qu'on garde ouverte dans le formulaire
-  $('acceptBtn').addEventListener('click', function () {
-    var c = state.current; if (!c || c.type !== 'Devis') return;
-    var msg = 'Le client a accepté le devis ' + c.numero + ' ?\nUne fiche atelier va être créée avec son contenu.';
-    if (isDirty()) msg += '\n\nVos dernières modifications (non enregistrées dans le devis) seront reprises dans la fiche : pensez à l’enregistrer.';
-    if (!confirm(msg)) return;
-    var b = this, wasDirty = isDirty(); b.disabled = true;
-    call('acceptDevis', c.numero).then(function (r) {
-      state.current = { numero: r.fiche, type: 'Fiche', statut: 'En cours' }; state.savedAt = '';
-      renderAtelier(r.atelier);
-      setMode('fiche');
-      if (!wasDirty) markClean();
-      toast('Devis accepté : fiche ' + r.fiche + ' créée');
-    }).catch(function (e) { alert(e.message || e); }).then(function () { b.disabled = false; });
-  });
-  $('newDocBtn').addEventListener('click', function () {
-    if (confirm('Fermer ce document et repartir d’un formulaire vide ?' + (state.mode === 'fiche' ? '\n(Pensez à enregistrer la fiche avant.)' : ''))) resetDoc();
-  });
   $('ficheStatut').addEventListener('change', function () {
     var c = state.current, st = this.value; if (!c) return;
     call('setAtelierStatus', c.numero, st).then(function (list) { c.statut = st; renderAtelier(list); saveDraft(); toast(c.numero + ' : ' + st.toLowerCase()); })
-      .catch(function (e) { alert(e.message || e); updateCurrentBar(); });
+      .catch(function (e) { showErr(e); updateCurrentBar(); });
   });
   $('addVelo').addEventListener('click', function () { addVelo().querySelector('.vn').focus(); refresh(); });
   $('addLine').addEventListener('click', function () { addLine().querySelector('.d').focus(); });
@@ -742,18 +838,10 @@
     var t = $('observations'); t.value = (t.value.trim() ? t.value.trim() + '\n' : '') + b.textContent.slice(2); refresh();
   });
 
-  // « Facturer » (depuis une fiche) : on passe en mode facture, date du jour
-  $('factBtn').addEventListener('click', function () {
-    setMode('facture');
-    $('date').value = iso(new Date()); refresh();
-    $('payCard').scrollIntoView({ behavior: 'smooth' });
-    toast('Vérifiez le paiement puis « Créer la facture »');
-  });
-
   $('previewBtn').addEventListener('click', function () {
     var d = collect();
     try { validate(d); } catch (e) { if (e.message !== 'Création annulée.') showErr(e); return; }
-    $('err').style.display = 'none';
+    hideErr();
     var b = this; b.disabled = true; b.textContent = '…';
     call('previewInvoice', d).then(function (html) {
       // À l'écran (≠ PDF) : page A4 en largeur fixe, réduite pour tenir dans l'écran, pied de page à la suite
@@ -769,14 +857,14 @@
   $('createBtn').addEventListener('click', function () {
     var d = collect();
     try { validate(d); } catch (e) { if (e.message !== 'Création annulée.') showErr(e); return; }
-    if (state.mode === 'facture' && !confirm('Créer la facture définitive ' + $('next').textContent.replace('Prochaine : ', '') +
-      ' pour ' + d.client.nom + ' (' + money(totalOf(d.lignes)) + ') ?\nUne facture ne peut plus être modifiée ensuite.')) return;
-    $('err').style.display = 'none';
+    if (state.mode === 'facture' && !confirm('Créer la facture définitive pour ' + d.client.nom + ' (' + money(totalOf(d.lignes)) +
+      ') ?\nUne facture ne peut plus être modifiée ensuite.')) return;
+    hideErr();
     var b = this, label = b.textContent; b.disabled = true;
     b.innerHTML = '<span class="spin"></span>' + (state.mode === 'fiche' ? 'Envoi…' : 'Création…');
     var cur = state.current, p;
     if (state.mode === 'fiche') {
-      var version = state.edits; // ce qui est envoyé ; une saisie pendant l'envoi restera « non enregistrée »
+      var version = state.edits; // une saisie pendant l'envoi restera « non enregistrée »
       state.saving = true; renderSaveState();
       p = call('saveFiche', d, cur && cur.type === 'Fiche' ? cur.numero : '').then(function (r) {
         state.current = { numero: r.numero, type: 'Fiche', statut: r.statut };
@@ -792,21 +880,18 @@
       });
     } else {
       p = call('createInvoice', d).then(function (r) {
-        renderHist(r.recent); renderAtelier(r.atelier);
-        $('next').textContent = 'Prochaine : ' + r.prochainNumero;
-        showDone('Facture', r, d);
+        renderFactures(r.recent); renderAtelier(r.atelier); showDone('Facture', r, d);
       });
     }
-    p.catch(showErr).then(function () { b.disabled = false; b.textContent = label; if (state.mode) setMode(state.mode); });
+    p.catch(showErr).then(function () { b.disabled = false; b.textContent = label; setMode(state.mode); });
   });
 
   function showDone(kind, r, d) {
-    clearDraft();
     state.current = null;
     $('form').style.display = 'none'; $('totalbar').style.display = 'none';
     $('done').style.display = 'block';
     $('doneTitle').textContent = '✓ ' + kind + ' ' + r.numero + ' ' + (kind === 'Devis' ? 'créé' : 'créée') + ' — ' + money(r.total);
-    $('doneText').textContent = 'PDF enregistré dans Drive' + (kind === 'Devis' ? ', devis visible dans l’onglet Atelier.' : ' et ligne ajoutée dans la feuille.') +
+    $('doneText').textContent = 'PDF enregistré dans Drive' + (kind === 'Devis' ? ', devis visible dans la rubrique Devis.' : ' et ligne ajoutée dans la feuille.') +
       (r.emailEnvoye ? ' Email envoyé à ' + r.emailEnvoye + '.' : '');
     if (r.pdfBase64) {
       var bin = atob(r.pdfBase64), bytes = new Uint8Array(bin.length);
@@ -816,26 +901,31 @@
     } else $('dlBtn').style.display = 'none';
     $('driveBtn').href = r.url;
     rememberClient(d.client);
+    clearDraft();
     window.scrollTo(0, 0);
   }
+  $('doneBack').addEventListener('click', function () { $('done').style.display = 'none'; $('form').style.display = ''; showView(LIST_OF[state.mode]); });
   function rememberClient(c) {
     if (c.nom && !state.clients.some(function (x) { return x.nom.toLowerCase() === c.nom.toLowerCase(); })) { state.clients.push(c); renderClients(); }
   }
-  $('againBtn').addEventListener('click', function () {
-    $('done').style.display = 'none'; $('form').style.display = ''; $('totalbar').style.display = '';
-    resetDoc(); window.scrollTo(0, 0);
-  });
-
   function renderClients() {
     $('clientsList').innerHTML = state.clients.map(function (c) { return '<option value="' + esc(c.nom) + '">'; }).join('');
   }
 
   /* ---------- Démarrage ---------- */
   var initialDraft = loadDraft();
-  state.current = initialDraft && initialDraft.current || null;
-  fillForm(initialDraft && initialDraft.data);
-  if (initialDraft && initialDraft.dirty) state.edits = state.savedEdits + 1; else markClean();
-  setMode(initialDraft && initialDraft.mode || 'fiche');
+  if (initialDraft && initialDraft.inForm && initialDraft.data && initialDraft.data.client && initialDraft.data.client.nom) {
+    // on reprend le document resté ouvert (brouillon sur cet appareil)
+    state.current = initialDraft.current || null;
+    fillForm(initialDraft.data);
+    if (initialDraft.dirty) state.edits = state.savedEdits + 1; else markClean();
+    state.mode = initialDraft.mode || 'fiche';
+    setMode(state.mode);
+    showView('form');
+  } else {
+    fillForm({}); markClean(); setMode('fiche');
+    showView(initialDraft && ['devis', 'fiches', 'factures'].indexOf(initialDraft.view) !== -1 ? initialDraft.view : 'fiches');
+  }
   call('getInitData').then(function (d) {
     state.clients = d.clients || []; state.catalogue = d.catalogue || [];
     if (d.ficheStatuts) state.ficheStatuts = d.ficheStatuts;
@@ -846,9 +936,8 @@
     var keep = $('mode').value;
     $('mode').innerHTML = '<option value="">—</option>' + d.modes.map(function (m) { return '<option>' + esc(m) + '</option>'; }).join('');
     $('mode').value = (initialDraft && initialDraft.data && initialDraft.data.mode) || keep || d.modes[0];
-    $('next').textContent = 'Prochaine : ' + d.prochainNumero;
     $('sheetLink').href = d.sheetUrl || '#'; $('folderLink').href = d.folderUrl || '#';
-    renderHist(d.recent || []);
+    renderFactures(d.recent || []);
     renderAtelier(d.atelier || []);
     // le document ouvert a pu être facturé / abandonné depuis un autre appareil
     if (state.current && !state.atelier.some(function (a) { return a.numero === state.current.numero; })) {
