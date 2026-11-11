@@ -34,9 +34,11 @@
               chaque lecteur ajoute lui-même dans l'appli (le navigateur ne peut pas
               interroger Google Actualités directement : règle « CORS ») ; réponse
               gardée 20 min en cache pour ne pas solliciter Google à chaque ouverture
-    • 1.2.0 : GET ?action=enrichir&liens=[…] = pour 6 articles au plus, retrouve le vrai lien
-              derrière le lien Google Actualités, puis lit sur la page du journal son chapeau
-              (og:description) et sa photo (og:image) ; résultat gardé 6 h en cache
+    • 1.2.0 : GET ?action=enrichir&liens=[…] = pour 6 articles au plus, lit sur la page du
+              journal son chapeau (og:description) et sa photo (og:image) ; résultat gardé 6 h
+              en cache. Les liens Google Actualités ne sont PAS traités : Google renvoie aux
+              serveurs Apps Script sa page anti-robots, et on la respecte (c'est le robot
+              GitHub qui retrouve les vrais liens des sujets communs)
    ============================================================ */
 
 const ONGLET = "Avis";
@@ -146,11 +148,12 @@ function enrichir(liens) {
     const deja = cache.get(cle);
     if (deja) { resultats[lien] = JSON.parse(deja); continue; }
     const r = { lien: lien, resume: "", image: "" };
+    // Lien Google Actualités : Google répond aux serveurs Apps Script par sa page anti-robots
+    // (/sorry/), on ne cherche pas à la contourner → rien à lire, et rien gardé en cache
+    if (/news\.google\.com/.test(lien)) { resultats[lien] = r; continue; }
     try {
-      const vrai = /news\.google\.com/.test(lien) ? decoderGoogle(lien) : lien;
-      if (vrai) {
-        r.lien = vrai;
-        const rep = UrlFetchApp.fetch(vrai, { muteHttpExceptions: true, followRedirects: true });
+      {
+        const rep = UrlFetchApp.fetch(lien, { muteHttpExceptions: true, followRedirects: true });
         if (rep.getResponseCode() === 200) {
           const page = rep.getContentText().slice(0, 600000);   // les balises <meta> sont en haut
           r.resume = nettoyer(lireMeta(page, ["og:description", "twitter:description", "description"])).slice(0, 400);
@@ -164,32 +167,6 @@ function enrichir(liens) {
     cache.put(cle, JSON.stringify(r), 6 * 3600);
   }
   return { ok: true, resultats: resultats };
-}
-
-// Adresse du journal cachée derrière un lien Google Actualités (même méthode que le robot) :
-// ancien format = base64 qui contient l'adresse ; récent = signature lue sur la page Google,
-// puis appel au service interne « batchexecute » de Google Actualités.
-function decoderGoogle(lien) {
-  const m = lien.match(/articles\/([^?\/#]+)/);
-  if (!m) return "";
-  const ident = m[1];
-  try {
-    const brut = Utilities.newBlob(Utilities.base64DecodeWebSafe(ident + "=".repeat((4 - ident.length % 4) % 4))).getDataAsString("ISO-8859-1");
-    const url = brut.match(/https?:\/\/[\x21-\x7e]+/);
-    if (url && !/AU_yqL/.test(brut)) return url[0];
-  } catch (e) { /* pas de l'ancien format */ }
-  const page = UrlFetchApp.fetch("https://news.google.com/articles/" + ident + "?hl=fr&gl=FR&ceid=FR:fr", { muteHttpExceptions: true }).getContentText();
-  const sg = page.match(/data-n-a-sg="([^"]+)"/), ts = page.match(/data-n-a-ts="([^"]+)"/);
-  if (!sg || !ts) return "";
-  const demande = '["garturlreq",[["X","X",["X","X"],null,null,1,1,"US:en",null,1,null,null,null,null,null,0,1],"X","X",1,[1,1,1],1,1,null,0,0,null,0],"'
-    + ident + '",' + ts[1] + ',"' + sg[1] + '"]';
-  const rep = UrlFetchApp.fetch("https://news.google.com/_/DotsSplashUi/data/batchexecute", {
-    method: "post", muteHttpExceptions: true,
-    contentType: "application/x-www-form-urlencoded;charset=UTF-8",
-    payload: "f.req=" + encodeURIComponent(JSON.stringify([[["Fbv4je", demande]]]))
-  });
-  const bloc = JSON.parse(rep.getContentText().split("\n\n")[1]);
-  return JSON.parse(bloc[0][2])[1];
 }
 
 // Contenu d'une balise <meta property|name="…" content="…"> (dans un sens ou dans l'autre)
