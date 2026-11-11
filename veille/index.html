@@ -2,7 +2,7 @@
 <!--
   ============================================================
   Veille — la presse sur Carrefour et sur les sujets de chacun
-  Version 3.0.1
+  Version 3.0.2
   ------------------------------------------------------------
   Comment ça marche :
    • SUJETS COMMUNS (Carrefour) : un robot GitHub (.github/workflows/veille.yml)
@@ -39,6 +39,8 @@
    • v3.0.0 : refonte de l'interface (voir plus haut) ; sujets perso ajoutés par chaque
               lecteur ; Carrefour seul sujet commun (Elis devient un sujet perso à ajouter)
    • v3.0.1 : script Google « Veille - avis » branché (AVIS_URL) : votes partagés et sujets perso actifs
+   • v3.0.2 : sujets perso : 12 mois d'historique au lieu de 60 jours (on parle bien moins d'un
+              fournisseur que de Carrefour : avec 60 jours, Elis n'avait qu'un article)
   ============================================================
 -->
 <html lang="fr">
@@ -548,7 +550,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = "3.0.1";
+    const VERSION = "3.0.2";
 
     // Sujets communs (robot) : d'abord la copie « brute » du dépôt GitHub (à jour 1 à 5 min
     // après chaque collecte), sinon les fichiers du site
@@ -557,7 +559,7 @@
       "donnees/"
     ];
     const PAR_PAGE = 60;            // articles affichés avant « Voir plus »
-    const JOURS_GARDES = 60;        // sujets perso : articles gardés dans le téléphone
+    const JOURS_GARDES = 365;       // sujets perso : 12 mois d'articles (un fournisseur fait moins parler de lui que Carrefour)
 
     // Adresse /exec du script Google « Veille - avis » (outils/veille-avis.gs).
     // Il sert aux avis partagés ET aux sujets perso. Vide = votes gardés dans le
