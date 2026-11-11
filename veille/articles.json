@@ -1,6 +1,6 @@
 {
  "version": "1.0.0",
- "maj": null,
+ "maj": "2026-11-11T07:16+00:00",
  "sujet": "Carrefour",
  "sources": [
   {
@@ -31,5 +31,762 @@
    "erreurs": []
   }
  ],
- "articles": []
+ "articles": [
+  {
+   "id": "2ed5e8639c1c",
+   "titre": "Proximité : Les Mousquetaires et Francap prolongent leur partenariat pour dix ans",
+   "lien": "https://news.google.com/rss/articles/CBMivgFBVV95cUxNMXNfQjdHYlhDeFFkUG80aXZQc3RKWjZOaktDRzVnUmoxWkh4elJKUFNkeTRETklFRVg5Y0lMSDhnVlRVLXEyck9WaDBVSHJFX2pTRDlaUl96NDNKa1J3WUdmaldRc0ZYc1Q3MzBVMkRrMUxQUXJqSFdKd05nd1hDR1Npdnc3TGJiVWVnei0wNmx5Z3dGSF83dEc1dklPVGEtMnZmX1pKSjFXZUJmSkw3VGUtakJoQXpWWjFaU013?oc=5",
+   "source": "lineaires",
+   "date": "2026-11-10T18:41+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "b776d75ed65c",
+   "titre": "Ducros cible les plus jeunes avec une nouvelle gamme d’épices",
+   "lien": "https://news.google.com/rss/articles/CBMiogFBVV95cUxOWVNUWEJRSFlKOEw5aHBXR2gzZTZLa18wcUwxODJBdDlPcTJKWkl0U1E5bTlFVy1jakozc2hoRFlUNlVrcnFaQUFTUFVINWRvaVhiblJ2enZ0M0FsTVhVNU9TYWdBX1N5T1Bvb1N4WlVYVUZ0ek1kanZoSUNEQ0QwbUVwSUZqMHMzanBwX1pGYm5oLXR3c082U3hnUGJFSkExckE?oc=5",
+   "source": "lineaires",
+   "date": "2026-11-10T16:24+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "828017cc11f9",
+   "titre": "Grande distribution : les Mousquetaires (Intermarché et Netto) verrouillent pour dix ans une alliance stratégique dans la proximité avec Francap",
+   "lien": "https://news.google.com/rss/articles/CBMixwJBVV95cUxOUDVxMUVaOTZPVk4ySUxXZTBZWWtUM25hUUQ4QTVTQy1xOEtwU09IbzJyeWczZnhwZ0RXTFdPT25mMzNHZG1zV05SbHpwTUVkWHlpSmRrOWlLUlNjYkRYaDVLVW4wcXhzdHUzdTktZ0JmU2RkSlNBNWtPUW1JWWxpejV1VXdyeDZma0hxWDA5RE01ekcwRFg4Z0EtY0lXc0p4cktmLXBZTWw4SjFkVU5xQ1RtZFFmWnIwUzlvODVqUW1DbklGZGkxQ3dFTTBuaWE4ODk2VUVNbWMydS1vS1JNdkRZVklFeHZpWU15LTNzSnpGUXZobFpZckFwQ1MxUGxZUFBhNnNnWWNvNy1tMkphQnJWVXdqMXE0bGJFQzlsQ2Nia2p4MWtQOFFHX01hSWlBeGRrRElqZldZZDdVRjdHRkd5bTlSR2M?oc=5",
+   "source": "lsa",
+   "date": "2026-11-10T16:09+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "9014e3222863",
+   "titre": "Lidl rachète deux magasins à Super U et Netto, dont un ancien Colruyt, pour 3,1 millions d’euros",
+   "lien": "https://news.google.com/rss/articles/CBMihwJBVV95cUxPTUVWQXp2aEoxa05HWFpVUFZrM053aEpyNlFtcTFwODlWY3VwUWptc2hLOFlhZ2pVUHlRaHZ4ZVZfRm1icGxCQzdmN2FUMjBWR2liZFkzSlZ5NE9TYVhnZW0xb1otNWNia0VpU1I4WmVoWUZDcEF6Q3p1WldZaXh0djladVFVU2h1NW96QmJObURJZjZtZGc4R2wxaWw1LXktZktLRjR2ejZqanRZZjNkWUI4VUtSNlY1SXlfYnZiZllORmEtNHBIZkNYQk9wZUJrSWNMSXU3ZUFDcUs1Tno3ZGxTRDBmNDkyV1BXa1h2cGQ3dVJFUXVjdkpFbW56ZjctSHN4N1hwYw?oc=5",
+   "source": "lsa",
+   "date": "2026-11-10T15:28+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "4e375ba76d41",
+   "titre": "[ EXCLU ] Achats : Intermarché et Francap (re)signent pour 10 ans",
+   "lien": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQRHp4b3lxVGtpQVNGbmVIaHdfRUVscDlaYWwyM1hjZ1hvRmZWVC0wOEc5LWVUQmttR1JMOXlMWlRmNWFqX283NklrWV9KUHg5dkxpX3B4Z1RaNDViOE5OTWJpQUxNX2I0RFlJYjl2WTIwYXR6cE90RWlhVmRCTnRSZ3ZwX1NmZXdldUNrWE9ESGhjNnJZTFRQcFNKQ0RjdHlO?oc=5",
+   "source": "dauvers",
+   "date": "2026-11-10T14:49+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "2471fe7d61e1",
+   "titre": "Coopérative U prolonge son moratoire sur les pénalités logistiques et renforce ses engagements envers les PME",
+   "lien": "https://news.google.com/rss/articles/CBMingJBVV95cUxOTDd0dDF0RjI2dE5CcTlEZDRwOENxWVRaR0pXQ1BzbmdWTENKVTUtUmE4Um9lZ2JtOFVqOVdLSmNTZ3dsTk5BSTNHZXBteFNmalZzbHBVakNkYmk5dFJZb1RJaF9NZ0pvYnEzSjJfdTJLbkxjaXplbkFKc3A1ek5fU255cWx2YWJIWFpDWjFpUkZJaVpsWGlUVUU1NU1NTE5kN3A5dVBWTzBlUTI2Y21KX2ljaHlvaDZSSTdGNzBQNnIzZjI2VUpWbWVMQXVTZGhYa0h2SXRPaXhXY1lMSXladTBsTWZZMVlJRm4tWktGd095Zk55cTB0cGFvRHN2T2VsUXpUT3Jma3hvczVXbzZGSEc0YmdoWGdjMGMzSjl3?oc=5",
+   "source": "lsa",
+   "date": "2026-11-10T12:47+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "8fc59d0f8744",
+   "titre": "Plesio (ex-Casino) : Daniel Kretinsky remet au pot 390 millions d’euros et monte à 84,9% du capital",
+   "lien": "https://news.google.com/rss/articles/CBMihwJBVV95cUxQZDVuSjY2T1JleldFMEZKRzJUTW5vc1FqNl82a0wxNnl5eXVwYUtTeDR3V0dVeDBndjdIdHlmaUY4MXRlUXA1YnpDZ0xEUGRjaURFbHgwNWh4Y3NVMW1nTWozT0s1cWtKZVB6Z0pTM0RkWDRydzROZmFucmoyaVhXS0gwUlNmTzZtM3c4dmxxdzdGcElPMU1zMHpMaWp3SGgyRkFaWmhYOFFsaGZ2WnRUVllzUkRGZ2huUnI4dTN0b1VEdXNXaVpLTzM3aGxpeVR6M2RkMVJobTZCaFpGRDdtMXJHRWZpeVk1bXBxV3F1MjZwR0lkZThyQUE3TlNvWEQ2ZmJxYjVsQQ?oc=5",
+   "source": "lsa",
+   "date": "2026-11-10T11:02+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "6699030c4107",
+   "titre": "Publicité comparative : Action voulait faire taire Lidl, mais la justice donne l’avantage au discounter allemand",
+   "lien": "https://news.google.com/rss/articles/CBMinAJBVV95cUxQMnZZd3VEVkNSNzBjbE55YThoSzFtNkFTbEFrYlJ2S3QwTlJ0WTdvS0lDMURFS1JpQmhNTXVaQkp6TXJXeUNBVWYweS1CbUtjc1lzUGpCdHNOc3VNZlREb0RqRGEzR2ZEenpBYXFyTlVCVG9CY3JUa25YMEtJNXZ6RUk0VXJkVEpPVFh0NkpHelRDaXVxWXhKNS15cGcwd2lzN1ZaaENDVUFhMWZuRlViZWFkVjZhdUE4X3UxdDNNWkVuQU9DN0pOTldCSkR4cFBlVWw0XzdkMnh5a0JOaEJVWkdVaDh3WTdRZ0V4V3AwZ2NWbWtsaENWdjZJSGtPZ3N5MFRFZmJDeTBkcEw4R1RRTVVtSk53eVNTak9Peg?oc=5",
+   "source": "lsa",
+   "date": "2026-11-10T09:30+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "6b03073f12e5",
+   "titre": "Carrefour : ce que révèle la bataille judiciaire secrète avec E.Leclerc pour l’hypermarché de Plouzané",
+   "lien": "https://news.google.com/rss/articles/CBMinAJBVV95cUxPRXJBZkFVejRHN1FUckdGZzd6WGFCZmpVaEYxT3ZnYXU2QnNocDhBNl9UNFN3MEhmeFplYWtWU2EwVHBQSlJXdC1VREZ2RzJNMGJWMVJiVDdzUHR6aDE0MW96cE44TlVDSDk5NGxMak9lLUNsMjk5VkFKcklNYXZlek1fT1dBYXh5cVUxblNsNkxxdzkzcDNRTXhuenVjd3dFcW9kRVpZR0xPUFpoQlNwT0lueVFPTmFPaGNGTjlTQjBMWGt2QThnSnlublZyYl9IM3dfX1hPZlpvcGpfVkJmYUdudGlZTXBzN2hBTXZGMF9xVXBKaVQ5QS15SW45azVGc0Q2dzJHcUpnSmVnSDhZaXozWEZXREVqM0xKOQ?oc=5",
+   "source": "lsa",
+   "date": "2026-11-10T06:30+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "5dc7914e1e76",
+   "titre": "Grand Frais : cette nouvelle société qui intrigue dans l’organisation de Prosol, son principal fournisseur et co-exploitant",
+   "lien": "https://news.google.com/rss/articles/CBMiqwJBVV95cUxQYWFVdS1PcnZQWkhaLVdFc3FvOG5jRTJFaWpSdkxXTHZkalJBbnI5eVhONjZJend6bGRMOGcwOGJGSnRLYjJqZUhNZXZwRVptQVkzMUJNMU1mRkRjaW80b0tXUjBDSmx0bnVoUktVRDRqMjlCaks5dmhpVE01Y2lSUGJWUEdSVnd4Q05UR3JzNU9FMFlQX0VpXzZ4d2xlbktMYUktYjhVM2xIaUhEX3BxajA3eEtIQTJhNlZHRC1LU2Z2OXpwenVxVkxXRVhmWVh3T2x4ektBMmQzYTNVM0JNV0RjbS1yYjRFUjFLZlZwQVQybmlhUE1BZlQ1NE44VERxSDUzLU1tZmVEelc2TUFuTE9neEJKMnZ2ek5pcEoyZEVYbllaQjZYVEFqSQ?oc=5",
+   "source": "lsa",
+   "date": "2026-11-10T04:50+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "9ff8dcf3c67a",
+   "titre": "Whisky, rhum, gin et vodka vendus en tube de 8 cl : le nouveau pari de Charles&César qui croit « au potentiel de développement du marché des petits formats »",
+   "lien": "https://news.google.com/rss/articles/CBMi3wJBVV95cUxQbXlsdW1CTjRsVTkwSWRfdUFlM1ZURk9HRlBvUVBQZXhQMk1pSkxpelpkV2ppUEFKRUFxYlFxRkJfeGRXN1VIbVc5UXBXUkNTQ01xbHp4cXlzQVZlTmk4c3JMVW9wYW1OVVhHYXFXZndjS2o1U1VLWWk2SldSWFRqRDBkcGE4TDhST3Npam0yVENSZGdZRG9lVm1CSGJSdW9QVzRHUGNVYkwyRlU1X0dIODhJOU16M0NBd0hxeTZNTGdpZWp3bEl1d3EtS2FpS2VHOVppbTNHQWRhODBocXpYY1pLVDBNRUVvM0xUXzQ1bWZjSVBxakhmTmJQN0RhNElyQmR1cFJYQTVtWDlCdG1aNVdNWWV3N196STdPTlhTN0oxQ3h2NnM3dnU2OGdXcUp2S1dfaTlqQ0w4OWhSblFtbXdSV0ZtX0pLRzhicEFVN0dyVkRyVnVzUTEyWHl3eTg?oc=5",
+   "source": "lsa",
+   "date": "2026-11-09T18:18+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "bbebfb49e44a",
+   "titre": "Costco France : malgré les pertes, le géant américain remet encore 15 millions d’euros au pot",
+   "lien": "https://news.google.com/rss/articles/CBMigwJBVV95cUxPMjhkb0VWZE92V2tkNGF1bldDbFlGaXI3eks4clVoY0NMN3FZQnZkTDBPQmJUZHppV19YelJYVEdtSG5oM25jV2xjTExwQmNfNHYzSjMyek0zSk4wOGVkbWhyN1ZTeHRUUE5NUVVKMl9GVEN3ekQ5N0o2Z0N2UlZmWTl6UlZfbnJjQS0wOUV2dUxUSTdwNHlUTl9YZ0tkMFdaRjJSQ0lJeEs4Y0ZHVGk5alJCdW5MdDBaa0RYMGIyNXZBUi1VZ0dCb3FUM1lTWUdCQkVkVHptcGN5eU51ZmlCVXZEVVpBRDNWSVVlOUdFbFJXb2EwSF93TDRhZjUyOFFvMExJ?oc=5",
+   "source": "lsa",
+   "date": "2026-11-09T12:30+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "33548f76adcc",
+   "titre": "Grande distribution : Carrefour confie son rayon fruits et légumes au groupe Blachère, mais quels sont les premiers résultats ? [Reportage]",
+   "lien": "https://news.google.com/rss/articles/CBMiygJBVV95cUxORmdValpKX3pqTmpLaThwc0lDeVlYS2Y4OXJnN20wNWZBVXM2N2x4WHdnNnA0c21UWUhabWt4X0QzM1NrOFdBaTVoY3JERVFTTkc3Snd6NGExLW1XeDB6MWtCVXY3VThvSUxkbkhaaGJGZVRCZU11WEpfd1NEbi1iZGdEZkJFcmtoM0txa0RSS3pqUjBmWmQyaThaZTRLXzgzVzZ0Z0hPSFktRnMzRXVzVzI0VzlPdlRnMDJVOUJJN3R1d3J6RTFyMVJGRHgzc1ZvLTd1QlVXVE80VzJuR0ozekxEWHd2cWpxR04xdGpYcjA3YmhqMVh0TWNpdHdyaU5vemQ1aVJDRGN1SXkxRjVVQWhUTmhwRTdLUnBIZU9sMjZvRGNMOHhlMDI4U2ZVOHQ5N2ctcWJaYWU5TmpFY1Bma2hYelJQeXl3TXc?oc=5",
+   "source": "lsa",
+   "date": "2026-11-09T10:08+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "ae55d189e012",
+   "titre": "[ RELATION CLIENT ] Picnic passe à la fidélité version rétention…",
+   "lien": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQeG1aSWpMWEdEVm9HdzNURHVDQ1ZuN293eU1KdWwwZHp2WUFIc1ptYVplOUFwMU9CYzd1UW1TSW5qck1oVjBOX1g3YmEzQUlfeTdocDJ4TmRJRkJHRFdWTlY2LXhWTzllUUR0TTNGdElzd0Y3VnlWeVh3V0hCMnRsZmxlOW1jN29ERUFqMW5Xd2FVUUJLNzdoOTZyNW5KeHEzMFIwZA?oc=5",
+   "source": "dauvers",
+   "date": "2026-11-08T16:07+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "bc4b3c5f2295",
+   "titre": "Carburants : la baisse des carburants beaucoup plus importante que promise, mais qui s'en rend (vraiment) compte",
+   "lien": "https://news.google.com/rss/articles/CBMi4gFBVV95cUxNQ2ZTakp3ZmhKdW5pNWx3WnRxTVhIdkJJZTZ4MzBIZDJXT05MdlNqSEYzaGJURTBFX3puYXhRZGc3Uk9KeWZXZTVIeWpvSFdWTGpScURfSE5MVVFEX3F2azlsTl93Z3FrRC0waVRiVEFyZW0xWEV6X3JrYlB3eG5QTzNQTWp2bS1JSVBBMHptR2FxTDFPTDRITUU0bDdMQWl1RGo3akdicW9mSEZqbkNtZG1DRk1ya1NjbjJLMi14N0lQVGQ4YVJLU296SS1FOTV3NUNycHNJbVNpbVF3LWZ5LVJn?oc=5",
+   "source": "dauvers",
+   "date": "2026-11-08T15:42+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "4b3114ed22f9",
+   "titre": "« Jusqu’à 3 000 sandwichs chaque heure » : Parmafood, le « Sodebo italien », rayonne hors de ses frontières grâce à la haute technologie",
+   "lien": "https://news.google.com/rss/articles/CBMiogJBVV95cUxPSHZ3Q25iWG9DdUgzSlRESDlvbWRmSmNCcEpzZEtJNGE1Vm56M29CRVJINnVkeDk0aDlUel9PempXaFh3ejVSSHRTbkxqay1pOVoyeHBiMFFMWUxHQnFaYWhTajFCX3NzZDNTbmxERHRfRUg0NkxFMlVoLUZiWUsyQ1NwRmVBZ0UteU1FeEJGSnhrX1k5WGVHMnMtMEl0bE1ib21sbkVLTHhnQlpyYkx5YzdxdEJGcko0YUpsblVWZHM0VlY5NDl4VDJOejBxS3A1aDc3eVVaakg2cDlXUFlQaHRxUHVqdUttcHpYbHY0cjczaDU3R1FaeW9oUHlHU1oxUUpVOU1iUDBwalZBZnR0clZ1SHhJTEVtLXJzNkROLU5Idw?oc=5",
+   "source": "lsa",
+   "date": "2026-11-08T12:30+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "93de54d51f3b",
+   "titre": "Archives des PARTS DE MARCHÉ RÉGION",
+   "lien": "https://news.google.com/rss/articles/CBMiaEFVX3lxTFA5dTlCVFJKNnpnLWJWV3RreFRyTTNzNHYwdE9DY3gwa1M0S0kzbTlPVXFrODJENXU4dnFwYmVUaEsyMy1EWVRtbjZ1NHpfWC11eXhqT1c5WTQ5ZG1fU0pPckNfckUtcWh2?oc=5",
+   "source": "dauvers",
+   "date": "2026-11-08T12:27+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "33b46cd42916",
+   "titre": "[ EXCLU ] Parts de marché : Leclerc 1er dans 5 régions sur 9",
+   "lien": "https://news.google.com/rss/articles/CBMinAFBVV95cUxQZUlUbVFoZEJaUV9ZRUF1cEdabllYT2wwajZDUkdyWU5vZ2s4VUhGZGdrMlE4ZmI0NnUyb1VmQjNDV2xBMHVjSGpmeXY4cUZueHQ3SzV0bFh0VF9CUVEzdmR0dU9mQmVJMGRwdFZPU19pTGViMzJETXJVQWF4UmxqQXdFTW9pczJaaTN6U0xsbUgwOVdBRjhmZEtoV1c?oc=5",
+   "source": "dauvers",
+   "date": "2026-11-08T11:42+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "3e6be8edff9c",
+   "titre": "Trafic des sites e-commerce : la gamelle des Chinois !",
+   "lien": "https://news.google.com/rss/articles/CBMilwFBVV95cUxNM1J6YVRuM25iWTEyc095MHFubE8wVk5jRC13OTdCMHhvRXI4Mm9iYTEtMXhjSHFtdW9BMDJ0cWw5R1JtUGllVjIxbVREdlJSZzVza3RlSkp0alZtQlZNZGxMeXZFbmZTWU5fQnNqUi1XY2dWVWE0MnRjYTlnRnNwNEJ5RFo5NXVZWVJIbUVORWg0STYwY29N?oc=5",
+   "source": "dauvers",
+   "date": "2026-11-08T10:32+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "9be7833fc05d",
+   "titre": "Groupe Zouari et Stokomani/Maxi Bazar, Shein et centre logistique XXL, Quick en France... Les cinq infos à retenir dans la grande conso’ cette semaine",
+   "lien": "https://news.google.com/rss/articles/CBMivwJBVV95cUxQNTRFSFRBVVlIN1BLdlZWNDZhSWRCZXZGSGJPTHh3RkN5aUZDd0NnQk5ZazNZdUJTQVoxQkZKa3NoZnU2M2hIN0NFUWl1SkJiVDFobERRT29pWXUtRXpLMGduRF9FeWFUclZoRXhESUtvMWcweXZNS1JaWHFOVzJyQmZkX3lNZE0tSm1qVmp3cjNyZUtuWXVXWHhNV1c0djVFaElrVE5GWm5ocEFJRUtoeHQyY2EwNHRHX2MwbWZKOHdyZ2d4OGo2OHpQMXdVZUF6RTY1WDBMaUJMOGFRZzZfUHduTmpmRTZ4dkRLWVRTU05YYl9pT0FpcThEUndFai1OZHgzWE02VUFEVTg2OVM1cjJjenQzMHlwM01oZ1RmTjRYLXMzZjVWemg0dVh0cEdCaXd1RG81QWVfLXdQLW1V?oc=5",
+   "source": "lsa",
+   "date": "2026-11-08T06:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "12b7da3292c3",
+   "titre": "[ PRIX ] Comment contenir l’agressivité de Leclerc ? Comme ça…",
+   "lien": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNWFdTN1hXcTJDUXhSWGpGQkhldXMxN052b1V6ektXLWY4ZmhXcmxOdHRSbFJObjJtbC04V3J3UDhyQmVXX0NVdFB4SHF2NnNGZm9jRjVfRl9vMzBtNzNxQnB5dTVJNzNrU0EweE0tVkkyVXRoRWhFQ2F1TlpLemlnMTFDVU1xX2VLaDRDa1JjdG90OVUzd1dwY3F6dUg?oc=5",
+   "source": "dauvers",
+   "date": "2026-11-08T05:12+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "bcf2caabab93",
+   "titre": "Noël 2026 : nos coups de cœur jouets sur un marché en pleine effervescence",
+   "lien": "https://news.google.com/rss/articles/CBMi6gFBVV95cUxNSzF4LThRUV9qaDBVQ05yb1dqaWF4VGREN0lxZDV5aVFORTJLY2VpNlN2bzRqZTJhQVk3MzA0cEdKdmRqLW9YWmM3cVM2VDQ0alJWanJ3MHVlb0hsenMyZUw0c1JiWl8yejdKNzROTEEtaG5wZ3Y3WlNMQy1RN0tRMS0zUWcxSEY2eGpqckxMQk1rVjVIOXNQTEx5d1NnM00zYV81cDMxNzJwOXlNVFAxdnphUFVTUnRULVFQWjlUWE9qOUpMMjFQcTM4SnI3SXpveWhkYzhrdnJXYldWODdvaGxNeUU0XzNkbWc?oc=5",
+   "source": "lsa",
+   "date": "2026-11-07T08:30+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "aa8054a89056",
+   "titre": "Magasins Auchan plus compacts : Zara, Mango, Kiabi… comment 60 000 m² d’hypermarchés sont devenus une aubaine pour les enseignes",
+   "lien": "https://news.google.com/rss/articles/CBMirgJBVV95cUxNYzA1N0ZZbXllMjFHOUtVMFQtTDNORXVhZThNN1lnMk5yOFNqc1ROWkxoTmo2V0VDS2J0bzdaVDM5cENFODRVZHowczVUUXRxc2x6LTVmNk51MWh3cWl3dDlCc1VNdWlVWS16emF6TlNPanZVUjdva3I1ODQxTF80M3hGUlVVcDNHeWl4U2o4eHdSN2liVHRnZnZJYzBzaGlWbmVVZnc2TG5uTm45UWwtcVlPZ0V4blVkWFJBUFJHVUxmV0xIM21HMTV5RFZVWkFINjA4Qmkwa2cxVmd1NVp0NWhzUFhOZ3hIOGk4b0c5N2ZHcFNJZzQ4TTRQQUlITE5OcENnWXNHc1NQUjYxbU5QWHp3aXZldWNnazNlZWZ0bGNmYVlvc3kydEFrMkMtQQ?oc=5",
+   "source": "lsa",
+   "date": "2026-11-06T14:48+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "7839186be96e",
+   "titre": "Carrefour : le groupe remporte la bataille de Plouzané face à E.Leclerc et Coopérative U et conserve son hypermarché",
+   "lien": "https://news.google.com/rss/articles/CBMisAJBVV95cUxQRHpMT0x1eHBkTlFlbU9FamI3LXQwVEVuajFrX29UTjRfR2xDRTFHN1cyaFgzbmRraXZDcVVPRW9iYUtoS0tlN3VHbUNILVhnLUJvNzZmNm1OSkM0TG9HMTdCUDJzYjF0YWh6QmY3QWZZc1huNXQ0NG9RYWZiOW1mWW5Qek1iaHdyUGdlU2ZqQTExZ0YydG5sRDJlN21LanlYbnZCUUZkV1VzMG9QYng5d1lhdXRDaDN0b0RfREIzUlhWTGFVV2tkM2NHNjhJUXdrdnhzQWxZa1BhcVlrWUtzYzZFRUxmT0RqSEozbzVxU0hVZDRPTHhQbVJ5X2ZkSjJyRHBqOGVMQkVGZGZYTUFuZ3JHbUZPSFA2SkpHdHV5NVY0ZTBsSjF1TFZ2SXRYLXdB?oc=5",
+   "source": "lsa",
+   "date": "2026-11-06T04:50+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "35b6c2e5e1df",
+   "titre": "Commerce de montagne : Sherpa continue de croître à un rythme raisonné sur fond de changement de gouvernance",
+   "lien": "https://news.google.com/rss/articles/CBMimgJBVV95cUxPWEdiZThrbk92NGU1c0JMS3ZaWmVuS19wRXlHYXFEVGxvNmlUNjdJYVZUS1JjeWdlalozSmUyUlFQalF1VWFXQV80V3ZVWTFpM1RlSGhUMGFtcTc5VkF0a0dWMnluZGpWckJfYUpQRW9XRlRJUWY1UmVIbXItU1BSWEJ3bDM5cm5ycDBHaHNaZjBTWkVMcTI4VGpzUGhVZmd0eWFmeUV1QUVzWktGZTNpa3Q3Y0ZLb0t1UEdUWUVjUktlNDhtQjBoWkIyeXZ1aERRVWwxMjF5NmlnRVNSbHR5ekM4NEQ1NjhkazJQX1ZGVlFFVlNIUFZWbEZSMGZHd0huLVNSdV9MVFZWTnVEY2tvQWhmSlZXSnBwbUE?oc=5",
+   "source": "lsa",
+   "date": "2026-11-05T16:13+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "7df22656c4b3",
+   "titre": "A l’heure de l’IA, le retail de demain va transformer chaque contact en valeur [Tribune]",
+   "lien": "https://news.google.com/rss/articles/CBMi6wFBVV95cUxQaTVNYWxJZkRGVWgtN3RaenJaSUEwUl9Xd0I2RjdoWnJSUy1tWjcyM1ZrSlljRnRiNWtIREJibXI1cVpUVDBlNGJ3cDFwcG1Lcnh1aUpoeXVmeHB3Y0Z4MWlZYTVnSDVVMHlYQ2tpNGw3UmI2MF9sT0ExMkpkeVZhQXIyRlgta2tRbWY0YkJBUTVNTGxJRmJVSjRwTnBNeEZLUjh5RTl3TEg2NmdVVElyWXY2Z3ZtNWhlUy0zMnVBVGw4SlJQS2lYRGJGeEo5WkUzUGhfVjlJLVZsSlBJVkwwZXQydy1jRDVPcUFv?oc=5",
+   "source": "lsa",
+   "date": "2026-11-05T06:55+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "673fc8862ad2",
+   "titre": "« Le terrain est un enjeu clé » : de Carrefour à Spar, à quoi ressemble le quotidien des directeurs régionaux d’enseigne ?",
+   "lien": "https://news.google.com/rss/articles/CBMiiAJBVV95cUxQSE9TZkJvQ2ZnNmhLTFFCRTNRLXNNS29MbGk1a19VbXFxM1lZaDlVQV9td1NqNWJFQjVmNTVTWVA4cjlUTFdzTHNFamRWOU5hQXRNX2N6aFhOWk1zSHdBOEZUWUdSWVVmMGgzN2I4d253SFowSzF6M1p5Z2cta2duZDVMRk1CbC0ybi1TZ3QwdWctQ3JKOE5IajlLdXVadF9VSG0wTFlPbWp6RmFKdFd1NlhsNEZ0cGppLXM1blEtOE5nYkItY3NuNFItM1VscmpNZVBXajhSN2RscEdTSFFBdWNjM3hQVjAxOTV4a29zSS1LbE95SEVoOXoyc055TjVmZWtkNjA2OTg?oc=5",
+   "source": "lsa",
+   "date": "2026-11-05T06:30+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "3fe3bec5f146",
+   "titre": "Hyper U Sarcelles, inauguré en juillet, déjà liquidé",
+   "lien": "https://news.google.com/rss/articles/CBMilwFBVV95cUxPV0hwN2Nad1dEcWlZd2NrNHQxeEFBZWRRbWRPMVdXaVc0eW1KNmFxWnhOX3B2Q0x5WGJyb3dONEltVEd0V3RVaEwyd1o1RDF3UWw2RDNlWmktV3NOQmlDaVNXY0FaeThMVUZPaHhMMzFMWUJBTnktX0lhLWp6LVdyZFVvZm5HdzNjQUFtQWVBaUFiRWEtZHlr?oc=5",
+   "source": "dauvers",
+   "date": "2026-11-04T15:55+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "48f5272a0ad4",
+   "titre": "Octobre sur les réseaux sociaux : les employés de Carrefour se racontent, E.Leclerc dévoile ses coulisses et Intermarché fait parler ses clients sur le pouvoir d’achat",
+   "lien": "https://news.google.com/rss/articles/CBMi8gJBVV95cUxObnRGWkNsOVR5SldHN1NWWXltSW9Gbkk3WVFoNElWUHNGWUN1XzltbFVhZEZZeDZMMmZYSXBoQjI4d19IMTl5cC1VRGJzSEhIbWpIVk1QcHE5N3ozc0loZ2NsWHdteEFBM0dFc25vQUZWdnoyU3ZRYzRya3NfLVBfX0lZa0YyR21EZzM1N25QV05aQ1JrM005dmpkVk03OFJidDVwQ0NiRkhza0J5UDg1WHlSRG5nbHFjMWxNcE5mZ0dUQ21kdW5fd2VBVmczR1RaRU03Z1FOT1dTRUxtekVBWVJ6MGlFZ0E4cFBVMS1ib1ZLdTRzaEYwVGFBUk55YVRzbnA1dnVfUTZYMEV6U0k5cmFHQnplRU1ZRXNkR1ZYay1jb0Zobm5aSVo4RFpaWjlmVXVEWi1HZ2trSXVZRF9TV2RtWEE1ZkNBQUYwcHFzQTZOUVBpaUJtSXhvOEk0eU0wU3E3Nm1IWGJxdmNwc21MNFlB?oc=5",
+   "source": "lsa",
+   "date": "2026-11-04T10:37+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "42fe9cbff3a5",
+   "titre": "À Reims-Thillois, Match frais éprouve son modèle de magasin \"solution repas\"",
+   "lien": "https://news.google.com/rss/articles/CBMitgFBVV95cUxNNGN4UkdZNG9aaVRBX3hxNFY2Y0k4Q21GV01SZVhVWVItMlJobkd4Zy1OTlRTQ3ZmZV9TQk5PbEliLXFkazY3dFQ4bG96YjJoXy1zV3pocXBkSm5FbGo4VmprZ3o1SnROWGtaU005NkJEbDA1OGxvbER3UGZTN0dGN05TMnF2RzBfVUZYYmFwakx1UXYzd1d3V3A5TkR5ejRZYVNpUkNfSmhVMXdndkNaV0JOUTRnZw?oc=5",
+   "source": "dauvers",
+   "date": "2026-11-04T06:02+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "0513c4f38150",
+   "titre": "Carrefour : premières leçons et premiers ajustements pour le concept Match Frais à Reims",
+   "lien": "https://news.google.com/rss/articles/CBMijAJBVV95cUxPUlV0YlBOUDVZVWFMX2FRNVRzRjVIa0ZnTzZOYngybEZzRXZtemw0UDhxdVJSNHBWUTFUVkNlUVFnamlZbXhmX1ZOTUdZMmh6a3NaeVVTZGxMM056NU9YQlRRREdNMmo1b1RTQVdDM1lCaDhueGpCNUQ5ZVJSd3NGaUQ4WW5tSmlIUFF5R3d0U2VtMV9DZ2JtWndOMWJ3dmNvaEY4MmVDcEFScHhXMzRERmlyN2xwVE9SZ05kS2Y2T3N3VndqbmpCOENIR2gyZm9pN2N0MXFIWFA3NXVndVUxNUFtUnJ0NDh3MnBzVmhQanlHVXhsa2FvSVdEZHo5cWlpRnlFODFTeWE1azVO?oc=5",
+   "source": "lsa",
+   "date": "2026-11-03T18:46+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "5a0fc56e2d74",
+   "titre": "Distribution de proximité : pourquoi Carrefour, Casino, Coopérative U, Intermarché, Francap et même E.Leclerc redoublent d’efforts",
+   "lien": "https://news.google.com/rss/articles/CBMirwJBVV95cUxPQV96VnBLTVBCLTRLUU9zSnN3S25QZTVidVRSeER6ZnhCVGpLV3J0d0s4QnBfcGRGQWJvT1NmV0V4bU9WRVBhcllYQWlkSjNwdmhSczNXZjZnOHJfRG5ZTUQ3akNVYXlYOXFJS3BHOW5wZlhBTDhUTENWSDJGU1RyRTV1aVpwaFFOUE4tNnlKaXVuSVlmMGtiU05OS1V2YWdDSDI3ZTgyRXVnbmNCOG5SLWU2NUowNU14UFpJdjRQbDc2Q01LRWhaVkZrcW5YaHBpQ2lLWWxHbmlnZFpSUU1xTXN6eTV3WUZjUjVfRWJpd0RuOTBzRVo3WjVWNnhRTEtyMXJSRXpKclI3OUpfbmhOTUt2MHk0V2tqa3Z6dTBjbWduaDMwbF8wV1RDN0ZrTGM?oc=5",
+   "source": "lsa",
+   "date": "2026-11-03T14:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "567c00a7a967",
+   "titre": "Prix des carburants chez Intermarché et Netto : « Nous les baissons de 18 centimes en moyenne et cela va durer trois mois », annonce Thierry Cotillard, patron des Mousquetaires",
+   "lien": "https://news.google.com/rss/articles/CBMilANBVV95cUxNNXpHTWNQWk5Wc29lSkppSlhOdjc3dnhLY1Vqa0ZKSEhlTWRqRjVaelpabzJFcU9pTlpaNUlRM09MTThVRW54eXgxWm82UXRUcnpsMlhxQ3dUMkdDQlUxNVctVmxoUEJPakFOTDdFQklzV0owdlhSQmxiVjhtVkVGOTlVN0pkNlptbmJEZGhCRWFnNVdzcEZmWEEzQkV1bkl6SlN0VVJmQzEwUC1SM2FUSWFUazlMSW54MDBlQXg5LVhOdzRYLVlPU0pnTzVabzZtMHRGSzZtTlhTQVRvQTFaZ1F1ckxNZUNJU3N6U0Q1SkxVR08wRHpQUjBkdzg2LUNQdzZqTE94RjNRQnZMTmhNblBYcGdHZ1hmbTU1Y1BYdEVBVWZEUHJ0NlQ3S3MyQkY2UEM3TTl0dHBKWjBWWWdfQXFmLU5PSmF3a1NjQzFLd3lTa2tfUFBmUFc1bDN3cGRYQ21LbHh3T2dmQ2Vqd05xT3BKVkJIWnpHcVo1bkpsalJzTkc2b0hFa291bjhxclhpOVpBRA?oc=5",
+   "source": "lsa",
+   "date": "2026-11-03T10:41+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "23749da2bb39",
+   "titre": "Carrefour : \" D'ici 2030, nous atteindrons l'objectif d'être présents dans 60 pays \"",
+   "lien": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxQS0pzZEI4WW9wd2ozc2p1VXppWEZWdDhtMDNxX09VOUliOHc1UUNXdHFPeDhOaWFHR3RtNzdhUVdTcTI4d0xncC1Fd1h1X1JjMWhrMWhsSmNma01GalBqWnZVVGM1R3g4dG44Qjg3WUVhb09TSDBUZHd6WElsTTkyM1hfWnpHMTFDV19FeWxLOExDVmtoS1FhZW4xUnJ5VnlVUUwwUU9id2x5UU5fQjdpRHduZmREenNZTVJj?oc=5",
+   "source": "lineaires",
+   "date": "2026-11-03T09:20+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "3d602f2962b9",
+   "titre": "Carrefour-Cora : derrière le rachat, une bataille judiciaire à plus de 100 millions d’euros",
+   "lien": "https://news.google.com/rss/articles/CBMigAJBVV95cUxNN3JhYngxMXhmNEJiQ2hhTkFjcVc3QnZaZk5HTlEyY0txcWhQaGZqUEFZS0dEM1BmclVFZksxUjdVTTlVVEY3ZHV1RXlnQzEyemJDbVF3OUNfUHFnU1hZcl8zSnNYY0lVTGk1bWY2RW5zemc3QWhMM2dCeG1WQ1NuZTdCamw5YkRYbURabkhpdjRqLUFSbjhDd21GZno4NE1mdVJRLURibGFKTUZPeXZ6aDJkNTl6UEhNeUVMVlFyaTczWXAxZkJ1Z1paWnF3MHJnbTN2WGZOOWd1SHJtM1FNbVJrWG1ROFoyZXB2RVFIcTcxTWRlc3JtZFJOcVA3VnFL?oc=5",
+   "source": "lsa",
+   "date": "2026-11-03T07:30+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "4501fa3161ec",
+   "titre": "Grande distribution : Plesio (ex-Casino) finalise ses partenariats avec la famille Zouari",
+   "lien": "https://news.google.com/rss/articles/CBMihgJBVV95cUxNTDJEWXBMRnRlMXNPVGcxRDZteTVLTWUxUm1ndDhsZkxoLWo4LU1NeEMyTHdPSF9aNWM0bms5Z3NwLU9WeE9Icl9xdXQtZHk5elphSkFTNHIwSkpsYjBvQi1rR0ZvMnpONE5lM2hheG0wLWllU3lUbE9VSHdSaWltdDkzdW9mQVJTNVdYVm1qMU1WZnBIclBfQThjS1JHeF96WnZUYjRYYTQ0Sk0xWklQUG5NY211V2YtOVhkcGhPMElKNFJVaDRRQ0NSUlZGWHFDeDA5NDNuMld0ckhPb1RNbzA3cjVTdDdWdW5uRm84QlpQWG5GRlNaRldKVTZWM2ZMZVdHeDJB?oc=5",
+   "source": "lsa",
+   "date": "2026-11-02T15:40+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "a97752fef78c",
+   "titre": "Greendoz veut accélérer en GMS avec ses biscuits bio",
+   "lien": "https://news.google.com/rss/articles/CBMilgFBVV95cUxQczVoQTVFanhMM2VmVXBPMFRaRjNnTlhtUjFPNE1MOGxQZW5kSHJSZFJDTkxZVTRyVTVLNXBMbXF1UzZUN3lKLWZIbUd3cWdFYWRuZl9HeG5pV1JLcVhyNWgzNWVMUzJXZEVhNmliUlFWX25ZaUdnbkFXS1U3d2tuU3RxTzVXUFNDUzBOUDUwUU01M0szZWc?oc=5",
+   "source": "lineaires",
+   "date": "2026-11-02T14:55+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "00fb50fff76a",
+   "titre": "13 % de marge nette, 101 % des bénéfices reversés aux actionnaires… la Fédération des distributeurs (FCD) pointe les entreprises multinationales de l’agroalimentaire",
+   "lien": "https://news.google.com/rss/articles/CBMi2AJBVV95cUxNT21HcmRnYUNiRTVhbHN5RVdGSkZmYjhJMEJMeUplYVczazg1dGtvMUszRnF5bGtnNUQ1ODlXNDJXSDdNQ25LMmpXQjhJa3RoQkRIWEJsMzZsWS1oXzlKMFBKNE9BeVJQblRlR2Z1aHRJb1daX2tZODRHRXdzUHpHdEpWallVczR1QW9VM01LQ0Z5S1JVMlZqSERYbkFqNUlmc01aZ2t5bndSeWNPR1dKX0NkM3ZfQnBpZVdsUDZJTEZReXZkelktRW1MUjN2bUtPamlubEk3MXRXNDhpUWVpUk5BZG5sRU96cEpFN0wwSFpNMzBoY1Q4bUFudHhDWE43alJabFNtWmg4YzNkQjktVmF0WHcybXJTR3A4VWFHUldRSDVjRWU2TFdsdE1uTHQ3dk5OUlNDZjNCT1djRkY1ZEM1N2drU3YxTVRwei1KN3lyVGd5TE92ag?oc=5",
+   "source": "lsa",
+   "date": "2026-11-02T10:38+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "b71480274cd0",
+   "titre": "Restauration rapide : 41 restaurants KFC, près de 63 millions d’euros de dettes… un franchisé en grande difficulté",
+   "lien": "https://news.google.com/rss/articles/CBMihwJBVV95cUxNVjBKbmJwQm1KZ25ReGhnMXRpTTBxcEFwT095aTVPYVFFUTJSMlJEcXhUTWdBV3JINWoydm1oR05yRmIzcjJycFkxc3ZBNmgweE1XaGFpYVZvT0luZkZfSmhXc3FjSVRqSElFU3hnZ2w4d2FNNlpxV0JoV3BlSUhRdnczYzhWbzdBTWROcjN6UnNrNUtUSmN6Y2E4RTJPRk1ZbEtjckFQd29PdGc3ZTV6aEdOWkkyb3RTY2gzRWxRMmJrd2hnVXhMY0xHTjlNOFowYU45U2RzenBQYmdyT1RjUFdHaVYxV3ZLXzE1dFRtUDBLY0cxb0p3ZGpuVlRxWFJZQ2pQeHp3UQ?oc=5",
+   "source": "lsa",
+   "date": "2026-11-02T09:17+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "e4c674304a05",
+   "titre": "[ ÉTUDE ] La FCD prépare le terrain des négociations commerciales…",
+   "lien": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNUDUyOGlmbEFOU0ZzQUI0emkzV3ZUeDY5bzZ0eUxaaldvWENNYzluazBhRjh4SzNUaXVBazNBM3ptdF9GWjljZWhFX3haNkt1NlZRWjhNVHRQWVllU1VUUUJzZjhFODlUN2RIYmpxc1FDZ25NMjhSNDBpaWw4RWl0X3lZU3FzNmRBOV9XVWpWcHlvM0t5N2JCQXVHaHRyMjVGVUNfOE9B?oc=5",
+   "source": "dauvers",
+   "date": "2026-11-02T08:40+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "01d4e1d8c642",
+   "titre": "La MINUTE RETAIL : Le choix, jusqu’où ? Exemple chez Carrefour…",
+   "lien": "https://news.google.com/rss/articles/CBMinwFBVV95cUxQLTY5UmQ2cjZDRGxKSC1URjVZWkRxNV9CRHgzc2Q5SDJ4UXdQOFhuaXdtVkVYQmhkRFc5Y1VPN0NoTkJxU2p1NWNaWlp4c1ZVd2txU3pxTmNwRG5VVVZzMXoxNFp4SXhaZHNybEJZMy11eVZqd0RxcWpxZzZFWUtQTWdrcXJQTmdOdDdnRW9GaEozM1hGMUU4Qi1rc2oxN1U?oc=5",
+   "source": "dauvers",
+   "date": "2026-10-30T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "8874eb788d77",
+   "titre": "[ EXCLU ] Darty débarque chez Carrefour via la marketplace",
+   "lien": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNYktiLUZuLW1ickFLT21oNnFiQ2psOUJJdk9GZmltTnpvVjhic25FLWFFOV9LdWROSG5rOW9EOUJ6a2ZyNi1jNm1ZWTVmd2FpNGpQYVY5dFRtX0ZlY0d1Yks2YWxFdkN6bkZFNU1oVkJuSS1LSEFnODV4Qk54bzg2RHRSSkVIZTQxcFZwT0ZjaFhURkR4cDVfbEg3SlE?oc=5",
+   "source": "dauvers",
+   "date": "2026-10-30T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "59f71bf8d634",
+   "titre": "Toc toc, y’a quelqu’un chez Carrefour ?",
+   "lien": "https://news.google.com/rss/articles/CBMihAFBVV95cUxPZXMxdHdMaV9NMWYzYTVJWWh4ZWhsaWRNTXVscU5iTHJtOFp4THlMdnNaNk1UeHYtNzBCMjFINmpfWnd6XzBBMW9oWi0ybkJrbm02QzlYTEJZa1Nlc1NEVDdlX2luNmFWVl84SllsZ0Y3UGFYQ2RkQ3BUa0hpbXQ4ZkF2aUY?oc=5",
+   "source": "dauvers",
+   "date": "2026-10-28T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "c13e8eaa3838",
+   "titre": "Carrefour Cherbourg (50) vendu pour… 1 euro (symbolique)",
+   "lien": "https://news.google.com/rss/articles/CBMimAFBVV95cUxOc3lGOTN6RWxvZWFHU3EyZm1GdTBIaUhsd0JtNGxKWjVVRGtfY1dELUhFLTYwSFRWT0NUdHFCSGZRbEE3ZUZ0b1o5RU9waWpIMVFrWHZJb2R0TW54YUppWGVTSVpGU29fZFhIYk93LXpEUDg0LXo4eDNsN191R3M0ek1pc2FzWEhJV18wNU5HVm5qbGVERXVxXw?oc=5",
+   "source": "dauvers",
+   "date": "2026-10-27T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "b1c55064bd63",
+   "titre": "[ EXCLU ] Carrefour ouvre son hyper de Gennevilliers à un shop-in-shop Boom",
+   "lien": "https://news.google.com/rss/articles/CBMiswFBVV95cUxPYy0xZkduNEhPZl9RazNhZ2dGNEFXSjBFU0RhVkdFTXpxcXFFcV9NOE03cGh3N3g1TDBUVUtvRXU0bDd3YUZBR0p2bjhDSEwydUQ5YlAtMnBETTBic3JaUmNQV01sYWhuZEN4YnNqNV9lX0dIS0I3ZFBHUl9CREVVX01GV1ZuVWpXdzhRWE8zVTJEWXh5UWxxWThxdUFwQkM3Z1FwNUtjcFZiejBpNVhLbC1yUQ?oc=5",
+   "source": "dauvers",
+   "date": "2026-10-26T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "487c7c3ce347",
+   "titre": "Grande distribution : en rachetant Codifrance, Carrefour consolide sa branche proximité et fragilise celle de Francap [Analyse]",
+   "lien": "https://news.google.com/rss/articles/CBMivAJBVV95cUxNclF3ekhkUjRCTi1ic1dJOFhjRkRQMmE4M1B6QVh4VFg3b2UzdEt6T1p1UWgxUWQxM01ISTF1R0NkRHY4dndLY1hoMWUyTWpuSUJjZnZDV2ZRcnN4MDEtZXZZRFhHU3JHZjFNV1dHMkNGRGUwTEZJdEFjSFRGOHg4cVRLT0lkb1JZLVpPd0NVY2NhVHJVbTFpXzF6ZVlUV3lWN2pxc0wxN2hoYUZwbHM0Skk4NE9KUFZ1OEV6aFBoZ1laeDZRckRuMzYwWWI0VjhBQlBqR21idmp4TG9DMHVvaEJDd3dOcnNOWlpVRkMzNXZmcUl3czg0VGIzaGhZZXNhOFBWcnR2OU1oNkdyRV9qU0dvOEpjWjgybGlCb2xoeUpSeGxTcmEzQjJqZzV5dkV0UHhMSHJyOHFpTW1D?oc=5",
+   "source": "lsa",
+   "date": "2026-10-26T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "6d4bcb2ba146",
+   "titre": "[ BOURSE ] La “Black week” de Carrefour…",
+   "lien": "https://news.google.com/rss/articles/CBMigAFBVV95cUxPVllwbi1QVGVXNFFJS2lFbkNrWU9ud0F2UHlOUWdpaVFHU2dEQXhpNDdaVGlRX1RxdzdwVU1KVFA2cnFJQlNMWmxydGdEUEpmU1dXNXNrSmE2VmZPNW8ta0hpQlp6MVVpblVocnVBa3lELWo4Y0otVmxPMlBkQnRFSQ?oc=5",
+   "source": "dauvers",
+   "date": "2026-10-25T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "6a4860151a2b",
+   "titre": "Morrisons : relancé par Rami Baitiéh, ex-patron de Carrefour France, le distributeur britannique retrouve de l’attrait et suscite les convoitises",
+   "lien": "https://news.google.com/rss/articles/CBMi-wJBVV95cUxPSjdxOUh6enIyaW1jb1hDMnd3UEdxTWtmbHAyU2VXQXdaQnVkajcwb0hna1BLWWVnWFhqVGxIdXA4UHNOT0ZHME54Tl93LUp4UUl6RHNHQy1ZMkVZSE54Y1gxYzNLRWVxdGVZZ2QxcVRENElKeFJfbXFZMmVvZjI4WkFxWkh1eXREWXFkb2JMWDVuM3ZzZzVpbVZTeS05bFFIa1gwb0ZMbGRSMV83NHd2RlpTMXMwNXItOGNzdXl2UjRfUHc3N1V1LUVLLThMQlhBaWpOQnl0ZTZGZDV4RjQySTFzUnBlZXp1emVVYlc5U3ZSMU5UZ1d6WFNtajhJOVdMblphdUY2UmZQeV9qUFBkY0FhRmJWWUF3OS13WmwxelcwVzc0MDIyc21YYUZtcW1DRklqR3lLQ3lHLWNKbXI2ZDBPanFRbTFSNl9xNk5vNENSYjdHTk81Z2s2R1RpWWJXRWdfZTFOd2dveHVOQkQ3LWNhUENBZEphcjRR?oc=5",
+   "source": "lsa",
+   "date": "2026-10-25T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "71812157c429",
+   "titre": "Carrefour : quels sont les 32 magasins français concernés par la toute dernière cession de murs décidée par le groupe ?",
+   "lien": "https://news.google.com/rss/articles/CBMipgJBVV95cUxQSkluSnNtUzZkR1pYcjEtNjhmTThUc0p5YVF3SUhSOENrUlhuUU1tN1h2WGhNX3hmaW0xTEF2TmZ6YzFQSnJvNjZka0dXckttcjg4c0dMNFNMZVZIZU5uLV9pSTNTQWhfdkZoNTh3UDBDZWxNZU1TNWFGTzRJMG5LZmlnVDJIS2ptSEhrWGIzTi1sSEJWVDRoMDREdHdqSEZ4RnZwQVFoYjNmbEh1WjR4OFpzYVZxZi01aHpkNG5iUlJZSE0tT0JDaHRKNWctSDlCSFp2WnFINjd0NWNkYzQ5cDZLMG9aa05laVB1U3VGelJZODFqLUNIUDNDNWhTWWR6aUlhajYtc29peGVUaXYxNU1IVWd4TlU4UnZBUnZnRE9rOVlENHc?oc=5",
+   "source": "lsa",
+   "date": "2026-10-22T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "a028eb13263b",
+   "titre": "Alexandre Bompard, PDG de Carrefour : « L’impact des pillages sur notre résultat annuel sera de 80 à 200 millions d’euros »",
+   "lien": "https://news.google.com/rss/articles/CBMisgJBVV95cUxNYmxsY1RXbHFaSDlNbzRJU0w1YkwySlRRT1hmQllhb1pubEpmN1FYaDd3dHdLLTZhSWFjeElUdE5kekhWczFoOTBPX0xpalNJYmNINlQ3V1J4T3lHZm5wbWxwSnVFTUd3TmxVUWFZUngzV0UzUTgwREN2dHViX1lSZzc0bW9GRXVxWm1rUlU0X3YyYWJfQ0Z1S3UwRzZSbzBqeEJrUnNURmR4MElKdWYzQmQ2T0Z2RkdEZVdXMXVvNS1oemlkekFtLVBkbVFaWmZKcmNQSkllNlBoZF9tRkc5ZktrTzBrczZodFF4QlRFMUMzNDFzeFExa0k3QlhwQXdPYzBUQ1Zfei1uZW9BbE1ZWlZKbGplcFVyQjhMYzdGellrVDl4bUlhY29QZExwTFo5X0E?oc=5",
+   "source": "lsa",
+   "date": "2026-10-21T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "2645b19a36d3",
+   "titre": "Parts de marché NielsenIQ P10 / Carrefour : le bouillon des hypers, l’envolée de la proxi !",
+   "lien": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxNRkV6cGpwUTd4ZVdmZlZQbVdJVWdBYzZvTnZwc0oyanZ4dkQyV05LS2JKeVdnUlZvQU9LS1RubWRLdUhWZ0dPUmV1cGZGdl9abGhaanZaQ0d0SkNmdDJVbV9ZQTNaa05QMVhpNXZLQTNVUjlQN0ZRWXd4WVJTcGRVNGtwemxZYWppdVlmNGtIQnNBOHJKc05oTHNlcjlHeXBCTEliZmJpN3pNZjAzYllJdERtR1VKZE56dnplTkI2cFNkREE?oc=5",
+   "source": "dauvers",
+   "date": "2026-10-20T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "4ca369325c1a",
+   "titre": "Carrefour : résultats T3 en croissance, mais des inquiétudes pour le T4 (au point de revenir sur les objectifs financiers annuels)",
+   "lien": "https://news.google.com/rss/articles/CBMi-wFBVV95cUxNcnRyTldRUmVucTAwajFVWC1LQnl4S0FaaUloeVNfM1JxRHZmTi11NmpoTlA4cERYNEozNzhnd29TNXlxT1NFeWlLUW5xNXFoRGhZaTNxd0hiYm9pWWsyaUVZckNoOU1aSlRhTmJZZVR6NHhjdlcyVkhxcjZ1Z3RGTjJoRlpnY0JCZHB0cU85YnVRbmltVnd2a0RlT2VMVnV0ZWRJemRFMFVvQ1YtVTllNE8tazlXV2NLTnR6ZHIwUXpUS0QzNEo1LWRFUWtjdTBtc09jQ0VWdk5MQzJlQ1pFdTB1WEp0VWZMZjBWUnhwYVduWGFoM0xPUmVBVQ?oc=5",
+   "source": "dauvers",
+   "date": "2026-10-20T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "3898d7a38399",
+   "titre": "Rachat de Codifrance par Carrefour : la direction du grossiste écrit à ses clients pour les rassurer",
+   "lien": "https://news.google.com/rss/articles/CBMijwJBVV95cUxPTmdfQmlmT0F3Ri12ZzI1OWlwbUVFQ3RUUnNHWjQ1UUEwTF9IRGNSNWdOVUlxMmZUWExpUjJ5Y3pmQ2ctQXlrS1ZTbHlrdkJwZVUyYlFwTldKTkpVMnBKODVaSmM3Rk4tOHBNMGNnZmFDekNUYklqUnN5SHJnd0VtV1lVZFpYRkFMRjVPWWh2T05OQmdLNUNSblg1Z2U5bEYtYTY0eHZ2VTVMT2xBNmQ3X1lLdTgzY0RkQmVMMXI0c3M1cUVFMDVQZ0xyUDFFbmZreEVFT0Y5blMwc1VBd29IZlJSYUEtdzBrbm5jdWFiR2ZkRmZkanNqcTlxT1A4MWF6bDFEdFdUcnE0RGx5M01v?oc=5",
+   "source": "lsa",
+   "date": "2026-10-20T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "dcb48a14f471",
+   "titre": "Carrefour révise ses objectifs de marge suite aux pillages",
+   "lien": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQYWpiaEk5SHJqaDNyelZKY0JfN2I4MmlKa251UHdRejVvQ3FBMjhaNWVPbnYtZkgwdDB5WVJDQXBQdlNFdWU4Z1BjdW9NanhMX3I3T3BsN2xsS1ZWRmhnZFVsTDB0cnJMdWN3MDBjaWduWG4tSTNPTHpIcU5MMHlST28wNmowSV9nZjdZMnVOaDBianZMeTdYcXphYjJ3RG5aUXc?oc=5",
+   "source": "lineaires",
+   "date": "2026-10-20T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "c442751d3f0b",
+   "titre": "[ EXCLU ] La visite de chantier du projet \"Carrefour Frais\"",
+   "lien": "https://news.google.com/rss/articles/CBMimwFBVV95cUxPUzg0V2daVkl1X0t5NkRxSUVBN09SYlA4YndxcHVMMFpVWm5aRGhwOHowU0JmQi01SlRVQ2FjUURtU2dMMnd0YW9TMTJyVWs1YkswWmVQQWZxRkJaX0FMaDlpcDFPNmlHTVlpUXB3UHB5a0lGX19YOTl3VDNESS1BOWpkZUVFUEFkQTNzNERUaFE0NkszT3l3U3Frcw?oc=5",
+   "source": "dauvers",
+   "date": "2026-10-19T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "6f5645f2fc01",
+   "titre": "Carrefour : focus sur ces 45 magasins réalisant plus de 700 millions d’euros de ventes dont les murs sont passés sous pavillon britannique",
+   "lien": "https://news.google.com/rss/articles/CBMikAJBVV95cUxOZ0FxWDBlOTFUNjE1ei1fbG9XQlNxVVdIR2YtM2hHZ1NPakU5bUpiTXlFZ29nZXc5MmlRbEtRa09xZmZKUU1RWmlRd0RnZGRuQzJzb3FodFpWNVFSWkNNQ3g4MUxfblNCNkwzaUlkdkNsYWk3aURzTzVqczROTjFVYWl0YlRSdGRIQy0tNGlXN21oeE5walFTLTliME94aEVzWmpUTUFlUXNmR2g5WW9YeGpmeFJqaXJiY0lTLWdONTJmUk1MZUs2TkZ5QS1nUXdndDdtNGw2ZGRyNlNmWTFNSE11aVJxanVQSUc5Wkl0Mkd0b2Njb1dtVWRNX0NzbUc4V3hVYUF5emFWRWR4SUlSWQ?oc=5",
+   "source": "lsa",
+   "date": "2026-10-19T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "149da074a755",
+   "titre": "Grande distribution : Carrefour fait-il une bonne affaire en rachetant Codifrance, spécialiste de la proximité ?",
+   "lien": "https://news.google.com/rss/articles/CBMimwJBVV95cUxNMEd1NFJBQWdaWVNOeFkxZWdQMURVNHQwWVh2RWR0YlQwOVlnMWdzaUNGZWM4M1N6Y2d5YXYzNnVaUFpDYWFWekRpbUFLSTZ6a1c2NXl5NjlNZFF0Nlh6Q3ZNTkhLd3pna3pDeGpiVm9rMGNRYkVCRGVFUUV4NEw5QWtKc092VFItTDctakVCN3QzZTUwWTlhQ1pxMXFJdzZPXzlGVm9Fb3BVMEZsNkhYdzEwUVhoRlNjVWxFNmJXeFNib2hkbGp2LVNvdHNGSXdlNmpNaEYyLUc4Ulc5LVVUcm9KUVRhQm4yaFRjeVRqdlN4Z0NqNS1jOHZ3T25QQkdUcEQ2ZkpvOTZlalJ4NEZiQldDaGQwNHF6SndJ?oc=5",
+   "source": "lsa",
+   "date": "2026-10-19T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "a671bcc0d094",
+   "titre": "Grande distribution : Carrefour officialise le rachat ferme pour 152 M€ du spécialiste de la proximité Codifrance",
+   "lien": "https://news.google.com/rss/articles/CBMinwJBVV95cUxQaXRmYjRadUtiWEVIWE5Rcl9XUjVib2tVWS1NSnhPaUhWdnpSZEZCRV8wclFUQWpnU1JPN1VvejdWRHhneGdaWDFoSVI4QWllS1kya2hMMFZxUDY0cUtSY0Y5TXk1RWRZalNfOGYwWUMza1lHZGFqTFFxNXJXZnB1dnJacEJLVzNiZW9hZ3ZHMEtxWDJzV0w3WEFyUng1ZEtQbExHRVd1SFF5RVI0aHRMUGFrZl9FejFjWDZlRTJXQ2p2dTd2eGFralZKRTJJaTJFbjZTa3hNU2pDOGtpMGtPWkYzMFRjQUFscEJHWWowSlRSZUI4dTlabUd3QnBkNTA0REtmVE9lV1ZVSTZ1Z3FaQjFQcW10VF90MDBUMmk0MA?oc=5",
+   "source": "lsa",
+   "date": "2026-10-19T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "3dff1e91859a",
+   "titre": "Carrefour rachète Codifrance pour 152 M€",
+   "lien": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxObXlKX3ZXNmtZaWZ4TWkxdTN2M1ZWRUFwaENSZ3dLUDhlTU81ZmV4V095R3Jnb2QzbWNhNVQ2MGdYLUpBMmJtaTdLanJ6R0UzWmRudUlwNVlHSUd4SEw5Y2M0blg0dC1URHhta2E2OTNqSzRfSjNUcDNuUTZMSm1EdWFsSnpfekdFVm13?oc=5",
+   "source": "lineaires",
+   "date": "2026-10-19T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "57022344a6d5",
+   "titre": "Grande distribution : Carrefour sur tous les fronts, mais quelles sont les priorités de l’enseigne ?",
+   "lien": "https://news.google.com/rss/articles/CBMilwJBVV95cUxQaThWaXN3WDktZUFGVjhPbDVIODYyRktPdnJ1bW56Z1doYTFOXzRESDNhYVVOVURiV0phVENoTG52ZWJSZ2plRDJCZGFqbGVkdmRZN2xtMzBRZEh4Wi1fbHJpRUZOcUlfTmJGbDdRWWRmMFV5X2FjejhCNklqTzlzWWk2VjZGZW5SeHdGMXBfXzlDRTlsNFZwR1VKai1vQUZmN3A2SWRRRzFIRUpvRU5rVmYyWUE3aUFLVzZXRkN5cHNqeGdLUnBEcnZOY2V2Q195Y1hXQ3A4R2VtT1JUZzVQbnNyamhyblJjRGlBMnhOUjZTd1NtUWxlRlJGZ1otbjFhdXRLMWp1VTFlb1ZIbnotR0FjVUZLZ0U?oc=5",
+   "source": "lsa",
+   "date": "2026-10-16T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "38f31bf8bf8e",
+   "titre": "[ CONCEPT ] Rideau pour Carrefour Occasion !",
+   "lien": "https://news.google.com/rss/articles/CBMihwFBVV95cUxPY0hfQjJFbXlIakV3Mm9fdFprRXd0UTBYWDFsOEZONEQ2dzFvZ29IRzhiYVpBQk5XOWkzOFVkM1M5WTBSRmZpX2o0enhvQWNlTWotelFlMDZiV0V0YktxZ19BaHI1YUo5TlRIZmctcTZzNHZpR0d0cUdkY1ZNYTBWOU16dnZGN0U?oc=5",
+   "source": "dauvers",
+   "date": "2026-10-12T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "a7e2480c2a51",
+   "titre": "E.Leclerc, Intermarché, Coopérative U, Carrefour… La grande distribution victime d’une cyberattaque inédite sur ses réfrigérateurs",
+   "lien": "https://news.google.com/rss/articles/CBMivAJBVV95cUxOenR3VGJuaTJpV3RYYmpPc01JYjFvc3pnNnY1VlV4U1BzNkQ0NHJPc0hlSGFxQnpnd25QRTZmYTgzVktqZGVXRC1iODcyYjFXRWVDSTRTbWFRcXdOam8xWDlneElLZlBGNlpfTU1WYUpxYnlCRERZanY3ZWlWOWdsRHg0SzYzdmdSNHdGYjFFbmRLdXdwemF2QVJuNFh3dWRDa1h2WGVuVmVvS01xc04wdi15N2NzSC05b1F4TVdrR3RLcWktOVpqdUNTUHpCRFhCNVA4Mks3aWVCT0RfNnBXSEJmM1lhcy16bFI1dmc2SDRXaHNZazIxWTlMWm1Cekxpa1RqMFc1ZUQ3Ym12eUd5MFVEVkZMS1lxenFfRExFRG4ySkZvX2FuWjI1NjE2MnptaXl5VXhMdkFoelVB?oc=5",
+   "source": "lsa",
+   "date": "2026-10-12T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "6a5f31629a4e",
+   "titre": "Grande distribution : Carrefour vend les murs de 35 magasins pour 290 millions d’euros, ce que révèlent les comptes de sa filiale immobilière",
+   "lien": "https://news.google.com/rss/articles/CBMi0AJBVV95cUxOVHJHRWlIQndHUk02VEViQ2RwVTlyVkVLVTVMUU5HYzZlRTc4QW5rTjBwUTVyZnBXZnlqTExFUFVUdkV5VHpqeHVyUFUxWWQzQ0llQktqT2h4aEtKdHRoaG5oZjNGQTVZZTNVTVBTazU4WlN3RWRTalpKSHNjRkxXVFBQcWtzTjEzVTNta2lfZGRuN3FDLW4xcFI3eVAteE91WDB2QnlFbmtoOWhhbG9YQlNRNkJmYk9wVm1iN1pzUy1NV3hjU0pVeDhEUjVnTTFHTWlUb2UtUUkwY1preWwtTU84WTdKT3dGNFNHTTdpQjZORG05WWhFdGpQLWtiMk40bUMtMHhzQnNzY203X2c3YV9ldWNyTjNmZzk0UlU1WkwyWjJ4Q3ZCVFVIc2w0UTIzRWFLMW5DWDBwUUM5OXVBM2VIb1dzNW1PQ3B1UHRhcF8?oc=5",
+   "source": "lsa",
+   "date": "2026-10-12T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "2150f685cf3b",
+   "titre": "Carrefour/Colruyt, Lidl ouvre désormais à 8 heures, entrepôts XXL Amazon et Zalando... Les cinq infos à retenir dans la grande conso’ cette semaine",
+   "lien": "https://news.google.com/rss/articles/CBMiuwJBVV95cUxPbHBHc3NkUTh5UDRWZnpZbXFLT1ZLWlFkbllFdEg5MTlycDVkNHAyeEdNT1V3QlV0WDBCa09OOWs1eTdfZ3NsVlVHOUI5eEJjcDJ6SF9vbXZXUFl5UmctTUpWYWZGQUFuM2s3NTBOQ1FBd2kxVXhOTVkzUzJMUUVOZUUtZUFoTjZVRTlMeDNXaHRIOWVsM05QVmtaUVVNSnhYVHhXbi1CZXVYQjNMSm9SbU1XSFFaMzVRTEJVR1hRVVlSaU9od1RZdDVXWG5FRTBWT0tOc2pubnkydHZsbHFGWXpMbUpBTVZ6UlFCMFR2VUN4MDZwWG1pNTRXU1NJdFQzczdZSnQ3cmFzZEgwLUxrcHhfU08yTS1nQUJUay1VQUlHbGVJN19heU9uNms4ZW1QWDJZclJaU1J4MXc?oc=5",
+   "source": "lsa",
+   "date": "2026-10-10T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "39889ed0dbae",
+   "titre": "Parts de marché : le drive à Leclerc, la LAD à Carrefour",
+   "lien": "https://news.google.com/rss/articles/CBMimwFBVV95cUxPejAwOGRLZDd0VUFiYmtKTmdIajZMZkZiZVJOTVVWTFhyM1ozWEJLcDM1LUVodEttdW9YcFZUb1E5S2s2V3JRRldWenZReHNab0dOazFRam1uS3lyRm9YcVpINUFvc1UtRTlLTkxWUHpJSUprUUhNVXV0NzZIdHpPVXIxdlZoS1RSLURyZUJjaHRxQ3U4bUNyelBRVQ?oc=5",
+   "source": "dauvers",
+   "date": "2026-10-09T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "1969de968765",
+   "titre": "Colruyt confirme négocier avec Carrefour pour lui vendre Codifrance",
+   "lien": "https://news.google.com/rss/articles/CBMirgFBVV95cUxQZEVnMjdmRm5YLWhFaENabnVzZ2NzdVlicXNSeVpqNGEtazhZZEtNUjdHR0p3MmVLZ1NzWHpiX2xrZU52NW1PaEpoWXZETS1KYld5M0V5Y093ZVNRRGdoMjJMcUg1MS1jUnpncF9hbkROTklDRVBQb212emNCNC1zS2VGbE53TEd6MEtrdld4cEVXNUl4VjQ1b0JlQmtNeGJxSGdudk5vRmZ0VXFNdGc?oc=5",
+   "source": "lineaires",
+   "date": "2026-10-09T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "1f1c20672c78",
+   "titre": "Prix des carburants : Carrefour, Auchan, Lidl, les aides proposées aux salariés de la grande distribution",
+   "lien": "https://news.google.com/rss/articles/CBMikgJBVV95cUxNMC1mQ3B3ZFBoUlJ3NHBzdzJDUDFYM3hzZmI5UGIyU3Y3dzZGWExQUXE2NVEzZ1hzYVZNdGZwS1JDcG04WmdVeWN4MVpwZl8telNkWFFMYTdhZElsSUNaVGhrU2RGV1pTMlNHeFJlYzdFdkhXbzZOWEd0ak02bk1JWkZLdm5FYldVLU1yQmNKSkIyd2t5Q0xoR3RFTUxaMWJoUVRaN3pEWlI2ZXFfa0JUc0YxaHFveU94NnN2QktOcXNZM0pCRkg0NmEzalF2NjBjNGxvMTR4ek5LMGRTdVg4Z0N1Q3d1SlV1blNXbmVyeTk5bXJLRXdKNzBIdWF0al8tVno4cDdsWW42anZmRGREM2FR?oc=5",
+   "source": "lsa",
+   "date": "2026-10-08T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "33c0e10a4b2e",
+   "titre": "Codifrance : Carrefour confirme être entré en négociations exclusives avec la filiale de Colruyt",
+   "lien": "https://news.google.com/rss/articles/CBMilwJBVV95cUxNcE5ERzhZT2hTX0l2Mlk5TGtfZlNoWldVbXk2TnR3enR0TE5DbVlxNXlCN0lycnZpUktyNDR2aEpIaFk0WVdQQndnNThtZWhEdG44LVBNcjFfSFMwak5nYVRNYkN3Q1RqYVlTMjhPQkhwQzdkWU9pTk9ENV9EQzBrOWRUcWw0RXhuOEw5cGFDaVNNck51U21RUzRCSkVCek1COFdZbExXbGRmZUlraUdGZG45LXI3bkhtaS1ST1g4R2FTOFFPXzJiNjgwWEFvQ2xQLS04V05ld1NGSnlqUm45RTUwUHRYTUVGODAwUXhqNnhQaEk3V19obnUtWTJ3Nkt4T25pNm1PMjljNFdOODN1REYtT2pQaXM?oc=5",
+   "source": "lsa",
+   "date": "2026-10-08T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "36ef22324228",
+   "titre": "Des casiers Carrefour City en gare : ça se tente, mais…",
+   "lien": "https://news.google.com/rss/articles/CBMimAFBVV95cUxQMzloVjVHNHhyTjRFS1hzZjI3ZWZNaGdlbUJJWG9UTlNCVHotTXFBOUQ2blZqSWNOY0pJSjM4aEtBemhnUV9fSUR2OXFRNVpvZElfQkh5V1BPazRIWkJ3dzA5MjZhLW9TU0ZyTEo0Vnd1c1NBSWE4emdQZVVQRF90QzdoZGtDRXlCRk5hSXMxS1JVQXU0NWFYaw?oc=5",
+   "source": "dauvers",
+   "date": "2026-10-07T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "86c3e0fb41d1",
+   "titre": "Atacadão : l’avenir du magasin discount test de Carrefour en France se jouera cet automne",
+   "lien": "https://news.google.com/rss/articles/CBMijAJBVV95cUxQMVo4cmpvUkhZZHpJaHE1M1lRck5pTWJ6bVZoaWlkZWJXTTRNUjUwQV8xUExTOXRkWjVXYkJtV1lYTkNLY1NEM20wYUtnOEpxaktpZ0tLckRoc1MzbUtWNzVYeG9pd01mdWZiVXYtT05vdGpMSFlBSTFXRWswRUdQNzNJQ0RnMXZQYV9NanRXUWZ0bDNUYl8yUW0yMS1yb2t6QW5jaWVodlc0UTQ5VG9BdVdDTlVvaTZtNmt0NkJVTnN6YTNObWlFZXp0eFg1cVhEMUZpVzc2d3daeDBsVTRIVFhWMjU3XzQ4UVVGSVZVdnk5UEJGLTU2SWpMSldjcWM4Mk9qUWtuUFVVTkxx?oc=5",
+   "source": "lsa",
+   "date": "2026-10-07T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "ab92a86be90f",
+   "titre": "GBH (Groupe Bernard Hayot), principal franchisé Carrefour d’outre-mer, veut ouvrir 150 salles de fitness Neoness et Keepcool d’ici à 2030",
+   "lien": "https://news.google.com/rss/articles/CBMihAJBVV95cUxQUDF4YWV0MXFQdkE1NHIyRnNhT3hjTnhWdU8yMjFqd2hhdTRfempEVVJEbl9NQkZkTXZiNDRLQzJaNnAxcWNicVJlWjE0dUU2bUxCM2o3U1MyUFMzTHYzcnlUeG94QXZFOG4xVjRTUTlyWW5KeTQzcmh1dmZ2Q2I3cl9EWmpmN21xYVktVURUM1Nqbzg4V3dDOG5saGVRbHVJQVFVcVRIdkxfbDNSaDIxcjZOTlA4MWUwU3ZZMDY0ektLLVp4ZHNiVDk0Vmg0WDZaZVdldXZKVnk4RmVfWEhMTG1HdDVNdExOV00xZ0xiMW1nQTcyVndBWTF2OFlUcnpja3Atbw?oc=5",
+   "source": "lsa",
+   "date": "2026-10-07T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "09d6496f8f0e",
+   "titre": "Souveraineté alimentaire : Groupe Bernard Hayot (GBH), franchisé Carrefour, veut porter à 100 millions d’euros la part des produits ultra-marins dans ses achats [Reportage]",
+   "lien": "https://news.google.com/rss/articles/CBMi7wJBVV95cUxOenRRbmZiMEJ1dDNGS2Jub2FidGpRTk10ZFgwcE0wNkNjOTZzbkJEY05fWWR5NndTMmVYSWRnYmpXNWM0OVRicEFrRHlhR3ctZVlvSzlZVXQtTDFnYmlUZHpNTmRyQzlXS3dGeDltUEJaTnU3NVpCdkZRYnFFLTVpNHZRLTlvaDZ5d1Y2X2FHV2g5NG9qblk0bFhhX1o0MXZqUjFMbXMzTVVWRS14QmtWNFRrT2Nka0N5REc3WUdmM1JNUjYwYk1jUGdYY01zZ21ZN0NITmpMd3hXMmlRX3ZybENvbUtGNW1pc2xsQ2ZtaXNDSGk3X3BZUW9MMHgtUzFJekFVbEtlV3k4SS1ucmJ5UmFUenpwQ19HSnVYd1lOeHR2TEhxVFpkOGdOYWNUSTZYWEI5T0xsMUZLb0ZlX3l3ZHlEakZMb1BhbkVNR3J2VlFWUVp2ejh2NTN0anltX2luZXdPVXE4Z1h6a1dRUzRB?oc=5",
+   "source": "lsa",
+   "date": "2026-10-05T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "86f05a497e61",
+   "titre": "J-1 pour Carrefour mobile. On en sait plus sur… “le forfait des pinces” !",
+   "lien": "https://news.google.com/rss/articles/CBMirgFBVV95cUxONl80b1lodTNMR205N2lubEV1R3N1VUdYUmtmTzVPUHhtZWkzSm9BX0NiMjFPOUdJSmhWeTZkV0l5R3JUMkF4WkIycU1WdTBMQ0lMdC1Mc3RGcXp4R1p2VjJGMGg3RUN2VlhubTk0RUNoWWwzNkstT0otUGdwU21SV0FEcWxwS0d3MVdGcWRxUDhOc1pFbDBDQjhHbzYxWWtUekRCWlF5SDJhcHRRX1E?oc=5",
+   "source": "dauvers",
+   "date": "2026-10-04T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "f58b60389534",
+   "titre": "Téléphonie mobile : Carrefour remet ça à partir de lundi",
+   "lien": "https://news.google.com/rss/articles/CBMinAFBVV95cUxPbGFKWDIzT3ozcWROR3ZMSTlPX21aZkFxZlVxNDNNZ0RNNXU4Sm5VbVBBeERacW1QQnV1YVRPdS1oUHVBc25naDRWRC16RGw1T2YtUUZ2WklkN1hvM1ViYUNlQktPbF9VRGRKVEdyTjNGUi04VFJTS3lITU5reHEtSHNhSHR0V2ZlaVpVNWhiMlV2WElaOXE5NFZoWUE?oc=5",
+   "source": "dauvers",
+   "date": "2026-10-03T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "2d4993f88fc5",
+   "titre": "Carrefour lorgne sur Codifrance : pourquoi les plus petits magasins vont rester sur le carreau",
+   "lien": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxQRk1OM3dhOEJjYUdyVHprNEZWVFFmWklIQlY5OXptSThNT09jbGdUWWc2bTJYdWpfZjRELXA5QnZNZWxCV2JyM0JfMU92TjBKWGxQd0NtSWVJb0MyNnFkNl8xXzhFUmpUYWhCbkdMSldsbVZNcUFDak9zVmVuS2R5R2RqdFFYbHpGMmFzbnFxcXJQZHVkWjVQS3dSbzFuZEo2bkZQc2prOXlZeDdnaHVCTHRIY1ZIbWhfc1dMNEo1bjk?oc=5",
+   "source": "lineaires",
+   "date": "2026-10-02T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "7b0f3d26adba",
+   "titre": "Prosol (Grand Frais) : deux nouveaux directeurs généraux nommés cet été, Michel Biero qui rentre au Codir, la gouvernance évolue notablement",
+   "lien": "https://news.google.com/rss/articles/CBMikwJBVV95cUxNOWxyYkkzcUFENmROOVRma2Z5QWlGaWljYlYwMXY0NGFqZmJyYjJBTHJKX0ZyWlBVQlFaX1dkMzZhcEt0NDA3Z0ZyV2NabnBnVlA4bUtob1NhX2p6TWUyTkhNcS1uWF9uUlB4eTlCS2hQSjFHaFVOaU1EVF8xZ05KVTJiNUF3WlJkaWFFeHk3X3A0ak52WXpEeXhiYnNoMV91anI3LUdJXzJaRWhZTHRYYk1yNV95YW5GS05CYUtCRkZ5OFdSckVzUzdoTENjWGRibk5lekNkZG5EbjNFRU1iUWdheFZfZGNWSWwzb1c5MGwwZEVIVHdBM3ROOUVDOFBqWFFPNFJ6NXVDdllLU0ZCc0pwWQ?oc=5",
+   "source": "lsa",
+   "date": "2026-09-30T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "0b7daa9f6881",
+   "titre": "Consigne chez Carrefour : les spiritueux montrent l’exemple",
+   "lien": "https://news.google.com/rss/articles/CBMinwFBVV95cUxNdU1qQ3ZqMWRralRwaG9GNkxjckhUY1EzNUl6bmJGUUhIQ19pMV9UbWgzWTVmOGRzME9LblIwcDNwQi1fNDlTSXUtbEE2U3BRU0k4ek1RdHViWUNBYVJaeUtiSDZWTzdaWUJQYzQ1NGhjbW9iNF9nbXR2SUNEaE02Vzh4TzhyQkU2ekR6VU95SURvUHQ3RXcwRDJnOC0weTQ?oc=5",
+   "source": "dauvers",
+   "date": "2026-09-29T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "aed4c0d6aa0a",
+   "titre": "Carrefour prêt à reprendre Codifrance (Colruyt) : le billard à 4 bandes d’Alexandre Bompard",
+   "lien": "https://news.google.com/rss/articles/CBMisAFBVV95cUxQQktQU2d3b0FHOUVTRGYwZThSMHFJTkhjYnotTXlwbVlpdG80c3paNkMzekh6cElPN21xZDBIYU1QaE1kMmRwUm8xTENCYUVLeXNZaEdBQU5taW1UNFhoNDlieHFoOEgtQUd0TlFkdEp1MU9LSmUybk85Zm5ZZDFIMlZBTzdpWHlOazlybVU0bkVvRE9hSkZBcHAxeXlfN0VBaTh1VU0wMnFwdlVlYjJZNA?oc=5",
+   "source": "dauvers",
+   "date": "2026-09-29T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "8806dfb9a3e4",
+   "titre": "Commerce de proximité : Carrefour lorgnerait Codifrance (Coccinelle et CocciMarket) : Colruyt ne ferme pas la porte à une vente",
+   "lien": "https://news.google.com/rss/articles/CBMirgJBVV95cUxPd2pxX1ZCbDJYVnRCM0c5Q1NMLUJYUmxkX21xTDBlUzA1ZGRiNFBJUG9EcUVkekFwdHdpNmVOc25acWVuT1M3RUdjRjBTVEQyM2c1UnQ5c1E2LVNiTG5la1JIS1phYTkyT055dHF3Z29LQ2FRMkhER05pcjl2SThBY1FHcVJ0bW5HUTVZdVIzeDZDMnZ5MXJyNG50NXFvU0czemlBZTNNR2tkUzRKdWNxeWV4OGxEV1ZCeGhVN0VBamZwNmJ6QWRFOHJXd0FFSmh6WmlPZ3Y1TThsbkYzZlJYZnFPbXdCUTc5enZOZE9LV2pfLWVQWHpMai1pNy1aQWhBX3EyM09YNTJHS2l3Mlp3MmFLMzB1QVZaNlY5cGU0YWZlR3lpZWs5X1JvOGdKdw?oc=5",
+   "source": "lsa",
+   "date": "2026-09-29T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "71a86efa144b",
+   "titre": "Carrefour améliore son assistant de courses par l’IA pour soutenir le « mieux manger »",
+   "lien": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxNVENNbGNsdUVPeXprNzJkbTBweWJjd25hRmNvWWNld2N1ZWc4S1AzMnBoSVZIS0JyV0tGZ0F4QW1VNkZYY21xc25wLTk3Q2pvRlMzZ1pXdUdMRXphQUpDNGdMVGloeGlfTVc4dnVvSjY1dV9aNzQwTXcxUjFsaFZPUHktcDN1eWM2Y2dRNG9hYlJZQThwN2toT3BFZHdaeVJIdFF0ZW5qa3pnRUVOVU9OVVJtM18yWFRTQzc2RUNhbzFQZw?oc=5",
+   "source": "lineaires",
+   "date": "2026-09-29T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "06fbcc0fe1c6",
+   "titre": "Grande distribution : les pertes des 107 hypermarchés Carrefour intégrés en France se creusent encore en 2025",
+   "lien": "https://news.google.com/rss/articles/CBMiqAJBVV95cUxPVjRXaWd4cFhsVWZfb0NwTzFyYUJVemNoeXNQMmI1SGVlRFZsRzVKc21HLWJQTXZHUF8wcUhsMXdaYVhqVW1lUldxX2J4aFo0QkpWemVkT0tOUC1iWmltRXF5TnA3LVNId1c4ZFBmZWR0STFuNnJmRmI5Q0E4WE1KS3NBQjk4TjRPOWZYaDVkNFV3bWdSSXNCeFdBdDNlOURDSUdFMlRmeFlOQmxQMkZEazV6NjRVOGRDVGxHOHU0LUQxclR4ZEQ2SHl2U1oxVVVFLUJCV1Njd0gwREoyR2FxaVRLTDBDT3BCVmxlb0hrR3BFNlh2ODcxYVdkN05YczRUOEdYMllmTmFZVWg0Tk5ad21BOUZCakNBSnloRnZvWHlEZ2VvSEVTNg?oc=5",
+   "source": "lsa",
+   "date": "2026-09-22T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "0bc47ba93f84",
+   "titre": "Le groupe GBH, distributeur de Carrefour en outre-mer, étoffe sa diversification en achetant les enseignes Keepcool et Neoness en France",
+   "lien": "https://news.google.com/rss/articles/CBMivwJBVV95cUxPbzFsT01XMDFNQVFHVkZFNFZ1MkNPQllVdHRqZHlMMXpFeldBRWtJdWl4alZWb3Y1UmM0YWhBNlI3T1NtR2lSYlFJOEZQcDB1RXRrcUJzQk1EUkVjLWRsYlpmZHRETlZXOVR5WWpRMGw0VjhmRUNUS1J6MTB5MDRPNEJXaTdnaXVVazROVjd0dWpYdkp5MzNaMkMyLXYxV0pCc0NNeEdWNjNEcFIydXl0QUNCelJLSXl0bGlJTkRoTjE1cGJiWmdxZlJfUWhib01vOEh3TDVpX3VXWmw2NW5tb19Kb0pxMTdPWS1HcVFZODZodDFRakd2WjVPakVqVS1sUTZNLUdzM3RYTTAzbnlZMG80eHFJdVF6RVZSYlBENDI1UTVpb3RxbHhpa3hiN3lYQ0RQS1hXR25UMXo5b004?oc=5",
+   "source": "lsa",
+   "date": "2026-09-21T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "743a8f254cbf",
+   "titre": "Carrefour",
+   "lien": "https://news.google.com/rss/articles/CBMib0FVX3lxTE1NQU9iN1JacWN3OTVIWVFUdGx5dDdwMENkRFNCNXUxWEdYLWxmeXUxX29GdkhtaHNoOV9weV9sSWo5eHdxV1NKczBDVHZzRUZkQnpPcVF3ZTRwV0QwX244eTZrNDFMOTlJbXo5ZGgtMA?oc=5",
+   "source": "lsa",
+   "date": "2026-09-15T15:42+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  },
+  {
+   "id": "22151b56e98e",
+   "titre": "Grande distribution : que reste-t-il des quatre hypermarchés Carrefour de la famille Guillerm ?",
+   "lien": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxNZng2dWxjajZRV3dmVnJtTHpLUm1IZ0JiOFBYdmlXTE1iaDYwazZKOWppc0FBNElvdU9nTnEzbkZIZUphdG5ZVXVlLS1YNEFFcUFhQlB4QTlGNDFUeWlFZHBRQlFvTVVVa3lQeGZnLVFtS3VjcGVrQVlUS1kxUUhDQUMzNVB3b3JjYndPNmNTYTZvY0ZKM3haUmtyX1BRbmkzRWxseFA0X1dFcnYtUU5EN3FaaGZ5VW5tLVZmS3FpMXU?oc=5",
+   "source": "lsa",
+   "date": "2026-09-14T07:00+00:00",
+   "vu_le": "2026-11-11T07:16+00:00",
+   "resume": ""
+  }
+ ]
 }
