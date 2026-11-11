@@ -50,6 +50,10 @@
               dont le lien mène directement au journal, l'appli les demande au script Google
               (6 à la fois), puis les garde dans le téléphone (veille.enrichis) ; les liens
               Google Actualités restent au robot (120 articles traités par passage)
+   • v3.1.1 : vue Cartes plus sobre, à la demande de Seb : cartes toutes de la même taille
+              (172 px dès 2 colonnes : titre sur 3 lignes, chapeau sur 2), petite photo discrète dans le coin,
+              plus de grands bandeaux ni d'article « à la une » ; moins de gras (titres en
+              medium, journal en petit texte précédé d'un rond à sa couleur au lieu d'un badge)
   ============================================================
 -->
 <html lang="fr">
@@ -235,19 +239,24 @@
     .article.rejete { border-style: dashed; }
     .article.suivi { box-shadow: inset 4px 0 0 #f59e0b, var(--ombre); }
     .meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); min-width: 0; }
+    /* Journal : son nom en petit, précédé d'un rond à sa couleur (--c) — plus de badge plein */
     .source {
-      font-weight: 700; color: #fff; border-radius: 6px; padding: 2px 7px; font-size: 11px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;
+      color: var(--ink); opacity: .8; font-size: 12px; font-weight: 500;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px;
     }
-    .nouveau-pt { color: var(--rouge); font-weight: 700; }
+    .source::before {
+      content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+      background: var(--c, var(--muted)); margin-right: 6px; vertical-align: 1px;
+    }
+    .nouveau-pt { color: var(--rouge); font-weight: 500; }
     .nouveau-pt::before { content: "● "; }
     .payant { font-size: 11px; }
-    .note { font-size: 11px; font-weight: 700; border-radius: 6px; padding: 1px 6px; }
+    .note { font-size: 11px; font-weight: 500; border-radius: 6px; padding: 1px 6px; }
     .note.bonne { color: var(--ok); background: color-mix(in srgb, var(--ok) 14%, transparent); }
     .note.basse { color: #b45309; background: color-mix(in srgb, #b45309 14%, transparent); }
     .corps { display: flex; gap: 12px; align-items: flex-start; margin-top: 7px; }
     .corps > div { flex: 1; min-width: 0; }
-    .article h2 { font-size: 16px; line-height: 1.35; margin: 0; font-weight: 700; }
+    .article h2 { font-size: 16px; line-height: 1.35; margin: 0; font-weight: 500; }
     .resume {
       font-size: 14px; color: var(--muted); line-height: 1.45; margin: 5px 0 0;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
@@ -281,38 +290,24 @@
     }
 
     /* =========================================================
-       VUES — « Magazine » = le style de base ci-dessus (vignette à droite) ;
-       « Liste » = une ligne par article (vue « Titres » de Feedly) ;
-       « Cartes » = grande photo en haut, comme Google Actualités / Apple News.
-       Chaque article contient toujours un « .visuel » (grande photo ou bandeau
-       aux couleurs du journal) : il n'est montré qu'en vue Cartes.
+       VUES — « Magazine » = le style de base ci-dessus (une colonne sur
+       téléphone, petite photo à droite) ; « Cartes » = grille de cartes TOUTES
+       DE LA MÊME TAILLE (titre sur 3 lignes, chapeau sur 2, petite photo
+       discrète dans le coin) ; « Liste » = une ligne par article.
        ========================================================= */
-    .visuel { display: none; }
-    body.vue-cartes .cartes { align-items: start; }   /* chaque carte garde sa hauteur */
-    body.vue-cartes .visuel {
-      display: grid; place-items: center; aspect-ratio: 16 / 9; margin: -13px -14px 12px;
-      border-radius: var(--radius) var(--radius) 0 0; overflow: hidden; position: relative;
-      /* sans photo : dégradé de la couleur du journal (--c), avec son nom en grand */
-      background: linear-gradient(135deg, var(--c, var(--brand)), color-mix(in srgb, var(--c, var(--brand)) 55%, #000));
+    body.vue-cartes .article { display: flex; flex-direction: column; overflow: hidden; padding: 13px 14px; }
+    /* Hauteur fixe seulement quand les cartes sont côte à côte (≥ 760 px) : sur téléphone,
+       une seule colonne, chaque carte prend juste la place de son texte */
+    @media (min-width: 760px) { body.vue-cartes .article { height: 172px; } }
+    body.vue-cartes .lien { flex: 1; min-height: 0; display: flex; }
+    body.vue-cartes .corps { flex: 1; min-height: 0; margin-top: 8px; }
+    body.vue-cartes .article h2 {
+      font-size: 15px; line-height: 1.4;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
     }
-    body.vue-cartes .visuel img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-    body.vue-cartes .visuel span {
-      color: #fff; font-weight: 700; font-size: 22px; opacity: .9; padding: 0 16px; text-align: center;
-      letter-spacing: -.01em; text-shadow: 0 1px 2px rgba(0,0,0,.2);
-    }
-    body.vue-cartes .vignette { display: none; }
-    body.vue-cartes .article { padding: 13px 14px 14px; overflow: hidden; }
-    body.vue-cartes .resume { -webkit-line-clamp: 3; }
-    body.vue-cartes .corps { margin-top: 8px; }
-    body.vue-cartes .etoile-fixe { top: 10px; right: 10px; background: rgba(0,0,0,.45); color: #ffc94d; border-radius: 50%; width: 26px; height: 26px; display: grid; place-items: center; z-index: 2; }
-    /* sans photo : simple bandeau (la place est gardée pour les vraies photos) */
-    body.vue-cartes .visuel:not(:has(img)) { aspect-ratio: auto; height: 64px; }
-    body.vue-cartes .glisse.une .visuel:not(:has(img)) { height: 88px; }
-    body.vue-cartes .visuel:not(:has(img)) span { font-size: 18px; }
-    /* l'article « à la une » (le premier de chaque jour) : titre plus grand */
-    body.vue-cartes .glisse.une .article h2 { font-size: 19px; line-height: 1.3; }
-    body.vue-cartes .glisse.une .visuel:not(:has(img)) span { font-size: 22px; }
-    .article.lu .visuel { opacity: .7; }
+    body.vue-cartes .resume { font-size: 13.5px; }
+    /* la photo reste petite et un peu effacée : elle aide à repérer, sans prendre la place */
+    body.vue-cartes .vignette { width: 56px; height: 56px; border-radius: 8px; opacity: .9; }
 
     /* Vue « Liste » : une ligne par article (comme la vue « Titres » de Feedly) */
     body.vue-liste .cartes { gap: 0; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--ombre); }
@@ -418,9 +413,6 @@
       .segments { flex: 0 0 auto; }
       .cartes { grid-template-columns: repeat(2, 1fr); }
       body.vue-liste .cartes { grid-template-columns: 1fr; }
-      /* Cartes : l'article à la une prend 2 colonnes, avec une photo plus large */
-      body.vue-cartes .glisse.une { grid-column: span 2; }
-      body.vue-cartes .glisse.une .visuel:has(img) { aspect-ratio: 21 / 9; }
       dialog { margin: auto; border-radius: 20px; max-height: 86vh; }
       .poignee { display: none; }
     }
@@ -467,7 +459,7 @@
     @media (min-width: 1500px) {
       .cartes { grid-template-columns: repeat(3, 1fr); }
     }
-    /* Ordinateur en vue Cartes : 3 colonnes dès 1024 px (cartes plus étroites, photo en haut) */
+    /* Ordinateur en vue Cartes : 3 colonnes dès 1180 px */
     @media (min-width: 1180px) {
       body.vue-cartes .cartes { grid-template-columns: repeat(3, 1fr); }
     }
@@ -600,7 +592,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = "3.1.0";
+    const VERSION = "3.1.1";
 
     // Sujets communs (robot) : d'abord la copie « brute » du dépôt GitHub (à jour 1 à 5 min
     // après chaque collecte), sinon les fichiers du site
@@ -1052,14 +1044,12 @@
       let html = "", jourCourant = null;
       for (const a of arts.slice(0, combien)) {
         const d = new Date(a.date);
-        let une = false;
         if (cleJour(d) !== jourCourant) {
           if (jourCourant) html += `</div>`;
           html += `<h3 class="jour">${nomDuJour(d)}</h3><div class="cartes">`;
           jourCourant = cleJour(d);
-          une = true;                              // premier article du jour = « à la une »
         }
-        html += `<div class="glisse ${une ? "une" : ""}">
+        html += `<div class="glisse">
             <div class="fond favori"><b>⭐ ${favoris.has(a.id) ? "Retirer" : "Favori"}</b></div>
             <div class="fond masquer"><b>👎 Masquer</b></div>
             ${carte(a, d)}</div>`;
@@ -1070,22 +1060,15 @@
       setTimeout(enrichirVisibles, 400);          // résumés / photos manquants, en arrière-plan
     }
 
-    // Grande photo de la vue Cartes ; sans photo (ou si elle ne se charge pas), un bandeau
-    // aux couleurs du journal avec son nom : les cartes restent variées et lisibles
-    function visuel(a) {
-      const s = sources[a.source] || {};
-      const nom = (s.autres && a.media) ? a.media : (s.nom || a.media || "");
-      // couleur : celle du site suivi, sinon une couleur tirée du nom du journal (toujours la même)
-      const c = s.autres || !s.couleur ? COULEURS_JOURNAUX[parseInt(empreinte(simple(nom)), 36) % COULEURS_JOURNAUX.length] : s.couleur;
-      return `<div class="visuel" style="--c:${c}"><span>${echap(nom)}</span>${a.image
-        ? `<img src="${echap(a.image)}" alt="" draggable="false" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}</div>`;
-    }
+    // Couleurs pour les journaux qui ne sont pas des sites suivis (toujours la même pour un journal)
     const COULEURS_JOURNAUX = ["#004e9b", "#0f6e6e", "#7a3e9d", "#b4531a", "#2b7d5b", "#9b2242", "#3d5a80", "#6b5b2a"];
 
     function pastilleSource(a) {
       const s = sources[a.source] || { court: a.source, couleur: "#69707a" };
       const etiquette = (s.autres && a.media) ? a.media : (s.court || s.nom);
-      return `<span class="source" style="background:${s.couleur}">${echap(etiquette)}</span>`;
+      // « Autres médias » : une couleur tirée du nom du journal, pour les distinguer d'un coup d'œil
+      const c = s.autres ? COULEURS_JOURNAUX[parseInt(empreinte(simple(etiquette)), 36) % COULEURS_JOURNAUX.length] : s.couleur;
+      return `<span class="source" style="--c:${c}">${echap(etiquette)}</span>`;
     }
 
     // Titre protégé, avec les mots surveillés surlignés
@@ -1110,7 +1093,6 @@
       const st = statut(a);
       return `
         <article class="article ${lus.has(a.id) ? "lu" : ""} ${st === "rejete" || st === "masque" || aMotMasque(a) ? "rejete" : ""} ${aMotSuivi(a) ? "suivi" : ""} ${a.id === choisi ? "choisi" : ""}" data-id="${a.id}">
-          ${visuel(a)}
           <div class="meta">
             ${pastilleSource(a)}
             ${estPayant(a) ? `<span class="payant" title="Souvent réservé aux abonnés">🔒</span>` : ""}
