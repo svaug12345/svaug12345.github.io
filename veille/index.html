@@ -2,7 +2,7 @@
 <!--
   ============================================================
   Veille — la presse sur Carrefour et sur les sujets de chacun
-  Version 3.0.0
+  Version 3.0.1
   ------------------------------------------------------------
   Comment ça marche :
    • SUJETS COMMUNS (Carrefour) : un robot GitHub (.github/workflows/veille.yml)
@@ -38,6 +38,7 @@
    • v2.4.0 : glisser (⭐ / 👎 dans la liste, suivant / précédent dans la fiche)
    • v3.0.0 : refonte de l'interface (voir plus haut) ; sujets perso ajoutés par chaque
               lecteur ; Carrefour seul sujet commun (Elis devient un sujet perso à ajouter)
+   • v3.0.1 : script Google « Veille - avis » branché (AVIS_URL) : votes partagés et sujets perso actifs
   ============================================================
 -->
 <html lang="fr">
@@ -547,7 +548,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = "3.0.0";
+    const VERSION = "3.0.1";
 
     // Sujets communs (robot) : d'abord la copie « brute » du dépôt GitHub (à jour 1 à 5 min
     // après chaque collecte), sinon les fichiers du site
@@ -560,8 +561,10 @@
 
     // Adresse /exec du script Google « Veille - avis » (outils/veille-avis.gs).
     // Il sert aux avis partagés ET aux sujets perso. Vide = votes gardés dans le
-    // téléphone, et pas de sujets perso.
-    const AVIS_URL = "";
+    // téléphone, et pas de sujets perso. La CLÉ n'est jamais ici (dépôt public) :
+    // chaque lecteur la reçoit dans le lien baiji.fr/veille/?cle=…, gardée ensuite
+    // dans son appareil.
+    const AVIS_URL = "https://script.google.com/macros/s/AKfycbxYA2Jjsc0-BGckKH_RO9EAg-5lUTADSZ_MxphdBJapsYrE-PSacLUH63DfNgp4zaFRmA/exec";
 
     // Apprentissage : seuil sous lequel un article est masqué, et nombre de votes minimum
     const SEUIL_MASQUE = -1.5;
