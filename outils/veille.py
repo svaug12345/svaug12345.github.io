@@ -2,7 +2,7 @@
 """
 ============================================================
 outils/veille.py — collecte de la « Veille Carrefour »
-Version 1.0.0
+Version 1.1.0
 ------------------------------------------------------------
 Ce script tourne tout seul sur les serveurs de GitHub
 (workflow .github/workflows/veille.yml, toutes les 2 heures).
@@ -32,6 +32,9 @@ Option pour tester sans internet : --dossier-test <dossier>
 
 Historique :
  • v1.0.0 : première version (Dauvers, LSA, Linéaires ; Google Actualités)
+ • v1.1.0 : sources « autres » (toute la presse via Google Actualités) : chaque article
+            garde le nom du journal (« media ») ; un article d'un site déjà suivi
+            (ex. LSA trouvé par la recherche générale) est rangé sous ce site
 ============================================================
 """
 import hashlib
@@ -47,7 +50,7 @@ from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 
 RACINE = Path(__file__).resolve().parent.parent      # racine du dépôt
 REGLAGES = RACINE / "veille" / "sources.json"
@@ -145,7 +148,7 @@ def sans_espace_de_noms(balise: str) -> str:
 
 def lire_flux(contenu: bytes) -> list:
     """Transforme le XML d'un flux en liste de dict
-    {titre, lien, date, resume, source_affichee}."""
+    {titre, lien, date, resume, source_affichee, source_url}."""
     racine = ET.fromstring(contenu)
     articles = []
     for el in racine.iter():
@@ -161,6 +164,7 @@ def lire_flux(contenu: bytes) -> list:
             elif n == "source":
                 # Google Actualités : <source url="…">LSA Conso</source>
                 champs["source"] = (enfant.text or "").strip()
+                champs["source_url"] = enfant.get("url", "")
             else:
                 champs.setdefault(n, enfant.text or "")
         titre = sans_html(champs.get("title", ""))
@@ -172,6 +176,7 @@ def lire_flux(contenu: bytes) -> list:
             "date": lire_date(champs.get("pubDate") or champs.get("published") or champs.get("updated")),
             "resume": sans_html(champs.get("description") or champs.get("summary") or ""),
             "source_affichee": champs.get("source", ""),
+            "source_url": champs.get("source_url", ""),
         })
     return articles
 
@@ -185,6 +190,12 @@ def nettoyer_google(art: dict) -> dict:
     if cle_titre(art["resume"]).startswith(cle_titre(art["titre"])[:40]):
         art["resume"] = ""
     return art
+
+
+def domaine(url: str) -> str:
+    """« https://www.lsa-conso.fr/truc » → « lsa-conso.fr » (sans « www. »)."""
+    d = urllib.parse.urlparse(url or "").netloc.lower()
+    return d[4:] if d.startswith("www.") else d
 
 
 def parle_du_sujet(art: dict, mots: list) -> bool:
@@ -219,13 +230,20 @@ def main():
             print("⚠ articles.json illisible : on repart de zéro")
 
     etat_sources = []      # pour afficher dans l'appli si un flux est en panne
+
+    # Domaine de chaque site suivi → son id. Sert à ranger sous « LSA » un article
+    # de lsa-conso.fr trouvé par la recherche générale (source « autres »).
+    par_domaine = {domaine(s["site"]): s["id"] for s in reglages["sources"] if s.get("site")}
+    # Les sources « précises » d'abord, la recherche générale en dernier : ainsi un
+    # article déjà trouvé par le flux de LSA garde LSA comme source.
+    reglages["sources"].sort(key=lambda s: bool(s.get("autres")))
     nouveaux = 0
 
     # 2) Chaque source, chaque flux
     for src in reglages["sources"]:
         etat = {"id": src["id"], "nom": src["nom"], "court": src.get("court", src["nom"]),
                 "site": src.get("site", ""), "couleur": src.get("couleur", "#0f7c7b"),
-                "ok": True, "erreurs": []}
+                "autres": bool(src.get("autres")), "ok": True, "erreurs": []}
         for flux in src["flux"]:
             adresse = adresse_du_flux(flux)
             try:
@@ -245,6 +263,9 @@ def main():
                 date = art["date"] or maintenant
                 if date < limite:
                     continue                        # trop vieux
+                # À quel site rattacher l'article ? Par défaut la source du flux ;
+                # mais si le journal est un site suivi, c'est lui (ex. LSA).
+                id_source = par_domaine.get(domaine(art.get("source_url")), src["id"])
                 cle = cle_titre(art["titre"])
                 deja = connus.get(cle)
                 if deja:
@@ -260,7 +281,10 @@ def main():
                     "id": hashlib.sha1(cle.encode()).hexdigest()[:12],
                     "titre": art["titre"],
                     "lien": art["lien"],
-                    "source": src["id"],
+                    "source": id_source,
+                    # nom du journal tel que Google Actualités le donne (« Les Echos »…),
+                    # affiché sur la carte pour la source « Autres médias »
+                    "media": art.get("source_affichee", ""),
                     "date": date.isoformat(timespec="minutes"),
                     "vu_le": maintenant.isoformat(timespec="minutes"),
                     "resume": couper(art["resume"]),

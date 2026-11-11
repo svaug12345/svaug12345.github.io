@@ -2,7 +2,7 @@
 <!--
   ============================================================
   Veille Carrefour — les articles sur Carrefour d'Olivier Dauvers, LSA et Linéaires
-  Version 1.1.0
+  Version 1.2.0
   ------------------------------------------------------------
   Comment ça marche :
    • un robot GitHub (.github/workflows/veille.yml) lance outils/veille.py
@@ -20,6 +20,8 @@
    • v1.0.0 : première version (Dauvers, LSA, Linéaires)
    • v1.1.0 : pastille « 🎯 Dans le titre » (activée au départ) : seulement les articles dont le
               titre parle du sujet ; Google Actualités remonte aussi ceux qui le citent en passant
+   • v1.2.0 : source « Autres médias » (toute la presse) : la carte affiche le nom du journal
+              (Les Echos, Le Parisien…) ; la recherche trouve aussi par nom de journal
   ============================================================
 -->
 <html lang="fr">
@@ -229,6 +231,8 @@
       <p>Les articles sont collectés automatiquement toutes les 2 heures, de 6 h à 22 h.
          Pour lancer une collecte tout de suite : <a href="https://github.com/svaug12345/svaug12345.github.io/actions/workflows/veille.yml" target="_blank" rel="noopener">GitHub → Run workflow</a>.</p>
       <p>Ajouter un site ou changer de sujet : <a href="https://github.com/svaug12345/svaug12345.github.io/edit/main/veille/sources.json" target="_blank" rel="noopener">modifier sources.json</a>.</p>
+      <p>« Autres médias » cherche Carrefour dans toute la presse : la pastille grise donne le nom du journal.
+         Un article de LSA, Linéaires ou Dauvers trouvé par cette recherche est rangé sous son site.</p>
       <p>LSA et Linéaires passent par Google Actualités : un lien ouvre d'abord une page Google, qui renvoie vers l'article. Certains articles sont réservés aux abonnés.</p>
     </details>
 
@@ -240,7 +244,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = "1.1.0";
+    const VERSION = "1.2.0";
 
     // Où lire les articles. D'abord la copie « brute » du dépôt GitHub :
     // elle est à jour 1 à 5 min après chaque collecte, sans attendre que
@@ -428,7 +432,7 @@
         if (filtre === "favoris" && !favoris.has(a.id)) return false;
         if (filtre !== "tout" && filtre !== "favoris" && a.source !== filtre) return false;
         // tous les mots tapés doivent se trouver dans le titre ou le résumé
-        const texte = simple(a.titre + " " + a.resume);
+        const texte = simple(a.titre + " " + a.resume + " " + (a.media || ""));
         return mots.every((m) => texte.includes(m));
       });
     }
@@ -463,10 +467,12 @@
     // Une carte d'article
     function carte(a, d) {
       const s = sources[a.source] || { court: a.source, couleur: "#5d7277" };
+      // Pour « Autres médias », on affiche le vrai journal (« Les Echos »…) plutôt que « Autres »
+      const etiquette = (s.autres && a.media) ? a.media : (s.court || s.nom);
       return `
         <article class="article ${lus.has(a.id) ? "lu" : ""}" data-id="${a.id}">
           <div class="meta">
-            <span class="source" style="background:${s.couleur}">${echap(s.court || s.nom)}</span>
+            <span class="source" style="background:${s.couleur}">${echap(etiquette)}</span>
             <span class="heure">${FORMAT_HEURE.format(d)}</span>
             ${estNouveau(a) ? `<span class="nouveau">Nouveau</span>` : ""}
           </div>
@@ -484,7 +490,8 @@
     // Les sources suivies, dans « Sources et réglages »
     function afficherSources() {
       $("#liste-sources").innerHTML = (donnees.sources || []).map((s) => `
-        <li><a href="${echap(s.site)}" target="_blank" rel="noopener">${echap(s.nom)}</a>
+        <li>${s.site ? `<a href="${echap(s.site)}" target="_blank" rel="noopener">${echap(s.nom)}</a>`
+                     : `<b>${echap(s.nom)}</b> (toute la presse, via Google Actualités)`}
           ${s.ok ? "" : ` — <span class="alerte">flux indisponible à la dernière collecte</span>`}</li>`).join("");
     }
 
@@ -520,7 +527,7 @@
       }
       // Partager : feuille de partage du téléphone, sinon copie du lien
       if (e.target.closest(".partage")) {
-        const texte = `${a.titre} (${sources[a.source]?.nom || ""})`;
+        const texte = `${a.titre} (${a.media || sources[a.source]?.nom || ""})`;
         try {
           if (navigator.share) await navigator.share({ title: a.titre, text: texte, url: a.lien });
           else { await navigator.clipboard.writeText(texte + "\n" + a.lien); toast("Lien copié"); }

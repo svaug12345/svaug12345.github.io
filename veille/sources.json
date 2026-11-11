@@ -5,12 +5,15 @@
     "mots_cles : un article d'un flux « filtrer: true » n'est gardé que s'il contient l'un de ces mots (sans tenir compte des accents ni des majuscules).",
     "jours_gardes : au-delà, les articles sont oubliés.",
     "Chaque source a un ou plusieurs flux : « url » = adresse d'un flux RSS ; « google » = une recherche Google Actualités (même syntaxe que sur news.google.com, ex. « Carrefour site:lsa-conso.fr »).",
-    "Pour ajouter un site : copier un bloc de « sources », changer id, nom, couleur et le flux. L'appli l'affichera toute seule."
+    "Pour ajouter un site : copier un bloc de « sources », changer id, nom, couleur et le flux. L'appli l'affichera toute seule.",
+    "Une source avec « autres »: true est une recherche dans TOUTE la presse : chaque article garde le nom de son journal, et ceux d'un site déjà suivi sont rangés sous ce site."
   ],
   "sujet": "Carrefour",
-  "mots_cles": ["carrefour"],
+  "mots_cles": [
+    "carrefour"
+  ],
   "jours_gardes": 60,
-  "max_articles": 600,
+  "max_articles": 1500,
   "sources": [
     {
       "id": "dauvers",
@@ -19,8 +22,13 @@
       "site": "https://www.olivierdauvers.fr",
       "couleur": "#c2410c",
       "flux": [
-        { "url": "https://www.olivierdauvers.fr/feed/", "filtrer": true },
-        { "google": "Carrefour site:olivierdauvers.fr" }
+        {
+          "url": "https://www.olivierdauvers.fr/feed/",
+          "filtrer": true
+        },
+        {
+          "google": "Carrefour site:olivierdauvers.fr"
+        }
       ]
     },
     {
@@ -30,7 +38,9 @@
       "site": "https://www.lsa-conso.fr",
       "couleur": "#be123c",
       "flux": [
-        { "google": "Carrefour site:lsa-conso.fr" }
+        {
+          "google": "Carrefour site:lsa-conso.fr"
+        }
       ]
     },
     {
@@ -40,7 +50,25 @@
       "site": "https://www.lineaires.com",
       "couleur": "#1d4ed8",
       "flux": [
-        { "google": "Carrefour site:lineaires.com" }
+        {
+          "google": "Carrefour site:lineaires.com"
+        }
+      ]
+    },
+    {
+      "id": "autres",
+      "nom": "Autres médias",
+      "court": "Autres",
+      "site": "",
+      "couleur": "#5d7277",
+      "autres": true,
+      "flux": [
+        {
+          "google": "Carrefour (hypermarché OR supermarché OR magasins OR enseigne OR distributeur OR \"grande distribution\")"
+        },
+        {
+          "google": "\"groupe Carrefour\" OR \"Alexandre Bompard\""
+        }
       ]
     }
   ]
