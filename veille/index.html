@@ -2,7 +2,7 @@
 <!--
   ============================================================
   Veille — la presse sur Carrefour, Elis… (un onglet par sujet)
-  Version 2.0.0
+  Version 2.1.0
   ------------------------------------------------------------
   Comment ça marche :
    • un robot GitHub (.github/workflows/veille.yml) lance outils/veille.py
@@ -31,6 +31,10 @@
    • v2.0.0 : plusieurs sujets (onglets Carrefour, Elis…) ; avis 👍 / 👎 sur chaque article,
               partagés entre lecteurs, et « ✨ Filtre appris » qui masque les articles
               qui ressemblent à ceux jugés pas pertinents
+   • v2.1.0 : idées reprises de Feedly : filtre « Non lus », nombre de non lus sur chaque
+              onglet, « Tout marquer comme lu » (avec Annuler), vue compacte (une ligne par
+              article), mots masqués et mots surveillés (surlignés, pastille « 🔔 Surveillés »)
+              réglables par sujet dans « Sources et réglages »
   ============================================================
 -->
 <html lang="fr">
@@ -220,6 +224,32 @@
     }
     .masques button { border: 0; background: none; color: var(--accent); font: 800 13px Manrope, sans-serif; cursor: pointer; }
 
+    /* =========================================================
+       v2.1.0 — non lus, vue compacte, mots masqués / surveillés
+       ========================================================= */
+    .titre .btn-rond + .btn-rond { margin-left: -2px; }
+    .lien-action { border: 0; background: none; color: var(--accent); font: 700 13px Manrope, sans-serif; padding: 0; cursor: pointer; }
+    .reglage-mots { display: block; font-weight: 800; color: var(--ink); margin: 12px 0; }
+    .reglage-mots span { font-weight: 600; color: var(--muted); }
+    .reglage-mots input {
+      display: block; width: 100%; margin-top: 6px; height: 40px; border: 1px solid var(--line);
+      border-radius: 10px; padding: 0 10px; font: 400 14px Manrope, sans-serif; color: var(--ink);
+    }
+    mark { background: #fde68a; color: inherit; border-radius: 3px; padding: 0 2px; }
+    .suivi { border-left: 4px solid #f59e0b; }        /* article qui contient un mot surveillé */
+    /* Vue compacte : une ligne par article, sans résumé ni boutons (sauf ⭐), cartes collées */
+    body.compact .cartes { gap: 0; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+    body.compact .article { border: 0; border-bottom: 1px solid var(--line); border-radius: 0; padding: 9px 12px; flex-direction: row; align-items: center; gap: 10px; }
+    body.compact .article:last-child { border-bottom: 0; }
+    body.compact .article .meta { flex: none; flex-direction: column; align-items: flex-start; gap: 2px; width: 74px; }
+    body.compact .article .meta .source { max-width: 74px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    body.compact .article .meta .nouveau, body.compact .article .note { display: none; }
+    body.compact .article a.lien { margin: 0; flex: 1; min-width: 0; }
+    body.compact .article h2 { font-size: 14px; font-weight: 600; }
+    body.compact .resume, body.compact .actions > :not(.fav) { display: none; }
+    body.compact .actions { margin: 0; padding: 0; }
+    body.compact .suivi { box-shadow: inset 4px 0 0 #f59e0b; }
+
     /* Petit message en bas (« Lien copié », etc.) */
     #toast {
       position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 20px); transform: translateX(-50%);
@@ -251,6 +281,10 @@
     <header>
       <div class="titre">
         <h1>Veille <span id="sujet"></span></h1>
+        <button class="btn-rond" id="vue" title="Vue compacte / cartes" aria-label="Changer de vue">
+          <!-- picto rows-3 (Lucide, ISC) : vue en lignes -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M21 9H3"/><path d="M21 15H3"/></svg>
+        </button>
         <button class="btn-rond" id="actualiser" title="Actualiser" aria-label="Actualiser">
           <!-- picto refresh-cw (Lucide, ISC) -->
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
@@ -275,6 +309,11 @@
       <p>Les articles sont collectés automatiquement toutes les 2 heures, de 6 h à 22 h.
          Pour lancer une collecte tout de suite : <a href="https://github.com/svaug12345/svaug12345.github.io/actions/workflows/veille.yml" target="_blank" rel="noopener">GitHub → Run workflow</a>.</p>
       <p id="aide-avis"></p>
+      <!-- Mots réglés par le lecteur, pour le sujet affiché (séparés par des virgules) -->
+      <label class="reglage-mots">🔕 Mots masqués <span id="mots-sujet-1"></span>
+        <input id="mots-masques" placeholder="ex. bourse, jour férié, Boursorama" autocomplete="off"></label>
+      <label class="reglage-mots">🔔 Mots surveillés <span id="mots-sujet-2"></span>
+        <input id="mots-suivis" placeholder="ex. Bompard, drive, franchise" autocomplete="off"></label>
       <p>Ajouter un sujet ou un site : <a href="https://github.com/svaug12345/svaug12345.github.io/edit/main/veille/sources.json" target="_blank" rel="noopener">modifier sources.json</a>.</p>
       <p>« Autres médias » cherche Carrefour dans toute la presse : la pastille grise donne le nom du journal.
          Un article de LSA, Linéaires ou Dauvers trouvé par cette recherche est rangé sous son site.</p>
@@ -289,7 +328,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = "2.0.0";
+    const VERSION = "2.1.0";
 
     // Où lire les données. D'abord la copie « brute » du dépôt GitHub :
     // elle est à jour 1 à 5 min après chaque collecte, sans attendre que
@@ -323,7 +362,10 @@
       appris: "veille.appris",      // pastille « ✨ Filtre appris »
       mesAvis: "veille.avis",       // mes votes {sujet: {idArticle: {vote, titre, media}}}
       cleAvis: "veille.cle",        // clé du script des avis (donnée par ?cle=)
-      qui: "veille.qui"             // identifiant anonyme de ce téléphone (pour les votes)
+      qui: "veille.qui",            // identifiant anonyme de ce téléphone (pour les votes)
+      nonLus: "veille.nonlus",      // pastille « Non lus »
+      compact: "veille.compact",    // vue compacte (une ligne par article)
+      mots: "veille.mots"           // {sujet: {masques: [...], suivis: [...]}} mots réglés par le lecteur
     };
 
     /* =========================================================
@@ -401,6 +443,10 @@
     let dansLeTitre = lire(CLE.titre, true);    // true = seulement le sujet dans le titre
     let filtreAppris = lire(CLE.appris, true);  // true = masquer les articles mal notés
     let voirMasques = false;                    // le lecteur a demandé à voir les masqués
+    let seulementNonLus = lire(CLE.nonLus, false);
+    let compact = lire(CLE.compact, false);
+    let mots = lire(CLE.mots, {});              // mots masqués / surveillés, par sujet
+    const motsDu = (type) => mots[sujetId]?.[type] || [];
     let recherche = "";
     let combien = PAR_PAGE;
     let visitePrecedente = null;                // pour savoir ce qui est « nouveau »
@@ -596,16 +642,22 @@
        AFFICHAGE
        ========================================================= */
     function toutAfficher() {
-      afficherStatut(); afficherFiltres(); afficherListe(); afficherSources();
+      document.body.classList.toggle("compact", compact);
+      afficherOnglets(); afficherStatut(); afficherFiltres(); afficherListe(); afficherSources();
     }
 
     // Les onglets des sujets (cachés s'il n'y en a qu'un)
+    // Le nombre affiché = articles NON LUS, comme dans Feedly (calculé avec les articles
+    // gardés dans le téléphone ; pour un sujet jamais ouvert, le nombre total d'articles)
     function afficherOnglets() {
       const nav = $("#sujets");
       nav.hidden = index.sujets.length < 2;
-      nav.innerHTML = index.sujets.map((s) => `
-        <button class="onglet" role="tab" data-sujet="${echap(s.id)}" aria-selected="${s.id === sujetId}">
-          ${echap(s.nom)}<span class="nb">${s.nb}</span></button>`).join("");
+      nav.innerHTML = index.sujets.map((s) => {
+        const d = s.id === sujetId && donnees ? donnees : lire(CLE.cache + s.id, null);
+        const nb = d ? (d.articles || []).filter((a) => !lus.has(a.id) && (!dansLeTitre || sujetDansTitre(a, d))).length : s.nb;
+        return `<button class="onglet" role="tab" data-sujet="${echap(s.id)}" aria-selected="${s.id === sujetId}">
+          ${echap(s.nom)}<span class="nb">${nb}</span></button>`;
+      }).join("");
     }
 
     // Ligne sous le titre : nombre d'articles, nouveautés, flux en panne
@@ -619,6 +671,8 @@
       if (donnees.maj) t += ` · dernier ajout ${ilYa(new Date(donnees.maj))}`;
       const enPanne = (donnees.sources || []).filter((s) => !s.ok).map((s) => s.court || s.nom);
       if (enPanne.length) t += ` · <span class="alerte">⚠ ${echap(enPanne.join(", "))} indisponible</span>`;
+      // « Tout marquer comme lu » : seulement s'il reste des non lus parmi ceux affichés
+      if (articlesFiltres().some((a) => !lus.has(a.id))) t += ` · <button class="lien-action" id="tout-lu">✓ Tout marquer lu</button>`;
       $("#statut").innerHTML = t;
     }
 
@@ -626,10 +680,42 @@
 
     // Le sujet est-il dans le titre ? (un des mots-clés du sujet, en mot entier)
     // Google Actualités renvoie aussi des articles qui ne le citent qu'en passant.
-    function sujetDansTitre(a) {
-      const titre = " " + simple(a.titre).replace(/[^a-z0-9]+/g, " ") + " ";
-      const mots = donnees.mots_cles?.length ? donnees.mots_cles : [donnees.nom];
-      return mots.some((m) => titre.includes(" " + simple(m) + " "));
+    function sujetDansTitre(a, d = donnees) {
+      const mc = d.mots_cles?.length ? d.mots_cles : [d.nom];
+      return mc.some((m) => contientMot(a.titre, m));
+    }
+
+    // Le texte contient-il ce mot (ou cette expression), en mots entiers, sans tenir
+    // compte des accents ni des majuscules ? « drive » trouve « Drive » mais pas « drives ».
+    function contientMot(texte, mot) {
+      const t = " " + simple(texte).replace(/[^a-z0-9]+/g, " ") + " ";
+      const m = simple(mot).replace(/[^a-z0-9]+/g, " ").trim();
+      return m !== "" && t.includes(" " + m + " ");
+    }
+    const aMotMasque = (a) => motsDu("masques").some((m) => contientMot(a.titre + " " + (a.media || ""), m));
+    const aMotSuivi = (a) => motsDu("suivis").some((m) => contientMot(a.titre, m));
+
+    // Le titre, protégé, avec les mots surveillés surlignés (<mark>). On cherche sur la
+    // version sans accents, puis on surligne les MÊMES positions dans le vrai titre
+    // (enlever les accents ne change pas la longueur des lettres courantes).
+    function titreSurligne(titre) {
+      const suivis = motsDu("suivis").map((m) => simple(m).trim()).filter(Boolean);
+      if (!suivis.length) return echap(titre);
+      const plat = simple(titre);
+      if (plat.length !== titre.length) return echap(titre);   // cas rare (œ, ligatures…) : pas de surlignage
+      const zones = [];
+      for (const m of suivis) {
+        let i = plat.indexOf(m);
+        while (i >= 0) { zones.push([i, i + m.length]); i = plat.indexOf(m, i + m.length); }
+      }
+      zones.sort((x, y) => x[0] - y[0]);
+      let html = "", pos = 0;
+      for (const [d, f] of zones) {
+        if (d < pos) continue;                 // chevauchement : on garde la première zone
+        html += echap(titre.slice(pos, d)) + "<mark>" + echap(titre.slice(d, f)) + "</mark>";
+        pos = f;
+      }
+      return html + echap(titre.slice(pos));
     }
 
     // Pastilles : 🎯 / ✨ (interrupteurs), puis Tout, chaque site, Favoris
@@ -642,11 +728,15 @@
         ...(donnees.sources || []).map((s) => ({ id: s.id, nom: s.court || s.nom, couleur: s.couleur, nb: compte((a) => a.source === s.id) })),
         { id: "favoris", nom: "⭐ Favoris", nb: compte((a) => favoris.has(a.id)) }
       ];
+      // Pastille « 🔔 Surveillés » seulement si des mots surveillés sont réglés
+      if (motsDu("suivis").length) boutons.splice(1, 0, { id: "suivis", nom: "🔔 Surveillés", nb: compte(aMotSuivi) });
       const interrupteurs = `
         <button class="filtre bascule" id="bascule-titre" aria-pressed="${dansLeTitre}"
           title="Seulement les articles dont le titre parle de ${echap(donnees.nom)}">🎯 Dans le titre</button>
         <button class="filtre bascule" id="bascule-appris" aria-pressed="${filtreAppris}"
-          title="Masquer les articles qui ressemblent à ceux jugés pas pertinents">✨ Filtre appris</button>`;
+          title="Masquer les articles qui ressemblent à ceux jugés pas pertinents">✨ Filtre appris</button>
+        <button class="filtre bascule" id="bascule-nonlus" aria-pressed="${seulementNonLus}"
+          title="Seulement les articles pas encore ouverts">○ Non lus</button>`;
       $("#filtres").innerHTML = interrupteurs + boutons.map((b) => `
         <button class="filtre" data-filtre="${b.id}" aria-pressed="${b.id === filtre}">
           ${b.couleur ? `<span class="pt" style="background:${b.couleur}"></span>` : ""}
@@ -661,16 +751,19 @@
       let masques = 0;
       const liste = (donnees.articles || []).filter((a) => {
         if (dansLeTitre && !sujetDansTitre(a) && !favoris.has(a.id)) return false;
+        if (seulementNonLus && lus.has(a.id) && !favoris.has(a.id)) return false;
         if (!ignorerSite) {
           if (filtre === "favoris" && !favoris.has(a.id)) return false;
-          if (filtre !== "tout" && filtre !== "favoris" && a.source !== filtre) return false;
+          if (filtre === "suivis" && !aMotSuivi(a)) return false;
+          if (!["tout", "favoris", "suivis"].includes(filtre) && a.source !== filtre) return false;
         }
         // tous les mots tapés doivent se trouver dans le titre, le résumé ou le journal
         const texte = simple(a.titre + " " + a.resume + " " + (a.media || ""));
         if (!mots.every((m) => texte.includes(m))) return false;
         // les avis : un favori n'est jamais masqué
+        // … et les mots masqués comptent comme un avis 👎 donné d'avance
         const st = statut(a);
-        if ((st === "rejete" || st === "masque") && !favoris.has(a.id)) {
+        if ((st === "rejete" || st === "masque" || aMotMasque(a)) && !favoris.has(a.id)) {
           masques++;
           if (!voirMasques) return false;
         }
@@ -686,12 +779,13 @@
       // Bandeau « n articles masqués par les avis — Afficher / Cacher »
       const bandeau = $("#masques");
       bandeau.hidden = !arts.masques;
-      bandeau.innerHTML = `<span>${arts.masques} article${arts.masques > 1 ? "s" : ""} masqué${arts.masques > 1 ? "s" : ""} par les avis 👎</span>
+      bandeau.innerHTML = `<span>${arts.masques} article${arts.masques > 1 ? "s" : ""} masqué${arts.masques > 1 ? "s" : ""} par les avis 👎 ou tes mots 🔕</span>
         <button id="voir-masques">${voirMasques ? "Cacher" : "Afficher"}</button>`;
 
       if (!arts.length) {
         let msg;
         if (!(donnees.articles || []).length) msg = `<span class="gros">⏳</span>Pas encore d'articles : la prochaine collecte arrive dans moins de 2 heures.`;
+        else if (seulementNonLus && !recherche) msg = `<span class="gros">🎉</span>Tout est lu !`;
         else if (filtre === "favoris" && !recherche) msg = `<span class="gros">⭐</span>Aucun favori pour l'instant.<br>Touche l'étoile d'un article pour le garder ici.`;
         else msg = `<span class="gros">🔍</span>Aucun article ne correspond.`;
         $("#liste").innerHTML = `<p class="vide">${msg}</p>`;
@@ -728,7 +822,7 @@
                          : note <= SEUIL_MASQUE ? `<span class="note basse" title="Ressemble aux articles rejetés">peu pertinent ?</span>` : "";
       const st = statut(a);
       return `
-        <article class="article ${lus.has(a.id) ? "lu" : ""} ${st === "rejete" || st === "masque" ? "rejete" : ""}" data-id="${a.id}">
+        <article class="article ${lus.has(a.id) ? "lu" : ""} ${st === "rejete" || st === "masque" || aMotMasque(a) ? "rejete" : ""} ${aMotSuivi(a) ? "suivi" : ""}" data-id="${a.id}">
           <div class="meta">
             <span class="source" style="background:${s.couleur}">${echap(etiquette)}</span>
             <span class="heure">${FORMAT_HEURE.format(d)}</span>
@@ -736,7 +830,7 @@
             ${pastilleNote}
           </div>
           <a class="lien" href="${echap(a.lien)}" target="_blank" rel="noopener">
-            <h2>${echap(a.titre)}</h2>
+            <h2>${titreSurligne(a.titre)}</h2>
             ${a.resume ? `<p class="resume">${echap(a.resume)}</p>` : ""}
           </a>
           <div class="actions">
@@ -751,6 +845,9 @@
 
     // Les sources suivies et l'état des avis, dans « Sources et réglages »
     function afficherSources() {
+      $("#mots-masques").value = motsDu("masques").join(", ");
+      $("#mots-suivis").value = motsDu("suivis").join(", ");
+      $("#mots-sujet-1").textContent = $("#mots-sujet-2").textContent = "(" + (donnees.nom || "") + ")";
       $("#liste-sources").innerHTML = (donnees.sources || []).map((s) => `
         <li>${s.site ? `<a href="${echap(s.site)}" target="_blank" rel="noopener">${echap(s.nom)}</a>`
                      : `<b>${echap(s.nom)}</b> (toute la presse, via Google Actualités)`}
@@ -779,7 +876,7 @@
         ecrire(CLE.lus, [...lus].slice(-3000));  // on ne garde que les 3000 derniers
         carteEl.classList.add("lu");
         carteEl.querySelector(".nouveau")?.remove();
-        setTimeout(afficherStatut, 300);
+        setTimeout(() => { afficherStatut(); afficherOnglets(); }, 300);
         return;
       }
       // 👍 / 👎 : retoucher le même bouton retire le vote
@@ -831,6 +928,7 @@
         filtreAppris = !filtreAppris; ecrire(CLE.appris, filtreAppris);
         if (filtreAppris && modele.nbVotes < VOTES_MINI) toast(`Le filtre apprend dès ${VOTES_MINI} votes 👍 / 👎`);
       }
+      else if (b.id === "bascule-nonlus") { seulementNonLus = !seulementNonLus; ecrire(CLE.nonLus, seulementNonLus); }
       else filtre = b.dataset.filtre;
       combien = PAR_PAGE;
       afficherFiltres();
@@ -853,6 +951,37 @@
     });
 
     $("#actualiser").addEventListener("click", charger);
+
+    // Vue compacte / cartes
+    $("#vue").addEventListener("click", () => {
+      compact = !compact; ecrire(CLE.compact, compact);
+      document.body.classList.toggle("compact", compact);
+    });
+
+    // « ✓ Tout marquer lu » : les articles AFFICHÉS (filtres compris), avec Annuler
+    $("#statut").addEventListener("click", (e) => {
+      if (!e.target.closest("#tout-lu")) return;
+      const ids = articlesFiltres().map((a) => a.id).filter((id) => !lus.has(id));
+      ids.forEach((id) => lus.add(id));
+      ecrire(CLE.lus, [...lus].slice(-3000));
+      toutAfficher();
+      toast(`${ids.length} article${ids.length > 1 ? "s" : ""} marqué${ids.length > 1 ? "s" : ""} lu${ids.length > 1 ? "s" : ""}`, {
+        texte: "Annuler",
+        faire: () => { ids.forEach((id) => lus.delete(id)); ecrire(CLE.lus, [...lus]); toutAfficher(); }
+      });
+    });
+
+    // Mots masqués / surveillés : enregistrés quand on quitte la case (ou touche « OK » du clavier)
+    for (const [champ, type] of [["#mots-masques", "masques"], ["#mots-suivis", "suivis"]]) {
+      $(champ).addEventListener("change", (e) => {
+        const liste = e.target.value.split(",").map((m) => m.trim()).filter(Boolean);
+        (mots[sujetId] ||= {})[type] = [...new Set(liste)];
+        ecrire(CLE.mots, mots);
+        if (type === "suivis" && !liste.length && filtre === "suivis") filtre = "tout";
+        toutAfficher();
+        toast(type === "masques" ? "Mots masqués enregistrés" : "Mots surveillés enregistrés");
+      });
+    }
 
     // Retour dans l'appli après un moment (appli installée laissée ouverte) : on recharge
     let cacheeDepuis = 0;
