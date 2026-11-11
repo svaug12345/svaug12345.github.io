@@ -1,0 +1,59 @@
+# ============================================================
+# Veille Carrefour — collecte automatique des articles
+# ------------------------------------------------------------
+# GitHub lance ce « workflow » tout seul, sur ses serveurs :
+#   • toutes les 2 heures de 6 h à 22 h (heure de Paris, à peu près) ;
+#   • ou à la main : onglet « Actions » du dépôt → « Veille Carrefour »
+#     → bouton « Run workflow » (marche aussi dans l'appli GitHub).
+# Il lance outils/veille.py, qui met à jour veille/articles.json,
+# puis enregistre (commit) ce fichier s'il a changé. GitHub Pages
+# republie alors le site et l'appli baiji.fr/veille/ voit les nouveautés.
+# ============================================================
+name: Veille Carrefour
+
+on:
+  schedule:
+    # Format cron : minute heure jour mois jour-de-la-semaine, en heure UTC.
+    # « 23 5-21/2 * * * » = à hh:23, toutes les 2 h de 5 h à 21 h UTC
+    # (6 h → 22 h à Paris en hiver). Minute 23 et pas 00 : à l'heure pile,
+    # les serveurs de GitHub sont débordés et les lancements prennent du retard.
+    - cron: "23 5-21/2 * * *"
+  workflow_dispatch: {}        # autorise le bouton « Run workflow »
+
+# Le workflow a besoin du droit d'écrire dans le dépôt pour enregistrer le fichier
+permissions:
+  contents: write
+
+# Jamais deux collectes en même temps (elles se marcheraient dessus)
+concurrency:
+  group: veille
+  cancel-in-progress: false
+
+jobs:
+  collecte:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # 1) Récupère le dépôt (juste la dernière version, c'est plus rapide)
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      # 2) Collecte (Python est déjà installé sur les serveurs de GitHub)
+      - name: Collecte des articles
+        run: python3 outils/veille.py
+
+      # 3) Enregistre le fichier s'il a changé
+      - name: Enregistrement
+        run: |
+          if git diff --quiet -- veille/articles.json; then
+            echo "Rien de nouveau, pas d'enregistrement."
+            exit 0
+          fi
+          git config user.name "Veille baiji (robot)"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add veille/articles.json
+          git commit -m "veille : nouveaux articles"
+          # Si Seb a poussé autre chose entre-temps, on se remet à jour avant d'envoyer
+          git pull --rebase --quiet
+          git push

@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  Veille Carrefour — les articles sur Carrefour d'Olivier Dauvers, LSA et Linéaires
+  Version 1.0.0
+  ------------------------------------------------------------
+  Comment ça marche :
+   • un robot GitHub (.github/workflows/veille.yml) lance outils/veille.py
+     toutes les 2 heures : il lit les flux RSS des sites (réglés dans
+     veille/sources.json), garde les articles qui parlent de Carrefour et
+     les range dans veille/articles.json ;
+   • cette page lit simplement ce fichier et l'affiche : filtres par site,
+     recherche, favoris ⭐, articles nouveaux depuis la dernière visite,
+     partage d'un article.
+  La page ne contacte jamais LSA ou les autres sites elle-même : un navigateur
+  n'en a pas le droit (règle « CORS »), c'est pour ça que le robot existe.
+  Lus, favoris et date de dernière visite restent dans le téléphone (localStorage).
+
+  Historique :
+   • v1.0.0 : première version (Dauvers, LSA, Linéaires)
+  ============================================================
+-->
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Veille Carrefour</title>
+  <!--
+    PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »).
+    Fichiers fabriqués par outils/generer-pwa.py : manifest.webmanifest, icones/, sw.js.
+  -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <link rel="icon" href="icones/icone-192.png">
+  <meta name="theme-color" content="#0e3a44">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="description" content="Veille presse sur Carrefour : Olivier Dauvers, LSA, Linéaires.">
+
+  <!-- Outil perso : pas dans les moteurs de recherche -->
+  <meta name="robots" content="noindex">
+
+  <!-- Compteur de visites commun à baiji.fr -->
+  <script src="/journal.js" defer></script>
+
+  <!-- Polices de la charte SV : Manrope (texte) et JetBrains Mono (chiffres) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* =========================================================
+       1. COULEURS — charte SV (définies une fois, réutilisées partout)
+       ========================================================= */
+    :root {
+      --bg: #f3f6f6;        /* fond de page */
+      --card: #ffffff;      /* fond des cartes */
+      --ink: #10282d;       /* texte principal */
+      --muted: #5d7277;     /* texte secondaire */
+      --line: #dfe7e8;      /* traits */
+      --soft: #edf3f3;      /* fonds discrets */
+      --brand: #0e3a44;     /* bleu-vert foncé SV */
+      --accent: #0f7c7b;    /* teal SV */
+      --star: #d97706;      /* étoile des favoris */
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    /* Indispensable : sans ça, un élément « hidden » en display:flex resterait visible */
+    [hidden] { display: none !important; }
+    body {
+      margin: 0; background: var(--bg); color: var(--ink);
+      font-family: Manrope, system-ui, sans-serif; font-size: 16px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .page { max-width: 640px; margin: 0 auto; padding: 0 14px 40px; }
+
+    /* =========================================================
+       2. EN-TÊTE (reste collé en haut quand on fait défiler)
+       ========================================================= */
+    header {
+      position: sticky; top: 0; z-index: 5;
+      background: var(--bg);
+      padding: calc(env(safe-area-inset-top) + 12px) 0 8px;
+    }
+    .titre { display: flex; align-items: center; gap: 10px; }
+    .titre h1 { font-size: 22px; font-weight: 800; margin: 0; flex: 1; letter-spacing: -.01em; }
+    .titre h1 span { color: var(--accent); }
+    .btn-rond {
+      width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line);
+      background: var(--card); color: var(--brand); display: grid; place-items: center; cursor: pointer;
+    }
+    .btn-rond svg { width: 19px; height: 19px; }
+    .btn-rond.tourne svg { animation: tourne 0.8s linear infinite; }
+    @keyframes tourne { to { transform: rotate(360deg); } }
+    .statut { color: var(--muted); font-size: 13px; margin: 4px 0 10px; }
+    .statut b { font-family: "JetBrains Mono", monospace; font-weight: 500; color: var(--ink); }
+    .alerte { color: #b45309; }
+
+    /* Zone de recherche */
+    .recherche {
+      display: flex; align-items: center; gap: 8px; background: var(--card);
+      border: 1px solid var(--line); border-radius: 14px; padding: 0 12px; height: 44px;
+    }
+    .recherche svg { width: 18px; height: 18px; color: var(--muted); flex: none; }
+    .recherche input { border: 0; outline: 0; flex: 1; font: inherit; background: transparent; color: var(--ink); }
+
+    /* Pastilles de filtre (défilent à l'horizontale sur téléphone) */
+    .filtres { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0 2px; scrollbar-width: none; }
+    .filtres::-webkit-scrollbar { display: none; }
+    .filtre {
+      flex: none; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+      border-radius: 999px; padding: 7px 13px; font: 700 13px Manrope, sans-serif; cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .filtre .pt { width: 9px; height: 9px; border-radius: 50%; }
+    .filtre .nb { font-family: "JetBrains Mono", monospace; font-weight: 500; color: var(--muted); font-size: 12px; }
+    .filtre[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: #fff; }
+    .filtre[aria-pressed="true"] .nb { color: #cfe3e3; }
+
+    /* =========================================================
+       3. LISTE DES ARTICLES, groupés par jour
+       ========================================================= */
+    .jour {
+      font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--muted); margin: 22px 4px 8px;
+    }
+    .cartes { display: grid; gap: 10px; }
+    .article {
+      background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 13px 14px 10px; position: relative;
+      display: flex; flex-direction: column;     /* pour pousser les boutons tout en bas */
+    }
+    .article.lu { opacity: .62; }                    /* déjà ouvert : grisé */
+    .meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+    .source { font-weight: 800; color: #fff; border-radius: 6px; padding: 2px 7px; font-size: 11px; letter-spacing: .02em; }
+    .heure { font-family: "JetBrains Mono", monospace; }
+    .nouveau { color: var(--accent); font-weight: 800; }
+    .nouveau::before { content: "● "; }
+    .article a.lien { color: var(--ink); text-decoration: none; display: block; margin-top: 7px; }
+    .article h2 { font-size: 16px; line-height: 1.35; margin: 0; font-weight: 700; }
+    .resume {
+      font-size: 14px; color: var(--muted); line-height: 1.45; margin: 6px 0 0;
+      /* 2 lignes maximum, avec « … » */
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .actions { display: flex; justify-content: flex-end; gap: 2px; margin-top: auto; padding-top: 4px; }
+    .actions button {
+      border: 0; background: transparent; color: var(--muted); width: 38px; height: 34px;
+      border-radius: 10px; display: grid; place-items: center; cursor: pointer;
+    }
+    .actions button:active { background: var(--soft); }
+    .actions svg { width: 18px; height: 18px; }
+    .actions .fav[aria-pressed="true"] { color: var(--star); }
+    .actions .fav[aria-pressed="true"] svg { fill: var(--star); }
+
+    .vide { text-align: center; color: var(--muted); padding: 50px 20px; line-height: 1.5; }
+    .vide .gros { font-size: 40px; display: block; margin-bottom: 8px; }
+    .plus {
+      display: block; margin: 18px auto 0; border: 1px solid var(--line); background: var(--card);
+      color: var(--brand); font: 800 12px Manrope, sans-serif; letter-spacing: .1em; text-transform: uppercase;
+      padding: 12px 20px; border-radius: 12px; cursor: pointer;
+    }
+
+    /* =========================================================
+       4. PIED DE PAGE : sources suivies et réglages
+       ========================================================= */
+    details.reglages {
+      margin-top: 30px; background: var(--card); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 4px 16px; font-size: 14px; color: var(--muted);
+    }
+    details.reglages summary { cursor: pointer; padding: 12px 0; font-weight: 800; color: var(--ink); }
+    details.reglages ul { padding-left: 18px; margin: 4px 0 10px; }
+    details.reglages li { margin: 5px 0; }
+    details.reglages a { color: var(--accent); font-weight: 700; }
+    footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 20px; }
+
+    /* Petit message en bas (« Lien copié », etc.) */
+    #toast {
+      position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 20px); transform: translateX(-50%);
+      background: var(--brand); color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 14px;
+      font-weight: 700; z-index: 10;
+    }
+
+    /* =========================================================
+       5. TABLETTE — le téléphone (< 760 px) ne change jamais.
+       Page élargie, articles sur 2 colonnes (3 en paysage).
+       ========================================================= */
+    @media (min-width: 760px) {
+      .page { max-width: 1180px; padding: 0 28px 50px; }
+      header { display: grid; grid-template-columns: 1fr 380px; column-gap: 20px; align-items: end; }
+      .titre, .statut { grid-column: 1; }
+      .recherche { grid-column: 2; grid-row: 1 / 3; align-self: center; }
+      .filtres { grid-column: 1 / -1; }
+      .cartes { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 1100px) {
+      .cartes { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="titre">
+        <h1>Veille <span id="sujet">Carrefour</span></h1>
+        <button class="btn-rond" id="actualiser" title="Actualiser" aria-label="Actualiser">
+          <!-- picto refresh-cw (Lucide, ISC) -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+        </button>
+      </div>
+      <p class="statut" id="statut">Chargement…</p>
+      <label class="recherche">
+        <!-- picto search -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="cherche" type="search" placeholder="Chercher (ex. « drive », « Bompard »)" autocomplete="off">
+      </label>
+      <div class="filtres" id="filtres" role="toolbar" aria-label="Filtrer par site"></div>
+    </header>
+
+    <main id="liste"></main>
+
+    <details class="reglages" id="reglages">
+      <summary>Sources et réglages</summary>
+      <ul id="liste-sources"></ul>
+      <p>Les articles sont collectés automatiquement toutes les 2 heures, de 6 h à 22 h.
+         Pour lancer une collecte tout de suite : <a href="https://github.com/svaug12345/svaug12345.github.io/actions/workflows/veille.yml" target="_blank" rel="noopener">GitHub → Run workflow</a>.</p>
+      <p>Ajouter un site ou changer de sujet : <a href="https://github.com/svaug12345/svaug12345.github.io/edit/main/veille/sources.json" target="_blank" rel="noopener">modifier sources.json</a>.</p>
+      <p>LSA et Linéaires passent par Google Actualités : un lien ouvre d'abord une page Google, qui renvoie vers l'article. Certains articles sont réservés aux abonnés.</p>
+    </details>
+
+    <footer>Veille · <span id="version"></span> · baiji.fr</footer>
+  </div>
+  <div id="toast" hidden></div>
+
+  <script>
+    /* =========================================================
+       RÉGLAGES
+       ========================================================= */
+    const VERSION = "1.0.0";
+
+    // Où lire les articles. D'abord la copie « brute » du dépôt GitHub :
+    // elle est à jour 1 à 5 min après chaque collecte, sans attendre que
+    // GitHub Pages republie tout le site. Si elle ne répond pas, le fichier du site.
+    const SOURCES_DONNEES = [
+      "https://raw.githubusercontent.com/svaug12345/svaug12345.github.io/main/veille/articles.json",
+      "articles.json"
+    ];
+    const PAR_PAGE = 60;            // articles affichés avant le bouton « Voir plus »
+
+    // Clés de stockage dans le téléphone (localStorage)
+    const CLE = {
+      cache: "veille.cache",        // derniers articles reçus (pour le hors-ligne)
+      lus: "veille.lus",            // identifiants des articles ouverts
+      favoris: "veille.favoris",    // identifiants des favoris
+      visite: "veille.visite",      // date de la dernière visite
+      filtre: "veille.filtre"       // dernier filtre choisi
+    };
+
+    /* =========================================================
+       PETITS OUTILS
+       ========================================================= */
+    const $ = (s) => document.querySelector(s);
+
+    // Lecture / écriture prudentes du localStorage (il peut être plein ou interdit)
+    function lire(cle, defaut) {
+      try { const v = localStorage.getItem(cle); return v ? JSON.parse(v) : defaut; }
+      catch { return defaut; }
+    }
+    function ecrire(cle, valeur) {
+      try { localStorage.setItem(cle, JSON.stringify(valeur)); } catch { /* tant pis */ }
+    }
+
+    // Protège un texte avant de le mettre dans du HTML (évite qu'un titre
+    // contenant « < » casse la page ou injecte du code)
+    const echap = (t) => String(t ?? "").replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+    // Texte « aplati » pour chercher sans se soucier des accents ni des majuscules
+    const simple = (t) => String(t || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+    // « il y a 25 min », « il y a 3 h », « il y a 2 j »
+    function ilYa(date) {
+      const min = Math.round((Date.now() - date) / 60000);
+      if (min < 1) return "à l'instant";
+      if (min < 60) return `il y a ${min} min`;
+      if (min < 60 * 24) return `il y a ${Math.round(min / 60)} h`;
+      return `il y a ${Math.round(min / 1440)} j`;
+    }
+
+    // Titre d'un groupe : « Aujourd'hui », « Hier », sinon « mardi 10 novembre »
+    const FORMAT_JOUR = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Paris" });
+    const FORMAT_HEURE = new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" });
+    // Clé de jour à l'heure de Paris (AAAA-MM-JJ), pour grouper
+    const cleJour = (d) => d.toLocaleDateString("sv-SE", { timeZone: "Europe/Paris" });
+    function nomDuJour(d) {
+      const auj = cleJour(new Date());
+      const hier = cleJour(new Date(Date.now() - 864e5));
+      const k = cleJour(d);
+      if (k === auj) return "Aujourd'hui";
+      if (k === hier) return "Hier";
+      return FORMAT_JOUR.format(d);
+    }
+
+    let minuteurToast;
+    function toast(msg) {
+      const t = $("#toast");
+      t.textContent = msg; t.hidden = false;
+      clearTimeout(minuteurToast);
+      minuteurToast = setTimeout(() => (t.hidden = true), 2500);
+    }
+
+    /* =========================================================
+       PICTOS (Lucide, licence ISC)
+       ========================================================= */
+    const SVG = (corps) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${corps}</svg>`;
+    const PICTO_ETOILE = SVG(`<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>`);
+    const PICTO_PARTAGE = SVG(`<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98"/><path d="m15.41 6.51-6.82 3.98"/>`);
+
+    /* =========================================================
+       ÉTAT DE L'APPLI
+       ========================================================= */
+    let donnees = null;                         // contenu de articles.json
+    let sources = {};                           // id → {nom, court, couleur…}
+    let lus = new Set(lire(CLE.lus, []));
+    let favoris = new Set(lire(CLE.favoris, []));
+    let filtre = lire(CLE.filtre, "tout");      // "tout", "favoris" ou l'id d'une source
+    let recherche = "";
+    let combien = PAR_PAGE;
+
+    // Date de la visite PRÉCÉDENTE : tout ce que le robot a trouvé depuis est « nouveau ».
+    // On enregistre la visite d'aujourd'hui, mais on garde l'ancienne pour cette session.
+    const visitePrecedente = lire(CLE.visite, null);
+    ecrire(CLE.visite, new Date().toISOString());
+
+    /* =========================================================
+       CHARGEMENT DES ARTICLES
+       ========================================================= */
+    async function charger() {
+      $("#actualiser").classList.add("tourne");
+      let recu = null;
+      for (const url of SOURCES_DONNEES) {
+        try {
+          // « ?t=… » change à chaque fois : on évite ainsi une vieille copie en cache
+          const r = await fetch(url + "?t=" + Date.now(), { cache: "no-store" });
+          if (!r.ok) throw new Error(r.status);
+          recu = await r.json();
+          break;                                 // ça a marché, inutile d'essayer la suivante
+        } catch (e) { console.warn("Veille : échec de", url, e); }
+      }
+      $("#actualiser").classList.remove("tourne");
+
+      if (recu) {
+        donnees = recu;
+        ecrire(CLE.cache, recu);
+      } else {
+        donnees = lire(CLE.cache, null);         // hors ligne : la dernière copie du téléphone
+        if (donnees) toast("Hors ligne : derniers articles connus");
+      }
+      if (!donnees) {
+        $("#statut").textContent = "Impossible de charger les articles.";
+        $("#liste").innerHTML = `<p class="vide"><span class="gros">📡</span>Pas de connexion, et rien en mémoire.<br>Réessaie avec le bouton ⟳.</p>`;
+        return;
+      }
+      sources = Object.fromEntries((donnees.sources || []).map((s) => [s.id, s]));
+      if (filtre !== "tout" && filtre !== "favoris" && !sources[filtre]) filtre = "tout";
+      $("#sujet").textContent = donnees.sujet || "Carrefour";
+      document.title = "Veille " + (donnees.sujet || "");
+      afficherStatut();
+      afficherFiltres();
+      afficherListe();
+      afficherSources();
+    }
+
+    /* =========================================================
+       AFFICHAGE
+       ========================================================= */
+    // Ligne sous le titre : nombre d'articles, nouveautés, flux en panne
+    function afficherStatut() {
+      const arts = donnees.articles || [];
+      const nouveaux = arts.filter(estNouveau).length;
+      let t = `<b>${arts.length}</b> articles`;
+      if (nouveaux) t += ` · <span class="nouveau">${nouveaux} nouveau${nouveaux > 1 ? "x" : ""}</span>`;
+      // « maj » = dernière collecte qui a trouvé quelque chose (le robot ne réécrit
+      // pas le fichier quand il n'y a rien de neuf)
+      if (donnees.maj) t += ` · dernier ajout ${ilYa(new Date(donnees.maj))}`;
+      const enPanne = (donnees.sources || []).filter((s) => !s.ok).map((s) => s.court || s.nom);
+      if (enPanne.length) t += ` · <span class="alerte">⚠ ${echap(enPanne.join(", "))} indisponible</span>`;
+      $("#statut").innerHTML = t;
+    }
+
+    const estNouveau = (a) => visitePrecedente && a.vu_le > visitePrecedente && !lus.has(a.id);
+
+    // Pastilles : Tout, chaque site (avec son nombre d'articles), Favoris
+    function afficherFiltres() {
+      const arts = donnees.articles || [];
+      const compte = (fn) => arts.filter(fn).length;
+      const boutons = [
+        { id: "tout", nom: "Tout", nb: arts.length },
+        ...(donnees.sources || []).map((s) => ({ id: s.id, nom: s.court || s.nom, couleur: s.couleur, nb: compte((a) => a.source === s.id) })),
+        { id: "favoris", nom: "⭐ Favoris", nb: compte((a) => favoris.has(a.id)) }
+      ];
+      $("#filtres").innerHTML = boutons.map((b) => `
+        <button class="filtre" data-filtre="${b.id}" aria-pressed="${b.id === filtre}">
+          ${b.couleur ? `<span class="pt" style="background:${b.couleur}"></span>` : ""}
+          ${echap(b.nom)} <span class="nb">${b.nb}</span>
+        </button>`).join("");
+    }
+
+    // Les articles qui passent le filtre et la recherche
+    function articlesVisibles() {
+      const mots = simple(recherche).split(/\s+/).filter(Boolean);
+      return (donnees.articles || []).filter((a) => {
+        if (filtre === "favoris" && !favoris.has(a.id)) return false;
+        if (filtre !== "tout" && filtre !== "favoris" && a.source !== filtre) return false;
+        // tous les mots tapés doivent se trouver dans le titre ou le résumé
+        const texte = simple(a.titre + " " + a.resume);
+        return mots.every((m) => texte.includes(m));
+      });
+    }
+
+    // La liste, groupée par jour
+    function afficherListe() {
+      const arts = articlesVisibles();
+      if (!arts.length) {
+        let msg;
+        if (!(donnees.articles || []).length) msg = `<span class="gros">⏳</span>Pas encore d'articles : la première collecte arrive dans moins de 2 heures.`;
+        else if (filtre === "favoris" && !recherche) msg = `<span class="gros">⭐</span>Aucun favori pour l'instant.<br>Touche l'étoile d'un article pour le garder ici.`;
+        else msg = `<span class="gros">🔍</span>Aucun article ne correspond.`;
+        $("#liste").innerHTML = `<p class="vide">${msg}</p>`;
+        return;
+      }
+      let html = "", jourCourant = null, ouvert = false;
+      for (const a of arts.slice(0, combien)) {
+        const d = new Date(a.date);
+        const k = cleJour(d);
+        if (k !== jourCourant) {                 // nouveau jour → nouveau groupe
+          if (ouvert) html += `</div>`;
+          html += `<h3 class="jour">${nomDuJour(d)}</h3><div class="cartes">`;
+          jourCourant = k; ouvert = true;
+        }
+        html += carte(a, d);
+      }
+      if (ouvert) html += `</div>`;
+      if (arts.length > combien) html += `<button class="plus" id="plus">Voir plus (${arts.length - combien})</button>`;
+      $("#liste").innerHTML = html;
+    }
+
+    // Une carte d'article
+    function carte(a, d) {
+      const s = sources[a.source] || { court: a.source, couleur: "#5d7277" };
+      return `
+        <article class="article ${lus.has(a.id) ? "lu" : ""}" data-id="${a.id}">
+          <div class="meta">
+            <span class="source" style="background:${s.couleur}">${echap(s.court || s.nom)}</span>
+            <span class="heure">${FORMAT_HEURE.format(d)}</span>
+            ${estNouveau(a) ? `<span class="nouveau">Nouveau</span>` : ""}
+          </div>
+          <a class="lien" href="${echap(a.lien)}" target="_blank" rel="noopener">
+            <h2>${echap(a.titre)}</h2>
+            ${a.resume ? `<p class="resume">${echap(a.resume)}</p>` : ""}
+          </a>
+          <div class="actions">
+            <button class="partage" title="Partager" aria-label="Partager">${PICTO_PARTAGE}</button>
+            <button class="fav" title="Favori" aria-label="Favori" aria-pressed="${favoris.has(a.id)}">${PICTO_ETOILE}</button>
+          </div>
+        </article>`;
+    }
+
+    // Les sources suivies, dans « Sources et réglages »
+    function afficherSources() {
+      $("#liste-sources").innerHTML = (donnees.sources || []).map((s) => `
+        <li><a href="${echap(s.site)}" target="_blank" rel="noopener">${echap(s.nom)}</a>
+          ${s.ok ? "" : ` — <span class="alerte">flux indisponible à la dernière collecte</span>`}</li>`).join("");
+    }
+
+    /* =========================================================
+       ACTIONS DE L'UTILISATEUR
+       Un seul écouteur sur toute la liste (« délégation ») : plus simple
+       que d'en poser un sur chaque bouton, et ça marche après chaque redessin.
+       ========================================================= */
+    $("#liste").addEventListener("click", async (e) => {
+      if (e.target.closest("#plus")) { combien += PAR_PAGE; afficherListe(); return; }
+      const carteEl = e.target.closest(".article");
+      if (!carteEl) return;
+      const id = carteEl.dataset.id;
+      const a = donnees.articles.find((x) => x.id === id);
+
+      // Ouvrir l'article → il passe en « lu » (le lien s'ouvre normalement)
+      if (e.target.closest("a.lien")) {
+        lus.add(id);
+        ecrire(CLE.lus, [...lus].slice(-2000));  // on ne garde que les 2000 derniers
+        carteEl.classList.add("lu");
+        carteEl.querySelector(".nouveau")?.remove();
+        setTimeout(afficherStatut, 300);
+        return;
+      }
+      // Étoile : ajouter / retirer des favoris
+      if (e.target.closest(".fav")) {
+        favoris.has(id) ? favoris.delete(id) : favoris.add(id);
+        ecrire(CLE.favoris, [...favoris]);
+        e.target.closest(".fav").setAttribute("aria-pressed", favoris.has(id));
+        afficherFiltres();
+        if (filtre === "favoris") afficherListe();
+        return;
+      }
+      // Partager : feuille de partage du téléphone, sinon copie du lien
+      if (e.target.closest(".partage")) {
+        const texte = `${a.titre} (${sources[a.source]?.nom || ""})`;
+        try {
+          if (navigator.share) await navigator.share({ title: a.titre, text: texte, url: a.lien });
+          else { await navigator.clipboard.writeText(texte + "\n" + a.lien); toast("Lien copié"); }
+        } catch { /* partage annulé : rien à faire */ }
+      }
+    });
+
+    // Pastilles de filtre
+    $("#filtres").addEventListener("click", (e) => {
+      const b = e.target.closest(".filtre");
+      if (!b) return;
+      filtre = b.dataset.filtre;
+      ecrire(CLE.filtre, filtre);
+      combien = PAR_PAGE;
+      afficherFiltres();
+      afficherListe();
+      window.scrollTo({ top: 0 });
+    });
+
+    // Recherche : on attend 200 ms après la dernière touche avant de redessiner
+    let minuteurRecherche;
+    $("#cherche").addEventListener("input", (e) => {
+      clearTimeout(minuteurRecherche);
+      minuteurRecherche = setTimeout(() => { recherche = e.target.value; combien = PAR_PAGE; afficherListe(); }, 200);
+    });
+
+    $("#actualiser").addEventListener("click", charger);
+
+    // Retour dans l'appli après un moment (appli installée laissée ouverte) : on recharge
+    let cacheeDepuis = 0;
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) cacheeDepuis = Date.now();
+      else if (cacheeDepuis && Date.now() - cacheeDepuis > 15 * 60000) charger();
+    });
+
+    $("#version").textContent = "v" + VERSION;
+
+    // PWA : enregistrement du service worker (rend la page installable)
+    if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+
+    charger();
+  </script>
+</body>
+</html>

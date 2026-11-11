@@ -1,0 +1,35 @@
+{
+ "version": "1.0.0",
+ "maj": null,
+ "sujet": "Carrefour",
+ "sources": [
+  {
+   "id": "dauvers",
+   "nom": "Olivier Dauvers",
+   "court": "Dauvers",
+   "site": "https://www.olivierdauvers.fr",
+   "couleur": "#c2410c",
+   "ok": true,
+   "erreurs": []
+  },
+  {
+   "id": "lsa",
+   "nom": "LSA",
+   "court": "LSA",
+   "site": "https://www.lsa-conso.fr",
+   "couleur": "#be123c",
+   "ok": true,
+   "erreurs": []
+  },
+  {
+   "id": "lineaires",
+   "nom": "Linéaires",
+   "court": "Linéaires",
+   "site": "https://www.lineaires.com",
+   "couleur": "#1d4ed8",
+   "ok": true,
+   "erreurs": []
+  }
+ ],
+ "articles": []
+}

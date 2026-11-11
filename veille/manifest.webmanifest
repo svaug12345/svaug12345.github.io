@@ -1,0 +1,39 @@
+{
+  "name": "Veille Carrefour",
+  "short_name": "Veille",
+  "description": "Les articles sur Carrefour d'Olivier Dauvers, LSA et Linéaires",
+  "id": "/veille/",
+  "start_url": "/veille/",
+  "scope": "/veille/",
+  "display": "standalone",
+  "background_color": "#f3f6f6",
+  "theme_color": "#0e3a44",
+  "lang": "fr",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "icones/icone-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icones/icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icones/icone-masquable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icones/icone-masquable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
