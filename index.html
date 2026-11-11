@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr — Page d'accueil des projets (marque SV)
-  Version 1.37.0
+  Version 1.38.0
   ------------------------------------------------------------
   Historique :
    • v1.0.0 : première page d'accueil
@@ -68,6 +68,7 @@
    • v1.35.0 : ajout de « Veille Carrefour » (articles de Dauvers, LSA, Linéaires) dans « Carrefour »
    • v1.36.0 : « Veille Carrefour » devient « Veille » (Carrefour, Elis… avec l'avis des lecteurs)
    • v1.37.0 : « Veille » : Carrefour + les sujets que chacun ajoute
+   • v1.38.0 : ajout de « MP3 » (le son d'une vidéo YouTube en MP3, par le NAS) dans « Outils »
 
   À déposer dans le dépôt GitHub : svaug12345.github.io
   → c'est le fichier "index.html" à la racine.
@@ -665,7 +666,7 @@
 
     <!-- ===================== PIED DE PAGE ===================== -->
     <footer>
-      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.34.0</p>
+      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.38.0</p>
     </footer>
 
     <!--
@@ -729,6 +730,7 @@
       vent: `<path d="M12.8 19.6A2 2 0 1 0 14 16H2"/> <path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"/> <path d="M9.8 4.4A2 2 0 1 1 11 8H2"/>`,  // wind
       velo: `<circle cx="18.5" cy="17.5" r="3.5"/> <circle cx="5.5" cy="17.5" r="3.5"/> <circle cx="15" cy="5" r="1"/> <path d="M12 17.5V14l-3-3 4-3 2 3h2"/>`,  // bike
       cartable: `<path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" /> <path d="M8 10h8" /> <path d="M8 18h8" /> <path d="M8 22v-6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v6" /> <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />`,  // backpack
+      son: `<path d="M2 10v3"/> <path d="M6 6v11"/> <path d="M10 3v18"/> <path d="M14 8v7"/> <path d="M18 5v13"/> <path d="M22 10v3"/>`,  // audio-lines
       disque: `<path d="M10 16h.01"/> <path d="M2.212 11.577a2 2 0 0 0-.212.896V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.527a2 2 0 0 0-.212-.896L18.55 5.11A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/> <path d="M21.946 12.013H2.054"/> <path d="M6 16h.01"/>`,  // hard-drive
       route: `<circle cx="6" cy="19" r="3"/> <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/> <circle cx="18" cy="5" r="3"/>`,  // route
       palmier: `<path d="M13 8c0-2.76-2.46-5-5.5-5S2 5.24 2 8h2l1-1 1 1h4"/> <path d="M13 7.14A5.82 5.82 0 0 1 16.5 6c3.04 0 5.5 2.24 5.5 5h-3l-1-1-1 1h-3"/> <path d="M5.89 9.71c-2.15 2.15-2.3 5.47-.35 7.43l4.24-4.25.7-.7.71-.71 2.12-2.12c-1.95-1.96-5.27-1.8-7.42.35"/> <path d="M11 15.5c.5 2.5-.17 4.5-1 6.5h4c2-5.5-.5-12-1-14"/>`,  // tree-palm
@@ -777,6 +779,10 @@
         desc: "Compresse et découpe vidéos et sons dans le téléphone, sans pub",
         courte: "Compresse vidéos et sons",
         url: "pressoir/" },
+      { id: "mp3",         nom: "MP3",          icone: "son",
+        desc: "Le son d'une vidéo YouTube en MP3, préparé par le NAS (accès par jeton)",
+        courte: "YouTube en MP3",
+        url: "mp3/" },                       // service : projet « mp3 » du NAS (mp3.baiji.fr)
       { id: "place-nette", nom: "Place nette",  icone: "disque",
         desc: "Ce qui prend de la place sur le disque ou le téléphone",
         courte: "Qui prend la place ?",
@@ -944,7 +950,7 @@
     const ORGANISATION = {
       rubriques: [
         { nom: "Maison", projets: ["famille", "repas", "cartable", "voitures", "mediatheque", "photos"] },
-        { nom: "Outils", projets: ["qr", "pressoir", "place-nette", "paraphe", "journal"] },
+        { nom: "Outils", projets: ["qr", "pressoir", "mp3", "place-nette", "paraphe", "journal"] },
         { nom: "Famille & amis", projets: ["revisions", "nego-papa", "foot-chats", "petite-souris", "monique", "grand-verdict", "sos-amitie"] },
         { nom: "Carrefour", projets: ["veille", "fournisseurs", "nexus", "equipe-nexus", "prospection-nexus", "salle-negociation", "pochpoch"] },
         { nom: "Formation", projets: ["epuration", "entretien-tuteur", "fart"] },

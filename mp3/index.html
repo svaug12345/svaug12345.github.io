@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<!--
+  MP3 — extraire le son d'une vidéo YouTube en MP3
+  Version 1.0.0
+  ------------------------------------------------------------
+  Comment ça marche :
+   • cette page (baiji.fr, hébergée sur GitHub Pages) ne fait PAS le travail :
+     une page web seule ne peut pas récupérer le son d'une vidéo YouTube ;
+   • elle envoie la demande au projet « mp3 » du NAS (https://mp3.baiji.fr) :
+     un « portier » (Caddy) vérifie le jeton secret (en-tête X-Jeton), puis
+     MeTube télécharge la vidéo avec yt-dlp et la convertit en MP3 ;
+   • la page suit l'avancement (/history), puis récupère le fichier
+     (/audio_download/…) et propose de l'enregistrer ou de le partager.
+  Code du service : dépôt privé nas-docker, dossier mp3/.
+  Jeton : demandé une fois, gardé sur l'appareil (localStorage « mp3.jeton »).
+  ⚖️ Usage perso, sur des contenus qu'on a le droit de récupérer.
+  ------------------------------------------------------------
+  Historique :
+   • v1.0.0 : première version : lien YouTube → MP3 (320, 192 ou 128 kbit/s),
+              barre de progression, bouton « Enregistrer » et « Partager »,
+              liste des derniers MP3 du NAS ; mise en page TABLETTE
+-->
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>MP3</title>
+  <meta name="robots" content="noindex">
+  <!-- Compteur de visites de baiji.fr -->
+  <script src="/journal.js" defer></script>
+
+  <!--
+    PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »).
+    Fichiers fabriqués par outils/generer-pwa.py :
+     • manifest.webmanifest : nom, couleurs, icônes de l'appli ;
+     • icones/ : les icônes (apple-touch-icon = celle des iPhone) ;
+     • sw.js : le service worker, enregistré en bas de page.
+  -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <link rel="icon" href="icones/icone-192.png">
+  <meta name="theme-color" content="#0f7c7b">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- Polices de la charte SV : Manrope (texte) + JetBrains Mono (chiffres) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ===================== COULEURS (charte SV) ===================== */
+    :root {
+      --surface: #f6f9f9;  --raised: #ffffff;  --line: #d6e2e3;
+      --ink: #102a2e;      --muted: #4d6468;
+      --teal: #0f7c7b;     --teal-deep: #0b4f55;  --teal-soft: #d4ecea;
+      --good: #16a34a;     --bad: #dc2626;
+      --track: #e3ecec;    /* fond de la barre de progression */
+      --mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --surface: #0e1a1c; --raised: #152427; --line: #26393c;
+        --ink: #e6f1f1;     --muted: #9db3b5;
+        --teal: #3cc2b8;    --teal-deep: #1d6b6e; --teal-soft: #1c4245;
+        --track: #22383b;
+      }
+    }
+
+    /* ===================== BASE ===================== */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Manrope, system-ui, sans-serif; background: var(--surface); color: var(--ink);
+      min-height: 100vh;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    button, input, select { font: inherit; color: inherit; }
+    button { border: 0; background: none; cursor: pointer; }
+    [hidden] { display: none !important; }
+    main { max-width: 560px; margin: 0 auto; padding: 18px 16px 48px; display: flex; flex-direction: column; gap: 14px; }
+    .col-gauche { display: flex; flex-direction: column; gap: 14px; }
+
+    /* ===================== EN-TÊTE ===================== */
+    header { padding: 2px; }
+    h1 { font-size: 26px; font-weight: 800; letter-spacing: -.02em; }
+    .sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    /* ===================== CARTES ===================== */
+    .card { background: var(--raised); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .card h2 { font-size: 15px; font-weight: 800; }
+    label { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+
+    /* Champs de saisie */
+    .field { display: flex; gap: 8px; }
+    input[type=text], input[type=password], select {
+      flex: 1; min-width: 0; padding: 12px 14px; border-radius: 12px;
+      border: 1px solid var(--line); background: var(--surface);
+    }
+    input:focus, select:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+
+    /* Boutons : capitales espacées (charte SV) */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 13px 16px; border-radius: 12px; font-size: 13px; font-weight: 800;
+      letter-spacing: .08em; text-transform: uppercase; text-decoration: none; white-space: nowrap;
+    }
+    .btn-main { background: var(--teal); color: #fff; }
+    .btn-main:disabled { opacity: .5; cursor: default; }
+    .btn-soft { background: var(--teal-soft); color: var(--ink); }
+    .btn-wide { width: 100%; }
+    .btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* Choix de la qualité (3 pastilles) */
+    .qualites { display: flex; gap: 6px; }
+    .qualites button {
+      flex: 1; padding: 9px 4px; border-radius: 10px; border: 1px solid var(--line);
+      font-family: var(--mono); font-size: 13px; font-weight: 700; background: var(--surface);
+    }
+    .qualites button[aria-pressed=true] { background: var(--teal); border-color: var(--teal); color: #fff; }
+    .aide { font-size: 12px; color: var(--muted); line-height: 1.45; }
+
+    /* Suivi de l'extraction */
+    .titre-video { font-weight: 700; line-height: 1.35; word-break: break-word; }
+    .etat { font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+    .etat .pct { font-family: var(--mono); font-weight: 700; color: var(--ink); }
+    .barre { height: 10px; border-radius: 999px; background: var(--track); overflow: hidden; }
+    .barre > div { height: 100%; width: 0; background: var(--teal); border-radius: 999px; transition: width .4s; }
+    .barre.attente > div { width: 30% !important; animation: va-et-vient 1.2s ease-in-out infinite alternate; }
+    @keyframes va-et-vient { from { transform: translateX(-10%); } to { transform: translateX(245%); } }
+    .boutons { display: flex; gap: 8px; flex-wrap: wrap; }
+    .boutons .btn { flex: 1; }
+    .erreur { color: var(--bad); font-size: 13px; font-weight: 600; line-height: 1.45; word-break: break-word; }
+    .ok { color: var(--good); font-weight: 700; }
+
+    /* Derniers MP3 */
+    .liste { list-style: none; display: flex; flex-direction: column; }
+    .liste li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+    .liste li:first-child { border-top: 0; }
+    .liste .nom { flex: 1; min-width: 0; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .liste .taille { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+    .liste button { padding: 7px 10px; border-radius: 9px; background: var(--teal-soft); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+
+    footer { margin-top: 18px; font-size: 12px; color: var(--muted); text-align: center; line-height: 1.8; }
+    footer button { text-decoration: underline; font-size: 12px; color: var(--muted); }
+
+    /* ===================== TABLETTE ===================== */
+    /* Téléphone (< 760 px) : rien ne change. Tablette : page élargie,
+       formulaire + suivi à gauche, derniers MP3 à droite. */
+    @media (min-width: 760px) {
+      main { max-width: 1180px; display: grid; grid-template-columns: 1fr 1fr; align-items: start; column-gap: 18px; }
+      header, footer { grid-column: 1 / -1; }
+      #carte-liste { grid-column: 2; grid-row: 2; }
+    }
+    @media (min-width: 1100px) {
+      main { grid-template-columns: 3fr 2fr; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>MP3</h1>
+    <div class="sub">Le son d'une vidéo YouTube, en MP3, par le NAS</div>
+  </header>
+
+  <div class="col-gauche">
+    <!-- ===== Jeton (demandé une seule fois par appareil) ===== -->
+    <section class="card" id="carte-jeton" hidden>
+      <h2>Jeton du NAS</h2>
+      <p class="aide">Le jeton est la clé qui ouvre le service mp3.baiji.fr (fiche « MP3 – jeton » du gestionnaire de mots de passe).
+        Il reste mémorisé sur cet appareil.</p>
+      <form class="field" id="form-jeton">
+        <input type="password" id="jeton" autocomplete="off" placeholder="Jeton" required>
+        <button class="btn btn-main" type="submit">OK</button>
+      </form>
+      <p class="erreur" id="erreur-jeton" hidden></p>
+    </section>
+
+    <!-- ===== Le lien à convertir ===== -->
+    <section class="card" id="carte-lien">
+      <form id="form-lien" style="display:flex;flex-direction:column;gap:12px">
+        <label for="lien">Lien de la vidéo</label>
+        <div class="field">
+          <!-- type « text » et non « url » : un lien partagé par l'appli YouTube arrive
+               parfois avec du texte autour, que le navigateur refuserait ; la page nettoie elle-même -->
+          <input type="text" id="lien" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://youtu.be/…" required>
+          <button class="btn btn-soft" type="button" id="coller" title="Coller le lien copié">Coller</button>
+        </div>
+        <label>Qualité</label>
+        <div class="qualites" id="qualites">
+          <button type="button" data-q="320" aria-pressed="true">320</button>
+          <button type="button" data-q="192" aria-pressed="false">192</button>
+          <button type="button" data-q="128" aria-pressed="false">128</button>
+        </div>
+        <p class="aide">En kbit/s : 320 = la meilleure, 128 = fichier plus léger (≈ 1 Mo par minute).</p>
+        <button class="btn btn-main btn-wide" type="submit" id="extraire">
+          <svg viewBox="0 0 24 24"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></svg>
+          Extraire en MP3
+        </button>
+      </form>
+    </section>
+
+    <!-- ===== Suivi de l'extraction en cours ===== -->
+    <section class="card" id="carte-suivi" hidden>
+      <div class="titre-video" id="titre">…</div>
+      <div class="barre attente" id="barre"><div></div></div>
+      <div class="etat"><span id="etat">Envoi au NAS…</span><span class="pct" id="pct"></span></div>
+      <p class="erreur" id="erreur" hidden></p>
+      <div class="boutons" id="boutons" hidden>
+        <a class="btn btn-main" id="enregistrer" href="#">
+          <svg viewBox="0 0 24 24"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
+          Enregistrer
+        </a>
+        <button class="btn btn-soft" type="button" id="partager" hidden>
+          <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98"/><path d="m15.41 6.51-6.82 3.98"/></svg>
+          Partager
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===== Les derniers MP3 du NAS ===== -->
+  <section class="card" id="carte-liste" hidden>
+    <h2>Derniers MP3</h2>
+    <ul class="liste" id="liste"></ul>
+  </section>
+
+  <footer>
+    Usage perso, sur des contenus qu'on a le droit de récupérer.<br>
+    MP3 <span id="version"></span> · baiji.fr · <button type="button" id="changer-jeton">changer le jeton</button>
+  </footer>
+</main>
+
+<script>
+  /* =====================================================================
+     RÉGLAGES
+     ===================================================================== */
+  const VERSION = "1.0.0";
+  // Adresse du service du NAS. « ?service=… » dans l'adresse permet d'en
+  // essayer un autre (ex. ?service=http://192.168.1.161:8095 à la maison).
+  const SERVICE = (new URLSearchParams(location.search).get("service") || "https://mp3.baiji.fr").replace(/\/+$/, "");
+  const CLE_JETON = "mp3.jeton";          // où le jeton est rangé dans l'appareil
+  const CLE_QUALITE = "mp3.qualite";      // dernière qualité choisie
+  const PAUSE_SUIVI = 1500;               // ms entre deux nouvelles de l'avancement
+  const DUREE_MAX = 15 * 60e3;            // on abandonne le suivi au bout de 15 min
+  const NB_DERNIERS = 8;                  // taille de la liste « Derniers MP3 »
+
+  // Raccourci : un élément par son id
+  const $ = id => document.getElementById(id);
+  $("version").textContent = "v" + VERSION;
+
+  /* =====================================================================
+     STOCKAGE (protégé : en navigation privée, localStorage peut refuser)
+     ===================================================================== */
+  const lire = cle => { try { return localStorage.getItem(cle) || ""; } catch { return ""; } };
+  const ecrire = (cle, val) => { try { val ? localStorage.setItem(cle, val) : localStorage.removeItem(cle); } catch {} };
+
+  /* =====================================================================
+     DIALOGUE AVEC LE NAS
+     Chaque requête porte le jeton dans l'en-tête « X-Jeton ».
+     401 = jeton refusé → on l'efface et on le redemande.
+     ===================================================================== */
+  class JetonRefuse extends Error {}
+
+  async function api(chemin, options = {}) {
+    const jeton = lire(CLE_JETON);
+    if (!jeton) { demanderJeton(); throw new JetonRefuse(); }
+    let rep;
+    try {
+      rep = await fetch(SERVICE + chemin, {
+        ...options,
+        headers: { ...(options.headers || {}), "X-Jeton": jeton },
+        cache: "no-store",
+      });
+    } catch {
+      // fetch n'échoue que si le NAS est injoignable (ou bloqué par CORS)
+      throw new Error("Le NAS ne répond pas (mp3.baiji.fr). Il est peut-être éteint ou en cours de redémarrage.");
+    }
+    if (rep.status === 401) {
+      ecrire(CLE_JETON, "");
+      demanderJeton("Jeton refusé par le NAS. Vérifie-le et tape-le à nouveau.");
+      throw new JetonRefuse();
+    }
+    if (!rep.ok) throw new Error(`Le NAS a répondu ${rep.status} ${rep.statusText || ""}`.trim());
+    return rep;
+  }
+  const apiJSON = async (chemin, options) => (await api(chemin, options)).json();
+
+  /* =====================================================================
+     JETON
+     ===================================================================== */
+  function demanderJeton(message) {
+    $("carte-jeton").hidden = false;
+    $("erreur-jeton").hidden = !message;
+    $("erreur-jeton").textContent = message || "";
+    $("jeton").focus();
+  }
+  $("form-jeton").addEventListener("submit", e => {
+    e.preventDefault();
+    ecrire(CLE_JETON, $("jeton").value.trim());
+    $("jeton").value = "";
+    $("carte-jeton").hidden = true;
+    chargerListe();                       // le jeton est bon si la liste arrive
+  });
+  $("changer-jeton").addEventListener("click", () => { ecrire(CLE_JETON, ""); demanderJeton(); });
+
+  /* =====================================================================
+     LIEN YOUTUBE
+     On reconnaît les formes courantes (youtube.com/watch?v=, youtu.be/,
+     /shorts/, /live/, music.youtube.com…) et on ne garde que l'identifiant
+     de la vidéo : un lien « …&list=… » ne télécharge donc PAS toute la
+     playlist, seulement la vidéo.
+     ===================================================================== */
+  function idYouTube(texte) {
+    let u;
+    try { u = new URL(texte.trim()); } catch { return null; }
+    const hote = u.hostname.replace(/^(www|m|music)\./, "");
+    if (hote === "youtu.be") return u.pathname.split("/")[1] || null;
+    if (hote === "youtube.com" || hote === "youtube-nocookie.com") {
+      if (u.searchParams.get("v")) return u.searchParams.get("v");
+      const m = u.pathname.match(/^\/(shorts|live|embed|v)\/([\w-]{6,})/);
+      if (m) return m[2];
+    }
+    return null;
+  }
+  // Un lien copié depuis l'appli YouTube contient parfois du texte autour :
+  // on extrait la première adresse http(s).
+  const premierLien = texte => (texte.match(/https?:\/\/\S+/) || [texte])[0].trim();
+
+  // Bouton « Coller » : lit le presse-papiers (le navigateur demande la permission)
+  $("coller").addEventListener("click", async () => {
+    try {
+      const t = await navigator.clipboard.readText();
+      if (t) $("lien").value = premierLien(t);
+    } catch {
+      $("lien").focus();                 // refusé : on laisse coller à la main
+    }
+  });
+
+  /* =====================================================================
+     QUALITÉ (320 / 192 / 128 kbit/s)
+     ===================================================================== */
+  let qualite = lire(CLE_QUALITE) || "320";
+  function afficherQualite() {
+    for (const b of $("qualites").children) b.setAttribute("aria-pressed", b.dataset.q === qualite);
+  }
+  $("qualites").addEventListener("click", e => {
+    const b = e.target.closest("button[data-q]");
+    if (!b) return;
+    qualite = b.dataset.q; ecrire(CLE_QUALITE, qualite); afficherQualite();
+  });
+  afficherQualite();
+
+  /* =====================================================================
+     EXTRACTION
+     1. POST /add → MeTube met la vidéo dans sa file ;
+     2. GET /history toutes les 1,5 s → on retrouve NOTRE vidéo (par son
+        identifiant YouTube, sinon par l'adresse) et on affiche son état ;
+     3. une fois finie, on récupère le MP3 (GET /audio_download/<fichier>).
+     ===================================================================== */
+  // Libellés français des états de MeTube
+  const ETATS = {
+    pending: "En attente…", queued: "Dans la file d'attente…", preparing: "Préparation…",
+    downloading: "Téléchargement de la vidéo…", postprocessing: "Conversion en MP3…",
+    finished: "Terminé", error: "Échec",
+  };
+  let suiviEnCours = 0;                   // numéro du suivi actif (un nouveau annule l'ancien)
+  let urlFichier = "";                    // adresse locale (blob) du dernier MP3 récupéré
+
+  $("form-lien").addEventListener("submit", async e => {
+    e.preventDefault();
+    const brut = premierLien($("lien").value);
+    if (!/^https?:\/\//i.test(brut)) {
+      $("titre").textContent = brut || "Lien vide";
+      afficherErreur("Ce n'est pas un lien (il doit commencer par https://).");
+      return;
+    }
+    $("lien").value = brut;               // on montre le lien nettoyé
+    const id = idYouTube(brut);
+    // Pour YouTube on envoie une adresse « propre » (sans playlist ni minutage)
+    const url = id ? "https://www.youtube.com/watch?v=" + id : brut;
+
+    const numero = ++suiviEnCours;
+    afficherSuivi({ titre: url, etat: "Envoi au NAS…" });
+    $("extraire").disabled = true;
+    try {
+      const rep = await apiJSON("/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, download_type: "audio", format: "mp3", quality: qualite, auto_start: true }),
+      });
+      if (rep.status === "error") throw new Error(rep.msg || "MeTube a refusé ce lien.");
+      await suivre(numero, id, url);
+    } catch (err) {
+      if (!(err instanceof JetonRefuse)) afficherErreur(err.message);
+      else $("carte-suivi").hidden = true;
+    } finally {
+      if (numero === suiviEnCours) $("extraire").disabled = false;
+    }
+  });
+
+  // Est-ce que cet élément de l'historique de MeTube est notre vidéo ?
+  const cEstLaNotre = (el, id, url) => (id && (el.id === id || idYouTube(el.url || "") === id)) || el.url === url;
+
+  async function suivre(numero, id, url) {
+    const debut = Date.now();
+    // MeTube date ses éléments en nanosecondes : sert à ignorer un ÉCHEC
+    // plus ancien de la même vidéo, resté dans l'historique.
+    const debutNs = (debut - 5000) * 1e6;
+    while (numero === suiviEnCours) {
+      if (Date.now() - debut > DUREE_MAX) throw new Error("C'est bien long… Le MP3 arrivera peut-être quand même : regarde « Derniers MP3 » dans un moment.");
+      const h = await apiJSON("/history");
+      // Une vidéo déjà faite reste dans « done » : on regarde d'abord la file
+      const enCours = [...(h.queue || []), ...(h.pending || [])].find(el => cEstLaNotre(el, id, url));
+      const fini = (h.done || []).filter(el => cEstLaNotre(el, id, url))
+                                 .filter(el => el.status !== "error" || (el.timestamp || 0) >= debutNs)
+                                 .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))[0];
+      if (enCours) {
+        afficherSuivi({ titre: enCours.title, etat: ETATS[enCours.status] || enCours.status, pct: enCours.percent });
+      } else if (fini && fini.status === "error") {
+        throw new Error(traduireErreur(fini.msg || fini.error));
+      } else if (fini && fini.filename) {
+        afficherSuivi({ titre: fini.title, etat: "Récupération du fichier…", pct: 100 });
+        await recupererFichier(fini);
+        chargerListe();
+        return;
+      }
+      await new Promise(r => setTimeout(r, PAUSE_SUIVI));
+    }
+  }
+
+  // Quelques erreurs fréquentes de yt-dlp, en clair
+  function traduireErreur(msg = "") {
+    if (/private video/i.test(msg)) return "Cette vidéo est privée.";
+    if (/sign in to confirm your age|age-restricted/i.test(msg)) return "Vidéo réservée aux adultes connectés : impossible sans compte.";
+    if (/sign in to confirm you.?re not a bot/i.test(msg)) return "YouTube demande de prouver qu'on n'est pas un robot. Réessaie plus tard (yt-dlp se met à jour chaque nuit).";
+    if (/unavailable|not available/i.test(msg)) return "Vidéo indisponible (supprimée, ou bloquée dans ce pays).";
+    if (/unsupported url/i.test(msg)) return "Ce lien n'est pas reconnu.";
+    return msg || "L'extraction a échoué.";
+  }
+
+  /* =====================================================================
+     RÉCUPÉRER LE MP3
+     Un simple lien <a href> ne peut pas envoyer l'en-tête X-Jeton : on
+     télécharge donc le fichier en « blob » (en mémoire), puis on le
+     propose au téléphone avec un lien local (blob:…).
+     ===================================================================== */
+  const adresseFichier = nomRelatif => "/audio_download/" + nomRelatif.split("/").map(encodeURIComponent).join("/");
+  const nomCourt = nomRelatif => nomRelatif.split("/").pop();
+
+  async function recupererFichier(el) {
+    const blob = await (await api(adresseFichier(el.filename))).blob();
+    const nom = nomCourt(el.filename);
+    if (urlFichier) URL.revokeObjectURL(urlFichier);     // libère le précédent
+    urlFichier = URL.createObjectURL(new Blob([blob], { type: "audio/mpeg" }));
+    const a = $("enregistrer");
+    a.href = urlFichier;
+    a.download = nom;                     // « download » = enregistrer au lieu d'ouvrir
+
+    // Partager (WhatsApp, Drive…) : seulement si le navigateur sait partager des fichiers
+    const fichier = new File([blob], nom, { type: "audio/mpeg" });
+    const peutPartager = !!(navigator.canShare && navigator.canShare({ files: [fichier] }));
+    $("partager").hidden = !peutPartager;
+    $("partager").onclick = () => navigator.share({ files: [fichier], title: nom }).catch(() => {});
+
+    afficherSuivi({ titre: el.title || nom, etat: `<span class="ok">✓ Prêt</span> · ${tailleLisible(blob.size)}`, pct: 100, html: true });
+    $("boutons").hidden = false;
+  }
+
+  /* =====================================================================
+     AFFICHAGE DU SUIVI
+     ===================================================================== */
+  function afficherSuivi({ titre, etat, pct, html }) {
+    $("carte-suivi").hidden = false;
+    $("erreur").hidden = true;
+    $("boutons").hidden = true;
+    if (titre) $("titre").textContent = titre;
+    $("etat")[html ? "innerHTML" : "textContent"] = etat;
+    // Pas encore de pourcentage : barre « va-et-vient »
+    const connu = typeof pct === "number" && isFinite(pct);
+    $("barre").classList.toggle("attente", !connu);
+    $("barre").firstElementChild.style.width = connu ? Math.max(2, Math.min(100, pct)) + "%" : "";
+    $("pct").textContent = connu ? Math.round(pct) + " %" : "";
+  }
+  function afficherErreur(message) {
+    $("carte-suivi").hidden = false;
+    $("barre").classList.remove("attente");
+    $("barre").firstElementChild.style.width = "0";
+    $("etat").textContent = ETATS.error; $("pct").textContent = "";
+    $("erreur").textContent = message; $("erreur").hidden = false;
+  }
+  const tailleLisible = o => o > 1e6 ? (o / 1e6).toFixed(1).replace(".", ",") + " Mo" : Math.round(o / 1e3) + " ko";
+
+  /* =====================================================================
+     DERNIERS MP3 (terminés, du plus récent au plus ancien)
+     ===================================================================== */
+  async function chargerListe() {
+    if (!lire(CLE_JETON)) return;
+    let h;
+    try { h = await apiJSON("/history"); } catch { return; }   // liste facultative : on se tait
+    const mp3 = (h.done || [])
+      .filter(el => el.status === "finished" && el.filename && /\.mp3$/i.test(el.filename))
+      .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+      .slice(0, NB_DERNIERS);
+    $("carte-liste").hidden = !mp3.length;
+    $("liste").replaceChildren(...mp3.map(el => {
+      const li = document.createElement("li");
+      const nom = document.createElement("span");
+      nom.className = "nom"; nom.textContent = el.title || nomCourt(el.filename);
+      const taille = document.createElement("span");
+      taille.className = "taille"; taille.textContent = el.size ? tailleLisible(el.size) : "";
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = "Ouvrir";
+      // Réaffiche ce MP3 dans la carte de suivi, prêt à enregistrer
+      b.onclick = async () => {
+        ++suiviEnCours;
+        afficherSuivi({ titre: el.title, etat: "Récupération du fichier…", pct: 100 });
+        try { await recupererFichier(el); } catch (err) { if (!(err instanceof JetonRefuse)) afficherErreur(err.message); }
+        $("carte-suivi").scrollIntoView({ behavior: "smooth", block: "nearest" });
+      };
+      li.append(nom, taille, b);
+      return li;
+    }));
+  }
+
+  /* =====================================================================
+     DÉMARRAGE
+     ===================================================================== */
+  // Lien reçu dans l'adresse (?lien=… ou ?url=…) : on le pré-remplit
+  const recu = new URLSearchParams(location.search);
+  const lienRecu = recu.get("lien") || recu.get("url") || recu.get("text");
+  if (lienRecu) $("lien").value = premierLien(lienRecu);
+
+  if (lire(CLE_JETON)) chargerListe(); else demanderJeton();
+
+  // Page installable (service worker)
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
