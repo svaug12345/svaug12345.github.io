@@ -3,7 +3,7 @@
 <head>
 <!--
   ============================================================
-  TAC Vélo — Facturation · version 1.1.1
+  TAC Vélo — Facturation · version 1.2.0
   Page fabriquée par construire-page-web.py (dossier facturation/ du projet TAC Vélo) :
   ne pas la modifier ici, modifier Index.html puis relancer le script.
   Les données (factures, clients, PDF) sont dans le Google Sheets / Drive de Seb ;
@@ -14,6 +14,8 @@
    • 1.1.0 : fiches atelier (enregistrer au fur et à mesure, statuts), devis, onglet Atelier
    • 1.1.1 : indicateur d'enregistrement (barre animée, « Non enregistrée / Enregistrée à… »),
              enregistrement des fiches plus rapide côté script Google (~3,4 s → ~2,1 s)
+   • 1.2.0 : ordre logique 1 Devis › 2 Fiche atelier › 3 Facture (chaque étape facultative),
+             bouton « Accepté › créer la fiche atelier » sur un devis ouvert
   ============================================================
 -->
 <!-- « noindex » : outil privé, il ne doit jamais apparaître sur Google -->
@@ -108,8 +110,13 @@
   .modal .bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); }
   .modal iframe { flex: 1; border: 0; width: 100%; }
   /* Choix du document + barre « document ouvert » */
-  .modeseg { display: flex; width: 100%; }
-  .modeseg button { flex: 1; padding: 11px 6px; font-weight: 600; }
+  .modeseg { display: flex; width: 100%; align-items: stretch; }
+  .modeseg button { flex: 1; padding: 11px 4px; font-weight: 600; white-space: nowrap; }
+  .modeseg .step { display: inline-block; width: 18px; height: 18px; line-height: 18px; border-radius: 50%; font-size: 11px;
+                   background: var(--line); color: var(--ink); margin-right: 6px; vertical-align: 1px; }
+  .modeseg button.on .step { background: var(--yellow); }
+  .modeseg .chev { display: flex; align-items: center; color: var(--muted); background: #fff; padding: 0 2px; font-size: 18px; }
+  @media (max-width: 400px) { .modeseg button { font-size: 14px; } .modeseg .step { display: none; } }
   .help { font-size: 13px; color: var(--muted); margin-top: 8px; }
   .current { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-top: 12px; padding: 10px 12px;
              background: var(--paper); border-radius: 8px; }
@@ -177,12 +184,14 @@
     <form id="form" autocomplete="off">
       <section class="card">
         <div class="seg modeseg" id="modeSeg">
-          <button type="button" data-v="fiche">Fiche atelier</button><button type="button" data-v="devis">Devis</button><button type="button" data-v="facture">Facture</button>
+          <!-- Ordre logique Devis › Fiche atelier › Facture ; chaque étape est facultative (on peut commencer par n'importe laquelle) -->
+          <button type="button" data-v="devis"><span class="step">1</span>Devis</button><span class="chev">›</span><button type="button" data-v="fiche"><span class="step">2</span>Fiche atelier</button><span class="chev">›</span><button type="button" data-v="facture"><span class="step">3</span>Facture</button>
         </div>
         <div class="help" id="modeHelp"></div>
         <div class="current" id="currentBar" style="display:none">
           <b id="currentLabel"></b>
           <select id="ficheStatut" title="Statut de la fiche"></select>
+          <button type="button" class="btn sm ok2" id="acceptBtn" style="display:none">Accepté › créer la fiche atelier</button>
           <button type="button" class="linkbtn" id="newDocBtn" style="margin-left:auto">Nouveau document</button>
         </div>
       </section>
@@ -248,12 +257,12 @@
   <!-- ============ ATELIER : fiches en cours + devis en attente ============ -->
   <div id="tab-atelier" style="display:none">
     <section class="card">
-      <h2>Vélos à l’atelier</h2>
-      <div id="atFiches"></div>
+      <h2>1 · Devis en attente de réponse</h2>
+      <div id="atDevis"></div>
     </section>
     <section class="card">
-      <h2>Devis en attente de réponse</h2>
-      <div id="atDevis"></div>
+      <h2>2 · Vélos à l’atelier</h2>
+      <div id="atFiches"></div>
     </section>
   </div>
 
@@ -304,11 +313,11 @@
 
   // Textes qui changent selon le document
   var MODES = {
-    fiche: { help: 'Pour noter le travail au fur et à mesure (pièces en attente…). Rien n’est envoyé au client, aucun numéro de facture.',
-      date: 'Date de dépôt du vélo', datePrest: 'Date d’intervention', total: 'Total provisoire', bouton: 'Enregistrer la fiche' },
-    devis: { help: 'Estimation à envoyer au client avant les travaux. Une fois acceptée, elle devient une fiche atelier.',
+    devis: { help: 'Étape 1 (facultative) : estimation envoyée au client avant les travaux. Une fois acceptée, elle devient une fiche atelier.',
       date: 'Date du devis', datePrest: 'Intervention prévue le', total: 'Total du devis', bouton: 'Créer le devis' },
-    facture: { help: 'Facture définitive : numéro attribué, PDF enregistré. Elle ne pourra plus être modifiée.',
+    fiche: { help: 'Étape 2 : le vélo est à l’atelier, on note le travail au fur et à mesure (pièces en attente…). Rien n’est envoyé au client. Quand c’est fini : « Facturer ».',
+      date: 'Date de dépôt du vélo', datePrest: 'Date d’intervention', total: 'Total provisoire', bouton: 'Enregistrer la fiche' },
+    facture: { help: 'Étape 3 : facture définitive (numéro attribué, PDF enregistré), elle ne pourra plus être modifiée. Possible directement pour une vente ou une réparation minute.',
       date: 'Date de la facture', datePrest: 'Date de la prestation', total: 'Total à payer', bouton: 'Créer la facture' }
   };
 
@@ -436,6 +445,7 @@
     $('currentLabel').textContent = (c.type === 'Devis' ? 'Devis ' : 'Fiche ') + c.numero + (c.type === 'Devis' ? ' — ' + c.statut.toLowerCase() : '');
     var sel = $('ficheStatut');
     sel.style.display = c.type === 'Fiche' ? '' : 'none';
+    $('acceptBtn').style.display = c.type === 'Devis' && c.statut === 'Envoyé' ? '' : 'none';
     if (c.type === 'Fiche') {
       sel.innerHTML = state.ficheStatuts.map(function (s) { return '<option>' + esc(s) + '</option>'; }).join('');
       sel.value = c.statut;
@@ -693,6 +703,21 @@
   /* ---------- Actions du formulaire ---------- */
   seg('typeSeg', 'typeClient'); seg('statutSeg', 'statut');
   $('modeSeg').addEventListener('click', function (ev) { var b = ev.target.closest('button'); if (b) setMode(b.dataset.v); });
+  // Devis ouvert → « Accepté » : le devis devient une fiche atelier, qu'on garde ouverte dans le formulaire
+  $('acceptBtn').addEventListener('click', function () {
+    var c = state.current; if (!c || c.type !== 'Devis') return;
+    var msg = 'Le client a accepté le devis ' + c.numero + ' ?\nUne fiche atelier va être créée avec son contenu.';
+    if (isDirty()) msg += '\n\nVos dernières modifications (non enregistrées dans le devis) seront reprises dans la fiche : pensez à l’enregistrer.';
+    if (!confirm(msg)) return;
+    var b = this, wasDirty = isDirty(); b.disabled = true;
+    call('acceptDevis', c.numero).then(function (r) {
+      state.current = { numero: r.fiche, type: 'Fiche', statut: 'En cours' }; state.savedAt = '';
+      renderAtelier(r.atelier);
+      setMode('fiche');
+      if (!wasDirty) markClean();
+      toast('Devis accepté : fiche ' + r.fiche + ' créée');
+    }).catch(function (e) { alert(e.message || e); }).then(function () { b.disabled = false; });
+  });
   $('newDocBtn').addEventListener('click', function () {
     if (confirm('Fermer ce document et repartir d’un formulaire vide ?' + (state.mode === 'fiche' ? '\n(Pensez à enregistrer la fiche avant.)' : ''))) resetDoc();
   });
