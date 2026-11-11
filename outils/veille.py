@@ -2,7 +2,7 @@
 """
 ============================================================
 outils/veille.py — collecte de la « Veille » (plusieurs sujets)
-Version 2.1.0
+Version 2.2.0
 ------------------------------------------------------------
 Ce script tourne tout seul sur les serveurs de GitHub
 (workflow .github/workflows/veille.yml, toutes les 2 heures).
@@ -38,6 +38,8 @@ Historique :
             (ex. LSA trouvé par la recherche générale) est rangé sous ce site
  • v2.0.0 : plusieurs sujets (« sujets » dans sources.json) ; un fichier par sujet dans
             veille/donnees/, plus veille/donnees/index.json (liste des onglets)
+ • v2.2.0 : 120 articles enrichis par sujet et par collecte (au lieu de 40) : les résumés et
+            photos arrivent plus vite
  • v2.1.0 : « enrichissement » : pour chaque nouvel article, le vrai lien est retrouvé
             derrière le lien Google Actualités, puis la page du journal est lue pour en
             garder le chapeau (og:description) et l'image (og:image) → fiche détaillée
@@ -59,7 +61,7 @@ from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 
-VERSION = "2.1.0"
+VERSION = "2.2.0"
 
 RACINE = Path(__file__).resolve().parent.parent      # racine du dépôt
 REGLAGES = RACINE / "veille" / "sources.json"
@@ -217,7 +219,7 @@ def parle_du_sujet(art: dict, mots: list) -> bool:
 # ------------------------------------------------------------
 # Enrichissement : vrai lien, chapeau et image de chaque article
 # ------------------------------------------------------------
-MAX_ENRICHIS = 40           # articles enrichis au plus par sujet et par collecte (politesse)
+MAX_ENRICHIS = 120          # articles enrichis au plus par sujet et par collecte (politesse)
 TAILLE_PAGE = 600_000       # on ne lit que le début d'une page (les balises <meta> sont en haut)
 
 

@@ -1,6 +1,6 @@
 /* ============================================================
    Veille — avis des lecteurs (👍 / 👎) et sujets perso — script Google Apps Script
-   Version 1.1.0
+   Version 1.2.0
    ------------------------------------------------------------
    Met en commun les votes de tous les lecteurs de baiji.fr/veille/ :
    quand quelqu'un dit qu'un article n'est « pas pertinent », il est
@@ -34,6 +34,9 @@
               chaque lecteur ajoute lui-même dans l'appli (le navigateur ne peut pas
               interroger Google Actualités directement : règle « CORS ») ; réponse
               gardée 20 min en cache pour ne pas solliciter Google à chaque ouverture
+    • 1.2.0 : GET ?action=enrichir&liens=[…] = pour 6 articles au plus, retrouve le vrai lien
+              derrière le lien Google Actualités, puis lit sur la page du journal son chapeau
+              (og:description) et sa photo (og:image) ; résultat gardé 6 h en cache
    ============================================================ */
 
 const ONGLET = "Avis";
@@ -46,6 +49,7 @@ function doGet(e) {
   const p = (e && e.parameter) || {};
   if (!cleValide(p.cle)) return repondre({ ok: false, erreur: "clé incorrecte" });
   if (p.action === "flux") return repondre(flux(p.q));
+  if (p.action === "enrichir") return repondre(enrichir(p.liens));
   const lignes = toutesLesLignes();
   const avis = lignes
     .filter((l) => !p.sujet || l[1] === p.sujet)
@@ -126,6 +130,84 @@ function flux(q) {
   const texte = JSON.stringify(resultat);
   if (texte.length < 95000) cache.put(cleCache, texte, 20 * 60);   // 20 min (limite du cache : 100 Ko)
   return resultat;
+}
+
+/* ---- Résumé et photo d'articles (pour l'appli) ----
+   liens = texte JSON d'une liste d'adresses (6 au plus).
+   Renvoie { ok, resultats: { "<adresse demandée>": {lien, resume, image} } }. */
+function enrichir(liens) {
+  let liste;
+  try { liste = JSON.parse(liens || "[]"); } catch (e) { return { ok: false, erreur: "liste illisible" }; }
+  liste = liste.filter((l) => /^https?:\/\//.test(l)).slice(0, 6);
+  const cache = CacheService.getScriptCache();
+  const resultats = {};
+  for (const lien of liste) {
+    const cle = "enr:" + Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, lien));
+    const deja = cache.get(cle);
+    if (deja) { resultats[lien] = JSON.parse(deja); continue; }
+    const r = { lien: lien, resume: "", image: "" };
+    try {
+      const vrai = /news\.google\.com/.test(lien) ? decoderGoogle(lien) : lien;
+      if (vrai) {
+        r.lien = vrai;
+        const rep = UrlFetchApp.fetch(vrai, { muteHttpExceptions: true, followRedirects: true });
+        if (rep.getResponseCode() === 200) {
+          const page = rep.getContentText().slice(0, 600000);   // les balises <meta> sont en haut
+          r.resume = nettoyer(lireMeta(page, ["og:description", "twitter:description", "description"])).slice(0, 400);
+          let image = lireMeta(page, ["og:image", "twitter:image"]);
+          if (image.startsWith("//")) image = "https:" + image;
+          if (/^https?:\/\//.test(image)) r.image = image;
+        }
+      }
+    } catch (e) { /* site injoignable ou qui refuse : on garde le lien tel quel */ }
+    resultats[lien] = r;
+    cache.put(cle, JSON.stringify(r), 6 * 3600);
+  }
+  return { ok: true, resultats: resultats };
+}
+
+// Adresse du journal cachée derrière un lien Google Actualités (même méthode que le robot) :
+// ancien format = base64 qui contient l'adresse ; récent = signature lue sur la page Google,
+// puis appel au service interne « batchexecute » de Google Actualités.
+function decoderGoogle(lien) {
+  const m = lien.match(/articles\/([^?\/#]+)/);
+  if (!m) return "";
+  const ident = m[1];
+  try {
+    const brut = Utilities.newBlob(Utilities.base64DecodeWebSafe(ident + "=".repeat((4 - ident.length % 4) % 4))).getDataAsString("ISO-8859-1");
+    const url = brut.match(/https?:\/\/[\x21-\x7e]+/);
+    if (url && !/AU_yqL/.test(brut)) return url[0];
+  } catch (e) { /* pas de l'ancien format */ }
+  const page = UrlFetchApp.fetch("https://news.google.com/articles/" + ident + "?hl=fr&gl=FR&ceid=FR:fr", { muteHttpExceptions: true }).getContentText();
+  const sg = page.match(/data-n-a-sg="([^"]+)"/), ts = page.match(/data-n-a-ts="([^"]+)"/);
+  if (!sg || !ts) return "";
+  const demande = '["garturlreq",[["X","X",["X","X"],null,null,1,1,"US:en",null,1,null,null,null,null,null,0,1],"X","X",1,[1,1,1],1,1,null,0,0,null,0],"'
+    + ident + '",' + ts[1] + ',"' + sg[1] + '"]';
+  const rep = UrlFetchApp.fetch("https://news.google.com/_/DotsSplashUi/data/batchexecute", {
+    method: "post", muteHttpExceptions: true,
+    contentType: "application/x-www-form-urlencoded;charset=UTF-8",
+    payload: "f.req=" + encodeURIComponent(JSON.stringify([[["Fbv4je", demande]]]))
+  });
+  const bloc = JSON.parse(rep.getContentText().split("\n\n")[1]);
+  return JSON.parse(bloc[0][2])[1];
+}
+
+// Contenu d'une balise <meta property|name="…" content="…"> (dans un sens ou dans l'autre)
+function lireMeta(page, noms) {
+  for (const nom of noms) {
+    const a = page.match(new RegExp('<meta[^>]+(?:property|name)=["\']' + nom + '["\'][^>]*content=["\']([^"\']+)', "i"))
+           || page.match(new RegExp('<meta[^>]+content=["\']([^"\']+)["\'][^>]*(?:property|name)=["\']' + nom + '["\']', "i"));
+    if (a) return a[1].trim();
+  }
+  return "";
+}
+
+// Retire les balises et les entités HTML (&amp; → &…)
+function nettoyer(t) {
+  return String(t || "").replace(/<[^>]+>/g, " ")
+    .replace(/&#(\d+);/g, (m, n) => String.fromCharCode(n))
+    .replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
 }
 
 /* ---- Petits outils ---- */
