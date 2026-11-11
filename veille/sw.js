@@ -1,6 +1,6 @@
 /*
   ============================================================
-  Service worker de Veille Carrefour (baiji.fr)
+  Service worker de Veille (baiji.fr)
   Fabriqué par outils/generer-pwa.py — c'est lui qui rend la
   page installable sur téléphone.
   ------------------------------------------------------------

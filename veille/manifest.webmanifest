@@ -1,7 +1,7 @@
 {
-  "name": "Veille Carrefour",
+  "name": "Veille",
   "short_name": "Veille",
-  "description": "Les articles sur Carrefour d'Olivier Dauvers, LSA et Linéaires",
+  "description": "La presse sur Carrefour, Elis… triée par l'avis des lecteurs",
   "id": "/veille/",
   "start_url": "/veille/",
   "scope": "/veille/",

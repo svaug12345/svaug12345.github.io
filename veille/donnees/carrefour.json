@@ -1,7 +1,11 @@
 {
- "version": "1.1.0",
+ "version": "2.0.0",
  "maj": "2026-11-11T07:27+00:00",
- "sujet": "Carrefour",
+ "id": "carrefour",
+ "nom": "Carrefour",
+ "mots_cles": [
+  "carrefour"
+ ],
  "sources": [
   {
    "id": "dauvers",

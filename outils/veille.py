@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
 """
 ============================================================
-outils/veille.py — collecte de la « Veille Carrefour »
-Version 1.1.0
+outils/veille.py — collecte de la « Veille » (plusieurs sujets)
+Version 2.0.0
 ------------------------------------------------------------
 Ce script tourne tout seul sur les serveurs de GitHub
 (workflow .github/workflows/veille.yml, toutes les 2 heures).
 Il :
-  1. lit les réglages dans veille/sources.json (sujet, mots-clés,
-     sites et flux à suivre) ;
-  2. télécharge chaque flux RSS (ou recherche Google Actualités) ;
+  1. lit les réglages dans veille/sources.json : la liste des sujets
+     (Carrefour, Elis…), et pour chacun ses mots-clés et ses flux ;
+  2. pour chaque sujet, télécharge chaque flux RSS (ou recherche
+     Google Actualités) ;
   3. garde les articles qui parlent du sujet, retire les doublons ;
-  4. les fusionne avec ceux déjà connus (veille/articles.json) et
-     oublie ceux de plus de `jours_gardes` jours ;
-  5. réécrit veille/articles.json, que l'appli (veille/index.html)
-     affiche.
+  4. les fusionne avec ceux déjà connus (veille/donnees/<sujet>.json)
+     et oublie ceux de plus de `jours_gardes` jours ;
+  5. réécrit veille/donnees/<sujet>.json et la liste des sujets
+     veille/donnees/index.json, que l'appli (veille/index.html) affiche.
 
 Pourquoi passer par GitHub et pas directement par la page ?
 Un navigateur n'a pas le droit de lire un autre site (règle
@@ -35,6 +36,8 @@ Historique :
  • v1.1.0 : sources « autres » (toute la presse via Google Actualités) : chaque article
             garde le nom du journal (« media ») ; un article d'un site déjà suivi
             (ex. LSA trouvé par la recherche générale) est rangé sous ce site
+ • v2.0.0 : plusieurs sujets (« sujets » dans sources.json) ; un fichier par sujet dans
+            veille/donnees/, plus veille/donnees/index.json (liste des onglets)
 ============================================================
 """
 import hashlib
@@ -50,11 +53,11 @@ from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 
-VERSION = "1.1.0"
+VERSION = "2.0.0"
 
 RACINE = Path(__file__).resolve().parent.parent      # racine du dépôt
 REGLAGES = RACINE / "veille" / "sources.json"
-SORTIE = RACINE / "veille" / "articles.json"
+DONNEES = RACINE / "veille" / "donnees"           # un fichier JSON par sujet + index.json
 
 # Certains sites refusent les robots « anonymes » : on se présente
 # comme un lecteur de flux ordinaire, avec un nom clair.
@@ -206,54 +209,56 @@ def parle_du_sujet(art: dict, mots: list) -> bool:
 
 
 # ------------------------------------------------------------
-# Programme principal
+# Un sujet
 # ------------------------------------------------------------
-def main():
-    dossier_test = None
-    if "--dossier-test" in sys.argv:
-        dossier_test = sys.argv[sys.argv.index("--dossier-test") + 1]
-
-    reglages = json.loads(REGLAGES.read_text(encoding="utf-8"))
+def collecter_sujet(sujet: dict, reglages: dict, dossier_test) -> bool:
+    """Collecte UN sujet et réécrit son fichier veille/donnees/<id>.json.
+    Renvoie True si le fichier a changé."""
+    sortie = DONNEES / f"{sujet['id']}.json"
     maintenant = datetime.now(timezone.utc)
     limite = maintenant - timedelta(days=reglages.get("jours_gardes", 60))
-    mots = reglages.get("mots_cles", [])
+    mots = sujet.get("mots_cles", [])
+    print(f"=== {sujet['nom']} ===")
 
     # 1) Les articles déjà connus, rangés par clé de titre.
     #    On garde leur « vu_le » (date de première découverte) :
     #    c'est grâce à lui que l'appli sait ce qui est nouveau.
-    connus = {}
-    if SORTIE.exists():
+    connus, ancien = {}, None
+    if sortie.exists():
         try:
-            for a in json.loads(SORTIE.read_text(encoding="utf-8")).get("articles", []):
+            ancien = json.loads(sortie.read_text(encoding="utf-8"))
+            for a in ancien.get("articles", []):
                 connus[cle_titre(a["titre"])] = a
         except (ValueError, KeyError):
-            print("⚠ articles.json illisible : on repart de zéro")
+            print(f"⚠ {sortie.name} illisible : on repart de zéro")
+            ancien = None
 
     etat_sources = []      # pour afficher dans l'appli si un flux est en panne
+    nouveaux = 0
 
     # Domaine de chaque site suivi → son id. Sert à ranger sous « LSA » un article
     # de lsa-conso.fr trouvé par la recherche générale (source « autres »).
-    par_domaine = {domaine(s["site"]): s["id"] for s in reglages["sources"] if s.get("site")}
+    par_domaine = {domaine(s["site"]): s["id"] for s in sujet["sources"] if s.get("site")}
     # Les sources « précises » d'abord, la recherche générale en dernier : ainsi un
     # article déjà trouvé par le flux de LSA garde LSA comme source.
-    reglages["sources"].sort(key=lambda s: bool(s.get("autres")))
-    nouveaux = 0
+    sources = sorted(sujet["sources"], key=lambda s: bool(s.get("autres")))
 
     # 2) Chaque source, chaque flux
-    for src in reglages["sources"]:
+    for src in sources:
         etat = {"id": src["id"], "nom": src["nom"], "court": src.get("court", src["nom"]),
                 "site": src.get("site", ""), "couleur": src.get("couleur", "#0f7c7b"),
                 "autres": bool(src.get("autres")), "ok": True, "erreurs": []}
         for flux in src["flux"]:
             adresse = adresse_du_flux(flux)
+            nom_flux = flux.get("google") or flux.get("url")
             try:
                 articles = lire_flux(telecharger(adresse, dossier_test))
             except Exception as e:                  # réseau, XML cassé… on continue avec les autres
                 etat["ok"] = False
-                etat["erreurs"].append(f"{flux.get('google') or flux.get('url')} : {e}")
-                print(f"✗ {src['id']} — {adresse} : {e}")
+                etat["erreurs"].append(f"{nom_flux} : {str(e)[:150]}")
+                print(f"✗ {src['id']} — {nom_flux} : {e}")
                 continue
-            print(f"✓ {src['id']} — {len(articles)} articles dans {flux.get('google') or flux.get('url')}")
+            print(f"✓ {src['id']} — {len(articles)} articles dans {nom_flux}")
 
             for art in articles:
                 if "google" in flux:
@@ -277,13 +282,13 @@ def main():
                         deja["resume"] = couper(art["resume"])
                     continue
                 connus[cle] = {
-                    # identifiant court et stable (sert aux favoris et au « lu » dans l'appli)
+                    # identifiant court et stable (sert aux favoris, au « lu » et aux votes)
                     "id": hashlib.sha1(cle.encode()).hexdigest()[:12],
                     "titre": art["titre"],
                     "lien": art["lien"],
                     "source": id_source,
                     # nom du journal tel que Google Actualités le donne (« Les Echos »…),
-                    # affiché sur la carte pour la source « Autres médias »
+                    # affiché sur la carte pour les sources « autres »
                     "media": art.get("source_affichee", ""),
                     "date": date.isoformat(timespec="minutes"),
                     "vu_le": maintenant.isoformat(timespec="minutes"),
@@ -297,26 +302,51 @@ def main():
     garder.sort(key=lambda a: a["date"], reverse=True)
     garder = garder[: reglages.get("max_articles", 600)]
 
-    # 4) Écriture. Si rien n'a changé dans les articles, on ne touche pas au
-    #    fichier : le workflow ne fera alors pas de commit (pas de bruit inutile).
-    ancien = None
-    if SORTIE.exists():
-        try:
-            ancien = json.loads(SORTIE.read_text(encoding="utf-8"))
-        except ValueError:
-            pass
-    if ancien and ancien.get("articles") == garder and ancien.get("sources") == etat_sources:
+    # 4) Écriture. Si rien n'a changé, on ne touche pas au fichier : le workflow
+    #    ne fera alors pas de commit (pas de bruit inutile).
+    if (ancien and ancien.get("articles") == garder and ancien.get("sources") == etat_sources
+            and ancien.get("nom") == sujet["nom"] and ancien.get("mots_cles") == mots):
         print("= rien de nouveau, fichier inchangé")
-        return
-
-    SORTIE.write_text(json.dumps({
+        return False
+    sortie.write_text(json.dumps({
         "version": VERSION,
         "maj": maintenant.isoformat(timespec="minutes"),
-        "sujet": reglages.get("sujet", ""),
+        "id": sujet["id"],
+        "nom": sujet["nom"],
+        "mots_cles": mots,                          # l'appli s'en sert pour « 🎯 Dans le titre »
         "sources": etat_sources,
         "articles": garder,
     }, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(f"→ {len(garder)} articles enregistrés, dont {nouveaux} nouveaux")
+    return True
+
+
+# ------------------------------------------------------------
+# Programme principal
+# ------------------------------------------------------------
+def main():
+    dossier_test = None
+    if "--dossier-test" in sys.argv:
+        dossier_test = sys.argv[sys.argv.index("--dossier-test") + 1]
+
+    reglages = json.loads(REGLAGES.read_text(encoding="utf-8"))
+    DONNEES.mkdir(parents=True, exist_ok=True)
+
+    for sujet in reglages["sujets"]:
+        collecter_sujet(sujet, reglages, dossier_test)
+
+    # La liste des sujets (= les onglets de l'appli), avec le nombre d'articles
+    # et la date du dernier ajout de chacun, lue dans son fichier.
+    liste = []
+    for sujet in reglages["sujets"]:
+        f = DONNEES / f"{sujet['id']}.json"
+        d = json.loads(f.read_text(encoding="utf-8")) if f.exists() else {}
+        liste.append({"id": sujet["id"], "nom": sujet["nom"],
+                      "nb": len(d.get("articles", [])), "maj": d.get("maj")})
+    index = DONNEES / "index.json"
+    texte = json.dumps({"version": VERSION, "sujets": liste}, ensure_ascii=False, indent=1) + "\n"
+    if not index.exists() or index.read_text(encoding="utf-8") != texte:
+        index.write_text(texte, encoding="utf-8")
 
 
 if __name__ == "__main__":
