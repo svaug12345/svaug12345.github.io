@@ -3,7 +3,7 @@
 <head>
 <!--
   ============================================================
-  TAC Vélo — Facturation · version 1.0.0
+  TAC Vélo — Facturation · version 1.1.0
   Page fabriquée par construire-page-web.py (dossier facturation/ du projet TAC Vélo) :
   ne pas la modifier ici, modifier Index.html puis relancer le script.
   Les données (factures, clients, PDF) sont dans le Google Sheets / Drive de Seb ;
@@ -11,6 +11,7 @@
   ------------------------------------------------------------
   Historique :
    • 1.0.0 : première version hébergée sur baiji.fr (plus de bandeau Google)
+   • 1.1.0 : fiches atelier (enregistrer au fur et à mesure, statuts), devis, onglet Atelier
   ============================================================
 -->
 <!-- « noindex » : outil privé, il ne doit jamais apparaître sur Google -->
@@ -78,6 +79,8 @@
   .totalbar { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid var(--line); padding: 12px 16px; z-index: 5; }
   .totalbar .in { max-width: 820px; margin: 0 auto; display: flex; align-items: center; gap: 10px; }
   .totalbar .amount { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; margin-right: auto; }
+  .totalbar .amount span { white-space: nowrap; }
+  @media (max-width: 420px) { .totalbar .amount { font-size: 18px; } .totalbar .btn { padding: 11px 12px; } .totalbar .in { gap: 6px; } }
   .totalbar .amount small { display: block; font-size: 12px; font-weight: 400; color: var(--muted); }
   .btn { border: 0; border-radius: 10px; padding: 12px 18px; font: inherit; font-weight: 600; cursor: pointer; }
   .btn.primary { background: var(--yellow); color: var(--ink); }
@@ -102,6 +105,29 @@
   .modal .sheet { background: #fff; max-width: 860px; height: 100%; margin: 0 auto; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
   .modal .bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); }
   .modal iframe { flex: 1; border: 0; width: 100%; }
+  /* Choix du document + barre « document ouvert » */
+  .modeseg { display: flex; width: 100%; }
+  .modeseg button { flex: 1; padding: 11px 6px; font-weight: 600; }
+  .help { font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .current { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-top: 12px; padding: 10px 12px;
+             background: var(--paper); border-radius: 8px; }
+  .current select { width: auto; padding: 6px 8px; }
+  /* Onglet Atelier */
+  .at-item { border-bottom: 1px solid var(--line); padding: 12px 0; }
+  .at-item:last-child { border-bottom: 0; }
+  .at-top { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .at-top .amt { margin-left: auto; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .at-sub { font-size: 14px; margin-top: 2px; }
+  .at-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; align-items: center; }
+  .at-actions select { width: auto; padding: 7px 8px; font-size: 14px; }
+  .btn.sm { padding: 7px 12px; font-size: 14px; }
+  .btn.sm.ok2 { background: #e3f1e8; color: var(--green); border: 0; }
+  .badge.st-cours { background: #e8eef9; color: #2c4a86; }
+  .badge.st-pieces { background: #fbe7dd; color: #a2481f; }
+  .badge.st-pret { background: #e3f1e8; color: var(--green); }
+  .badge.st-devis { background: #fdf3cf; color: #7a5b00; }
+  .toast { position: fixed; left: 50%; bottom: 92px; transform: translateX(-50%); background: var(--ink); color: #fff;
+           padding: 10px 16px; border-radius: 10px; font-size: 15px; z-index: 30; display: none; max-width: 90vw; text-align: center; }
   .demo { background: var(--orange); color: #fff; text-align: center; font-size: 13px; padding: 4px; display: none; }
   @media (max-width: 640px) {
     .grid { grid-template-columns: 1fr; }
@@ -116,7 +142,7 @@
 <div class="demo" id="demo">Mode démonstration — rien n’est enregistré</div>
 <header>
   <div class="brand"><b>TAC VÉLO</b><span>Facturation</span><span class="next" id="next"></span></div>
-  <nav><button class="on" data-tab="new">Nouvelle facture</button><button data-tab="hist">Historique</button></nav>
+  <nav><button class="on" data-tab="new">Nouveau</button><button data-tab="atelier">Atelier<span id="atCount"></span></button><button data-tab="hist">Factures</button></nav>
 </header>
 
 <main>
@@ -130,11 +156,23 @@
       <div class="actions">
         <a class="btn primary" id="dlBtn" download>Télécharger le PDF</a>
         <a class="btn ghost" id="driveBtn" target="_blank">Ouvrir dans Drive</a>
-        <button class="btn ghost" id="againBtn">Nouvelle facture</button>
+        <button class="btn ghost" id="againBtn">Nouveau document</button>
       </div>
     </section>
 
     <form id="form" autocomplete="off">
+      <section class="card">
+        <div class="seg modeseg" id="modeSeg">
+          <button type="button" data-v="fiche">Fiche atelier</button><button type="button" data-v="devis">Devis</button><button type="button" data-v="facture">Facture</button>
+        </div>
+        <div class="help" id="modeHelp"></div>
+        <div class="current" id="currentBar" style="display:none">
+          <b id="currentLabel"></b>
+          <select id="ficheStatut" title="Statut de la fiche"></select>
+          <button type="button" class="linkbtn" id="newDocBtn" style="margin-left:auto">Nouveau document</button>
+        </div>
+      </section>
+
       <section class="card">
         <h2>Client</h2>
         <div class="grid">
@@ -156,8 +194,8 @@
       <section class="card">
         <h2>Prestation</h2>
         <div class="grid">
-          <div><label for="date">Date de la facture</label><input id="date" type="date"></div>
-          <div><label for="datePrestation">Date de la prestation</label><input id="datePrestation" type="date"></div>
+          <div><label for="date" id="dateLabel">Date de la facture</label><input id="date" type="date"></div>
+          <div><label for="datePrestation" id="datePrestLabel">Date de la prestation</label><input id="datePrestation" type="date"></div>
           <div class="full">
             <label>Vélo(s) concerné(s)</label>
             <div id="velos"></div>
@@ -181,16 +219,28 @@
         <div class="chips" id="chips"></div>
       </section>
 
-      <section class="card">
-        <h2>Paiement</h2>
+      <section class="card" id="payCard">
+        <h2 id="payTitle">Paiement</h2>
         <div class="grid">
-          <div class="full"><div class="seg" id="statutSeg"><button type="button" class="on" data-v="Payée">Payée</button><button type="button" data-v="À payer">À payer</button></div></div>
-          <div><label for="mode">Mode de paiement</label><select id="mode"></select></div>
+          <div class="full pay"><div class="seg" id="statutSeg"><button type="button" class="on" data-v="Payée">Payée</button><button type="button" data-v="À payer">À payer</button></div></div>
+          <div class="pay"><label for="mode">Mode de paiement</label><select id="mode"></select></div>
           <div id="echeanceWrap" style="display:none"><label for="echeance">À régler avant le</label><input id="echeance" type="date"></div>
-          <div class="full"><label class="check"><input type="checkbox" id="envoyerEmail"> Envoyer la facture par email au client</label></div>
+          <div class="full"><label class="check"><input type="checkbox" id="envoyerEmail"> <span id="emailLabel">Envoyer la facture par email au client</span></label></div>
         </div>
       </section>
     </form>
+  </div>
+
+  <!-- ============ ATELIER : fiches en cours + devis en attente ============ -->
+  <div id="tab-atelier" style="display:none">
+    <section class="card">
+      <h2>Vélos à l’atelier</h2>
+      <div id="atFiches"></div>
+    </section>
+    <section class="card">
+      <h2>Devis en attente de réponse</h2>
+      <div id="atDevis"></div>
+    </section>
   </div>
 
   <!-- ============ HISTORIQUE ============ -->
@@ -208,11 +258,14 @@
 
 <div class="totalbar" id="totalbar">
   <div class="in">
-    <div class="amount"><small>Total à payer</small><span id="total">0,00 €</span></div>
+    <div class="amount"><small id="totalLabel">Total à payer</small><span id="total">0,00 €</span></div>
     <button class="btn ghost" id="previewBtn" type="button">Aperçu</button>
+    <button class="btn ghost" id="factBtn" type="button">Facturer</button>
     <button class="btn primary" id="createBtn" type="button">Créer la facture</button>
   </div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <div class="modal" id="modal">
   <div class="sheet">
@@ -224,10 +277,23 @@
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
-  var state = { clients: [], catalogue: [], typeClient: 'Particulier', statut: 'Payée' };
+  // mode = document en cours d'édition : 'fiche' (atelier), 'devis' ou 'facture'
+  // current = fiche ou devis ouvert depuis l'onglet Atelier ({ numero, type, statut }), sinon null
+  var state = { clients: [], catalogue: [], typeClient: 'Particulier', statut: 'Payée', mode: 'fiche', current: null,
+    ficheStatuts: ['En cours', 'En attente de pièces', 'Prêt à récupérer'], atelier: [] };
   var CHIPS = ['Prévoir plaquettes de frein prochainement', 'Prévoir une purge des freins', 'Pneus usés : à remplacer prochainement',
     'Chaîne usée : à remplacer à la prochaine révision', 'Prochaine révision conseillée dans 6 mois'];
   var DRAFT_KEY = 'tacvelo-facture-brouillon';
+
+  // Textes qui changent selon le document
+  var MODES = {
+    fiche: { help: 'Pour noter le travail au fur et à mesure (pièces en attente…). Rien n’est envoyé au client, aucun numéro de facture.',
+      date: 'Date de dépôt du vélo', datePrest: 'Date d’intervention', total: 'Total provisoire', bouton: 'Enregistrer la fiche' },
+    devis: { help: 'Estimation à envoyer au client avant les travaux. Une fois acceptée, elle devient une fiche atelier.',
+      date: 'Date du devis', datePrest: 'Intervention prévue le', total: 'Total du devis', bouton: 'Créer le devis' },
+    facture: { help: 'Facture définitive : numéro attribué, PDF enregistré. Elle ne pourra plus être modifiée.',
+      date: 'Date de la facture', datePrest: 'Date de la prestation', total: 'Total à payer', bouton: 'Créer la facture' }
+  };
 
   /* ---------- API : Apps Script ou démo locale ---------- */
   // Trois modes : servi par Google (google.script.run), page hébergée ailleurs (window.TAC_API → fetch), ou démo locale.
@@ -246,23 +312,50 @@
         fetch(API, { method: 'POST', body: JSON.stringify({ k: KEY, fn: fn, args: rest }) })
           .then(function (res) { return res.json(); })
           .then(function (j) { if (j.ok) resolve(j.result); else reject(new Error(j.error)); })
-          .catch(function () { reject(new Error('Connexion impossible. Vérifiez le réseau et réessayez.')); });
+          .catch(function (e) { reject(e && e.message && !/fetch|network/i.test(e.message) ? e : new Error('Connexion impossible. Vérifiez le réseau et réessayez.')); });
       } else {
         setTimeout(function () { try { resolve(DEMO[fn].apply(null, args)); } catch (e) { reject(e); } }, 400);
       }
     });
   }
-  var demoN = 1;
+
+  /* ---------- Démo locale (fichier ouvert hors Google) ---------- */
+  var demoN = 1, demoAt = [], demoDocs = {};
   var DEMO = {
     getInitData: function () {
       return { prochainNumero: 'F2026-00' + demoN, modes: ['Carte bancaire', 'Espèces', 'Virement', 'Chèque', 'Wero / Lydia'], delai: 0,
         clients: [{ nom: 'Martin Dupont', type: 'Particulier', adresse: '12 rue de Chevry', ville: '91190 Gif-sur-Yvette', email: 'martin@example.com', telephone: '06 00 00 00 00' }],
         catalogue: [{ designation: 'Main d’œuvre (1 h)', prix: 30 }, { designation: 'Déplacement / livraison', prix: 25 }, { designation: 'Chaîne', prix: 17.98 }, { designation: 'Cassette', prix: 32 }],
-        recent: [{ numero: 'F2026-000', date: '09/11/2026', client: 'Exemple', total: 87.5, statut: 'À payer', pdf: '#' }], sheetUrl: '#', folderUrl: '#' };
+        recent: [{ numero: 'F2026-000', date: '09/11/2026', client: 'Exemple', total: 87.5, statut: 'À payer', pdf: '#' }],
+        atelier: demoAt, ficheStatuts: ['En cours', 'En attente de pièces', 'Prêt à récupérer'], sheetUrl: '#', folderUrl: '#' };
     },
     previewInvoice: function () { return '<p style="font-family:Arial;padding:20px">En mode démo, l’aperçu réel est généré par Google.</p>'; },
-    createInvoice: function (k, d) { var n = 'F2026-00' + demoN++; return { numero: n, total: totalOf(d.lignes), url: '#', fileName: n + '.pdf', pdfBase64: '', emailEnvoye: d.envoyerEmail ? d.client.email : '', prochainNumero: 'F2026-00' + demoN, recent: DEMO.getInitData().recent }; },
-    markPaid: function () { return DEMO.getInitData().recent; }
+    createInvoice: function (k, d) {
+      demoAt = demoAt.filter(function (a) { return a.numero !== d.source; });
+      var n = 'F2026-00' + demoN++; return { numero: n, total: totalOf(d.lignes), url: '#', fileName: n + '.pdf', pdfBase64: '', emailEnvoye: d.envoyerEmail ? d.client.email : '', prochainNumero: 'F2026-00' + demoN, recent: DEMO.getInitData().recent, atelier: demoAt };
+    },
+    markPaid: function () { return DEMO.getInitData().recent; },
+    saveFiche: function (k, d, numero) {
+      numero = numero || 'AT2026-00' + (demoAt.length + 1);
+      demoDocs[numero] = JSON.parse(JSON.stringify(d));
+      demoAt = demoAt.filter(function (a) { return a.numero !== numero; });
+      demoAt.unshift({ numero: numero, type: 'Fiche', statut: d.statutFiche || 'En cours', client: d.client.nom, velos: d.velos.filter(Boolean).join(' | '), total: totalOf(d.lignes), modifie: 'à l’instant' });
+      return { numero: numero, statut: d.statutFiche || 'En cours', atelier: demoAt };
+    },
+    getAtelierDoc: function (k, n) { var a = demoAt.filter(function (x) { return x.numero === n; })[0]; return { numero: n, type: a.type, statut: a.statut, data: demoDocs[n] }; },
+    setAtelierStatus: function (k, n, st) { demoAt.forEach(function (a) { if (a.numero === n) a.statut = st; }); demoAt = demoAt.filter(function (a) { return ['Abandonnée', 'Refusé'].indexOf(a.statut) === -1; }); return demoAt; },
+    createDevis: function (k, d, numero) {
+      numero = numero || 'D2026-00' + (demoAt.length + 1); demoDocs[numero] = JSON.parse(JSON.stringify(d));
+      demoAt = demoAt.filter(function (a) { return a.numero !== numero; });
+      demoAt.unshift({ numero: numero, type: 'Devis', statut: 'Envoyé', client: d.client.nom, velos: '', total: totalOf(d.lignes), modifie: 'à l’instant', pdf: '#' });
+      return { numero: numero, total: totalOf(d.lignes), url: '#', fileName: numero + '.pdf', pdfBase64: '', emailEnvoye: '', atelier: demoAt };
+    },
+    acceptDevis: function (k, n) {
+      var a = demoAt.filter(function (x) { return x.numero === n; })[0]; var f = 'AT2026-0' + (90 + demoAt.length);
+      demoDocs[f] = demoDocs[n]; demoAt = demoAt.filter(function (x) { return x.numero !== n; });
+      demoAt.unshift({ numero: f, type: 'Fiche', statut: 'En cours', client: a.client, velos: a.velos, total: a.total, modifie: 'à l’instant', lie: n });
+      return { fiche: f, atelier: demoAt };
+    }
   };
   if (!isGas && !API) $('demo').style.display = 'block';
 
@@ -272,7 +365,12 @@
   function iso(d) { var z = function (x) { return ('0' + x).slice(-2); }; return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()); }
   function totalOf(lines) { return lines.reduce(function (s, l) { return s + Math.round(num(l.quantite) * num(l.prix) * 100) / 100; }, 0); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-  function showErr(e) { var el = $('err'); el.textContent = (e && e.message) || String(e); el.style.display = 'block'; window.scrollTo(0, 0); }
+  function showErr(e) { var el = $('err'); el.textContent = (e && e.message) || String(e); el.style.display = 'block'; showTab('new'); window.scrollTo(0, 0); }
+  var toastTimer;
+  function toast(msg) {
+    var t = $('toast'); t.textContent = msg; t.style.display = 'block';
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.style.display = 'none'; }, 3500);
+  }
   function seg(id, key) {
     $(id).addEventListener('click', function (ev) {
       var b = ev.target.closest('button'); if (!b) return;
@@ -282,8 +380,47 @@
   function setSeg(id, key, v) {
     state[key] = v;
     [].forEach.call($(id).children, function (x) { x.classList.toggle('on', x.dataset.v === v); });
-    if (key === 'statut') $('echeanceWrap').style.display = v === 'À payer' ? '' : 'none';
+    if (key === 'statut') $('echeanceWrap').style.display = v === 'À payer' && state.mode === 'facture' ? '' : 'none';
     saveDraft();
+  }
+
+  /* ---------- Mode : fiche atelier / devis / facture ---------- */
+  function setMode(m) {
+    state.mode = MODES[m] ? m : 'fiche';
+    var M = MODES[state.mode];
+    [].forEach.call($('modeSeg').children, function (x) { x.classList.toggle('on', x.dataset.v === state.mode); });
+    $('modeHelp').textContent = M.help;
+    $('dateLabel').textContent = M.date; $('datePrestLabel').textContent = M.datePrest;
+    $('totalLabel').textContent = M.total;
+    $('payCard').style.display = state.mode === 'fiche' ? 'none' : '';
+    $('payTitle').textContent = state.mode === 'devis' ? 'Envoi' : 'Paiement';
+    [].forEach.call(document.querySelectorAll('#payCard .pay'), function (el) { el.style.display = state.mode === 'facture' ? '' : 'none'; });
+    $('echeanceWrap').style.display = state.mode === 'facture' && state.statut === 'À payer' ? '' : 'none';
+    $('emailLabel').textContent = state.mode === 'devis' ? 'Envoyer le devis par email au client' : 'Envoyer la facture par email au client';
+    $('previewBtn').style.display = state.mode === 'fiche' ? 'none' : '';
+    $('factBtn').style.display = state.mode === 'fiche' ? '' : 'none';
+    var cur = state.current;
+    $('createBtn').textContent = state.mode === 'devis' && cur && cur.type === 'Devis' ? 'Mettre à jour le devis' : M.bouton;
+    updateCurrentBar();
+    saveDraft();
+  }
+  function updateCurrentBar() {
+    var c = state.current;
+    $('currentBar').style.display = c ? '' : 'none';
+    if (!c) return;
+    $('currentLabel').textContent = (c.type === 'Devis' ? 'Devis ' : 'Fiche ') + c.numero + (c.type === 'Devis' ? ' — ' + c.statut.toLowerCase() : '');
+    var sel = $('ficheStatut');
+    sel.style.display = c.type === 'Fiche' ? '' : 'none';
+    if (c.type === 'Fiche') {
+      sel.innerHTML = state.ficheStatuts.map(function (s) { return '<option>' + esc(s) + '</option>'; }).join('');
+      sel.value = c.statut;
+    }
+  }
+  function resetDoc(mode) {
+    state.current = null;
+    fillForm({ mode: $('mode').value });
+    setMode(mode || 'fiche');
+    $('err').style.display = 'none';
   }
 
   /* ---------- Lignes ---------- */
@@ -300,7 +437,7 @@
     var prev = $('lines').lastElementChild;
     v.dataset.want = l.velo != null ? String(l.velo) : (prev ? prev.querySelector('.v').dataset.want : '0');
     v.addEventListener('change', function () { v.dataset.want = v.value; refresh(); });
-    d.value = l.designation || ''; if (l.quantite != null) q.value = l.quantite; if (l.prix != null && l.prix !== '') p.value = String(l.prix).replace('.', ',');
+    d.value = l.designation || ''; if (l.quantite != null && l.quantite !== '') q.value = l.quantite; if (l.prix != null && l.prix !== '') p.value = String(l.prix).replace('.', ',');
     d.addEventListener('change', function () {
       var hit = state.catalogue.filter(function (c) { return c.designation === d.value; })[0];
       if (hit && hit.prix && !p.value) p.value = String(hit.prix).replace('.', ',');
@@ -358,23 +495,37 @@
 
   /* ---------- Données du formulaire ---------- */
   function collect() {
+    var c = state.current;
     return {
       client: { nom: $('nom').value.trim(), type: state.typeClient, adresse: $('adresse').value, ville: $('ville').value, email: $('email').value, telephone: $('telephone').value },
       date: $('date').value, datePrestation: $('datePrestation').value, velos: getVelos(),
       lignes: getLines(), observations: $('observations').value,
       statut: state.statut, mode: $('mode').value, echeance: $('echeance').value,
-      envoyerEmail: $('envoyerEmail').checked
+      envoyerEmail: $('envoyerEmail').checked,
+      docType: state.mode,
+      source: c ? c.numero : '', sourceType: c ? c.type : '',
+      statutFiche: c && c.type === 'Fiche' ? c.statut : 'En cours'
     };
   }
   function validate(d) {
     if (!d.client.nom) throw new Error('Indiquez le nom du client.');
+    if (state.mode === 'fiche') return; // une fiche peut rester vide (vélo déposé, diagnostic à faire)
     if (!d.lignes.some(function (l) { return l.designation && num(l.quantite); })) throw new Error('Ajoutez au moins une ligne (désignation + quantité).');
     var noPrice = d.lignes.filter(function (l) { return l.designation && !num(l.prix); });
     if (noPrice.length && !confirm('Ligne(s) sans prix : ' + noPrice.map(function (l) { return l.designation; }).join(', ') + '.\nContinuer quand même ?')) throw new Error('Création annulée.');
   }
   var filling = false;
-  function saveDraft() { if (filling) return; try { localStorage.setItem(DRAFT_KEY, JSON.stringify(collect())); } catch (e) {} }
-  function loadDraft() { try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch (e) { return null; } }
+  function saveDraft() {
+    if (filling) return;
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: 2, data: collect(), mode: state.mode, current: state.current })); } catch (e) {}
+  }
+  function loadDraft() {
+    try {
+      var d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
+      if (d && !d.v) d = { data: d, mode: 'facture', current: null }; // ancien brouillon (avant les fiches)
+      return d;
+    } catch (e) { return null; }
+  }
   function clearDraft() { try { localStorage.removeItem(DRAFT_KEY); } catch (e) {} }
 
   function fillForm(d) {
@@ -400,7 +551,84 @@
     refresh();
   }
 
-  /* ---------- Historique ---------- */
+  /* ---------- Onglets ---------- */
+  function showTab(name) {
+    [].forEach.call(document.querySelectorAll('nav button'), function (x) { x.classList.toggle('on', x.dataset.tab === name); });
+    ['new', 'atelier', 'hist'].forEach(function (t) { $('tab-' + t).style.display = t === name ? '' : 'none'; });
+    $('totalbar').style.display = name === 'new' && $('form').style.display !== 'none' ? '' : 'none';
+  }
+  document.querySelector('nav').addEventListener('click', function (ev) {
+    var b = ev.target.closest('button'); if (b) showTab(b.dataset.tab);
+  });
+
+  /* ---------- Onglet Atelier ---------- */
+  function badgeClass(st) {
+    return { 'En cours': 'st-cours', 'En attente de pièces': 'st-pieces', 'Prêt à récupérer': 'st-pret', 'Envoyé': 'st-devis' }[st] || '';
+  }
+  function renderAtelier(list) {
+    state.atelier = list || [];
+    var fiches = state.atelier.filter(function (a) { return a.type === 'Fiche'; });
+    var devis = state.atelier.filter(function (a) { return a.type === 'Devis'; });
+    $('atCount').textContent = fiches.length ? ' (' + fiches.length + ')' : '';
+    function item(a) {
+      var head = '<div class="at-top"><b>' + esc(a.numero) + '</b><span class="badge ' + badgeClass(a.statut) + '">' +
+        esc(a.type === 'Devis' ? 'Devis envoyé' : a.statut) + '</span><span class="amt">' + money(a.total) + '</span></div>' +
+        '<div class="at-sub">' + esc(a.client) + (a.velos ? ' · ' + esc(a.velos) : '') + '</div>' +
+        '<div class="muted" style="font-size:13px">Modifié ' + esc(a.modifie) + (a.lie ? ' · issu du devis ' + esc(a.lie) : '') + '</div>';
+      var act = '<button type="button" class="btn ghost sm" data-open="' + esc(a.numero) + '">Ouvrir</button>';
+      if (a.type === 'Fiche') {
+        act += '<select data-st="' + esc(a.numero) + '">' + state.ficheStatuts.concat(['Abandonnée']).map(function (s) {
+          return '<option' + (s === a.statut ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('') + '</select>';
+      } else {
+        if (a.pdf) act += '<a class="btn ghost sm" href="' + esc(a.pdf) + '" target="_blank" style="text-decoration:none">PDF</a>';
+        act += '<button type="button" class="btn sm ok2" data-accept="' + esc(a.numero) + '">Accepté</button>' +
+          '<button type="button" class="linkbtn" data-refuse="' + esc(a.numero) + '">Refusé</button>';
+      }
+      return '<div class="at-item">' + head + '<div class="at-actions">' + act + '</div></div>';
+    }
+    $('atFiches').innerHTML = fiches.length ? fiches.map(item).join('') : '<div class="muted">Aucun vélo en cours. Créez une fiche depuis « Nouveau ».</div>';
+    $('atDevis').innerHTML = devis.length ? devis.map(item).join('') : '<div class="muted">Aucun devis en attente.</div>';
+  }
+  function openDoc(numero) {
+    var dirty = $('nom').value.trim() && !(state.current && state.current.numero === numero);
+    if (dirty && !confirm('Le formulaire contient déjà un document non enregistré. Le remplacer par ' + numero + ' ?')) return;
+    call('getAtelierDoc', numero).then(function (r) {
+      state.current = { numero: r.numero, type: r.type, statut: r.statut };
+      $('done').style.display = 'none'; $('form').style.display = '';
+      fillForm(r.data);
+      setMode(r.type === 'Devis' ? 'devis' : 'fiche');
+      showTab('new'); window.scrollTo(0, 0);
+      toast((r.type === 'Devis' ? 'Devis ' : 'Fiche ') + r.numero + ' ouvert' + (r.type === 'Devis' ? '' : 'e'));
+    }).catch(showErr);
+  }
+  ['atFiches', 'atDevis'].forEach(function (id) {
+    $(id).addEventListener('click', function (ev) {
+      var t = ev.target, d = t.dataset || {};
+      if (d.open) openDoc(d.open);
+      if (d.accept) {
+        if (!confirm('Le client a accepté le devis ' + d.accept + ' ?\nUne fiche atelier va être créée avec le même contenu.')) return;
+        t.disabled = true;
+        call('acceptDevis', d.accept).then(function (r) { renderAtelier(r.atelier); toast('Devis accepté : fiche ' + r.fiche + ' créée'); })
+          .catch(function (e) { alert(e.message || e); t.disabled = false; });
+      }
+      if (d.refuse) {
+        if (!confirm('Marquer le devis ' + d.refuse + ' comme refusé ? Il disparaîtra de la liste (il reste dans la feuille).')) return;
+        call('setAtelierStatus', d.refuse, 'Refusé').then(renderAtelier).catch(function (e) { alert(e.message || e); });
+      }
+    });
+    $(id).addEventListener('change', function (ev) {
+      var n = ev.target.dataset && ev.target.dataset.st; if (!n) return;
+      var st = ev.target.value;
+      if (st === 'Abandonnée' && !confirm('Abandonner la fiche ' + n + ' ? Elle disparaîtra de la liste (elle reste dans la feuille).')) { renderAtelier(state.atelier); return; }
+      call('setAtelierStatus', n, st).then(function (list) {
+        renderAtelier(list);
+        if (state.current && state.current.numero === n) { state.current.statut = st; if (st === 'Abandonnée') resetDoc(); else updateCurrentBar(); }
+        toast(n + ' : ' + st.toLowerCase());
+      }).catch(function (e) { alert(e.message || e); });
+    });
+  });
+
+  /* ---------- Historique des factures ---------- */
   function renderHist(list) {
     $('histBody').innerHTML = list.length ? list.map(function (f) {
       var paid = f.statut === 'Payée';
@@ -419,15 +647,17 @@
     call('markPaid', n, mode).then(renderHist).catch(function (e) { alert(e.message || e); ev.target.disabled = false; });
   });
 
-  /* ---------- Actions ---------- */
-  document.querySelector('nav').addEventListener('click', function (ev) {
-    var b = ev.target.closest('button'); if (!b) return;
-    [].forEach.call(this.children, function (x) { x.classList.toggle('on', x === b); });
-    $('tab-new').style.display = b.dataset.tab === 'new' ? '' : 'none';
-    $('tab-hist').style.display = b.dataset.tab === 'hist' ? '' : 'none';
-    $('totalbar').style.display = b.dataset.tab === 'new' && $('form').style.display !== 'none' ? '' : 'none';
-  });
+  /* ---------- Actions du formulaire ---------- */
   seg('typeSeg', 'typeClient'); seg('statutSeg', 'statut');
+  $('modeSeg').addEventListener('click', function (ev) { var b = ev.target.closest('button'); if (b) setMode(b.dataset.v); });
+  $('newDocBtn').addEventListener('click', function () {
+    if (confirm('Fermer ce document et repartir d’un formulaire vide ?' + (state.mode === 'fiche' ? '\n(Pensez à enregistrer la fiche avant.)' : ''))) resetDoc();
+  });
+  $('ficheStatut').addEventListener('change', function () {
+    var c = state.current, st = this.value; if (!c) return;
+    call('setAtelierStatus', c.numero, st).then(function (list) { c.statut = st; renderAtelier(list); saveDraft(); toast(c.numero + ' : ' + st.toLowerCase()); })
+      .catch(function (e) { alert(e.message || e); updateCurrentBar(); });
+  });
   $('addVelo').addEventListener('click', function () { addVelo().querySelector('.vn').focus(); refresh(); });
   $('addLine').addEventListener('click', function () { addLine().querySelector('.d').focus(); });
   ['nom', 'adresse', 'ville', 'email', 'telephone', 'date', 'datePrestation', 'observations', 'mode', 'echeance', 'envoyerEmail']
@@ -442,6 +672,14 @@
   $('chips').addEventListener('click', function (ev) {
     var b = ev.target.closest('.chip'); if (!b) return;
     var t = $('observations'); t.value = (t.value.trim() ? t.value.trim() + '\n' : '') + b.textContent.slice(2); refresh();
+  });
+
+  // « Facturer » (depuis une fiche) : on passe en mode facture, date du jour
+  $('factBtn').addEventListener('click', function () {
+    setMode('facture');
+    $('date').value = iso(new Date()); refresh();
+    $('payCard').scrollIntoView({ behavior: 'smooth' });
+    toast('Vérifiez le paiement puis « Créer la facture »');
   });
 
   $('previewBtn').addEventListener('click', function () {
@@ -459,36 +697,59 @@
   });
   $('closeModal').addEventListener('click', function () { $('modal').style.display = 'none'; });
 
+  // Bouton principal : enregistre la fiche, crée le devis ou crée la facture selon le mode
   $('createBtn').addEventListener('click', function () {
     var d = collect();
     try { validate(d); } catch (e) { if (e.message !== 'Création annulée.') showErr(e); return; }
+    if (state.mode === 'facture' && !confirm('Créer la facture définitive ' + $('next').textContent.replace('Prochaine : ', '') +
+      ' pour ' + d.client.nom + ' (' + money(totalOf(d.lignes)) + ') ?\nUne facture ne peut plus être modifiée ensuite.')) return;
     $('err').style.display = 'none';
-    var b = this; b.disabled = true; b.textContent = 'Création…';
-    call('createInvoice', d).then(function (r) {
-      clearDraft();
-      $('form').style.display = 'none'; $('totalbar').style.display = 'none';
-      $('done').style.display = 'block';
-      $('doneTitle').textContent = '✓ Facture ' + r.numero + ' créée — ' + money(r.total);
-      $('doneText').textContent = 'PDF enregistré dans Drive et ligne ajoutée dans la feuille.' + (r.emailEnvoye ? ' Email envoyé à ' + r.emailEnvoye + '.' : '');
-      if (r.pdfBase64) {
-        var bin = atob(r.pdfBase64), bytes = new Uint8Array(bin.length);
-        for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-        $('dlBtn').href = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
-        $('dlBtn').download = r.fileName; $('dlBtn').style.display = '';
-      }
-      else $('dlBtn').style.display = 'none';
-      $('driveBtn').href = r.url;
-      $('next').textContent = 'Prochaine : ' + r.prochainNumero;
-      renderHist(r.recent);
-      if (d.client.nom && !state.clients.some(function (c) { return c.nom.toLowerCase() === d.client.nom.toLowerCase(); })) {
-        state.clients.push(d.client); renderClients();
-      }
-      window.scrollTo(0, 0);
-    }).catch(showErr).then(function () { b.disabled = false; b.textContent = 'Créer la facture'; });
+    var b = this, label = b.textContent; b.disabled = true; b.textContent = state.mode === 'fiche' ? 'Enregistrement…' : 'Création…';
+    var cur = state.current, p;
+    if (state.mode === 'fiche') {
+      p = call('saveFiche', d, cur && cur.type === 'Fiche' ? cur.numero : '').then(function (r) {
+        state.current = { numero: r.numero, type: 'Fiche', statut: r.statut };
+        renderAtelier(r.atelier); setMode('fiche'); rememberClient(d.client);
+        toast('Fiche ' + r.numero + ' enregistrée ✓');
+      });
+    } else if (state.mode === 'devis') {
+      p = call('createDevis', d, cur && cur.type === 'Devis' ? cur.numero : '').then(function (r) {
+        renderAtelier(r.atelier); showDone('Devis', r, d);
+      });
+    } else {
+      p = call('createInvoice', d).then(function (r) {
+        renderHist(r.recent); renderAtelier(r.atelier);
+        $('next').textContent = 'Prochaine : ' + r.prochainNumero;
+        showDone('Facture', r, d);
+      });
+    }
+    p.catch(showErr).then(function () { b.disabled = false; b.textContent = label; if (state.mode) setMode(state.mode); });
   });
+
+  function showDone(kind, r, d) {
+    clearDraft();
+    state.current = null;
+    $('form').style.display = 'none'; $('totalbar').style.display = 'none';
+    $('done').style.display = 'block';
+    $('doneTitle').textContent = '✓ ' + kind + ' ' + r.numero + ' ' + (kind === 'Devis' ? 'créé' : 'créée') + ' — ' + money(r.total);
+    $('doneText').textContent = 'PDF enregistré dans Drive' + (kind === 'Devis' ? ', devis visible dans l’onglet Atelier.' : ' et ligne ajoutée dans la feuille.') +
+      (r.emailEnvoye ? ' Email envoyé à ' + r.emailEnvoye + '.' : '');
+    if (r.pdfBase64) {
+      var bin = atob(r.pdfBase64), bytes = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      $('dlBtn').href = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+      $('dlBtn').download = r.fileName; $('dlBtn').style.display = '';
+    } else $('dlBtn').style.display = 'none';
+    $('driveBtn').href = r.url;
+    rememberClient(d.client);
+    window.scrollTo(0, 0);
+  }
+  function rememberClient(c) {
+    if (c.nom && !state.clients.some(function (x) { return x.nom.toLowerCase() === c.nom.toLowerCase(); })) { state.clients.push(c); renderClients(); }
+  }
   $('againBtn').addEventListener('click', function () {
     $('done').style.display = 'none'; $('form').style.display = ''; $('totalbar').style.display = '';
-    fillForm({ mode: $('mode').value }); window.scrollTo(0, 0);
+    resetDoc(); window.scrollTo(0, 0);
   });
 
   function renderClients() {
@@ -497,19 +758,28 @@
 
   /* ---------- Démarrage ---------- */
   var initialDraft = loadDraft();
-  fillForm(initialDraft);
+  state.current = initialDraft && initialDraft.current || null;
+  fillForm(initialDraft && initialDraft.data);
+  setMode(initialDraft && initialDraft.mode || 'fiche');
   call('getInitData').then(function (d) {
     state.clients = d.clients || []; state.catalogue = d.catalogue || [];
+    if (d.ficheStatuts) state.ficheStatuts = d.ficheStatuts;
     renderClients();
     $('catList').innerHTML = state.catalogue.map(function (c) {
       return '<option value="' + esc(c.designation) + '">' + (c.prix ? money(c.prix) : '') + '</option>';
     }).join('');
     var keep = $('mode').value;
     $('mode').innerHTML = '<option value="">—</option>' + d.modes.map(function (m) { return '<option>' + esc(m) + '</option>'; }).join('');
-    $('mode').value = (initialDraft && initialDraft.mode) || keep || d.modes[0];
+    $('mode').value = (initialDraft && initialDraft.data && initialDraft.data.mode) || keep || d.modes[0];
     $('next').textContent = 'Prochaine : ' + d.prochainNumero;
     $('sheetLink').href = d.sheetUrl || '#'; $('folderLink').href = d.folderUrl || '#';
     renderHist(d.recent || []);
+    renderAtelier(d.atelier || []);
+    // le document ouvert a pu être facturé / abandonné depuis un autre appareil
+    if (state.current && !state.atelier.some(function (a) { return a.numero === state.current.numero; })) {
+      toast(state.current.numero + ' n’est plus en cours : formulaire conservé comme nouveau document');
+      state.current = null; setMode(state.mode);
+    } else updateCurrentBar();
   }).catch(showErr);
 })();
 </script>
