@@ -2,7 +2,7 @@
 <!--
   ============================================================
   Veille — la presse sur Carrefour et sur les sujets de chacun
-  Version 3.0.2
+  Version 3.1.0
   ------------------------------------------------------------
   Comment ça marche :
    • SUJETS COMMUNS (Carrefour) : un robot GitHub (.github/workflows/veille.yml)
@@ -41,6 +41,15 @@
    • v3.0.1 : script Google « Veille - avis » branché (AVIS_URL) : votes partagés et sujets perso actifs
    • v3.0.2 : sujets perso : 12 mois d'historique au lieu de 60 jours (on parle bien moins d'un
               fournisseur que de Carrefour : avec 60 jours, Elis n'avait qu'un article)
+   • v3.1.0 : correction : en changeant vite de sujet, la recherche d'un sujet perso (plus lente)
+              pouvait arriver après et remplacer le sujet affiché (Elior sous « Carrefour ») ;
+              3 VUES (bouton de la barre, touche c) : « Cartes » (nouvelle, par défaut : grande
+              photo, l'article « à la une » de chaque jour en double largeur, et sans photo un
+              bandeau aux couleurs du journal), « Magazine » (vignette à droite) et « Liste » ;
+              RÉSUMÉS ET PHOTOS À LA DEMANDE : pour les articles affichés qui n'en ont pas et
+              dont le lien mène directement au journal, l'appli les demande au script Google
+              (6 à la fois), puis les garde dans le téléphone (veille.enrichis) ; les liens
+              Google Actualités restent au robot (120 articles traités par passage)
   ============================================================
 -->
 <html lang="fr">
@@ -271,18 +280,52 @@
       .article:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
     }
 
-    /* Vue compacte : une ligne par article (comme la vue « Titres » de Feedly) */
-    body.compact .cartes { gap: 0; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--ombre); }
-    body.compact .glisse { border-radius: 0; }
-    body.compact .article { border: 0; border-bottom: 1px solid var(--line); border-radius: 0; box-shadow: none; padding: 10px 12px; display: flex; gap: 10px; align-items: center; }
-    body.compact .glisse:last-child .article { border-bottom: 0; }
-    body.compact .article .meta { flex: none; width: 92px; flex-direction: column; align-items: flex-start; gap: 2px; }
-    body.compact .article .meta .source { max-width: 92px; }
-    body.compact .article .meta .note, body.compact .article .meta .nouveau-pt { display: none; }
-    body.compact .corps { margin: 0; flex: 1; min-width: 0; }
-    body.compact .article h2 { font-size: 14px; font-weight: 500; }
-    body.compact .resume, body.compact .vignette { display: none; }
-    body.compact .article.suivi { box-shadow: inset 4px 0 0 #f59e0b; }
+    /* =========================================================
+       VUES — « Magazine » = le style de base ci-dessus (vignette à droite) ;
+       « Liste » = une ligne par article (vue « Titres » de Feedly) ;
+       « Cartes » = grande photo en haut, comme Google Actualités / Apple News.
+       Chaque article contient toujours un « .visuel » (grande photo ou bandeau
+       aux couleurs du journal) : il n'est montré qu'en vue Cartes.
+       ========================================================= */
+    .visuel { display: none; }
+    body.vue-cartes .cartes { align-items: start; }   /* chaque carte garde sa hauteur */
+    body.vue-cartes .visuel {
+      display: grid; place-items: center; aspect-ratio: 16 / 9; margin: -13px -14px 12px;
+      border-radius: var(--radius) var(--radius) 0 0; overflow: hidden; position: relative;
+      /* sans photo : dégradé de la couleur du journal (--c), avec son nom en grand */
+      background: linear-gradient(135deg, var(--c, var(--brand)), color-mix(in srgb, var(--c, var(--brand)) 55%, #000));
+    }
+    body.vue-cartes .visuel img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    body.vue-cartes .visuel span {
+      color: #fff; font-weight: 700; font-size: 22px; opacity: .9; padding: 0 16px; text-align: center;
+      letter-spacing: -.01em; text-shadow: 0 1px 2px rgba(0,0,0,.2);
+    }
+    body.vue-cartes .vignette { display: none; }
+    body.vue-cartes .article { padding: 13px 14px 14px; overflow: hidden; }
+    body.vue-cartes .resume { -webkit-line-clamp: 3; }
+    body.vue-cartes .corps { margin-top: 8px; }
+    body.vue-cartes .etoile-fixe { top: 10px; right: 10px; background: rgba(0,0,0,.45); color: #ffc94d; border-radius: 50%; width: 26px; height: 26px; display: grid; place-items: center; z-index: 2; }
+    /* sans photo : simple bandeau (la place est gardée pour les vraies photos) */
+    body.vue-cartes .visuel:not(:has(img)) { aspect-ratio: auto; height: 64px; }
+    body.vue-cartes .glisse.une .visuel:not(:has(img)) { height: 88px; }
+    body.vue-cartes .visuel:not(:has(img)) span { font-size: 18px; }
+    /* l'article « à la une » (le premier de chaque jour) : titre plus grand */
+    body.vue-cartes .glisse.une .article h2 { font-size: 19px; line-height: 1.3; }
+    body.vue-cartes .glisse.une .visuel:not(:has(img)) span { font-size: 22px; }
+    .article.lu .visuel { opacity: .7; }
+
+    /* Vue « Liste » : une ligne par article (comme la vue « Titres » de Feedly) */
+    body.vue-liste .cartes { gap: 0; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--ombre); }
+    body.vue-liste .glisse { border-radius: 0; }
+    body.vue-liste .article { border: 0; border-bottom: 1px solid var(--line); border-radius: 0; box-shadow: none; padding: 10px 12px; display: flex; gap: 10px; align-items: center; }
+    body.vue-liste .glisse:last-child .article { border-bottom: 0; }
+    body.vue-liste .article .meta { flex: none; width: 92px; flex-direction: column; align-items: flex-start; gap: 2px; }
+    body.vue-liste .article .meta .source { max-width: 92px; }
+    body.vue-liste .article .meta .note, body.vue-liste .article .meta .nouveau-pt { display: none; }
+    body.vue-liste .corps { margin: 0; flex: 1; min-width: 0; }
+    body.vue-liste .article h2 { font-size: 14px; font-weight: 500; }
+    body.vue-liste .resume, body.vue-liste .vignette { display: none; }
+    body.vue-liste .article.suivi { box-shadow: inset 4px 0 0 #f59e0b; }
 
     /* Chargement : cartes grises qui « brillent » (au lieu d'un simple « Chargement… ») */
     .squelette { height: 104px; border-radius: var(--radius); background: linear-gradient(90deg, var(--card) 25%, var(--soft) 50%, var(--card) 75%); background-size: 200% 100%; animation: brille 1.2s infinite; border: 1px solid var(--line); margin-top: 10px; }
@@ -374,7 +417,10 @@
       .recherche { flex: 1 1 320px; }
       .segments { flex: 0 0 auto; }
       .cartes { grid-template-columns: repeat(2, 1fr); }
-      body.compact .cartes { grid-template-columns: 1fr; }
+      body.vue-liste .cartes { grid-template-columns: 1fr; }
+      /* Cartes : l'article à la une prend 2 colonnes, avec une photo plus large */
+      body.vue-cartes .glisse.une { grid-column: span 2; }
+      body.vue-cartes .glisse.une .visuel:has(img) { aspect-ratio: 21 / 9; }
       dialog { margin: auto; border-radius: 20px; max-height: 86vh; }
       .poignee { display: none; }
     }
@@ -421,6 +467,10 @@
     @media (min-width: 1500px) {
       .cartes { grid-template-columns: repeat(3, 1fr); }
     }
+    /* Ordinateur en vue Cartes : 3 colonnes dès 1024 px (cartes plus étroites, photo en haut) */
+    @media (min-width: 1180px) {
+      body.vue-cartes .cartes { grid-template-columns: repeat(3, 1fr); }
+    }
   </style>
 </head>
 <body>
@@ -428,7 +478,7 @@
   <header class="bandeau">
     <div class="marque">
       <h1>Veille <span id="titre-sujet"></span><small>Achats Non Marchands · NTP</small></h1>
-      <button class="rond btn-vue" title="Vue compacte / cartes" aria-label="Changer de vue">
+      <button class="rond btn-vue" title="Changer de vue : Cartes, Magazine, Liste" aria-label="Changer de vue">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M21 9H3"/><path d="M21 15H3"/></svg>
       </button>
       <button class="rond btn-actu" title="Actualiser" aria-label="Actualiser">
@@ -459,7 +509,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></svg>
         Filtres <span class="pastille" id="nb-filtres" hidden></span>
       </button>
-      <button class="btn bureau btn-vue" title="Vue compacte / cartes (touche c)">
+      <button class="btn bureau btn-vue" title="Changer de vue : Cartes, Magazine, Liste (touche c)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M21 9H3"/><path d="M21 15H3"/></svg>
       </button>
       <button class="btn bureau btn-actu" title="Actualiser (touche r)">
@@ -537,7 +587,7 @@
         <tr><td><kbd>⇧</kbd> <kbd>a</kbd></td><td>Tout marquer lu</td></tr>
         <tr><td><kbd>/</kbd></td><td>Chercher</td></tr>
         <tr><td><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></td><td>Tout / Non lus / Favoris</td></tr>
-        <tr><td><kbd>c</kbd></td><td>Vue compacte / cartes</td></tr>
+        <tr><td><kbd>c</kbd></td><td>Changer de vue : Cartes / Magazine / Liste</td></tr>
         <tr><td><kbd>r</kbd></td><td>Actualiser</td></tr>
         <tr><td><kbd>Échap</kbd></td><td>Fermer</td></tr>
       </table>
@@ -550,7 +600,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = "3.0.2";
+    const VERSION = "3.1.0";
 
     // Sujets communs (robot) : d'abord la copie « brute » du dépôt GitHub (à jour 1 à 5 min
     // après chaque collecte), sinon les fichiers du site
@@ -596,7 +646,8 @@
       mesAvis: "veille.avis",       // mes votes {sujet: {id: {vote, titre, media}}}
       cleAvis: "veille.cle",        // clé du script (donnée par ?cle=)
       qui: "veille.qui",            // identifiant anonyme de ce téléphone (votes)
-      compact: "veille.compact",    // vue compacte
+      affichage: "veille.affichage", // vue : "cartes" | "magazine" | "liste"
+      enrichis: "veille.enrichis",  // résumés / photos obtenus par l'appli {id: {lien, resume, image}}
       mots: "veille.mots",          // {sujet: {masques: [...], suivis: [...]}}
       astuce: "veille.astuce-v3"    // astuce des gestes déjà montrée
     };
@@ -689,7 +740,9 @@
     let dansLeTitre = lire(CLE.titre, true);
     let filtreAppris = lire(CLE.appris, true);
     let voirMasques = false;
-    let compact = lire(CLE.compact, false);
+    const VUES = { cartes: "Cartes", magazine: "Magazine", liste: "Liste" };
+    let affichage = lire(CLE.affichage, "cartes");
+    let enrichis = lire(CLE.enrichis, {});      // ce que l'appli a déjà obtenu (tous sujets)
     let recherche = "";
     let combien = PAR_PAGE;
     let visitePrecedente = null;
@@ -747,10 +800,15 @@
       ecrire(CLE.sujet, sujetId);
       const s = sujetCourant();
       if (!s) return;
+      // On retient QUEL sujet on charge : si le lecteur en choisit un autre pendant le
+      // téléchargement, la réponse arrivée en retard est ignorée (sinon les articles d'Elior
+      // pouvaient s'afficher sous « Carrefour »)
+      const id = sujetId;
       if (!donnees || donnees.id !== sujetId) {
         $("#liste").innerHTML = `<div class="squelette"></div><div class="squelette"></div><div class="squelette"></div>`;
       }
-      let recu = s.type === "perso" ? await chargerPerso(s) : await telecharger(sujetId + ".json");
+      let recu = s.type === "perso" ? await chargerPerso(s) : await telecharger(id + ".json");
+      if (id !== sujetId) return;                 // le lecteur a changé de sujet entre-temps
       if (recu) { donnees = recu; ecrire(CLE.cache + sujetId, recu); }
       else {
         donnees = lire(CLE.cache + sujetId, null);
@@ -760,6 +818,7 @@
 
       visitePrecedente = lire(CLE.visite + sujetId, null);
       ecrire(CLE.visite + sujetId, new Date().toISOString());
+      appliquerEnrichis(donnees);
       sources = Object.fromEntries((donnees.sources || []).map((x) => [x.id, x]));
       if (filtreSource !== "tout" && !sources[filtreSource]) filtreSource = "tout";
       $("#titre-sujet").textContent = donnees.nom || s.nom;
@@ -921,7 +980,7 @@
        AFFICHAGE
        ========================================================= */
     function toutAfficher() {
-      document.body.classList.toggle("compact", compact);
+      for (const v of Object.keys(VUES)) document.body.classList.toggle("vue-" + v, affichage === v);
       if (!donnees) { afficherSujets(); return; }     // sujet en cours de chargement
       afficherSujets(); afficherBarre(); afficherListe(); afficherFiltres();
     }
@@ -993,12 +1052,14 @@
       let html = "", jourCourant = null;
       for (const a of arts.slice(0, combien)) {
         const d = new Date(a.date);
+        let une = false;
         if (cleJour(d) !== jourCourant) {
           if (jourCourant) html += `</div>`;
           html += `<h3 class="jour">${nomDuJour(d)}</h3><div class="cartes">`;
           jourCourant = cleJour(d);
+          une = true;                              // premier article du jour = « à la une »
         }
-        html += `<div class="glisse">
+        html += `<div class="glisse ${une ? "une" : ""}">
             <div class="fond favori"><b>⭐ ${favoris.has(a.id) ? "Retirer" : "Favori"}</b></div>
             <div class="fond masquer"><b>👎 Masquer</b></div>
             ${carte(a, d)}</div>`;
@@ -1006,7 +1067,20 @@
       html += `</div>`;
       if (arts.length > combien) html += `<button class="btn plus" id="plus">Voir plus (${arts.length - combien})</button>`;
       $("#liste").innerHTML = html;
+      setTimeout(enrichirVisibles, 400);          // résumés / photos manquants, en arrière-plan
     }
+
+    // Grande photo de la vue Cartes ; sans photo (ou si elle ne se charge pas), un bandeau
+    // aux couleurs du journal avec son nom : les cartes restent variées et lisibles
+    function visuel(a) {
+      const s = sources[a.source] || {};
+      const nom = (s.autres && a.media) ? a.media : (s.nom || a.media || "");
+      // couleur : celle du site suivi, sinon une couleur tirée du nom du journal (toujours la même)
+      const c = s.autres || !s.couleur ? COULEURS_JOURNAUX[parseInt(empreinte(simple(nom)), 36) % COULEURS_JOURNAUX.length] : s.couleur;
+      return `<div class="visuel" style="--c:${c}"><span>${echap(nom)}</span>${a.image
+        ? `<img src="${echap(a.image)}" alt="" draggable="false" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}</div>`;
+    }
+    const COULEURS_JOURNAUX = ["#004e9b", "#0f6e6e", "#7a3e9d", "#b4531a", "#2b7d5b", "#9b2242", "#3d5a80", "#6b5b2a"];
 
     function pastilleSource(a) {
       const s = sources[a.source] || { court: a.source, couleur: "#69707a" };
@@ -1036,6 +1110,7 @@
       const st = statut(a);
       return `
         <article class="article ${lus.has(a.id) ? "lu" : ""} ${st === "rejete" || st === "masque" || aMotMasque(a) ? "rejete" : ""} ${aMotSuivi(a) ? "suivi" : ""} ${a.id === choisi ? "choisi" : ""}" data-id="${a.id}">
+          ${visuel(a)}
           <div class="meta">
             ${pastilleSource(a)}
             ${estPayant(a) ? `<span class="payant" title="Souvent réservé aux abonnés">🔒</span>` : ""}
@@ -1110,6 +1185,84 @@
         : `🔌 Tes sujets sont bien gardés, mais leurs articles n'apparaîtront qu'une fois le <b>script Google de la veille</b> branché (une seule fois, environ 5 minutes : voir <code>outils/veille-avis.gs</code>).`;
     }
 
+    // Vue suivante : Cartes → Magazine → Liste → Cartes…
+    function changerVue() {
+      const ordre = Object.keys(VUES);
+      affichage = ordre[(ordre.indexOf(affichage) + 1) % ordre.length];
+      ecrire(CLE.affichage, affichage);
+      toutAfficher();
+      toast("Vue " + VUES[affichage]);
+    }
+
+    /* =========================================================
+       RÉSUMÉS ET PHOTOS À LA DEMANDE
+       Le robot ne traite que les sujets communs, 120 articles par passage. Pour les
+       articles AFFICHÉS sans résumé ni photo dont le lien mène directement au journal,
+       l'appli demande au script Google (action « enrichir », 6 articles à la fois) :
+       il lit le chapeau et la photo sur la page du journal.
+       Le résultat est gardé dans le téléphone (veille.enrichis) pour ne pas redemander.
+       ========================================================= */
+    let enrichissementEnCours = false;
+
+    // Recopie dans les articles ce que l'appli a déjà obtenu (au chargement d'un sujet)
+    function appliquerEnrichis(d) {
+      for (const a of d.articles || []) {
+        const e = enrichis[a.id];
+        if (!e) continue;
+        if (e.lien) a.lien = e.lien;
+        if (e.resume && !a.resume) a.resume = e.resume;
+        if (e.image && !a.image) a.image = e.image;
+        a.enrichi = a.enrichi || "appli";
+      }
+    }
+
+    async function enrichir(liste) {
+      if (!scriptBranche() || !liste.length) return false;
+      const sujet = sujetId;
+      try {
+        const liens = JSON.stringify(liste.map((a) => a.lien));
+        const r = await fetch(`${AVIS_URL}?action=enrichir&cle=${encodeURIComponent(lire(CLE.cleAvis, ""))}&liens=${encodeURIComponent(liens)}`);
+        const j = await r.json();
+        if (!j.ok || !j.resultats) return false;    // ancien script (sans « enrichir ») : on ne marque rien
+        for (const a of liste) {
+          const res = j.resultats?.[a.lien] || {};
+          // on ne garde le chapeau que s'il apporte plus que le titre
+          const resume = res.resume && simple(res.resume).slice(0, 40) !== simple(a.titre).slice(0, 40) ? res.resume : "";
+          enrichis[a.id] = { lien: res.lien || "", resume, image: res.image || "" };
+          if (res.lien) a.lien = res.lien;
+          if (resume && !a.resume) a.resume = resume;
+          if (res.image && !a.image) a.image = res.image;
+          a.enrichi = "appli";
+        }
+        // on ne garde que les 1500 derniers dans le téléphone
+        const cles = Object.keys(enrichis);
+        if (cles.length > 1500) for (const k of cles.slice(0, cles.length - 1500)) delete enrichis[k];
+        ecrire(CLE.enrichis, enrichis);
+        if (sujet === sujetId && donnees?.perso) ecrire(CLE.cache + sujetId, donnees);
+        return sujet === sujetId;
+      } catch (e) { console.warn("Veille : enrichissement", e); return false; }
+    }
+
+    // Seuls les liens directs vers un journal peuvent être lus : derrière un lien Google
+    // Actualités, Google renvoie sa page anti-robots au script (on la respecte)
+    const aEnrichir = (a) => !a.image && !a.resume && !a.enrichi && !/news\.google\./.test(a.lien);
+
+    // Articles affichés sans résumé ni photo, jamais tentés : 6 par 6, jusqu'à épuisement
+    async function enrichirVisibles() {
+      if (enrichissementEnCours || !donnees) return;
+      const aFaire = articlesFiltres().slice(0, combien).filter(aEnrichir).slice(0, 6);
+      if (!aFaire.length || !scriptBranche()) return;
+      enrichissementEnCours = true;
+      const ok = await enrichir(aFaire);
+      enrichissementEnCours = false;
+      if (ok) {
+        const y = window.scrollY;
+        afficherListe();                          // relance aussi la suite (setTimeout)
+        window.scrollTo({ top: y });
+        if ($("#fiche").open) remplirFiche(article($("#fiche-in").dataset.id));
+      }
+    }
+
     /* =========================================================
        FICHE D'UN ARTICLE
        ========================================================= */
@@ -1133,6 +1286,10 @@
       if (!lus.has(a.id)) { lus.add(a.id); ecrire(CLE.lus, [...lus].slice(-4000)); }
       choisi = a.id;
       remplirFiche(a);
+      // pas de résumé ni de photo : on les demande tout de suite pour CET article
+      if (aEnrichir(a)) enrichir([a]).then((ok) => {
+        if (ok && $("#fiche").open && $("#fiche-in").dataset.id === a.id) remplirFiche(a);
+      });
       const f = $("#fiche");
       if (!f.open) { f.showModal(); history.pushState({ feuille: true }, ""); }
     }
@@ -1235,7 +1392,7 @@
       if (ouvrir) { if ($$("dialog[open]").length && ouvrir.closest("dialog")) { $$("dialog[open]").forEach((d) => d.close()); history.back(); setTimeout(() => ouvrirFeuille(ouvrir.dataset.ouvrir), 50); } else ouvrirFeuille(ouvrir.dataset.ouvrir); return; }
       if (t.closest("[data-fermer]")) { fermerFeuilles(); return; }
       if (t.closest(".btn-actu")) { charger(); return; }
-      if (t.closest(".btn-vue")) { compact = !compact; ecrire(CLE.compact, compact); toutAfficher(); return; }
+      if (t.closest(".btn-vue")) { changerVue(); return; }
       if (t.closest("#plus")) { combien += PAR_PAGE; afficherListe(); return; }
       if (t.closest("#tout-lu")) { toutMarquerLu(); return; }
 
@@ -1372,7 +1529,7 @@
       else if (k === "m" && a) agir(a, "lu", ficheOuverte);
       else if (k === "A") toutMarquerLu();
       else if (k === "/") $("#cherche").focus();
-      else if (k === "c") { compact = !compact; ecrire(CLE.compact, compact); toutAfficher(); }
+      else if (k === "c") changerVue();
       else if (k === "r") charger();
       else if (["1", "2", "3"].includes(k)) { vue = ["tout", "nonlus", "favoris"][+k - 1]; ecrire(CLE.vue, vue); toutAfficher(); }
       else if (k === "?") ouvrirFeuille("clavier");
