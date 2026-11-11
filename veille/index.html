@@ -2,7 +2,7 @@
 <!--
   ============================================================
   Veille — la presse sur Carrefour, Elis… (un onglet par sujet)
-  Version 2.1.0
+  Version 2.2.0
   ------------------------------------------------------------
   Comment ça marche :
    • un robot GitHub (.github/workflows/veille.yml) lance outils/veille.py
@@ -35,6 +35,11 @@
               onglet, « Tout marquer comme lu » (avec Annuler), vue compacte (une ligne par
               article), mots masqués et mots surveillés (surlignés, pastille « 🔔 Surveillés »)
               réglables par sujet dans « Sources et réglages »
+   • v2.2.0 : couleurs Carrefour (design system Marcel : bleus #0970e6 / #004e9b, police Ubuntu)
+              et bandeau « Achats Non Marchands · NTP » ; en-tête qui ne reste plus collé en
+              haut (la moitié de l'écran était prise) ; le bandeau des articles masqués devient
+              une petite pastille « 🙈 n » dans les filtres ; 🔒 sur les journaux souvent
+              réservés aux abonnés (liste PAYANTS)
   ============================================================
 -->
 <html lang="fr">
@@ -49,7 +54,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
   <link rel="icon" href="icones/icone-192.png">
-  <meta name="theme-color" content="#0e3a44">
+  <meta name="theme-color" content="#004e9b">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="description" content="Veille presse : Carrefour, Elis… avec l'avis des lecteurs.">
 
@@ -59,25 +64,29 @@
   <!-- Compteur de visites commun à baiji.fr -->
   <script src="/journal.js" defer></script>
 
-  <!-- Polices de la charte SV : Manrope (texte) et JetBrains Mono (chiffres) -->
+  <!-- Police Ubuntu = celle du design system Marcel de Carrefour -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
 
   <style>
     /* =========================================================
        1. COULEURS — charte SV (définies une fois, réutilisées partout)
        ========================================================= */
     :root {
-      --bg: #f3f6f6;        /* fond de page */
+      /* Couleurs Carrefour, reprises du design system « Marcel » (comme la Salle de négociation) */
+      --bg: #f5f7fa;        /* fond de page */
       --card: #ffffff;      /* fond des cartes */
-      --ink: #10282d;       /* texte principal */
-      --muted: #5d7277;     /* texte secondaire */
-      --line: #dfe7e8;      /* traits */
-      --soft: #edf3f3;      /* fonds discrets */
-      --brand: #0e3a44;     /* bleu-vert foncé SV */
-      --accent: #0f7c7b;    /* teal SV */
+      --ink: #121212;       /* texte principal (Marcel content-default) */
+      --muted: #696969;     /* texte secondaire (Marcel content-subtler) */
+      --line: #e3e8ef;      /* traits */
+      --soft: #f5faff;      /* fonds discrets (Marcel background-subtler) */
+      --brand: #004e9b;     /* bleu Carrefour foncé (Marcel brand-hover) */
+      --accent: #0970e6;    /* bleu Carrefour vif (Marcel brand-default) */
+      --nuit: #003161;      /* bleu nuit (Marcel brand-pressed) : bas du bandeau */
+      --rouge: #d30d1f;     /* rouge Carrefour (Marcel promo) : utilisé avec parcimonie */
       --star: #d97706;      /* étoile des favoris */
+      --police: Ubuntu, system-ui, sans-serif;
       --radius: 18px;
     }
     * { box-sizing: border-box; }
@@ -85,31 +94,36 @@
     [hidden] { display: none !important; }
     body {
       margin: 0; background: var(--bg); color: var(--ink);
-      font-family: Manrope, system-ui, sans-serif; font-size: 16px;
+      font-family: var(--police); font-size: 16px;
       -webkit-tap-highlight-color: transparent;
     }
     .page { max-width: 640px; margin: 0 auto; padding: 0 14px 40px; }
 
     /* =========================================================
-       2. EN-TÊTE (reste collé en haut quand on fait défiler)
+       2. EN-TÊTE = bandeau bleu Carrefour (titre, boutons, onglets)
+       Il défile avec la page (il ne reste plus collé en haut : sur téléphone,
+       il prenait la moitié de l'écran).
        ========================================================= */
-    header {
-      position: sticky; top: 0; z-index: 5;
-      background: var(--bg);
-      padding: calc(env(safe-area-inset-top) + 12px) 0 8px;
+    header.bandeau {
+      background: linear-gradient(135deg, var(--brand), var(--nuit));
+      color: #fff;
+      padding: calc(env(safe-area-inset-top) + 14px) 0 12px;
     }
+    .bandeau-in { max-width: 640px; margin: 0 auto; padding: 0 14px; }
     .titre { display: flex; align-items: center; gap: 10px; }
-    .titre h1 { font-size: 22px; font-weight: 800; margin: 0; flex: 1; letter-spacing: -.01em; }
-    .titre h1 span { color: var(--accent); }
+    .titre h1 { font-size: 22px; font-weight: 700; margin: 0; flex: 1; line-height: 1.15; }
+    .titre h1 span { color: #9cc9ff; }                /* le sujet, en bleu clair sur le bandeau */
+    .titre small { display: block; font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #cfe2fb; margin-top: 3px; }
+    .outils { padding-top: 10px; }
     .btn-rond {
-      width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line);
-      background: var(--card); color: var(--brand); display: grid; place-items: center; cursor: pointer;
+      width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,.35);
+      background: rgba(255,255,255,.12); color: #fff; display: grid; place-items: center; cursor: pointer;
     }
     .btn-rond svg { width: 19px; height: 19px; }
     .btn-rond.tourne svg { animation: tourne 0.8s linear infinite; }
     @keyframes tourne { to { transform: rotate(360deg); } }
     .statut { color: var(--muted); font-size: 13px; margin: 4px 0 10px; }
-    .statut b { font-family: "JetBrains Mono", monospace; font-weight: 500; color: var(--ink); }
+    .statut b { font-family: var(--police); font-weight: 500; color: var(--ink); }
     .alerte { color: #b45309; }
 
     /* Zone de recherche */
@@ -125,16 +139,21 @@
     .filtres::-webkit-scrollbar { display: none; }
     .filtre {
       flex: none; border: 1px solid var(--line); background: var(--card); color: var(--ink);
-      border-radius: 999px; padding: 7px 13px; font: 700 13px Manrope, sans-serif; cursor: pointer;
+      border-radius: 999px; padding: 7px 13px; font: 700 13px var(--police); cursor: pointer;
       display: flex; align-items: center; gap: 6px;
     }
     .filtre .pt { width: 9px; height: 9px; border-radius: 50%; }
-    .filtre .nb { font-family: "JetBrains Mono", monospace; font-weight: 500; color: var(--muted); font-size: 12px; }
+    .filtre .nb { font-family: var(--police); font-weight: 500; color: var(--muted); font-size: 12px; }
     .filtre[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: #fff; }
-    .filtre[aria-pressed="true"] .nb { color: #cfe3e3; }
+    .filtre[aria-pressed="true"] .nb { color: #d6e6fb; }
     /* L'interrupteur « Dans le titre » : teal quand il est actif, séparé des autres */
     .filtre.bascule { margin-right: 6px; }
     .filtre.bascule[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); }
+    /* Pastille « 🙈 n masqués » : discrète, dans la rangée des filtres (remplace le grand bandeau) */
+    .filtre.masques-pastille { color: var(--muted); }
+    .filtre.masques-pastille[aria-pressed="true"] { background: var(--muted); border-color: var(--muted); color: #fff; }
+    /* 🔒 = journal souvent réservé aux abonnés */
+    .payant { font-size: 11px; color: var(--muted); white-space: nowrap; }
 
     /* =========================================================
        3. LISTE DES ARTICLES, groupés par jour
@@ -152,8 +171,8 @@
     .article.lu { opacity: .62; }                    /* déjà ouvert : grisé */
     .meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
     .source { font-weight: 800; color: #fff; border-radius: 6px; padding: 2px 7px; font-size: 11px; letter-spacing: .02em; }
-    .heure { font-family: "JetBrains Mono", monospace; }
-    .nouveau { color: var(--accent); font-weight: 800; }
+    .heure { font-family: var(--police); }
+    .nouveau { color: var(--rouge); font-weight: 700; }
     .nouveau::before { content: "● "; }
     .article a.lien { color: var(--ink); text-decoration: none; display: block; margin-top: 7px; }
     .article h2 { font-size: 16px; line-height: 1.35; margin: 0; font-weight: 700; }
@@ -176,7 +195,7 @@
     .vide .gros { font-size: 40px; display: block; margin-bottom: 8px; }
     .plus {
       display: block; margin: 18px auto 0; border: 1px solid var(--line); background: var(--card);
-      color: var(--brand); font: 800 12px Manrope, sans-serif; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--brand); font: 800 12px var(--police); letter-spacing: .1em; text-transform: uppercase;
       padding: 12px 20px; border-radius: 12px; cursor: pointer;
     }
 
@@ -197,19 +216,19 @@
     /* =========================================================
        ONGLETS DES SUJETS (Carrefour, Elis…)
        ========================================================= */
-    .sujets { display: flex; gap: 4px; background: var(--soft); border-radius: 14px; padding: 4px; margin: 10px 0 8px; overflow-x: auto; scrollbar-width: none; }
+    .sujets { display: flex; gap: 4px; background: rgba(255,255,255,.12); border-radius: 14px; padding: 4px; margin: 12px 0 0; overflow-x: auto; scrollbar-width: none; }
     .sujets::-webkit-scrollbar { display: none; }
     .onglet {
-      flex: 1 0 auto; border: 0; background: transparent; color: var(--muted); border-radius: 10px;
-      padding: 9px 14px; font: 800 12px Manrope, sans-serif; letter-spacing: .1em; text-transform: uppercase; cursor: pointer;
+      flex: 1 0 auto; border: 0; background: transparent; color: #dbe9fb; border-radius: 10px;
+      padding: 9px 14px; font: 800 12px var(--police); letter-spacing: .1em; text-transform: uppercase; cursor: pointer;
     }
-    .onglet[aria-selected="true"] { background: var(--card); color: var(--brand); box-shadow: 0 1px 3px rgba(16,40,45,.12); }
-    .onglet .nb { font-family: "JetBrains Mono", monospace; font-weight: 500; letter-spacing: 0; margin-left: 4px; }
+    .onglet[aria-selected="true"] { background: #fff; color: var(--brand); box-shadow: 0 1px 3px rgba(0,0,0,.18); }
+    .onglet .nb { font-family: var(--police); font-weight: 500; letter-spacing: 0; margin-left: 4px; }
 
     /* =========================================================
        AVIS 👍 / 👎 et filtre appris
        ========================================================= */
-    .actions .avis { width: auto; padding: 0 9px; gap: 4px; display: flex; align-items: center; font: 700 12px "JetBrains Mono", monospace; }
+    .actions .avis { width: auto; padding: 0 9px; gap: 4px; display: flex; align-items: center; font: 700 12px var(--police); }
     .actions .avis[aria-pressed="true"].oui { color: #15803d; background: #e8f5ec; }
     .actions .avis[aria-pressed="true"].non { color: #b91c1c; background: #fdecec; }
     .actions .espace { flex: 1; }                    /* pousse partage + étoile à droite */
@@ -217,25 +236,19 @@
     .note.bonne { color: #15803d; background: #e8f5ec; }
     .note.basse { color: #b45309; background: #fdf3e6; }
     .article.rejete { border-style: dashed; }        /* visible seulement si on affiche les masqués */
-    .masques {
-      display: flex; align-items: center; justify-content: space-between; gap: 10px;
-      margin: 14px 0 0; padding: 10px 14px; border-radius: 12px; background: var(--soft);
-      font-size: 13px; color: var(--muted);
-    }
-    .masques button { border: 0; background: none; color: var(--accent); font: 800 13px Manrope, sans-serif; cursor: pointer; }
 
     /* =========================================================
        v2.1.0 — non lus, vue compacte, mots masqués / surveillés
        ========================================================= */
     .titre .btn-rond + .btn-rond { margin-left: -2px; }
-    .lien-action { border: 0; background: none; color: var(--accent); font: 700 13px Manrope, sans-serif; padding: 0; cursor: pointer; }
+    .lien-action { border: 0; background: none; color: var(--accent); font: 700 13px var(--police); padding: 0; cursor: pointer; }
     .reglage-mots { display: block; font-weight: 800; color: var(--ink); margin: 12px 0; }
     .reglage-mots span { font-weight: 600; color: var(--muted); }
     .reglage-mots input {
       display: block; width: 100%; margin-top: 6px; height: 40px; border: 1px solid var(--line);
-      border-radius: 10px; padding: 0 10px; font: 400 14px Manrope, sans-serif; color: var(--ink);
+      border-radius: 10px; padding: 0 10px; font: 400 14px var(--police); color: var(--ink);
     }
-    mark { background: #fde68a; color: inherit; border-radius: 3px; padding: 0 2px; }
+    mark { background: #ffe58a; color: inherit; border-radius: 3px; padding: 0 2px; }
     .suivi { border-left: 4px solid #f59e0b; }        /* article qui contient un mot surveillé */
     /* Vue compacte : une ligne par article, sans résumé ni boutons (sauf ⭐), cartes collées */
     body.compact .cartes { gap: 0; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
@@ -253,7 +266,7 @@
     /* Petit message en bas (« Lien copié », etc.) */
     #toast {
       position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 20px); transform: translateX(-50%);
-      background: var(--brand); color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 14px;
+      background: var(--nuit); color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 14px;
       font-weight: 700; z-index: 10; display: flex; align-items: center; white-space: nowrap;
     }
 
@@ -263,11 +276,12 @@
        ========================================================= */
     @media (min-width: 760px) {
       .page { max-width: 1180px; padding: 0 28px 50px; }
-      header { display: grid; grid-template-columns: 1fr 380px; column-gap: 20px; align-items: end; }
-      .titre, .statut { grid-column: 1; }
-      .sujets { grid-column: 1; justify-self: start; }
-      .masques { grid-column: 1 / -1; }
-      .recherche { grid-column: 2; grid-row: 1 / 4; align-self: center; }
+      .bandeau-in { max-width: 1180px; padding: 0 28px; }
+      .sujets { display: inline-flex; }
+      /* ligne d'état à gauche, recherche à droite, filtres dessous */
+      .outils { display: grid; grid-template-columns: 1fr 380px; column-gap: 20px; align-items: center; }
+      .statut { grid-column: 1; }
+      .recherche { grid-column: 2; grid-row: 1; }
       .filtres { grid-column: 1 / -1; }
       .cartes { grid-template-columns: repeat(2, 1fr); }
     }
@@ -277,10 +291,10 @@
   </style>
 </head>
 <body>
-  <div class="page">
-    <header>
+  <header class="bandeau">
+    <div class="bandeau-in">
       <div class="titre">
-        <h1>Veille <span id="sujet"></span></h1>
+        <h1>Veille <span id="sujet"></span><small>Achats Non Marchands · NTP</small></h1>
         <button class="btn-rond" id="vue" title="Vue compacte / cartes" aria-label="Changer de vue">
           <!-- picto rows-3 (Lucide, ISC) : vue en lignes -->
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M21 9H3"/><path d="M21 15H3"/></svg>
@@ -291,6 +305,10 @@
         </button>
       </div>
       <nav class="sujets" id="sujets" role="tablist" aria-label="Sujets suivis" hidden></nav>
+    </div>
+  </header>
+  <div class="page">
+    <div class="outils">
       <p class="statut" id="statut">Chargement…</p>
       <label class="recherche">
         <!-- picto search -->
@@ -298,8 +316,7 @@
         <input id="cherche" type="search" placeholder="Chercher (ex. « drive », « Bompard »)" autocomplete="off">
       </label>
       <div class="filtres" id="filtres" role="toolbar" aria-label="Filtrer par site"></div>
-      <div class="masques" id="masques" hidden></div>
-    </header>
+    </div>
 
     <main id="liste"></main>
 
@@ -317,6 +334,8 @@
       <p>Ajouter un sujet ou un site : <a href="https://github.com/svaug12345/svaug12345.github.io/edit/main/veille/sources.json" target="_blank" rel="noopener">modifier sources.json</a>.</p>
       <p>« Autres médias » cherche Carrefour dans toute la presse : la pastille grise donne le nom du journal.
          Un article de LSA, Linéaires ou Dauvers trouvé par cette recherche est rangé sous son site.</p>
+      <p>🔒 = journal qui réserve souvent ses articles aux abonnés (LSA, Les Echos, l'Informé…).
+         C'est une indication par journal : certains articles restent gratuits.</p>
       <p>LSA et Linéaires passent par Google Actualités : un lien ouvre d'abord une page Google, qui renvoie vers l'article. Certains articles sont réservés aux abonnés.</p>
     </details>
 
@@ -328,7 +347,7 @@
     /* =========================================================
        RÉGLAGES
        ========================================================= */
-    const VERSION = "2.1.0";
+    const VERSION = "2.2.0";
 
     // Où lire les données. D'abord la copie « brute » du dépôt GitHub :
     // elle est à jour 1 à 5 min après chaque collecte, sans attendre que
@@ -346,6 +365,14 @@
 
     // Apprentissage : un article est masqué par le filtre si sa note est sous ce seuil,
     // et seulement une fois qu'il y a assez de votes pour que la note veuille dire quelque chose.
+    // Journaux dont la plupart des articles sont réservés aux abonnés : un 🔒 l'indique.
+    // On ne peut pas le savoir article par article (Google Actualités ne le dit pas) : c'est
+    // une indication par journal. Ajouter ici un id de source (ex. "lsa") ou un nom de journal
+    // tel qu'il s'affiche (ex. "Les Echos"), sans se soucier des majuscules ni des accents.
+    const PAYANTS = ["lsa", "lineaires", "les echos", "le monde", "le figaro", "l'informe", "challenges",
+      "l'opinion", "la lettre", "mediapart", "l'usine nouvelle", "la tribune", "investir", "le point", "l'express"];
+    const estPayant = (a) => PAYANTS.includes(simple(a.media || "")) || PAYANTS.includes(a.source);
+
     const SEUIL_MASQUE = -1.5;
     const VOTES_MINI = 5;
 
@@ -414,7 +441,7 @@
     let minuteurToast;
     function toast(msg, action) {
       const t = $("#toast");
-      t.innerHTML = echap(msg) + (action ? ` <button id="toast-action" style="margin-left:10px;border:0;background:none;color:#7fe0d6;font:800 13px Manrope,sans-serif;cursor:pointer">${echap(action.texte)}</button>` : "");
+      t.innerHTML = echap(msg) + (action ? ` <button id="toast-action" style="margin-left:10px;border:0;background:none;color:#9cc9ff;font:800 13px var(--police);cursor:pointer">${echap(action.texte)}</button>` : "");
       t.hidden = false;
       if (action) $("#toast-action").onclick = () => { t.hidden = true; action.faire(); };
       clearTimeout(minuteurToast);
@@ -737,7 +764,10 @@
           title="Masquer les articles qui ressemblent à ceux jugés pas pertinents">✨ Filtre appris</button>
         <button class="filtre bascule" id="bascule-nonlus" aria-pressed="${seulementNonLus}"
           title="Seulement les articles pas encore ouverts">○ Non lus</button>`;
-      $("#filtres").innerHTML = interrupteurs + boutons.map((b) => `
+      // Pastille des masqués (son nombre est mis à jour par afficherListe)
+      const masques = `<button class="filtre masques-pastille" id="voir-masques" aria-pressed="${voirMasques}" hidden
+          title="Articles masqués par les avis 👎, le filtre appris ou tes mots masqués : toucher pour les voir">🙈 Masqués <span class="nb">0</span></button>`;
+      $("#filtres").innerHTML = interrupteurs + masques + boutons.map((b) => `
         <button class="filtre" data-filtre="${b.id}" aria-pressed="${b.id === filtre}">
           ${b.couleur ? `<span class="pt" style="background:${b.couleur}"></span>` : ""}
           ${echap(b.nom)} <span class="nb">${b.nb}</span>
@@ -776,11 +806,13 @@
     // La liste, groupée par jour
     function afficherListe() {
       const arts = articlesFiltres();
-      // Bandeau « n articles masqués par les avis — Afficher / Cacher »
-      const bandeau = $("#masques");
-      bandeau.hidden = !arts.masques;
-      bandeau.innerHTML = `<span>${arts.masques} article${arts.masques > 1 ? "s" : ""} masqué${arts.masques > 1 ? "s" : ""} par les avis 👎 ou tes mots 🔕</span>
-        <button id="voir-masques">${voirMasques ? "Cacher" : "Afficher"}</button>`;
+      // Nombre d'articles masqués (avis 👎, filtre appris, mots masqués) : affiché dans la
+      // pastille « 🙈 » de la rangée des filtres, qui les montre / les cache
+      const pastille = $("#voir-masques");
+      if (pastille) {
+        pastille.hidden = !arts.masques && !voirMasques;
+        pastille.querySelector(".nb").textContent = arts.masques;
+      }
 
       if (!arts.length) {
         let msg;
@@ -825,6 +857,7 @@
         <article class="article ${lus.has(a.id) ? "lu" : ""} ${st === "rejete" || st === "masque" || aMotMasque(a) ? "rejete" : ""} ${aMotSuivi(a) ? "suivi" : ""}" data-id="${a.id}">
           <div class="meta">
             <span class="source" style="background:${s.couleur}">${echap(etiquette)}</span>
+            ${estPayant(a) ? `<span class="payant" title="Ce journal réserve souvent ses articles aux abonnés">🔒</span>` : ""}
             <span class="heure">${FORMAT_HEURE.format(d)}</span>
             ${estNouveau(a) ? `<span class="nouveau">Nouveau</span>` : ""}
             ${pastilleNote}
@@ -923,6 +956,7 @@
     $("#filtres").addEventListener("click", (e) => {
       const b = e.target.closest(".filtre");
       if (!b) return;
+      if (b.id === "voir-masques") { voirMasques = !voirMasques; b.setAttribute("aria-pressed", voirMasques); afficherListe(); return; }
       if (b.id === "bascule-titre") { dansLeTitre = !dansLeTitre; ecrire(CLE.titre, dansLeTitre); }
       else if (b.id === "bascule-appris") {
         filtreAppris = !filtreAppris; ecrire(CLE.appris, filtreAppris);
@@ -937,11 +971,7 @@
     });
 
     // « Afficher / Cacher » les articles masqués par les avis
-    $("#masques").addEventListener("click", (e) => {
-      if (!e.target.closest("#voir-masques")) return;
-      voirMasques = !voirMasques;
-      afficherListe();
-    });
+    // (géré dans l'écouteur des filtres, plus bas : c'est une pastille comme les autres)
 
     // Recherche : on attend 200 ms après la dernière touche avant de redessiner
     let minuteurRecherche;

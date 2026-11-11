@@ -137,8 +137,8 @@ PAGES = [
          fond="#f3f6f6", theme="#0e3a44"),
     dict(dossier="veille", nom="Veille", court="Veille",
          desc="La presse sur Carrefour, Elis… triée par l'avis des lecteurs",
-         picto="newspaper", tuile="#0f7c7b", trait="#ffffff",
-         fond="#f3f6f6", theme="#0e3a44"),
+         picto="newspaper", tuile="#004e9b", trait="#ffffff",   # bleu Carrefour (pas SV)
+         fond="#f5f7fa", theme="#004e9b"),
     dict(dossier="mediatheque", nom="Médiathèque", court="Médiathèque",
          desc="Les documents empruntés aux Médiathèques de Paris-Saclay",
          picto="library", tuile="#0f7c7b", trait="#ffffff",

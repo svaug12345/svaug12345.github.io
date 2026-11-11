@@ -6,8 +6,8 @@
   "start_url": "/veille/",
   "scope": "/veille/",
   "display": "standalone",
-  "background_color": "#f3f6f6",
-  "theme_color": "#0e3a44",
+  "background_color": "#f5f7fa",
+  "theme_color": "#004e9b",
   "lang": "fr",
   "dir": "ltr",
   "icons": [
