@@ -1,6 +1,6 @@
 {
- "version": "2.1.0",
- "maj": "2026-11-11T07:56+00:00",
+ "version": "2.4.0",
+ "maj": "2026-11-11T09:42+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -59,7 +59,8 @@
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "À la veille de l’Armistice, on se demande quels magasins Carrefour vont être fermés en ce jour du 11 novembre. Voici la situation à prévoir.",
    "enrichi": "2026-11-11",
-   "image": "https://assets.afcdn.com/story/20261109/2334540_w1500h844c1cx2000cy1500cxt0cyt0cxb4000cyb3000.webp"
+   "image": "https://assets.afcdn.com/story/20261109/2334540_w1500h844c1cx2000cy1500cxt0cyt0cxb4000cyb3000.webp",
+   "site": "marmiton.org"
   },
   {
    "id": "2ed5e8639c1c",
@@ -70,7 +71,8 @@
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "Le Groupement Mousquetaires et Francap Distribution reconduisent pour dix ans leur accord aux achats, noué en 2019. Un partenariat stratégique pour les deux acteurs de",
    "enrichi": "2026-11-11",
-   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/410b47a7-8e5c-4ddd-9319-bb8d55f480af.jpg.webp?itok=ugbFpsIF"
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/410b47a7-8e5c-4ddd-9319-bb8d55f480af.jpg.webp?itok=ugbFpsIF",
+   "site": "lineaires.com"
   },
   {
    "id": "9799dbc3cb18",
@@ -82,7 +84,8 @@
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "Le mercredi 11 novembre 2026 est férié, mais un recensement spécialisé signale plus de 6 000 commerces alimentaires ouverts. Lidl, Carrefour et Aldi figurent parmi les enseignes concernées. Les horaires restent propres à chaque magasin",
    "enrichi": "2026-11-11",
-   "image": "https://www.economiematin.fr/wp-content/uploads/2026/11/e07e672c-magasins-ouverts-11-novembre-2026.jpg"
+   "image": "https://www.economiematin.fr/wp-content/uploads/2026/11/e07e672c-magasins-ouverts-11-novembre-2026.jpg",
+   "site": "economiematin.fr"
   },
   {
    "id": "cef8dd94c3be",
@@ -94,7 +97,8 @@
    "vu_le": "2026-11-11T07:56+00:00",
    "resume": "Quels sont les commerces ouverts à Caen et autour (Calvados) ce mercredi 11 novembre 2026, jour férié ?",
    "enrichi": "2026-11-11",
-   "image": "https://static.actu.fr/uploads/2026/11/1c91b6a513fa6ff91b6a513fa04a1bv.jpeg"
+   "image": "https://static.actu.fr/uploads/2026/11/1c91b6a513fa6ff91b6a513fa04a1bv.jpeg",
+   "site": "actu.fr"
   },
   {
    "id": "b776d75ed65c",
@@ -105,7 +109,8 @@
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "Ducros, le spécialiste des herbes aromatiques et des épices, lance une gamme inédite baptisée « Tendance ». Cette dernière présente sept saveurs inédites,",
    "enrichi": "2026-11-11",
-   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/d2574786-d331-476a-a70f-51fc63dfd664.jpg.webp?itok=P73Wlio9"
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/d2574786-d331-476a-a70f-51fc63dfd664.jpg.webp?itok=P73Wlio9",
+   "site": "lineaires.com"
   },
   {
    "id": "828017cc11f9",
@@ -115,7 +120,8 @@
    "date": "2026-11-10T16:09+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "enrichi": "2026-11-11"
+   "enrichi": "2026-11-11",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "6b7ce39942fa",
@@ -127,7 +133,8 @@
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "En Mayenne, plusieurs supermarchés, dont les enseignes Lidl, Carrefour et Intermarché, resteront ouverts mercredi 11 novembre, malgré la commémoration de l'armistice.",
    "enrichi": "2026-11-11",
-   "image": "https://medias.lecourrierdelamayenne.fr/photos/1200/42194-les-cinq-magasins-lidl-seront-ouverts-en-mayenne-mercredi-11-novembre?v=1794319880"
+   "image": "https://medias.lecourrierdelamayenne.fr/photos/1200/42194-les-cinq-magasins-lidl-seront-ouverts-en-mayenne-mercredi-11-novembre?v=1794319880",
+   "site": "lecourrierdelamayenne.fr"
   },
   {
    "id": "c8dbe8a6642e",
@@ -138,7 +145,8 @@
    "date": "2026-11-10T15:50+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "",
-   "enrichi": "2026-11-11"
+   "enrichi": "2026-11-11",
+   "site": "lesoir.be"
   },
   {
    "id": "9014e3222863",
@@ -148,7 +156,8 @@
    "date": "2026-11-10T15:28+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "enrichi": "2026-11-11"
+   "enrichi": "2026-11-11",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "4e375ba76d41",
@@ -159,7 +168,8 @@
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "Ils s’étaient dit “oui” en juillet 2018 pour un mariage au 1er janvier 2019. Ils viennent de se redire “oui”, cette fois-ci pour 10 ans. Selon mes informations, Intermarché et Francap vont annoncer un nouveau – long – bail pour leur alliance à l’achat. Francap, qui fédère des grossistes régionaux (dont les affaires de la …",
    "enrichi": "2026-11-11",
-   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/FacadeG20.jpg"
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/FacadeG20.jpg",
+   "site": "olivierdauvers.fr"
   },
   {
    "id": "75366f8e72ad",
@@ -171,7 +181,8 @@
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "Le Carrefour de Margencel est resté fermé plus de deux heures ce mardi 10 novembre, alors que la galerie marchande était ouverte. Une panne électrique a retardé l’ouverture de l’hypermarché jusqu’à 10h45.",
    "enrichi": "2026-11-11",
-   "image": "https://phrmeseng.rosselcdn.net/sites/default/files/dpistyles_v2/ena_16_9_extra_big/2026/11/10/node_649360169/439226/public/2026/11/10/112874975.jpeg?itok=MNy2zTlk1794320835"
+   "image": "https://phrmeseng.rosselcdn.net/sites/default/files/dpistyles_v2/ena_16_9_extra_big/2026/11/10/node_649360169/439226/public/2026/11/10/112874975.jpeg?itok=MNy2zTlk1794320835",
+   "site": "lemessager.fr"
   },
   {
    "id": "d05a5cf81457",
@@ -183,7 +194,8 @@
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "Le groupe Carrefour poursuit son implantation dans les quartiers d’Angers. Deux magasins Potager City doivent prochainement ouvrir leurs portes, place Hérault et dans le quartier de la Doutre. Une enseigne qui remplacera finalement le Carrefour City initialement annoncé à cette seconde adresse.",
    "enrichi": "2026-11-11",
-   "image": "https://my-angers.info/wp-content/uploads/2026/11/IMG_0471-scaled.jpg"
+   "image": "https://my-angers.info/wp-content/uploads/2026/11/IMG_0471-scaled.jpg",
+   "site": "my-angers.info"
   },
   {
    "id": "35047ad1e43b",
@@ -195,7 +207,8 @@
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "Carrefour voulait faire annuler une saisie de documents dans ses locaux suite à une enquête déclenchée par son rival. Sans succès pour le moment.",
    "enrichi": "2026-11-11",
-   "image": "https://linforme-focus.sirius.press/2026/11/10/0/0/0/0/1440/720/60/0/b758bf7_upload-1-whbipxdl76zs-afp-20260331-hl-rdoucelin-3114803-v1-highres-francecasinostoreinaugurationsteti.jpg"
+   "image": "https://linforme-focus.sirius.press/2026/11/10/0/0/0/0/1440/720/60/0/b758bf7_upload-1-whbipxdl76zs-afp-20260331-hl-rdoucelin-3114803-v1-highres-francecasinostoreinaugurationsteti.jpg",
+   "site": "linforme.com"
   },
   {
    "id": "74acc3beb7c3",
@@ -207,7 +220,8 @@
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "Une photo publiée presque discrètement sur Facebook, des collaborateurs souriants et un visiteur que l'on ne croise pas tous les jours dans un supermarché belge : Alexandre Bompard, CEO du groupe Carrefour. C'est sur la page du Carrefour Market de Kontich, particulièrement active sur les réseaux sociaux, que l'on découvre le déplacement du patron du groupe en Belgique. Mais pourquoi avoir fait le…",
    "enrichi": "2026-11-11",
-   "image": "https://images.gondola.be/2026-11/carrefour-kontich-edit.jpg?fit=max&h=630&ixlib=php-4.1.0&w=1200&s=cf999de810b9d345d3806b8d05a9a90d"
+   "image": "https://images.gondola.be/2026-11/carrefour-kontich-edit.jpg?fit=max&h=630&ixlib=php-4.1.0&w=1200&s=cf999de810b9d345d3806b8d05a9a90d",
+   "site": "gondola.be"
   },
   {
    "id": "2471fe7d61e1",
@@ -217,7 +231,8 @@
    "date": "2026-11-10T12:47+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "enrichi": "2026-11-11"
+   "enrichi": "2026-11-11",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "8fc59d0f8744",
@@ -227,7 +242,8 @@
    "date": "2026-11-10T11:02+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "enrichi": "2026-11-11"
+   "enrichi": "2026-11-11",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "6699030c4107",
@@ -237,7 +253,8 @@
    "date": "2026-11-10T09:30+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "enrichi": "2026-11-11"
+   "enrichi": "2026-11-11",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "a465e77af101",
@@ -249,7 +266,8 @@
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "Carrefour, Leclerc, Lidl… Voici les hypermarchés et supermarchés ouverts dans le département ce mercredi 11 novembre 2026. Liste non exhaustive.",
    "enrichi": "2026-11-11",
-   "image": "https://remeng.rosselcdn.net/sites/default/files/dpistyles_v2/ena_16_9_extra_big/2024/11/15/node_839205/15550732/public/2024/11/15/29599223.jpeg?itok=eZaZ5l7A1794317214"
+   "image": "https://remeng.rosselcdn.net/sites/default/files/dpistyles_v2/ena_16_9_extra_big/2024/11/15/node_839205/15550732/public/2024/11/15/29599223.jpeg?itok=eZaZ5l7A1794317214",
+   "site": "lunion.fr"
   },
   {
    "id": "6b03073f12e5",
@@ -259,7 +277,8 @@
    "date": "2026-11-10T06:30+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "enrichi": "2026-11-11"
+   "enrichi": "2026-11-11",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "f3c7eb305af5",
@@ -270,7 +289,8 @@
    "date": "2026-11-10T06:30+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "",
-   "enrichi": "2026-11-11"
+   "enrichi": "2026-11-11",
+   "site": "ouest-france.fr"
   },
   {
    "id": "5dc7914e1e76",
@@ -280,7 +300,8 @@
    "date": "2026-11-10T04:50+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "enrichi": "2026-11-11"
+   "enrichi": "2026-11-11",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "1f1ee38d7156",
@@ -291,7 +312,8 @@
    "date": "2026-11-10T04:04+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "",
-   "enrichi": "2026-11-11"
+   "enrichi": "2026-11-11",
+   "site": "africa-news-agency.com"
   },
   {
    "id": "9ff8dcf3c67a",
@@ -301,7 +323,8 @@
    "date": "2026-11-09T18:18+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "enrichi": "2026-11-11"
+   "enrichi": "2026-11-11",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "3945b0afc279",
@@ -313,7 +336,8 @@
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "Malgré le jour férié, certains commerces seront tout de même ouverts à Metz pour des courses de dernière minute ce mercredi 11 novembre 2026. Voici lesquels.",
    "enrichi": "2026-11-11",
-   "image": "https://static.actu.fr/uploads/2026/03/leclerc-woippy.jpeg"
+   "image": "https://static.actu.fr/uploads/2026/03/leclerc-woippy.jpeg",
+   "site": "actu.fr"
   },
   {
    "id": "b69d77db326f",
@@ -325,7 +349,8 @@
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "Le supermarché Coccinelle de Béthune, situé place Georges-Clémenceau, va définitivement fermer ses portes ce mardi 10 novembre 2026.",
    "enrichi": "2026-11-11",
-   "image": "https://medias.horizonactu.fr/photos/1200/50407-le-supermarche-coccinelle-de-bethune-va-definitivement-fermer-ses-portes-ce-mardi-10-novembre?v=1794309129"
+   "image": "https://medias.horizonactu.fr/photos/1200/50407-le-supermarche-coccinelle-de-bethune-va-definitivement-fermer-ses-portes-ce-mardi-10-novembre?v=1794309129",
+   "site": "horizonactu.fr"
   },
   {
    "id": "3455756ef5dc",
@@ -337,7 +362,8 @@
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "Le 11 novembre sera férié pour un grand nombre de salariés ce mercredi. Néanmoins, de nombreux commerces seront ouverts mercredi à Nancy (Meurthe-et-Moselle). On fait le point.",
    "enrichi": "2026-11-11",
-   "image": "https://static.actu.fr/uploads/2025/11/auchan-lobau-nancy-parking.jpg"
+   "image": "https://static.actu.fr/uploads/2025/11/auchan-lobau-nancy-parking.jpg",
+   "site": "actu.fr"
   },
   {
    "id": "bbebfb49e44a",
@@ -347,7 +373,8 @@
    "date": "2026-11-09T12:30+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "enrichi": "2026-11-11"
+   "enrichi": "2026-11-11",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "33548f76adcc",
@@ -357,7 +384,8 @@
    "date": "2026-11-09T10:08+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "enrichi": "2026-11-11"
+   "enrichi": "2026-11-11",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "ee912ce7b145",
@@ -369,7 +397,8 @@
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "En France, les supermarchés Carrefour Market proposent quatre heures silencieuses par jour pour faciliter les courses des personnes autistes.",
    "enrichi": "2026-11-11",
-   "image": "https://www.demotivateur.fr/images-buzz/cover/enseigne-carrefour-777f99ae873a.jpg"
+   "image": "https://www.demotivateur.fr/images-buzz/cover/enseigne-carrefour-777f99ae873a.jpg",
+   "site": "demotivateur.fr"
   },
   {
    "id": "387f1784f18e",
@@ -381,7 +410,8 @@
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "Mercredi 11 novembre 2026, plusieurs commerces de Strasbourg ouvriront exceptionnellement ce jour férié. Centres commerciaux, supermarchés et grandes enseignes : voici lesquels.",
    "enrichi": "2026-11-11",
-   "image": "https://static.actu.fr/uploads/2026/07/lidl-strasbourg-meinau.jpeg"
+   "image": "https://static.actu.fr/uploads/2026/07/lidl-strasbourg-meinau.jpeg",
+   "site": "actu.fr"
   },
   {
    "id": "ae55d189e012",
@@ -392,7 +422,8 @@
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "Vous connaissiez “Ikea family”, le programme de fidélité d’Ikea ? Voici “Picnic family”. Le LAD-iste néerlandais lance actuellement son programme de fidélité. D’abord dans le Nord (sa région d’implantation d’origine en France), ensuite en Ile-de-France. Originalité (en tous les cas pour le retail grande conso) : le programme est payant. 5,99 € par mois ou …",
    "enrichi": "2026-11-11",
-   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/Picnic-Family.jpg"
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/Picnic-Family.jpg",
+   "site": "olivierdauvers.fr"
   },
   {
    "id": "bc4b3c5f2295",
@@ -403,7 +434,8 @@
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "C’est le principe des baisses de prix. Elles se remarquent tellement moins que les hausses… En voilà encore une extraordinaire démonstration. En libérant quelques millions de barils des stocks stratégiques de gazole, le gouvernement avait promis de 12 à 18 centimes de baisse à la pompe à partir du 1er novembre. Objectif : calmer “le …",
    "enrichi": "2026-11-11",
-   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/IMG_0184-scaled.jpg"
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/IMG_0184-scaled.jpg",
+   "site": "olivierdauvers.fr"
   },
   {
    "id": "43366d0c14ad",
@@ -415,7 +447,8 @@
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "Carrefour ouvre lundi sa 2e vague Black Friday autour de GTA 6 : bon d’achat de 10 € hors marketplace, code dans la boîte dès le 12 novembre, PEGI 18.",
    "enrichi": "2026-11-11",
-   "image": "https://media.touteslesbox.fr/2026/11/gta-6-carrefour-jaquette-officielle-une.jpg"
+   "image": "https://media.touteslesbox.fr/2026/11/gta-6-carrefour-jaquette-officielle-une.jpg",
+   "site": "touteslesbox.fr"
   },
   {
    "id": "4b3114ed22f9",
@@ -425,7 +458,8 @@
    "date": "2026-11-08T12:30+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "enrichi": "2026-11-11"
+   "enrichi": "2026-11-11",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "93de54d51f3b",
@@ -435,7 +469,8 @@
    "date": "2026-11-08T12:27+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
-   "enrichi": "2026-11-11"
+   "enrichi": "2026-11-11",
+   "site": "olivierdauvers.fr"
   },
   {
    "id": "33b46cd42916",
@@ -446,7 +481,8 @@
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "DIMANCHE INFOGRAPHIE, suite. Si Leclerc domine le classement national des parts de marché (quelle que soit la source), l’enseigne ne domine pas de manière uniforme. Sur les 9 régions NielsenIQ, Leclerc ne n’impose en effet “que” 5 fois, mais est systématiquement sur le podium. Sans surprise, la victoire la plus nette est dans l’Ouest. Leclerc …",
    "enrichi": "2026-11-11",
-   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/Mise-en-page-1_Page-1-41-scaled.jpg"
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/Mise-en-page-1_Page-1-41-scaled.jpg",
+   "site": "olivierdauvers.fr"
   },
   {
    "id": "3e6be8edff9c",
@@ -457,7 +493,8 @@
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "DIMANCHE INFOGRAPHIE, suite. Le classement des sites e-commerce selon leur fréquentation à présent. Et la gamelle des Chinois. Selon le baromètre Fevad/Médiamétrie, les trois plateformes d’origine chinoises (Temu, Aliexpress et Shein) sont en net recul. Sur un trimestre (qui a vu la montée en puissance de la taxe petits colis) comme sur un an. Gadin …",
    "enrichi": "2026-11-11",
-   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/DGC-Fevad-1-scaled.jpg"
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/DGC-Fevad-1-scaled.jpg",
+   "site": "olivierdauvers.fr"
   },
   {
    "id": "d4df05bd404e",
@@ -469,7 +506,8 @@
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "Une nouvelle étape majeure s’ouvre dans le développement du commerce moderne en Guinée. À Paris, le 6 novembre 2026, Imperial Corporation Guinée (ICG), partenaire franchisé exclusif du Groupe Carrefour en Guinée, et les promoteurs du projet Conakry-Mall ont officialisé un protocole d’accord stratégique pour l’implantation d’un Hyper Carrefour au sein de ce futur complexe commercial",
    "enrichi": "2026-11-11",
-   "image": "https://guineematin.com/wp-content/uploads/2026/11/signature-accord.jpeg"
+   "image": "https://guineematin.com/wp-content/uploads/2026/11/signature-accord.jpeg",
+   "site": "guineematin.com"
   },
   {
    "id": "9f8a1885085e",
@@ -481,7 +519,8 @@
    "vu_le": "2026-11-11T07:27+00:00",
    "resume": "Qui dit 11 novembre dit jour férié. Certains d'entre vous en profiteront pour faire leur emplettes, à condition qu'une porte close ne vienne pas contrarier leurs",
    "enrichi": "2026-11-11",
-   "image": "https://static.cnews.fr/sites/default/files/styles/image_1160_652/public/080_hl_rmilani_3249862-taille1200_6aecb30e769c5.jpg?itok=t1eG_W2X"
+   "image": "https://static.cnews.fr/sites/default/files/styles/image_1160_652/public/080_hl_rmilani_3249862-taille1200_6aecb30e769c5.jpg?itok=t1eG_W2X",
+   "site": "cnews.fr"
   },
   {
    "id": "9be7833fc05d",
@@ -496,432 +535,548 @@
   {
    "id": "12b7da3292c3",
    "titre": "[ PRIX ] Comment contenir l’agressivité de Leclerc ? Comme ça…",
-   "lien": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNWFdTN1hXcTJDUXhSWGpGQkhldXMxN052b1V6ektXLWY4ZmhXcmxOdHRSbFJObjJtbC04V3J3UDhyQmVXX0NVdFB4SHF2NnNGZm9jRjVfRl9vMzBtNzNxQnB5dTVJNzNrU0EweE0tVkkyVXRoRWhFQ2F1TlpLemlnMTFDVU1xX2VLaDRDa1JjdG90OVUzd1dwY3F6dUg?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/11/08/prix-comment-contenir-lagressivite-de-leclerc-comme-ca/",
    "source": "dauvers",
    "date": "2026-11-08T05:12+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "C’est dimanche, c’est donc… DIMANCHE INFOGRAPHIE ! Et le décodage d’une stratégie mise en œuvre pour contenir l’agressivité naturelle de Leclerc sur les prix. “Les Bleus” (le surnom des Leclerc) ont en effet la fichue manie de mettre le bazar dans les politiques prix imaginées par les marques. Bref, de déclencher les hostilités et, par …",
+   "site": "olivierdauvers.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/DGC-Snickers-scaled.png"
   },
   {
    "id": "bcf2caabab93",
    "titre": "Noël 2026 : nos coups de cœur jouets sur un marché en pleine effervescence",
-   "lien": "https://news.google.com/rss/articles/CBMi6gFBVV95cUxNSzF4LThRUV9qaDBVQ05yb1dqaWF4VGREN0lxZDV5aVFORTJLY2VpNlN2bzRqZTJhQVk3MzA0cEdKdmRqLW9YWmM3cVM2VDQ0alJWanJ3MHVlb0hsenMyZUw0c1JiWl8yejdKNzROTEEtaG5wZ3Y3WlNMQy1RN0tRMS0zUWcxSEY2eGpqckxMQk1rVjVIOXNQTEx5d1NnM00zYV81cDMxNzJwOXlNVFAxdnphUFVTUnRULVFQWjlUWE9qOUpMMjFQcTM4SnI3SXpveWhkYzhrdnJXYldWODdvaGxNeUU0XzNkbWc?oc=5",
+   "lien": "https://www.lsa-conso.fr/fetes-commerciales/noel/noel-2026-nos-coups-de-coeur-jouets-sur-un-marche-en-pleine-effervescence.65KI3NSBGBOC5IROSWC6OKPVL4.html",
    "source": "lsa",
    "date": "2026-11-07T08:30+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "51f4ac808700",
    "titre": "« Je voulais me dégager du temps pour mes autres activités » : cet hypermarché Carrefour du Mans change de mains",
-   "lien": "https://news.google.com/rss/articles/CBMiswJBVV95cUxPQXpzaTV2UXlWeUpnLWxhTHYyc050UDlhU3BzdHpScmEtUzVDNWVGWWl1QVk4eDFQZU9ybmFMcXdfcFRlZFR1bHB4SWsyME9sTzNLYmFPM3U4MHBDQlpOTkhLY3cycjRxNnl4Y1pyUWJIWU9abDhyOGhSNTk3a0p0T1pkNmpIMDVaUmdWUGUyN0cyNzJlUUVlZXJ1Q1JYMUwwbFVna3RURU1fOEJhV3NNNTNwaXpfZDgxNjYycUtMV09ESGZhUWtyNHdtRnZKRm1kT3dKNmMxSnMwOW1ndnRXbGFvTXZ3dl9TbXZ4WG1JcHJBQ28xRHl1bEZXMkVZTU9URnBQRE1SQnlxYlo2VjFSVkhqblpSVVY4bXV5QUNHNUNkNFBZLXVRTHE4dmFoSkE5TnFn?oc=5",
+   "lien": "https://www.ouest-france.fr/economie/commerce/grande-distribution/je-voulais-me-degager-du-temps-pour-mes-autres-activites-cet-hypermarche-carrefour-du-mans-change-de-mains-f6722d08-d93a-11f1-a1e1-ae8104d72c9a",
    "source": "autres",
    "media": "Ouest-France",
    "date": "2026-11-07T06:03+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "ouest-france.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "5b78546e0bff",
    "titre": "« Le magasin ne ressemble pas du tout à Grand Frais » : comment l’enseigne de Carrefour défend le concept « Match Frais » qui vient d’ouvrir à Reims",
-   "lien": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQVDdmTDlLNFlOQk5yM3VodHBqb2J0bElvWDVxRFl4aTZMRWVEeGdFeDNISy1SNGx1V1hsZFRPQ0I1czN4UUIydU9IeFAwU3VqQjg2LVFYTWR1YUxSdDJOekZZZmlac0lOcF9uYXI3UkhVQkVIcUpEX0NpRjctRTNUZW1mdWVkQ18tNXBoTWhqdHNxeG9XWUZNeEJlSk03LWJxWklwNUtoU1piS0pQX2czeVJQLTM3cmRGblZlMGtYUDhwWi1WZDdF?oc=5",
+   "lien": "https://www.lunion.fr/id838652/article/2026-11-07/le-magasin-ne-ressemble-pas-du-tout-grand-frais-comment-lenseigne-de-carrefour",
    "source": "autres",
    "media": "L'Union",
    "date": "2026-11-07T05:20+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "Le réseau Match veut augmenter de 40 % ses points de ventes d’ici 2030 en s’appuyant sur un concept alliant produits frais, épicerie et prêt-à-manger. Explications du DG Mourad Bensadik.",
+   "site": "lunion.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://remeng.rosselcdn.net/sites/default/files/dpistyles_v2/ena_16_9_extra_big/2026/11/07/node_838652/15548754/public/2026/11/07/111908979.jpeg?itok=J10T7v5F1794028809"
   },
   {
    "id": "44e57b7d2ab8",
    "titre": "Ces bocaux de haricots verts vendus chez Carrefour peuvent contenir des morceaux de verre: ne les mangez pas",
-   "lien": "https://news.google.com/rss/articles/CBMikwJBVV95cUxQb092S3FZUE02SkM4ejZIdUx2Tnh0Yl9ZS1RFdjRWMkV5bWRNcUZYQkRtWlRIQ2JENXZoanYyRG10QU1hd2ZHWm1jMzlFUWFGNFk0MHFGT3pMWDJLR1JIZXhWdW50T0RVOXljd3I0cjhqTXphN0h5cjZYZUJRQ1BIaWNHSmUxZXp3QkcwVkF0cXByMmdHQi14ZHBZUDFTd1NfN1hSaEs4cGRNS25OampFZlRqQkNudWkyRTEwbXFoUlg5SWtYdnhZSEQyeFRTZzdDYWszMWRXVDNzZ0x2OFdZejk0M3I1OTJSWDctU0lVcVl3RTBiZHdmR3NHVVpHY1k4eHNHSUIyMjlRNnBoZ3pfbVpqZw?oc=5",
+   "lien": "https://rmc.bfmtv.com/conso/alimentation/rappels-de-lots/ces-bocaux-de-haricots-verts-vendus-chez-carrefour-peuvent-contenir-des-morceaux-de-verre-ne-les-mangez-pas_AN-202611060682.html",
    "source": "autres",
    "media": "RMC",
    "date": "2026-11-06T16:44+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "Des haricots verts en bocal de la marque Carrefour Bio font l'objet d'un rappel dans la France entière. Les autorités suspectent la présence de morceaux de verre qui, ingérés, pourraient vous blesser.",
+   "site": "rmc.bfmtv.com",
+   "enrichi": "2026-11-11",
+   "image": "https://io-fsly-bfmtv.cdn.nextradiotv.com/PERRDhZgmg3JcqjaICUsbJFcuKU=/4x3:1252x705/1248x0/images/-156753.jpg"
   },
   {
    "id": "aa8054a89056",
    "titre": "Magasins Auchan plus compacts : Zara, Mango, Kiabi… comment 60 000 m² d’hypermarchés sont devenus une aubaine pour les enseignes",
-   "lien": "https://news.google.com/rss/articles/CBMirgJBVV95cUxNYzA1N0ZZbXllMjFHOUtVMFQtTDNORXVhZThNN1lnMk5yOFNqc1ROWkxoTmo2V0VDS2J0bzdaVDM5cENFODRVZHowczVUUXRxc2x6LTVmNk51MWh3cWl3dDlCc1VNdWlVWS16emF6TlNPanZVUjdva3I1ODQxTF80M3hGUlVVcDNHeWl4U2o4eHdSN2liVHRnZnZJYzBzaGlWbmVVZnc2TG5uTm45UWwtcVlPZ0V4blVkWFJBUFJHVUxmV0xIM21HMTV5RFZVWkFINjA4Qmkwa2cxVmd1NVp0NWhzUFhOZ3hIOGk4b0c5N2ZHcFNJZzQ4TTRQQUlITE5OcENnWXNHc1NQUjYxbU5QWHp3aXZldWNnazNlZWZ0bGNmYVlvc3kydEFrMkMtQQ?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/magasins-auchan-plus-compacts-zara-mango-kiabi-comment-60-000-m-dhypermarches-sont-devenus-une-aubaine-pour-les-enseignes.T7HZDANVFRHYNLSG3RVS6AQIFY.html",
    "source": "lsa",
    "date": "2026-11-06T14:48+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "20c733a29e2c",
    "titre": "Précarité alimentaire : 1700 magasins Carrefour mobilisés",
-   "lien": "https://news.google.com/rss/articles/CBMixgFBVV95cUxQM3VnbTZfNVVHcnBxS29mcWpMd2ZONDVuc0RTNk50T1RQdVVfSnMzaUZCR2RDNnVrWlZlM09TVXNuR2pUX29vOTNnLUFFMEF4czRxVjhQRGxLc2VET1RLd3dYUnFjUFgtTTVtRkRyTnBTU3BjYXFkVHhHUXVoakFZZFNaQS1mNS1WYUYtMmU2VG8wQnh3VXJJeTZPR1RxNFpDV1JnUzRsLTZEWFhBRnhQYVB2bHQyYkdFZF80VmtKaHZacjJwRFE?oc=5",
+   "lien": "https://presseagence.fr/paris-precarite-alimentaire-carrefour-mobilise-1700-magasins-pour-la-collecte-des-banques-alimentaires/",
    "source": "autres",
    "media": "Presse Agence",
    "date": "2026-11-06T14:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "Du 6 au 8 novembre 2026, Carrefour soutient la Grande Collecte des Banques Alimentaires dans 1700 magasins en France pour lutter contre la précarité.",
+   "site": "presseagence.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://presseagence.fr/wp-content/uploads/AVANT_06-11_FRANCE_PRECARITE_ALIMENTAIRE_CARREFOUR_MOBILISE_img_01_reaction.webp"
   },
   {
    "id": "84fbd085300b",
    "titre": "Grande collecte nationale des Banques Alimentaires : trois journées décisives",
-   "lien": "https://news.google.com/rss/articles/CBMitgFBVV95cUxOQ3VzVnU4YVk3SnJWbDBvVEtyaXltcXYzbkJkeDNUS01neTZVeDFiV2ZnU1V0cXViaHdHd2JNV01VSkt5dWN6Wi1RY095d21BSk92WmdGVjdhdUdaakRFcnZiN3ZoVEF5VFNwdjBiZ2ZNWGxXd1IzaWZkMGx3Z0d6MEhSOWRYY2RPQU5IdzhBSkx3UjFfZDdpTkhDOGtzQjBMa3Q4bkJyUWNOUFRTOHdPM3dkX1ZCQQ?oc=5",
+   "lien": "https://www.carenews.com/fondation-carrefour/news/grande-collecte-nationale-des-banques-alimentaires-trois-journees",
    "source": "autres",
    "media": "Carenews",
    "date": "2026-11-06T13:58+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "Du 6 au 8 novembre, 1 700 magasins Carrefour accueillent la collecte nationale des Banques Alimentaires, qui a réuni 9 750 tonnes de dons en 2025.",
+   "site": "carenews.com",
+   "enrichi": "2026-11-11",
+   "image": "https://www.carenews.com/sites/default/files/styles/og_image/public/2026-11/2.png?itok=zNO6PVun"
   },
   {
    "id": "d783a11ba28c",
    "titre": "de la politique RSE Carrefour",
-   "lien": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE9LU1hYb3VQTklWRy1PcUd0SDZZM3NBRkhBSlE4YkMwemctWGZVbXBOV1dOUWFjYVh4M2JIRzZrQ1BQNEtGQ05LRUt4SUF5eDZRZ1pvSjliTzdEUDZU?oc=5",
+   "lien": "https://www.carrefour.com/fr/rse/engagements-rse",
    "source": "autres",
    "media": "Carrefour Group",
    "date": "2026-11-06T08:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "carrefour.com",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "7839186be96e",
    "titre": "Carrefour : le groupe remporte la bataille de Plouzané face à E.Leclerc et Coopérative U et conserve son hypermarché",
-   "lien": "https://news.google.com/rss/articles/CBMisAJBVV95cUxQRHpMT0x1eHBkTlFlbU9FamI3LXQwVEVuajFrX29UTjRfR2xDRTFHN1cyaFgzbmRraXZDcVVPRW9iYUtoS0tlN3VHbUNILVhnLUJvNzZmNm1OSkM0TG9HMTdCUDJzYjF0YWh6QmY3QWZZc1huNXQ0NG9RYWZiOW1mWW5Qek1iaHdyUGdlU2ZqQTExZ0YydG5sRDJlN21LanlYbnZCUUZkV1VzMG9QYng5d1lhdXRDaDN0b0RfREIzUlhWTGFVV2tkM2NHNjhJUXdrdnhzQWxZa1BhcVlrWUtzYzZFRUxmT0RqSEozbzVxU0hVZDRPTHhQbVJ5X2ZkSjJyRHBqOGVMQkVGZGZYTUFuZ3JHbUZPSFA2SkpHdHV5NVY0ZTBsSjF1TFZ2SXRYLXdB?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/carrefour-le-groupe-remporte-la-bataille-de-plouzane-face-a-eleclerc-et-cooperative-u-et-conserve-son-hypermarche.Z6XE3D5NJZD35BPEGVPFNQT2HU.html",
    "source": "lsa",
    "date": "2026-11-06T04:50+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "8d076ea54781",
    "titre": "Alexandre Bompard, PDG de Carrefour à propos de l'inflation : \"elle sera plus élevée\" en 2027",
-   "lien": "https://news.google.com/rss/articles/CBMi8AFBVV95cUxQekw4S0wydW54MkNLR0hRZVFGbXN3YUYxS1RxbTMxRDhZVXo0WU5oS1N3VzJuZXVaR3BwWGd5RTRRRlhFZWRkUUtXazJzN2U5Y0p4MTBxR2pjZ3JGWEZmRFlJUEp5Tl9rLW5tNi1GakVNLVRmVzRYNHd2MGxHNkVpUEtqVDVTY3p0YnBnR1dqejRUNVNmZm45NlR3TERUQ3JYNl9tX090S3dRMzVqYmVmS3VGbUJLZTkyWHo4dkdWUEhXdnFjSEVZX2ZNRS1VTjcxVllwdFBUem5KMHJuOGNOdEpCUHlFSUg2YW5ZdWNkcWY?oc=5",
+   "lien": "https://www.marmiton.org/astuces-conseils-pouvoir-dachat/alexandre-bompard-pdg-de-carrefour-a-propos-de-l-inflation-elle-sera-plus-elevee-en-2027-s4140577.html",
    "source": "autres",
    "media": "Marmiton",
    "date": "2026-11-05T19:15+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "L’inflation n’est pas prête d’être revue à la baisse. D’après les prévisions pour 2027, les ménages français vont voir les prix de leurs produits alimentaires préférés continuer d’augmenter. Voici ce que l’on sait.",
+   "site": "marmiton.org",
+   "enrichi": "2026-11-11",
+   "image": "https://assets.afcdn.com/story/20261104/2334375_w1500h844c1cx1000cy665cxt0cyt0cxb2000cyb1330.webp"
   },
   {
    "id": "714e574bb6e5",
    "titre": "Merguez rappelées pour listeria : trois lots à vérifier chez Carrefour, Leclerc, Intermarché et U",
-   "lien": "https://news.google.com/rss/articles/CBMikAFBVV95cUxQR2dhLW03bWZwNVFxWExldVVUTkpkU3hvTVR2RmRnOUNNbjdGZjAzRXlYVWUwNTBqeWpxR05udUplYW9rU2wzdzJsNFpXekFwbWhMSm9qV0IyaWlfbURmTC1pVUU2eU1pbW0xaUdQQ2NLS1FWNmpMZGNVZWpMWHUtSEs5dXVqYXpId0xnT2YwNVI?oc=5",
+   "lien": "https://labomaison.com/cuisine/rappel-merguez-listeria-carrefour-leclerc-intermarche-u/",
    "source": "autres",
    "media": "LaboMaison",
    "date": "2026-11-05T18:08+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "Rappel de merguez pour listeria chez Carrefour, Leclerc, Intermarché, U et Métro : trois lots, DLC jusqu’au 14 novembre, départements concernés, remboursement.",
+   "site": "labomaison.com",
+   "enrichi": "2026-11-11",
+   "image": "https://labomaison.com/wp-content/uploads/2026/11/rappel-merguez-listeria.jpg"
   },
   {
    "id": "cf6da03e04cc",
    "titre": "Il connaît bien l’enseigne : un nouveau directeur à la tête du centre commercial Carrefour Centre Sud au Mans",
-   "lien": "https://news.google.com/rss/articles/CBMi-wFBVV95cUxPTXJCMTN3a3I2ZloybExxY3hBLVdzVFYxaHVlWkNCQzNRV0JsaUg0RHl6TmNEMkx2MGJRRTVxNWpoU05tdmNBMC1aWGRXSk9IUXV5Z3Iwd2hhb0FXMXJPX09KTExobmN4UWRXQlEzaVloeGZoQ3gzN2xWVWltTWVlZC16OU01akRtYmVnaXF4UnMtN1FwNlhmb3hLTHEtbnQwMEVSdHpaeUpKMHJIZXZadkJvYnNRaE5XVklCNWd4aTJNVFctNEN1X0Rxbm5HS3pnTy01U2xNQUpjZXRMUm9FSUNVS2hqajFnem4wbk4zYmNoYjdpaFU1NUREcw?oc=5",
+   "lien": "https://actu.fr/pays-de-la-loire/le-mans_72181/il-connait-bien-lenseigne-un-nouveau-directeur-a-la-tete-du-centre-commercial-carrefour-centre-sud-au-mans_65023010.html",
    "source": "autres",
    "media": "Actu.fr",
    "date": "2026-11-05T17:21+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "Il y a du changement au Carrefour Centre Sud au Mans (Sarthe). Cette galerie commerciale change de direction à sa tête, avec un homme qui connaît bien l’enseigne.",
+   "site": "actu.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://static.actu.fr/uploads/2026/11/501e8bb35bea6741e8bb35bea681e8v.jpg"
   },
   {
    "id": "35b6c2e5e1df",
    "titre": "Commerce de montagne : Sherpa continue de croître à un rythme raisonné sur fond de changement de gouvernance",
-   "lien": "https://news.google.com/rss/articles/CBMimgJBVV95cUxPWEdiZThrbk92NGU1c0JMS3ZaWmVuS19wRXlHYXFEVGxvNmlUNjdJYVZUS1JjeWdlalozSmUyUlFQalF1VWFXQV80V3ZVWTFpM1RlSGhUMGFtcTc5VkF0a0dWMnluZGpWckJfYUpQRW9XRlRJUWY1UmVIbXItU1BSWEJ3bDM5cm5ycDBHaHNaZjBTWkVMcTI4VGpzUGhVZmd0eWFmeUV1QUVzWktGZTNpa3Q3Y0ZLb0t1UEdUWUVjUktlNDhtQjBoWkIyeXZ1aERRVWwxMjF5NmlnRVNSbHR5ekM4NEQ1NjhkazJQX1ZGVlFFVlNIUFZWbEZSMGZHd0huLVNSdV9MVFZWTnVEY2tvQWhmSlZXSnBwbUE?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/commerce-de-montagne-sherpa-continue-de-croitre-a-un-rythme-raisonne-sur-fond-de-changement-de-gouvernance.YC3IESQZJJCZXNMT2CUTAFCV4A.html",
    "source": "lsa",
    "date": "2026-11-05T16:13+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "092236e68df7",
    "titre": "Rappel de merguez chez Carrefour, Leclerc et Système U : alerte à la Listeria dans plusieurs régions",
-   "lien": "https://news.google.com/rss/articles/CBMi9wFBVV95cUxOTExmV1JLd3BUUU05eG95NHpTcGdhbTN2SzFYRDMzX3doM2NCN0RhRUQtQWg1NXhlVHFhQUFGbmFOaW02dVJrc2ZXcEdRZEM1UmRFZGtybUZ1aWZFM05tRi1hRlNHVndNcWFwTTI0ZFJERzN5V2FhX21PdnE0YWhhaHJnM1UxRVNWS0RzdTc2N29hWUhXeTFNdUZhUjJHV2JVdGVVc0VTUjFzaUNHTk1FVjlaQ3JNc2FyLUpPSzA1WHFEbWpwTFV3MmQ4WlNnZC0zeHZobC1BdFZrYXJZbWxKU2lMdG02eEhBUi1JWS1tMnZwY1hxOUJv?oc=5",
+   "lien": "https://www.doctissimo.fr/nutrition/rappels-de-produits/rappel-de-merguez-chez-carrefour-leclerc-et-systeme-u-alerte-a-la-listeria-dans-plusieurs-regions-830443.htm",
    "source": "autres",
    "media": "Doctissimo",
    "date": "2026-11-05T15:26+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "Alerte Listeria sur des lots de merguez VALLEGRAIN et Sans marque : vérifiez vos achats et adoptez les bons réflexes santé.",
+   "site": "doctissimo.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://sf2.doctissimo.fr/wp-content/uploads/doctissimo/2026/11/rappel-conso-ces-merguez-vendues-chez-carrefour-intermarche-et-eleclerc-peuvent-contenir-la-1200x675.jpeg"
   },
   {
    "id": "7df22656c4b3",
    "titre": "A l’heure de l’IA, le retail de demain va transformer chaque contact en valeur [Tribune]",
-   "lien": "https://news.google.com/rss/articles/CBMi6wFBVV95cUxQaTVNYWxJZkRGVWgtN3RaenJaSUEwUl9Xd0I2RjdoWnJSUy1tWjcyM1ZrSlljRnRiNWtIREJibXI1cVpUVDBlNGJ3cDFwcG1Lcnh1aUpoeXVmeHB3Y0Z4MWlZYTVnSDVVMHlYQ2tpNGw3UmI2MF9sT0ExMkpkeVZhQXIyRlgta2tRbWY0YkJBUTVNTGxJRmJVSjRwTnBNeEZLUjh5RTl3TEg2NmdVVElyWXY2Z3ZtNWhlUy0zMnVBVGw4SlJQS2lYRGJGeEo5WkUzUGhfVjlJLVZsSlBJVkwwZXQydy1jRDVPcUFv?oc=5",
+   "lien": "https://www.lsa-conso.fr/evenements-lsa/a-lheure-de-lia-le-retail-de-demain-va-transformer-chaque-contact-en-valeur-tribune.VJTC5WJRYJBQNBHLG4LHVO5BPU.html",
    "source": "lsa",
    "date": "2026-11-05T06:55+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "673fc8862ad2",
    "titre": "« Le terrain est un enjeu clé » : de Carrefour à Spar, à quoi ressemble le quotidien des directeurs régionaux d’enseigne ?",
-   "lien": "https://news.google.com/rss/articles/CBMiiAJBVV95cUxQSE9TZkJvQ2ZnNmhLTFFCRTNRLXNNS29MbGk1a19VbXFxM1lZaDlVQV9td1NqNWJFQjVmNTVTWVA4cjlUTFdzTHNFamRWOU5hQXRNX2N6aFhOWk1zSHdBOEZUWUdSWVVmMGgzN2I4d253SFowSzF6M1p5Z2cta2duZDVMRk1CbC0ybi1TZ3QwdWctQ3JKOE5IajlLdXVadF9VSG0wTFlPbWp6RmFKdFd1NlhsNEZ0cGppLXM1blEtOE5nYkItY3NuNFItM1VscmpNZVBXajhSN2RscEdTSFFBdWNjM3hQVjAxOTV4a29zSS1LbE95SEVoOXoyc055TjVmZWtkNjA2OTg?oc=5",
+   "lien": "https://www.lsa-conso.fr/metiers/le-terrain-est-un-enjeu-cle-de-carrefour-a-spar-a-quoi-ressemble-le-quotidien-des-directeurs-regionaux-denseigne.6JU33ALFBJOLJEG5DZQPTAORDU.html",
    "source": "lsa",
    "date": "2026-11-05T06:30+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "3fe3bec5f146",
    "titre": "Hyper U Sarcelles, inauguré en juillet, déjà liquidé",
-   "lien": "https://news.google.com/rss/articles/CBMilwFBVV95cUxPV0hwN2Nad1dEcWlZd2NrNHQxeEFBZWRRbWRPMVdXaVc0eW1KNmFxWnhOX3B2Q0x5WGJyb3dONEltVEd0V3RVaEwyd1o1RDF3UWw2RDNlWmktV3NOQmlDaVNXY0FaeThMVUZPaHhMMzFMWUJBTnktX0lhLWp6LVdyZFVvZm5HdzNjQUFtQWVBaUFiRWEtZHlr?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/11/04/hyper-u-sarcelles-inaugure-en-juillet-deja-liquide/",
    "source": "dauvers",
    "date": "2026-11-04T15:55+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "Inauguré le 8 juillet par la famille Georgelin, l’Hyper U de Sarcelles (95) ferme ses portes aujourd’hui après deux jours de liquidation. Il n’en faudra pas plus, les rayons sont déjà largement vidés. De mémoire de chroniqueur du retail depuis plus de 30 ans, je n’ai jamais vu un hyper baisser définitivement le rideau moins …",
+   "site": "olivierdauvers.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/Sarcelles-Mise-en-page-1-1-scaled.jpg"
   },
   {
    "id": "48f5272a0ad4",
    "titre": "Octobre sur les réseaux sociaux : les employés de Carrefour se racontent, E.Leclerc dévoile ses coulisses et Intermarché fait parler ses clients sur le pouvoir d’achat",
-   "lien": "https://news.google.com/rss/articles/CBMi8gJBVV95cUxObnRGWkNsOVR5SldHN1NWWXltSW9Gbkk3WVFoNElWUHNGWUN1XzltbFVhZEZZeDZMMmZYSXBoQjI4d19IMTl5cC1VRGJzSEhIbWpIVk1QcHE5N3ozc0loZ2NsWHdteEFBM0dFc25vQUZWdnoyU3ZRYzRya3NfLVBfX0lZa0YyR21EZzM1N25QV05aQ1JrM005dmpkVk03OFJidDVwQ0NiRkhza0J5UDg1WHlSRG5nbHFjMWxNcE5mZ0dUQ21kdW5fd2VBVmczR1RaRU03Z1FOT1dTRUxtekVBWVJ6MGlFZ0E4cFBVMS1ib1ZLdTRzaEYwVGFBUk55YVRzbnA1dnVfUTZYMEV6U0k5cmFHQnplRU1ZRXNkR1ZYay1jb0Zobm5aSVo4RFpaWjlmVXVEWi1HZ2trSXVZRF9TV2RtWEE1ZkNBQUYwcHFzQTZOUVBpaUJtSXhvOEk0eU0wU3E3Nm1IWGJxdmNwc21MNFlB?oc=5",
+   "lien": "https://www.lsa-conso.fr/metiers/digital-tech/reseaux-sociaux/octobre-sur-les-reseaux-sociaux-les-employes-de-carrefour-se-racontent-eleclerc-devoile-ses-coulisses-et-intermarche-fait-parler-ses-clients-sur-le-pouvoir-dachat.NYGNPI44CVHZPAY4IFEMER7OIY.html",
    "source": "lsa",
    "date": "2026-11-04T10:37+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "42fe9cbff3a5",
    "titre": "À Reims-Thillois, Match frais éprouve son modèle de magasin \"solution repas\"",
-   "lien": "https://news.google.com/rss/articles/CBMitgFBVV95cUxNNGN4UkdZNG9aaVRBX3hxNFY2Y0k4Q21GV01SZVhVWVItMlJobkd4Zy1OTlRTQ3ZmZV9TQk5PbEliLXFkazY3dFQ4bG96YjJoXy1zV3pocXBkSm5FbGo4VmprZ3o1SnROWGtaU005NkJEbDA1OGxvbER3UGZTN0dGN05TMnF2RzBfVUZYYmFwakx1UXYzd1d3V3A5TkR5ejRZYVNpUkNfSmhVMXdndkNaV0JOUTRnZw?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/11/04/a-reims-thillois-match-frais-eprouve-son-modele-de-magasin-solution-repas/",
    "source": "dauvers",
    "date": "2026-11-04T06:02+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "Tout juste 3 mois après Faches-Thumesnil (59), Carrefour inaugure aujourd’hui son 2e Match « frais » dans la banlieue ouest de Reims (51). Le magasin exploite une cellule de 800 m2, seulement, contre 1 000 pour le premier. La cellule était occupée auparavant par Office Depot, dans le retail park de Thillois, qui accueille déjà un Lidl, un …",
+   "site": "olivierdauvers.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/IMG_4629-1024x768.jpg"
   },
   {
    "id": "0513c4f38150",
    "titre": "Carrefour : premières leçons et premiers ajustements pour le concept Match Frais à Reims",
-   "lien": "https://news.google.com/rss/articles/CBMijAJBVV95cUxPUlV0YlBOUDVZVWFMX2FRNVRzRjVIa0ZnTzZOYngybEZzRXZtemw0UDhxdVJSNHBWUTFUVkNlUVFnamlZbXhmX1ZOTUdZMmh6a3NaeVVTZGxMM056NU9YQlRRREdNMmo1b1RTQVdDM1lCaDhueGpCNUQ5ZVJSd3NGaUQ4WW5tSmlIUFF5R3d0U2VtMV9DZ2JtWndOMWJ3dmNvaEY4MmVDcEFScHhXMzRERmlyN2xwVE9SZ05kS2Y2T3N3VndqbmpCOENIR2gyZm9pN2N0MXFIWFA3NXVndVUxNUFtUnJ0NDh3MnBzVmhQanlHVXhsa2FvSVdEZHo5cWlpRnlFODFTeWE1azVO?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/carrefour-premieres-lecons-et-premiers-ajustements-pour-le-concept-match-frais-a-reims.WMQFRPHSURAIXAJNDJGDZCREYQ.html",
    "source": "lsa",
    "date": "2026-11-03T18:46+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "3d176d7336fc",
    "titre": "Carrefour : «en Bourse ou au supermarché, une promo ne garantit pas la bonne affaire» L’oeil du loup de Zurich",
-   "lien": "https://news.google.com/rss/articles/CBMi6wFBVV95cUxOZnRnSzJSbHp2d3BBcF8zRlhGbmVlZUd6LUhld1M3QmRGZS1oczB0TUdRVVlxYjN0ODBQQ09jbmtyeUdEMngwMGdvSkF4NVIzbTJsS090em1ndDRPRVdoMnViVlVCS2txLS1KYXdhODJGVGNISVlETm0tcmFWbkZXX3ctMDlkQWtjOHF6cXZHOFBvMFB3UWpSNVg4N3E5cFlpY2xrc1NseTdhVGZJSGFmaVdYRjRtRnZBWUZNRG0yMTlmUXVuMG1NeVZvY1YxX0NLNEQtWWx3anRNci1ZWTRkMjFKVC1rdTlFY19j?oc=5",
+   "lien": "https://www.capital.fr/entreprises-marches/carrefour-en-bourse-ou-au-supermarche-une-promo-ne-garantit-pas-la-bonne-affaire-loeil-du-loup-de-zurich-1531532",
    "source": "autres",
    "media": "Capital.fr",
    "date": "2026-11-03T18:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "Carrefour est une action en promotion, en Bourse, mais pas sans risque, selon James D. Touati (dit le Loup de Zurich), consultant, formateur, trader et président-fondateur de The Nest. Quel potentiel en Bourse pour l’action Carrefour selon l’analyse technique et l’analyse financière ?",
+   "site": "capital.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.capital.fr/imgre/fit/~1~cap~2026~11~03~d51def3e-4354-4345-9df4-13a696a2694d.jpg/1200x630/focus-point/1294%2C793/carrefour-en-bourse-ou-au-supermarche-une-promo-ne-garantit-pas-la-bonne-affaire-l-oeil-du-loup-de-zurich.jpg"
   },
   {
    "id": "792e8393c167",
    "titre": "Au Mans, du changement à la tête de l’hypermarché Carrefour dans le quartier Sud",
-   "lien": "https://news.google.com/rss/articles/CBMihAJBVV95cUxNOVlDNDB6Zi16aWdjUTNPNGgtR2U3OHpCTWtkblJCZm5XMjNuVUNET3p3cWRlb24wQXJBeGE3YkE3ZUNSUFFTWFRURmVZY3ZPUTdGcFZtV3ZNWVpWNldSZXloV1pTQXhISmoxWUppUlo4Mk1mQkUxSk9JemlOSDZPQjVvVkRmd2MwaENnT0hxMVcxVG0yb3hjZTd3NTdQOXRoR1hsaGc4RW9Hd1BzaGFqMlh4b3ZLbHp2OWV3U3dqWVVWSVBfN21xOWpTcUxxNmRmcUhCdmJXeTNBdjZyd2RwdEI0TDRYcmZRU1JUTjN3andTUWJld05ON3RBUEJmZVpiWXFkLQ?oc=5",
+   "lien": "https://www.ouest-france.fr/pays-de-la-loire/le-mans-72000/au-mans-du-changement-a-la-tete-de-lhypermarche-carrefour-dans-le-quartier-sud-1bdac43e-d796-11f1-b736-5b9907ef0b5a",
    "source": "autres",
    "media": "Ouest-France",
    "date": "2026-11-03T17:16+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "ouest-france.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "5a0fc56e2d74",
    "titre": "Distribution de proximité : pourquoi Carrefour, Casino, Coopérative U, Intermarché, Francap et même E.Leclerc redoublent d’efforts",
-   "lien": "https://news.google.com/rss/articles/CBMirwJBVV95cUxPQV96VnBLTVBCLTRLUU9zSnN3S25QZTVidVRSeER6ZnhCVGpLV3J0d0s4QnBfcGRGQWJvT1NmV0V4bU9WRVBhcllYQWlkSjNwdmhSczNXZjZnOHJfRG5ZTUQ3akNVYXlYOXFJS3BHOW5wZlhBTDhUTENWSDJGU1RyRTV1aVpwaFFOUE4tNnlKaXVuSVlmMGtiU05OS1V2YWdDSDI3ZTgyRXVnbmNCOG5SLWU2NUowNU14UFpJdjRQbDc2Q01LRWhaVkZrcW5YaHBpQ2lLWWxHbmlnZFpSUU1xTXN6eTV3WUZjUjVfRWJpd0RuOTBzRVo3WjVWNnhRTEtyMXJSRXpKclI3OUpfbmhOTUt2MHk0V2tqa3Z6dTBjbWduaDMwbF8wV1RDN0ZrTGM?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/distribution-de-proximite-pourquoi-carrefour-casino-cooperative-u-intermarche-francap-et-meme-eleclerc-redoublent-defforts.KCUXCD2C6BGBTAXDZSWZTUP2VM.html",
    "source": "lsa",
    "date": "2026-11-03T14:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "567c00a7a967",
    "titre": "Prix des carburants chez Intermarché et Netto : « Nous les baissons de 18 centimes en moyenne et cela va durer trois mois », annonce Thierry Cotillard, patron des Mousquetaires",
-   "lien": "https://news.google.com/rss/articles/CBMilANBVV95cUxNNXpHTWNQWk5Wc29lSkppSlhOdjc3dnhLY1Vqa0ZKSEhlTWRqRjVaelpabzJFcU9pTlpaNUlRM09MTThVRW54eXgxWm82UXRUcnpsMlhxQ3dUMkdDQlUxNVctVmxoUEJPakFOTDdFQklzV0owdlhSQmxiVjhtVkVGOTlVN0pkNlptbmJEZGhCRWFnNVdzcEZmWEEzQkV1bkl6SlN0VVJmQzEwUC1SM2FUSWFUazlMSW54MDBlQXg5LVhOdzRYLVlPU0pnTzVabzZtMHRGSzZtTlhTQVRvQTFaZ1F1ckxNZUNJU3N6U0Q1SkxVR08wRHpQUjBkdzg2LUNQdzZqTE94RjNRQnZMTmhNblBYcGdHZ1hmbTU1Y1BYdEVBVWZEUHJ0NlQ3S3MyQkY2UEM3TTl0dHBKWjBWWWdfQXFmLU5PSmF3a1NjQzFLd3lTa2tfUFBmUFc1bDN3cGRYQ21LbHh3T2dmQ2Vqd05xT3BKVkJIWnpHcVo1bkpsalJzTkc2b0hFa291bjhxclhpOVpBRA?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/les-mousquetaires/intermarche/prix-des-carburants-chez-intermarche-et-netto-nous-les-baissons-de-18-centimes-en-moyenne-et-cela-va-durer-trois-mois-annonce-thierry-cotillard-patron-des-mousquetaires.XQIAA6H36RFYPGWVNEECX54AH4.html",
    "source": "lsa",
    "date": "2026-11-03T10:41+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "23749da2bb39",
    "titre": "Carrefour : \" D'ici 2030, nous atteindrons l'objectif d'être présents dans 60 pays \"",
-   "lien": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxQS0pzZEI4WW9wd2ozc2p1VXppWEZWdDhtMDNxX09VOUliOHc1UUNXdHFPeDhOaWFHR3RtNzdhUVdTcTI4d0xncC1Fd1h1X1JjMWhrMWhsSmNma01GalBqWnZVVGM1R3g4dG44Qjg3WUVhb09TSDBUZHd6WElsTTkyM1hfWnpHMTFDV19FeWxLOExDVmtoS1FhZW4xUnJ5VnlVUUwwUU9id2x5UU5fQjdpRHduZmREenNZTVJj?oc=5",
+   "lien": "https://www.lineaires.com/la-distribution/carrefour-d-ici-2030-nous-atteindrons-l-objectif-d-etre-presents-dans-60-pays",
    "source": "lineaires",
    "date": "2026-11-03T09:20+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "Alexandre Bompard, PDG de Carrefour, a fixé l'objectif d'être présent dans 60 pays d'ici 2030, contre 36 aujourd'hui hors pays intégrés. Via des partenaires, le",
+   "site": "lineaires.com",
+   "enrichi": "2026-11-11",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/b14b9bdd-516e-44ef-8975-a0a9cea45a74.jpg.webp?itok=fSFFmUPO"
   },
   {
    "id": "3d602f2962b9",
    "titre": "Carrefour-Cora : derrière le rachat, une bataille judiciaire à plus de 100 millions d’euros",
-   "lien": "https://news.google.com/rss/articles/CBMigAJBVV95cUxNN3JhYngxMXhmNEJiQ2hhTkFjcVc3QnZaZk5HTlEyY0txcWhQaGZqUEFZS0dEM1BmclVFZksxUjdVTTlVVEY3ZHV1RXlnQzEyemJDbVF3OUNfUHFnU1hZcl8zSnNYY0lVTGk1bWY2RW5zemc3QWhMM2dCeG1WQ1NuZTdCamw5YkRYbURabkhpdjRqLUFSbjhDd21GZno4NE1mdVJRLURibGFKTUZPeXZ6aDJkNTl6UEhNeUVMVlFyaTczWXAxZkJ1Z1paWnF3MHJnbTN2WGZOOWd1SHJtM1FNbVJrWG1ROFoyZXB2RVFIcTcxTWRlc3JtZFJOcVA3VnFL?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour-cora-derriere-le-rachat-une-bataille-judiciaire-a-plus-de-100-millions-deuros.X6GZCKW5FZCPHCR7EO3JAIHWJY.html",
    "source": "lsa",
    "date": "2026-11-03T07:30+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "4501fa3161ec",
    "titre": "Grande distribution : Plesio (ex-Casino) finalise ses partenariats avec la famille Zouari",
-   "lien": "https://news.google.com/rss/articles/CBMihgJBVV95cUxNTDJEWXBMRnRlMXNPVGcxRDZteTVLTWUxUm1ndDhsZkxoLWo4LU1NeEMyTHdPSF9aNWM0bms5Z3NwLU9WeE9Icl9xdXQtZHk5elphSkFTNHIwSkpsYjBvQi1rR0ZvMnpONE5lM2hheG0wLWllU3lUbE9VSHdSaWltdDkzdW9mQVJTNVdYVm1qMU1WZnBIclBfQThjS1JHeF96WnZUYjRYYTQ0Sk0xWklQUG5NY211V2YtOVhkcGhPMElKNFJVaDRRQ0NSUlZGWHFDeDA5NDNuMld0ckhPb1RNbzA3cjVTdDdWdW5uRm84QlpQWG5GRlNaRldKVTZWM2ZMZVdHeDJB?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/casino/franprix/grande-distribution-casino-finalise-ses-partenariats-avec-la-famille-zouari.ADCICPRYDNFNLLKTWB7J525E6E.html",
    "source": "lsa",
    "date": "2026-11-02T15:40+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "a97752fef78c",
    "titre": "Greendoz veut accélérer en GMS avec ses biscuits bio",
-   "lien": "https://news.google.com/rss/articles/CBMilgFBVV95cUxQczVoQTVFanhMM2VmVXBPMFRaRjNnTlhtUjFPNE1MOGxQZW5kSHJSZFJDTkxZVTRyVTVLNXBMbXF1UzZUN3lKLWZIbUd3cWdFYWRuZl9HeG5pV1JLcVhyNWgzNWVMUzJXZEVhNmliUlFWX25ZaUdnbkFXS1U3d2tuU3RxTzVXUFNDUzBOUDUwUU01M0szZWc?oc=5",
+   "lien": "https://www.lineaires.com/les-produits/greendoz-veut-accelerer-en-gms-avec-ses-biscuits-bio",
    "source": "lineaires",
    "date": "2026-11-02T14:55+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "Réussir à faire manger des légumes dès le petit déjeuner, voire au goûter ? C’est le pari de Greendoz, une entreprise francilienne fondée par Sabine Andria,",
+   "site": "lineaires.com",
+   "enrichi": "2026-11-11",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/8be33689-8435-4c58-a748-24d9a74ea92f.jpg.webp?itok=mTrLr2Nt"
   },
   {
    "id": "00fb50fff76a",
    "titre": "13 % de marge nette, 101 % des bénéfices reversés aux actionnaires… la Fédération des distributeurs (FCD) pointe les entreprises multinationales de l’agroalimentaire",
-   "lien": "https://news.google.com/rss/articles/CBMi2AJBVV95cUxNT21HcmRnYUNiRTVhbHN5RVdGSkZmYjhJMEJMeUplYVczazg1dGtvMUszRnF5bGtnNUQ1ODlXNDJXSDdNQ25LMmpXQjhJa3RoQkRIWEJsMzZsWS1oXzlKMFBKNE9BeVJQblRlR2Z1aHRJb1daX2tZODRHRXdzUHpHdEpWallVczR1QW9VM01LQ0Z5S1JVMlZqSERYbkFqNUlmc01aZ2t5bndSeWNPR1dKX0NkM3ZfQnBpZVdsUDZJTEZReXZkelktRW1MUjN2bUtPamlubEk3MXRXNDhpUWVpUk5BZG5sRU96cEpFN0wwSFpNMzBoY1Q4bUFudHhDWE43alJabFNtWmg4YzNkQjktVmF0WHcybXJTR3A4VWFHUldRSDVjRWU2TFdsdE1uTHQ3dk5OUlNDZjNCT1djRkY1ZEM1N2drU3YxTVRwei1KN3lyVGd5TE92ag?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/13-de-marge-nette-101-des-benefices-reverses-aux-actionnaires-la-federation-des-distributeurs-fcd-pointe-les-entreprises-agroalimentaires-multinationales.V4OMYHAJUJBU5KDJBD6GFMJ6ZY.html",
    "source": "lsa",
    "date": "2026-11-02T10:38+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "b71480274cd0",
    "titre": "Restauration rapide : 41 restaurants KFC, près de 63 millions d’euros de dettes… un franchisé en grande difficulté",
-   "lien": "https://news.google.com/rss/articles/CBMihwJBVV95cUxNVjBKbmJwQm1KZ25ReGhnMXRpTTBxcEFwT095aTVPYVFFUTJSMlJEcXhUTWdBV3JINWoydm1oR05yRmIzcjJycFkxc3ZBNmgweE1XaGFpYVZvT0luZkZfSmhXc3FjSVRqSElFU3hnZ2w4d2FNNlpxV0JoV3BlSUhRdnczYzhWbzdBTWROcjN6UnNrNUtUSmN6Y2E4RTJPRk1ZbEtjckFQd29PdGc3ZTV6aEdOWkkyb3RTY2gzRWxRMmJrd2hnVXhMY0xHTjlNOFowYU45U2RzenBQYmdyT1RjUFdHaVYxV3ZLXzE1dFRtUDBLY0cxb0p3ZGpuVlRxWFJZQ2pQeHp3UQ?oc=5",
+   "lien": "https://www.lsa-conso.fr/franchise/restauration-rapide-41-restaurants-kfc-pres-de-63-millions-deuros-de-dettes-un-franchise-en-grande-difficulte.W5WEQRYHD5HKRMD4V2LJXYFGWM.html",
    "source": "lsa",
    "date": "2026-11-02T09:17+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "e4c674304a05",
    "titre": "[ ÉTUDE ] La FCD prépare le terrain des négociations commerciales…",
-   "lien": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNUDUyOGlmbEFOU0ZzQUI0emkzV3ZUeDY5bzZ0eUxaaldvWENNYzluazBhRjh4SzNUaXVBazNBM3ptdF9GWjljZWhFX3haNkt1NlZRWjhNVHRQWVllU1VUUUJzZjhFODlUN2RIYmpxc1FDZ25NMjhSNDBpaWw4RWl0X3lZU3FzNmRBOV9XVWpWcHlvM0t5N2JCQXVHaHRyMjVGVUNfOE9B?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/11/02/etude-la-fcd-prepare-le-terrain-des-negociations-commerciales/",
    "source": "dauvers",
    "date": "2026-11-02T08:40+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "On pourrait appeler ça des préliminaires… La FCD (fédération du commerce et de la distribution) a publié ce matin une étude confiée au cabinet Astarès, connue dans les médias via le visage de son fondateur, Nicolas Bouzou. Une étude qui décortique les performances économiques des grands fournisseurs des enseignes : Mondelez, Nestlé, Unilever, Procter, etc. …",
+   "site": "olivierdauvers.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/Capture-decran-2026-11-02-a-08.17.12.png"
   },
   {
    "id": "42e9937e4613",
    "titre": "“Mois du Black Friday” : Carrefour passe à l’offensive dès le 2 novembre 2026 avec quatre semaines de promotions sur des grandes marques",
-   "lien": "https://news.google.com/rss/articles/CBMickFVX3lxTE0zZ1pwLWxnRTM5ZU9EelVGV1lMWEctLVF4SDUzWXhvRDA3UU9qOTc5Q0lGMElLcEJOM3NNTjREVDQ5LW9Od2NWb2ZhSmhLYkE0UG5Md3h0em5MTXk2NkJnYUFnekM1X2ZtcVhiekM4MEJ5UQ?oc=5",
+   "lien": "https://www.carrefour.com/fr/news/2026/mois-du-black-friday-2026",
    "source": "autres",
    "media": "Carrefour Group",
    "date": "2026-11-02T08:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "carrefour.com",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "01d4e1d8c642",
    "titre": "La MINUTE RETAIL : Le choix, jusqu’où ? Exemple chez Carrefour…",
-   "lien": "https://news.google.com/rss/articles/CBMinwFBVV95cUxQLTY5UmQ2cjZDRGxKSC1URjVZWkRxNV9CRHgzc2Q5SDJ4UXdQOFhuaXdtVkVYQmhkRFc5Y1VPN0NoTkJxU2p1NWNaWlp4c1ZVd2txU3pxTmNwRG5VVVZzMXoxNFp4SXhaZHNybEJZMy11eVZqd0RxcWpxZzZFWUtQTWdrcXJQTmdOdDdnRW9GaEozM1hGMUU4Qi1rc2oxN1U?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/10/30/la-minute-retail-le-choix-jusquou-exemple-chez-carrefour/",
    "source": "dauvers",
    "date": "2026-10-30T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "A la une cette semaine : les 30 dentifrices à la marque Signal vendus chez Carrefour. Oui oui, 30 références différentes pour une seule et même marque ! Ou quand l’hyper choix confine au délire… La suite ici >>",
+   "site": "olivierdauvers.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/10/X-MR-44-scaled.jpg"
   },
   {
    "id": "8874eb788d77",
    "titre": "[ EXCLU ] Darty débarque chez Carrefour via la marketplace",
-   "lien": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNYktiLUZuLW1ickFLT21oNnFiQ2psOUJJdk9GZmltTnpvVjhic25FLWFFOV9LdWROSG5rOW9EOUJ6a2ZyNi1jNm1ZWTVmd2FpNGpQYVY5dFRtX0ZlY0d1Yks2YWxFdkN6bkZFNU1oVkJuSS1LSEFnODV4Qk54bzg2RHRSSkVIZTQxcFZwT0ZjaFhURkR4cDVfbEg3SlE?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/10/30/exclu-darty-debarque-chez-carrefour-via-la-marketplace/",
    "source": "dauvers",
    "date": "2026-10-30T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "Carrefour et Darty, il y a comme un goût de reviens-y… En 2018 (déjà), Carrefour accueillait Darty dans ses hypers sous forme de corners (revoir ici). Ex-patron de Darty, Alexandre Bompard venait alors d’arriver à la tête de Carrefour et avait sans doute aidé à la mise en place de l’expérimentation ! Mais sans succès. …",
+   "site": "olivierdauvers.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/10/Mise-en-page-1_Page-1-17-scaled.png"
   },
   {
    "id": "59f71bf8d634",
    "titre": "Toc toc, y’a quelqu’un chez Carrefour ?",
-   "lien": "https://news.google.com/rss/articles/CBMihAFBVV95cUxPZXMxdHdMaV9NMWYzYTVJWWh4ZWhsaWRNTXVscU5iTHJtOFp4THlMdnNaNk1UeHYtNzBCMjFINmpfWnd6XzBBMW9oWi0ybkJrbm02QzlYTEJZa1Nlc1NEVDdlX2luNmFWVl84SllsZ0Y3UGFYQ2RkQ3BUa0hpbXQ4ZkF2aUY?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/10/28/toc-toc-ya-quelquun-chez-carrefour-4/",
    "source": "dauvers",
    "date": "2026-10-28T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "Toc toc, y’a quelqu’un chez Carrefour ? Parce que je suis chez à vous, à Évry. Et j’ai une question sur votre promo sur les boîtes de rangement. Y’en a combien au juste ? 100 ou plutôt 50 ? Parce que ça fait quand même 2 fois moins qu’annoncé (et vous en devenez complice du …",
+   "site": "olivierdauvers.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/10/OD-Toc-toc-Carrefour-Evry-Boites-x-100-1024x603.png"
   },
   {
    "id": "c13e8eaa3838",
    "titre": "Carrefour Cherbourg (50) vendu pour… 1 euro (symbolique)",
-   "lien": "https://news.google.com/rss/articles/CBMimAFBVV95cUxOc3lGOTN6RWxvZWFHU3EyZm1GdTBIaUhsd0JtNGxKWjVVRGtfY1dELUhFLTYwSFRWT0NUdHFCSGZRbEE3ZUZ0b1o5RU9waWpIMVFrWHZJb2R0TW54YUppWGVTSVpGU29fZFhIYk93LXpEUDg0LXo4eDNsN191R3M0ek1pc2FzWEhJV18wNU5HVm5qbGVERXVxXw?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/10/27/carrefour-cherbourg-50-vendu-pour-1-euro-symbolique/",
    "source": "dauvers",
    "date": "2026-10-27T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "En théorie, c’est la destinée normale d’un magasin en location-gérance que d’être racheté par son locataire. Dans le parc des hypermarchés Carrefour, néanmoins, les gérants devenus propriétaires se comptent pour l’instant sur les doigts d’une main. Un p’tit nouveau vient de s’ajouter à la liste : Didier Julien. Enfin, pas si petit que ça puisque …",
+   "site": "olivierdauvers.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/10/carrefour_cherbourg.jpg"
   },
   {
    "id": "b1c55064bd63",
    "titre": "[ EXCLU ] Carrefour ouvre son hyper de Gennevilliers à un shop-in-shop Boom",
-   "lien": "https://news.google.com/rss/articles/CBMiswFBVV95cUxPYy0xZkduNEhPZl9RazNhZ2dGNEFXSjBFU0RhVkdFTXpxcXFFcV9NOE03cGh3N3g1TDBUVUtvRXU0bDd3YUZBR0p2bjhDSEwydUQ5YlAtMnBETTBic3JaUmNQV01sYWhuZEN4YnNqNV9lX0dIS0I3ZFBHUl9CREVVX01GV1ZuVWpXdzhRWE8zVTJEWXh5UWxxWThxdUFwQkM3Z1FwNUtjcFZiejBpNVhLbC1yUQ?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/10/26/exclu-carrefour-ouvre-son-hyper-de-gennevilliers-a-un-shop-in-shop-boom/",
    "source": "dauvers",
    "date": "2026-10-26T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "J’vous avais présenté le premier magasin de Boom à Pontault-Combault l’an dernier (revoir ici). Voici à présent le premier shop-in-shop de l’enseigne chez Carrefour. Pour Carrefour, c’est loin d’être une première et quand même le signe d’une forme d’errance sur le terrain des petits prix : il y a notamment eu les corners Bonnes affaires …",
+   "site": "olivierdauvers.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/10/1-7.jpg"
   },
   {
    "id": "487c7c3ce347",
    "titre": "Grande distribution : en rachetant Codifrance, Carrefour consolide sa branche proximité et fragilise celle de Francap [Analyse]",
-   "lien": "https://news.google.com/rss/articles/CBMivAJBVV95cUxNclF3ekhkUjRCTi1ic1dJOFhjRkRQMmE4M1B6QVh4VFg3b2UzdEt6T1p1UWgxUWQxM01ISTF1R0NkRHY4dndLY1hoMWUyTWpuSUJjZnZDV2ZRcnN4MDEtZXZZRFhHU3JHZjFNV1dHMkNGRGUwTEZJdEFjSFRGOHg4cVRLT0lkb1JZLVpPd0NVY2NhVHJVbTFpXzF6ZVlUV3lWN2pxc0wxN2hoYUZwbHM0Skk4NE9KUFZ1OEV6aFBoZ1laeDZRckRuMzYwWWI0VjhBQlBqR21idmp4TG9DMHVvaEJDd3dOcnNOWlpVRkMzNXZmcUl3czg0VGIzaGhZZXNhOFBWcnR2OU1oNkdyRV9qU0dvOEpjWjgybGlCb2xoeUpSeGxTcmEzQjJqZzV5dkV0UHhMSHJyOHFpTW1D?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/grande-distribution-en-rachetant-codifrance-carrefour-consolide-sa-branche-proximite-et-fragilise-celle-de-francap-analyse.WB7J6CYO6JF5FPHB5WB4M2Y2IM.html",
    "source": "lsa",
    "date": "2026-10-26T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "6d4bcb2ba146",
    "titre": "[ BOURSE ] La “Black week” de Carrefour…",
-   "lien": "https://news.google.com/rss/articles/CBMigAFBVV95cUxPVllwbi1QVGVXNFFJS2lFbkNrWU9ud0F2UHlOUWdpaVFHU2dEQXhpNDdaVGlRX1RxdzdwVU1KVFA2cnFJQlNMWmxydGdEUEpmU1dXNXNrSmE2VmZPNW8ta0hpQlp6MVVpblVocnVBa3lELWo4Y0otVmxPMlBkQnRFSQ?oc=5",
+   "lien": "https://www.olivierdauvers.fr/2026/10/25/bourse-la-black-week-de-carrefour/",
    "source": "dauvers",
    "date": "2026-10-25T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "Il y aura bientôt “Black November” ou “Black Friday” dans le commerce. Carrefour n’aura pas attendu et vient de vivre une… “Black week” en Bourse, dans le prolongement de l’avertissement sur résultat annoncé mardi soir par Alexandre Bompard devant analystes et journalistes. En cause, selon le boss de Carrefour, la menace sociale en France avec …",
+   "site": "olivierdauvers.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/10/DGC-Carrefour-Bourse-scaled.webp"
   },
   {
    "id": "6a4860151a2b",
    "titre": "Morrisons : relancé par Rami Baitiéh, ex-patron de Carrefour France, le distributeur britannique retrouve de l’attrait et suscite les convoitises",
-   "lien": "https://news.google.com/rss/articles/CBMi-wJBVV95cUxPSjdxOUh6enIyaW1jb1hDMnd3UEdxTWtmbHAyU2VXQXdaQnVkajcwb0hna1BLWWVnWFhqVGxIdXA4UHNOT0ZHME54Tl93LUp4UUl6RHNHQy1ZMkVZSE54Y1gxYzNLRWVxdGVZZ2QxcVRENElKeFJfbXFZMmVvZjI4WkFxWkh1eXREWXFkb2JMWDVuM3ZzZzVpbVZTeS05bFFIa1gwb0ZMbGRSMV83NHd2RlpTMXMwNXItOGNzdXl2UjRfUHc3N1V1LUVLLThMQlhBaWpOQnl0ZTZGZDV4RjQySTFzUnBlZXp1emVVYlc5U3ZSMU5UZ1d6WFNtajhJOVdMblphdUY2UmZQeV9qUFBkY0FhRmJWWUF3OS13WmwxelcwVzc0MDIyc21YYUZtcW1DRklqR3lLQ3lHLWNKbXI2ZDBPanFRbTFSNl9xNk5vNENSYjdHTk81Z2s2R1RpWWJXRWdfZTFOd2dveHVOQkQ3LWNhUENBZEphcjRR?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/distributeurs-internationaux/morrisons/morrisons-relance-par-rami-baitieh-ex-patron-de-carrefour-france-le-distributeur-britannique-retrouve-de-lattrait-et-suscite-les-convoitises.UHXBD4PHUBLJ7F3SNP2GK3IBDM.html",
    "source": "lsa",
    "date": "2026-10-25T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "a3656be9254c",
    "titre": "Pillages, violences : le choc économique - Alexandre Bompard",
-   "lien": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxOOXFLaTVFTWxOLXhNbl9mbU1Rc1Nsbl9BeVhzbzBWZTZGWlpyYXJ1aHFNRlE1YjBuVHBjZlhUbEdnLTVCeVBBLWpTTEpCQ0hWamVhdVl5Y2cxRjVMY3lRdTR2V0dvR20tNDZnSFR4bkdVcG9icmgzUGRNRXVHaFUxa0RuY01DMGxNMm5VdVJSbUVBU0FDMWFmSnppaWllVmhvM1VSeExGS1NZdGROOU1acTdnQXE0eDFjVEN5dGFvSjV1cHQzSzFrNFp3U2lWRktv?oc=5",
+   "lien": "https://www.france.tv/france-5/c-a-vous/c-a-vous-saison-18/9011671-carburants-pouvoir-d-achat-budget-vers-un-retour-de-l-inflation.html",
    "source": "autres",
    "media": "France TV",
    "date": "2026-10-23T07:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "Carburants, pouvoir d’achat, budget… On reçoit Alexandre Bompard, président-directeur général du groupe Carrefour pour en parler",
+   "site": "france.tv",
+   "enrichi": "2026-11-11",
+   "image": "https://medias.france.tv/AVYvVHcPI4-k-jxJHcSARkyY1do/880x0/filters:quality(85):format(jpeg)/y/c/f/phpq6jfcy.jpg"
   },
   {
    "id": "71812157c429",
    "titre": "Carrefour : quels sont les 32 magasins français concernés par la toute dernière cession de murs décidée par le groupe ?",
-   "lien": "https://news.google.com/rss/articles/CBMipgJBVV95cUxQSkluSnNtUzZkR1pYcjEtNjhmTThUc0p5YVF3SUhSOENrUlhuUU1tN1h2WGhNX3hmaW0xTEF2TmZ6YzFQSnJvNjZka0dXckttcjg4c0dMNFNMZVZIZU5uLV9pSTNTQWhfdkZoNTh3UDBDZWxNZU1TNWFGTzRJMG5LZmlnVDJIS2ptSEhrWGIzTi1sSEJWVDRoMDREdHdqSEZ4RnZwQVFoYjNmbEh1WjR4OFpzYVZxZi01aHpkNG5iUlJZSE0tT0JDaHRKNWctSDlCSFp2WnFINjd0NWNkYzQ5cDZLMG9aa05laVB1U3VGelJZODFqLUNIUDNDNWhTWWR6aUlhajYtc29peGVUaXYxNU1IVWd4TlU4UnZBUnZnRE9rOVlENHc?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour-quels-sont-les-32-magasins-francais-concernes-par-la-toute-derniere-cession-de-murs-decidee-par-le-groupe.HKYOH52LTVDD7NZ76S7P45QWSI.html",
    "source": "lsa",
    "date": "2026-10-22T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "a028eb13263b",
    "titre": "Alexandre Bompard, PDG de Carrefour : « L’impact des pillages sur notre résultat annuel sera de 80 à 200 millions d’euros »",
-   "lien": "https://news.google.com/rss/articles/CBMisgJBVV95cUxNYmxsY1RXbHFaSDlNbzRJU0w1YkwySlRRT1hmQllhb1pubEpmN1FYaDd3dHdLLTZhSWFjeElUdE5kekhWczFoOTBPX0xpalNJYmNINlQ3V1J4T3lHZm5wbWxwSnVFTUd3TmxVUWFZUngzV0UzUTgwREN2dHViX1lSZzc0bW9GRXVxWm1rUlU0X3YyYWJfQ0Z1S3UwRzZSbzBqeEJrUnNURmR4MElKdWYzQmQ2T0Z2RkdEZVdXMXVvNS1oemlkekFtLVBkbVFaWmZKcmNQSkllNlBoZF9tRkc5ZktrTzBrczZodFF4QlRFMUMzNDFzeFExa0k3QlhwQXdPYzBUQ1Zfei1uZW9BbE1ZWlZKbGplcFVyQjhMYzdGellrVDl4bUlhY29QZExwTFo5X0E?oc=5",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/alexandre-bompard-pdg-de-carrefour-limpact-des-pillages-sur-notre-resultat-annuel-sera-de-80-a-200-millions-deuros.PZ644BQMYVG75KX4RIJ6CQCIJU.html",
    "source": "lsa",
    "date": "2026-10-21T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr",
+   "enrichi": "2026-11-11"
   },
   {
    "id": "1d27c28f0c2b",
    "titre": "\"Il faut que l'ordre républicain s'exerce\" face aux mobilisations sociales, demande Alexandre Bompard, le PDG du groupe Carrefour",
-   "lien": "https://news.google.com/rss/articles/CBMipgJBVV95cUxNV3hpRmpUeEx0dVM0MmNXUXp2Y1ZjVnU3TFdQVGstV2dYdVV4dGNvQWNqLXJxcmVoR01HVjZJRTJuMzVCcVRJU3dlcnhSUVNqdVI5eVJXc21XOXI1aElxWlBQeGc5LTFGYWNoYnBUTWZCMzE4NXdna2pjZXhyV1FUcWtIWDBfdlZ4MHhMaGlhaTBYMEtMaGlmQ0NxbDI4Q1QzRERDU2xFalZxczItQWtoanhoYmNId2lwQnpvc2J4NzBBRXF0SHhaZGg5OEEzOXZkYS1BMl83Z08tT05EaEd6Vkt6bUJIOUtXZjZLS0JFbi1IM0U0anBHa0xYRy1JRTJyQU95NVNrV29fTHA0c2VsVWxTVVlTaFYyR0JYUS1US3VBazdFQUE?oc=5",
+   "lien": "https://www.franceinfo.fr/societe/mobilisation-du-17-octobre/il-faut-que-l-ordre-republicain-s-exerce-face-aux-mobilisations-sociales-demande-alexandre-bompard-le-pdg-du-groupe-carrefour_8246884.html",
    "source": "autres",
    "media": "franceinfo",
    "date": "2026-10-21T07:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "\"Les pillages ne sont pas des opérations de pouvoir d'achat\", réfute Alexandre Bompard. Il estime toutefois que les revendications des manifestants sont légitimes.",
+   "site": "franceinfo.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.franceinfo.fr/pictures/VzRoOh-7mPAh24qtnQiWwa6FHAg/0x0:911x512/1500x843/2026/10/21/6ad85bd2db9af397485249.png"
   },
   {
    "id": "bb4241f3315b",
    "titre": "«Des alcools forts pour du trafic», Alexandre Bompard (Carrefour) révèle ce qui a été volé dans ses 50 Carrefour pillés",
-   "lien": "https://news.google.com/rss/articles/CBMi9wFBVV95cUxPcG5RU212aWRRMHNEQkxxUXh2eGRSRzB6SVpDS08tN0VQUUE3bjBtMkVGbmZKd2Vjd01jQ0UxMEpWY1loLTBpdFlLVXB5Z3ZRblF1SnprVkk5dHRkbGdLOHVSbHBRMTdPSkR4WHNHc2VXQWIxV1NkZUV3UUM1dkczV3AyMUtzeDNIa0FEbEIwc1hkM0hGTURWM19MSVZCU0FPYW44R2FPZENkb29GcnNpdms3WVRVMTFGVTZlRjB0bV9kZXVmV0c3RnJ5d05sem5TSGpmMlFRRnI3RXNGS21zTTR2T0VpTFB4a1VlVHF6UVJGOVBRR1NZ?oc=5",
+   "lien": "https://www.capital.fr/economie-politique/des-alcools-forts-pour-du-trafic-alexandre-bompard-carrefour-revele-ce-qui-a-ete-vole-dans-ses-50-carrefour-pilles-1531162",
    "source": "autres",
    "media": "Capital.fr",
    "date": "2026-10-21T07:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "Quatre jours après les scènes de chaos qui ont émaillé la France, le PDG de Carrefour était l’invité de France Inter. Alexandre Bompard, qui avait déjà chiffré les pillages en centaines de millions d’euros», a révélé ce qui avait été le plus volé, et cela n’a rien à avoir avec «le pouvoir d’achat», a-t-il déploré.",
+   "site": "capital.fr",
+   "enrichi": "2026-11-11",
+   "image": "https://www.capital.fr/imgre/fit/~1~cap~2026~10~21~d0b4b84d-c296-4e44-ac43-6fc8eecfb4c1.png/1200x630/focus-point/1215%2C416/des-alcools-forts-pour-du-trafic-alexandre-bompard-carrefour-revele-ce-qui-a-ete-vole-dans-ses-50-carrefour-pilles.jpg"
   },
   {
    "id": "2645b19a36d3",
@@ -930,7 +1085,8 @@
    "source": "dauvers",
    "date": "2026-10-20T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "olivierdauvers.fr"
   },
   {
    "id": "4ca369325c1a",
@@ -939,7 +1095,8 @@
    "source": "dauvers",
    "date": "2026-10-20T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "olivierdauvers.fr"
   },
   {
    "id": "3898d7a38399",
@@ -948,7 +1105,8 @@
    "source": "lsa",
    "date": "2026-10-20T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "dcb48a14f471",
@@ -957,7 +1115,8 @@
    "source": "lineaires",
    "date": "2026-10-20T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lineaires.com"
   },
   {
    "id": "c442751d3f0b",
@@ -966,7 +1125,8 @@
    "source": "dauvers",
    "date": "2026-10-19T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "olivierdauvers.fr"
   },
   {
    "id": "6f5645f2fc01",
@@ -975,7 +1135,8 @@
    "source": "lsa",
    "date": "2026-10-19T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "149da074a755",
@@ -984,7 +1145,8 @@
    "source": "lsa",
    "date": "2026-10-19T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "a671bcc0d094",
@@ -993,7 +1155,8 @@
    "source": "lsa",
    "date": "2026-10-19T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "3dff1e91859a",
@@ -1002,7 +1165,8 @@
    "source": "lineaires",
    "date": "2026-10-19T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lineaires.com"
   },
   {
    "id": "f01358788ff6",
@@ -1012,7 +1176,8 @@
    "media": "BFM",
    "date": "2026-10-18T07:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "bfmtv.com"
   },
   {
    "id": "6468aa89c01d",
@@ -1022,7 +1187,8 @@
    "media": "Capital.fr",
    "date": "2026-10-18T07:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "capital.fr"
   },
   {
    "id": "57022344a6d5",
@@ -1031,7 +1197,8 @@
    "source": "lsa",
    "date": "2026-10-16T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "38f31bf8bf8e",
@@ -1040,7 +1207,8 @@
    "source": "dauvers",
    "date": "2026-10-12T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "olivierdauvers.fr"
   },
   {
    "id": "a7e2480c2a51",
@@ -1049,7 +1217,8 @@
    "source": "lsa",
    "date": "2026-10-12T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "6a5f31629a4e",
@@ -1058,7 +1227,8 @@
    "source": "lsa",
    "date": "2026-10-12T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "2150f685cf3b",
@@ -1067,7 +1237,8 @@
    "source": "lsa",
    "date": "2026-10-10T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "39889ed0dbae",
@@ -1076,7 +1247,8 @@
    "source": "dauvers",
    "date": "2026-10-09T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "olivierdauvers.fr"
   },
   {
    "id": "1969de968765",
@@ -1085,7 +1257,8 @@
    "source": "lineaires",
    "date": "2026-10-09T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lineaires.com"
   },
   {
    "id": "1f1c20672c78",
@@ -1094,7 +1267,8 @@
    "source": "lsa",
    "date": "2026-10-08T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "33c0e10a4b2e",
@@ -1103,7 +1277,8 @@
    "source": "lsa",
    "date": "2026-10-08T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "5346339e8eb9",
@@ -1113,7 +1288,8 @@
    "media": "Investir Les Echos",
    "date": "2026-10-08T07:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "investir.lesechos.fr"
   },
   {
    "id": "3e16d58ff5b9",
@@ -1123,7 +1299,8 @@
    "media": "Carrefour Group",
    "date": "2026-10-08T07:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "carrefour.com"
   },
   {
    "id": "0a3b29d2039a",
@@ -1133,7 +1310,8 @@
    "media": "LSA conso",
    "date": "2026-10-08T07:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "36ef22324228",
@@ -1142,7 +1320,8 @@
    "source": "dauvers",
    "date": "2026-10-07T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "olivierdauvers.fr"
   },
   {
    "id": "86c3e0fb41d1",
@@ -1151,7 +1330,8 @@
    "source": "lsa",
    "date": "2026-10-07T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "ab92a86be90f",
@@ -1160,7 +1340,8 @@
    "source": "lsa",
    "date": "2026-10-07T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "09d6496f8f0e",
@@ -1169,7 +1350,8 @@
    "source": "lsa",
    "date": "2026-10-05T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "fa61b597a228",
@@ -1179,7 +1361,8 @@
    "media": "Ouest-France",
    "date": "2026-10-05T07:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "ouest-france.fr"
   },
   {
    "id": "86f05a497e61",
@@ -1188,7 +1371,8 @@
    "source": "dauvers",
    "date": "2026-10-04T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "olivierdauvers.fr"
   },
   {
    "id": "3904d6ecbb4d",
@@ -1198,7 +1382,8 @@
    "media": "LSA conso",
    "date": "2026-10-04T07:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "f58b60389534",
@@ -1207,7 +1392,8 @@
    "source": "dauvers",
    "date": "2026-10-03T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "olivierdauvers.fr"
   },
   {
    "id": "2d4993f88fc5",
@@ -1216,7 +1402,8 @@
    "source": "lineaires",
    "date": "2026-10-02T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lineaires.com"
   },
   {
    "id": "7b0f3d26adba",
@@ -1225,7 +1412,8 @@
    "source": "lsa",
    "date": "2026-09-30T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "0b7daa9f6881",
@@ -1234,7 +1422,8 @@
    "source": "dauvers",
    "date": "2026-09-29T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "olivierdauvers.fr"
   },
   {
    "id": "aed4c0d6aa0a",
@@ -1243,7 +1432,8 @@
    "source": "dauvers",
    "date": "2026-09-29T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "olivierdauvers.fr"
   },
   {
    "id": "8806dfb9a3e4",
@@ -1252,7 +1442,8 @@
    "source": "lsa",
    "date": "2026-09-29T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "71a86efa144b",
@@ -1261,7 +1452,8 @@
    "source": "lineaires",
    "date": "2026-09-29T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lineaires.com"
   },
   {
    "id": "fa1f35215d2d",
@@ -1271,7 +1463,8 @@
    "media": "LSA conso",
    "date": "2026-09-23T07:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "06fbcc0fe1c6",
@@ -1280,7 +1473,8 @@
    "source": "lsa",
    "date": "2026-09-22T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "20d615b6b906",
@@ -1290,7 +1484,8 @@
    "media": "Le Figaro",
    "date": "2026-09-22T07:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lefigaro.fr"
   },
   {
    "id": "320ee1c834b5",
@@ -1300,7 +1495,8 @@
    "media": "BFM",
    "date": "2026-09-22T07:00+00:00",
    "vu_le": "2026-11-11T07:27+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "bfmtv.com"
   },
   {
    "id": "0bc47ba93f84",
@@ -1309,7 +1505,8 @@
    "source": "lsa",
    "date": "2026-09-21T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "743a8f254cbf",
@@ -1318,7 +1515,8 @@
    "source": "lsa",
    "date": "2026-09-15T15:42+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr"
   },
   {
    "id": "22151b56e98e",
@@ -1327,7 +1525,8 @@
    "source": "lsa",
    "date": "2026-09-14T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
-   "resume": ""
+   "resume": "",
+   "site": "lsa-conso.fr"
   }
  ]
 }

@@ -1,11 +1,11 @@
 {
- "version": "2.3.0",
+ "version": "2.4.0",
  "sujets": [
   {
    "id": "carrefour",
    "nom": "Carrefour",
    "nb": 130,
-   "maj": "2026-11-11T07:56+00:00"
+   "maj": "2026-11-11T09:42+00:00"
   }
  ]
 }
