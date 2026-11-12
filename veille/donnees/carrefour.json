@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-12T13:51+00:00",
+ "maj": "2026-11-12T21:52+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -49,6 +49,108 @@
   }
  ],
  "articles": [
+  {
+   "id": "be0f2753dcb3",
+   "titre": "Carrefour : ce supermarché de Nice ferme désormais à 13h le dimanche, les clients l'ont découvert devant la vitrine",
+   "lien": "https://www.demotivateur.fr/lifestyle/fini-les-courses-le-dimanche-apres-midi-ce-carrefour-market-de-nice-ferme-desormais-a-13h-51246",
+   "source": "autres",
+   "media": "Demotivateur",
+   "site": "demotivateur.fr",
+   "date": "2026-11-12T21:05+00:00",
+   "vu_le": "2026-11-12T21:52+00:00",
+   "resume": "Dimanche 8 novembre, les clients du Carrefour Market de Pessicart, à Nice, ont découvert avec surprise que le supermarché n’ouvrirait plus les dimanches après-midi.",
+   "enrichi": "2026-11-12",
+   "image": "https://www.demotivateur.fr/images-buzz/cover/facade-d-un-carrefour-market-a1c919c4810e.jpg"
+  },
+  {
+   "id": "be9543717715",
+   "titre": "Grande distribution : Aura, la centrale d’achats d’Intermarché, d’Auchan et de Casino, dans le viseur de l’Autorité de la concurrence",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/grande-distribution-aura-la-centrale-dachats-dintermarche-dauchan-et-de-casino-dans-le-viseur-de-lautorite-de-la-concurrence.AUKTJPC6IRBSNEGMFJPCOQCFBY.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-12T18:58+00:00",
+   "vu_le": "2026-11-12T21:52+00:00",
+   "resume": "",
+   "enrichi": "2026-11-12"
+  },
+  {
+   "id": "b8e4085fdcb3",
+   "titre": "La supercentrale Aura Retail à nouveau épinglée par l'Autorité de la concurrence",
+   "lien": "https://www.lineaires.com/la-distribution/la-supercentrale-aura-retail-a-nouveau-epinglee-par-l-autorite-de-la-concurrence",
+   "source": "lineaires",
+   "media": "Lineaires",
+   "site": "lineaires.com",
+   "date": "2026-11-12T16:49+00:00",
+   "vu_le": "2026-11-12T21:52+00:00",
+   "resume": "L'Autorité de la concurrence a notifié aux membres d'Aura - Intermarché, Auchan, Plesio - le rapport d'instruction de \" son bilan concurrentiel \" sur la centrale",
+   "enrichi": "2026-11-12",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/2342f70b-2c80-4aeb-82ab-151be0e7e608.jpg.webp?itok=gVEDtXVn"
+  },
+  {
+   "id": "a3558c15fcc3",
+   "titre": "Attention, ces cuisses de poulet vendues chez Carrefour sont contaminées à la salmonelle",
+   "lien": "https://fr.news.yahoo.com/attention-cuisses-poulet-vendues-chez-163734378.html",
+   "source": "autres",
+   "media": "Yahoo Actualités",
+   "site": "fr.news.yahoo.com",
+   "date": "2026-11-12T16:37+00:00",
+   "vu_le": "2026-11-12T21:52+00:00",
+   "resume": "Vigilance - Des cuisses de poulet de la marque L’Atelier de Gustave, vendues dans plusieurs magasins Carrefour d’Auvergne-Rhône-Alpes, sont rappelées en raison de la présence de salmonelles",
+   "enrichi": "2026-11-12",
+   "image": "https://s.yimg.com/lo/mysterio/api/0bd696d0f510aa58fc8a4ecca06ebc32da6c12c863a017e617b7f9da585df474/lightyear_networkapi/resizefill_w1200%3Bquality_80%3Bformat_jpg/https%3A%2F%2Fmedia.zenfs.com%2Ffr%2F20minutes.fr%2Ff5db9959146982d02d496031aed7781f.jpg"
+  },
+  {
+   "id": "67c3cb63dcf8",
+   "titre": "Carrefour : la méthode Bompard",
+   "lien": "https://lessentieldeleco.fr/9324-carrefour-la-methode-bompard/",
+   "source": "autres",
+   "media": "L'Essentiel de l'Éco",
+   "site": "lessentieldeleco.fr",
+   "date": "2026-11-12T14:43+00:00",
+   "vu_le": "2026-11-12T21:52+00:00",
+   "resume": "Pourquoi Carrefour confie-t-il ses magasins à d'autres ? Location-gérance, franchise, Carrefour 2030 : le pari d'Alexandre Bompard et son coût social.",
+   "enrichi": "2026-11-12",
+   "image": "https://lessentieldeleco.fr/wp-content/uploads/2026/11/0c30ae24-4c31-4b07-8c85-9ab778dc35a5-scaled-1.png"
+  },
+  {
+   "id": "03416e71c802",
+   "titre": "Philippe Michaud, président exécutif de E. Leclerc : « Négocier, ce n’est pas un gros mot. Tout le monde négocie. » [interview exclusive]",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/philippe-michaud-president-executif-de-e-leclerc-negocier-nest-pas-un-gros-mot-tout-le-monde-negocie-interview-exclusive.D33DPFXHUBAP3C7I4CU4H6P4TY.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-12T14:03+00:00",
+   "vu_le": "2026-11-12T21:52+00:00",
+   "resume": "",
+   "enrichi": "2026-11-12"
+  },
+  {
+   "id": "7b95d9210a46",
+   "titre": "Agents de courses IA : quel impact pour les marques ?",
+   "lien": "https://www.lineaires.com/la-distribution/agents-de-courses-ia-quel-impact-pour-les-marques",
+   "source": "lineaires",
+   "media": "Lineaires",
+   "site": "lineaires.com",
+   "date": "2026-11-12T13:53+00:00",
+   "vu_le": "2026-11-12T21:52+00:00",
+   "resume": "Une étude Kantar pointe l'influence déjà marquée de l'IA dans les achats des consommateurs, en particulier chez les jeunes. Elle alerte aussi les marques alimentaires",
+   "enrichi": "2026-11-12",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/934fddb3-9066-41ff-8b4a-61b8851b4ccd.jpg.webp?itok=qs7xSqKw"
+  },
+  {
+   "id": "46c392341cce",
+   "titre": "Des yaourts rappelés pour bris de verre chez Leclerc, Carrefour, Auchan, Intermarché et dans les magasins U",
+   "lien": "https://fr.news.yahoo.com/yaourts-rappel%C3%A9s-bris-verre-chez-135355255.html",
+   "source": "autres",
+   "media": "Yahoo Actualités",
+   "site": "fr.news.yahoo.com",
+   "date": "2026-11-12T13:53+00:00",
+   "vu_le": "2026-11-12T21:52+00:00",
+   "resume": "Vigilance - Des yaourts Bonne Maman aux framboises, vendus chez Auchan, Carrefour, Leclerc, Système U et Intermarché, sont rappelés : ils pourraient contenir de petits morceaux de verre",
+   "enrichi": "2026-11-12",
+   "image": "https://s.yimg.com/lo/mysterio/api/116f2c095a1e57a6625682cc323b518c6c2af1560cbcf4185ce5cf00946ca898/lightyear_networkapi/resizefill_w1200%3Bquality_80%3Bformat_jpg/https%3A%2F%2Fmedia.zenfs.com%2Ffr%2F20minutes.fr%2F52bf9a2d1778dc6f0e6533d83aaf78ff.jpg"
+  },
   {
    "id": "2bff3c013519",
    "titre": "Carrefour City Mées : deux frères ouvrent un magasin près de Dax",
@@ -774,6 +876,19 @@
    "image": "https://remeng.rosselcdn.net/sites/default/files/dpistyles_v2/ena_16_9_extra_big/2026/11/07/node_838652/15548754/public/2026/11/07/111908979.jpeg?itok=J10T7v5F1794028809"
   },
   {
+   "id": "8dc606249dcd",
+   "titre": "SAMEDI CONSO : mon carnet (retail mais pas que…) de la semaine",
+   "lien": "https://www.olivierdauvers.fr/2026/11/07/samedi-conso-mon-carnet-retail-mais-pas-que-de-la-semaine-387/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-06T23:36+00:00",
+   "vu_le": "2026-11-12T21:52+00:00",
+   "resume": "« SAMEDI CONSO », la semaine retail (mais pas que) passée en revue. Comme toujours en totale liberté. Et tant pis si ça pique ! Âmes (trop) sensibles ou pudibondes, vous êtes prévenues, vous pouvez encore changer de crémerie. Je répète : la team premier degré n’est pas la bienvenue 😂. SAMEDI Lidl baisse ses prix sur Vanish et Ariel. Curieusement, le …",
+   "enrichi": "2026-11-12",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/SAMEDI-CONSO.jpg"
+  },
+  {
    "id": "44e57b7d2ab8",
    "titre": "Ces bocaux de haricots verts vendus chez Carrefour peuvent contenir des morceaux de verre: ne les mangez pas",
    "lien": "https://rmc.bfmtv.com/conso/alimentation/rappels-de-lots/ces-bocaux-de-haricots-verts-vendus-chez-carrefour-peuvent-contenir-des-morceaux-de-verre-ne-les-mangez-pas_AN-202611060682.html",
@@ -1412,6 +1527,18 @@
    "site": "capital.fr",
    "enrichi": "2026-11-11",
    "image": "https://www.capital.fr/imgre/fit/~1~cap~2026~10~18~7f15f7f2-e6e7-4ef6-8286-503035380535.png/1200x630/focus-point/656%2C263/alexandre-bompard-patron-de-carrefour-chiffre-les-pillages-de-samedi-en-centaines-de-millions-d-euros.jpg"
+  },
+  {
+   "id": "72d83c156181",
+   "titre": "Manifestations du 17 octobre : 1 500 commerçants touchés », des « centaines de millions d’euros de dégâts »",
+   "lien": "https://www.ouest-france.fr/economie/commerce/manifestations-du-17-octobre-1-500-commercants-touches-des-centaines-de-millions-deuros-de-degats-2133ec34-cadb-11f1-ad87-e24a1a2986e9",
+   "source": "autres",
+   "media": "Ouest-France",
+   "site": "ouest-france.fr",
+   "date": "2026-10-18T07:00+00:00",
+   "vu_le": "2026-11-12T21:52+00:00",
+   "resume": "",
+   "enrichi": "2026-11-12"
   },
   {
    "id": "ead8977a8919",
