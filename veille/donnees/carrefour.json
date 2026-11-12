@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-11T23:30+00:00",
+ "maj": "2026-11-12T13:51+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -50,6 +50,83 @@
  ],
  "articles": [
   {
+   "id": "2bff3c013519",
+   "titre": "Carrefour City Mées : deux frères ouvrent un magasin près de Dax",
+   "lien": "https://www.observatoiredelafranchise.fr/indiscretions-actualite/CARREFOUR-CITY-carrefour-city-mees-deux-freres-ouvrent-un-magasin-pres-de-dax-84843.htm",
+   "source": "autres",
+   "media": "Observatoire de la franchise",
+   "site": "observatoiredelafranchise.fr",
+   "date": "2026-11-12T09:41+00:00",
+   "vu_le": "2026-11-12T13:51+00:00",
+   "resume": "Dans les Landes, Carrefour Proximité vient d'inaugurer un nouveau point de vente : le Carrefour City de Mées, implanté aux portes de Dax. Cette ouverture ne ressemble pas tout à fait aux autres, car elle",
+   "enrichi": "2026-11-12",
+   "image": "https://static.observatoiredelafranchise.fr/images/logos/logocarrefourcity-bb03b0.jpg"
+  },
+  {
+   "id": "f23c5465c5e5",
+   "titre": "Mohamed Cheikh : ses sauces SHAY’Z arrivent chez Carrefour, à 3,09 € le flacon",
+   "lien": "https://touteslesbox.fr/mohamed-cheikh-shayz-sauces-carrefour-3-09-euros/",
+   "source": "autres",
+   "media": "Toutes les Box",
+   "site": "touteslesbox.fr",
+   "date": "2026-11-12T07:22+00:00",
+   "vu_le": "2026-11-12T13:51+00:00",
+   "resume": "SHAY’Z, les sauces de Mohamed Cheikh (Top Chef 2021), arrivent dans plus de 1 000 Carrefour : quatre recettes à 3,09 € le flacon de 265 g. Gamme, prix et notre avis.",
+   "enrichi": "2026-11-12",
+   "image": "https://media.touteslesbox.fr/2026/11/mohamed-cheikh-shayz-sauces-une.jpg"
+  },
+  {
+   "id": "ef89aab43c28",
+   "titre": "[ BILAN ] Tomates cerises “souveraines” : quand on veut, on peut, la preuve… !",
+   "lien": "https://www.olivierdauvers.fr/2026/11/12/bilan-tomates-cerises-souveraines-quand-on-veut-on-peut-la-preuve/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-12T06:55+00:00",
+   "vu_le": "2026-11-12T13:51+00:00",
+   "resume": "L’heure est désormais au bilan de l’opération “Tomates cerises souveraines”, l’offre des maraîchers français à prix access pour contrer la vague des tomates cerises marocaines. Une barquette de 250 g à 1,29 € (seulement), grâce à un maximum de gains de productivité. En limitant l’écart à 30 centimes (ou 30 %, chacun verra ce qu’il …",
+   "enrichi": "2026-11-12",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/1-Inter-scaled.jpg"
+  },
+  {
+   "id": "af6f47758db0",
+   "titre": "« Notre objectif est encore de faire baisser nos prix » : le pari gagnant du Slip français pour renouer avec la rentabilité",
+   "lien": "https://www.lsa-conso.fr/industries-non-alimentaires/textile/notre-objectif-est-encore-de-faire-baisser-nos-prix-le-pari-gagnant-du-slip-francais-pour-renouer-avec-la-rentabilite.VOBAXMN77RMV7LVQNIXME5JXI4.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-12T06:30+00:00",
+   "vu_le": "2026-11-12T13:51+00:00",
+   "resume": "",
+   "enrichi": "2026-11-12"
+  },
+  {
+   "id": "c753c704d528",
+   "titre": "Carburants : Auchan, Intermarché, Carrefour… quel distributeur a le plus baissé ses prix ces derniers jours",
+   "lien": "https://www.midilibre.fr/2026/11/11/crise-des-carburants-jusqua-moins-30-centimes-deuros-par-litre-dans-quelles-stations-service-se-rendre-pour-trouver-lessence-la-moins-chere-13647675.php",
+   "source": "autres",
+   "media": "Midi Libre",
+   "site": "midilibre.fr",
+   "date": "2026-11-11T18:15+00:00",
+   "vu_le": "2026-11-12T13:51+00:00",
+   "resume": "Le 31 octobre dernier, TotalEnergies annonçait une baisse des prix à la pompe dans plus de 700 stations en France. Depuis, d’autres pétroliers ou distributeurs ont fait de même. Mais qui est vraiment le moins cher ?...",
+   "enrichi": "2026-11-12",
+   "image": "https://images.midilibre.fr/api/v1/images/view/6af4aba9d13ca9774e089df6/hd/image.jpg?v=1"
+  },
+  {
+   "id": "741dd0d09441",
+   "titre": "Magasins ouverts le 11 novembre 2026 : liste et horaires des supermarchés et centres commerciaux ce mercredi férié",
+   "lien": "https://www.linternaute.com/sortir/guide-des-loisirs/2632409-magasins-ouverts-le-11novembre-2026-liste-et-horaires-des-supermarches-et-centres-commerciaux-ce-mercredi-ferie/",
+   "source": "autres",
+   "media": "Linternaute.com",
+   "site": "linternaute.com",
+   "date": "2026-11-11T18:00+00:00",
+   "vu_le": "2026-11-12T13:51+00:00",
+   "resume": "Ce mercredi 11 novembre 2026 est un jour férié car la France célèbre l'Armistice de 1918. Retrouvez la liste des supermarchés, grands magasins et centres commerciaux à Paris, Lyon, Marseille, Lille, Bordeaux, Nantes et Toulouse qui ne ferment pas, av...",
+   "enrichi": "2026-11-12",
+   "image": "https://img-4.linternaute.com/L-XwDCLqZeXuydn-sF-n4mSIG-E=/1500x/smart/2d4b357eb4ed4c60958a77020cf212ee/ccmcms-linternaute/95737916.jpg"
+  },
+  {
    "id": "dfbdd727ed29",
    "titre": "Sephora, Fnac, Shein... Analyse de ces enseignes qui font parler les influenceurs",
    "lien": "https://www.lsa-conso.fr/mes-magazines/magazines-lsa/sephora-fnac-shein-analyse-de-ces-enseignes-qui-font-parler-les-influenceurs.3Y74PMKX2JLSPGK6KDXXCUZCS4.html",
@@ -86,6 +163,19 @@
    "resume": "Côté chocolat, Wonka (Willy) en connaît un rayon ! Pour ceux qui seraient passés à côté du roman de Roald Dahl ou du film de Tim Burton, c’est le personnage principal de Charlie et la chocolaterie (qui revit actuellement via Netflix). Et c’est désormais une marque de chocolat largement mise en avant chez Carrefour ou …",
    "enrichi": "2026-11-11",
    "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/IMG_0065-copie-scaled.jpg"
+  },
+  {
+   "id": "96e5ca10302b",
+   "titre": "Place Clemenceau à Béthune : Coccinelle et Carrefour ferment leurs portes, une nouvelle supérette va ouvrir",
+   "lien": "https://www.nordlittoral.fr/303797/article/2026-11-11/place-clemenceau-bethune-coccinelle-et-carrefour-ferment-leurs-portes-une",
+   "source": "autres",
+   "media": "Nord Littoral",
+   "site": "nordlittoral.fr",
+   "date": "2026-11-11T11:30+00:00",
+   "vu_le": "2026-11-12T13:51+00:00",
+   "resume": "À Béthune, le Coccinelle de la place Clemenceau a fermé ses portes mardi 10 novembre, tandis que le Carrefour Express voisin doit suivre d’ici la fin du mois.",
+   "enrichi": "2026-11-12",
+   "image": "https://phrnleng.rosselcdn.net/sites/default/files/dpistyles_v2/ena_16_9_extra_big/2026/11/11/node_303797/3806188/public/2026/11/11/112904498.jpeg?itok=R-AznpoM1794396619"
   },
   {
    "id": "1a95f7d48d63",
@@ -1229,6 +1319,18 @@
    "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-10/27fb7622-dd66-48e7-be21-d3cd1ea77af8.jpg.webp?itok=mXf56jUz"
   },
   {
+   "id": "811ae2a8babb",
+   "titre": "Face à « la situation sociale et sécuritaire en France », Carrefour revoit ses objectifs à la baisse pour l’année 2026",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/face-a-la-situation-sociale-et-securitaire-en-france-carrefour-revoit-ses-objectifs-a-la-baisse-pour-lannee-2026.PWF7BDQLYJF7XPKM2SY4VV2J5A.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-10-20T07:00+00:00",
+   "vu_le": "2026-11-12T13:51+00:00",
+   "resume": "",
+   "enrichi": "2026-11-12"
+  },
+  {
    "id": "c442751d3f0b",
    "titre": "[ EXCLU ] La visite de chantier du projet \"Carrefour Frais\"",
    "lien": "https://www.olivierdauvers.fr/2026/10/19/exclu-la-visite-de-chantier-du-projet-carrefour-frais/",
@@ -1310,6 +1412,18 @@
    "site": "capital.fr",
    "enrichi": "2026-11-11",
    "image": "https://www.capital.fr/imgre/fit/~1~cap~2026~10~18~7f15f7f2-e6e7-4ef6-8286-503035380535.png/1200x630/focus-point/656%2C263/alexandre-bompard-patron-de-carrefour-chiffre-les-pillages-de-samedi-en-centaines-de-millions-d-euros.jpg"
+  },
+  {
+   "id": "ead8977a8919",
+   "titre": "Grande distribution : E. Leclerc, Carrefour, Intermarché... Le positionnement prix des enseignes sur le drive en 2025 à la loupe",
+   "lien": "https://www.lsa-conso.fr/secteurs/services-livraison/drive/grande-distribution-e-leclerc-carrefour-intermarche-le-positionnement-prix-des-enseignes-sur-le-drive-en-2025-a-la-loupe.MEW3HEPHEZGOVMFGFKY4THQYM4.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-10-17T07:00+00:00",
+   "vu_le": "2026-11-12T13:51+00:00",
+   "resume": "",
+   "enrichi": "2026-11-12"
   },
   {
    "id": "57022344a6d5",
@@ -1624,6 +1738,19 @@
    "site": "lineaires.com",
    "enrichi": "2026-11-11",
    "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-09/2be71a3f-7e4c-4ea8-b307-c0fd64486303.jpg.webp?itok=x6ekkpMG"
+  },
+  {
+   "id": "a92711cce654",
+   "titre": "[ MERCHANDISING ] Beauté : Carrefour singe Normal",
+   "lien": "https://www.olivierdauvers.fr/2026/09/24/merchandising-beaute-carrefour-singe-normal/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-09-24T07:00+00:00",
+   "vu_le": "2026-11-12T13:51+00:00",
+   "resume": "Ça ne peut pas être qu’un hasard… Un nouveau type de meuble débarque actuellement chez Carrefour, dans la foulée du nouveau concept beauté (que j’avais révélé l’an dernier, ici à Rambouillet). Et ce mobilier, qui a la vocation “d’aspirer” depuis l’allée centrale, ressemble trait pour trait à Normal. Évidemment pas un hasard ! Il y …",
+   "enrichi": "2026-11-12",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/09/Projet5-Mise-en-page-1-1024x767.png"
   },
   {
    "id": "fa1f35215d2d",
