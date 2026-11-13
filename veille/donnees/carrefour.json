@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-12T21:52+00:00",
+ "maj": "2026-11-13T13:14+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -50,6 +50,30 @@
  ],
  "articles": [
   {
+   "id": "6524df240887",
+   "titre": "Barthélémy Guislain, président du conseil de gérance de l’association familiale Mulliez (AFM) : « Les entreprises du commerce ne sont pas des vaches à lait ! »",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/barthelemy-guislain-president-du-conseil-de-gerance-de-lassociation-familiale-mulliez-afm-les-entreprises-du-commerce-ne-sont-pas-des-vaches-a-lait.IWXNFTLGC5CUZCRHPRMBYQIC4E.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-13T10:55+00:00",
+   "vu_le": "2026-11-13T13:14+00:00",
+   "resume": "",
+   "enrichi": "2026-11-13"
+  },
+  {
+   "id": "d3883dc0dff9",
+   "titre": "Grande distribution : les ventes de produits non alimentaires ont perdu 425M€ de chiffre d’affaires entre janvier et octobre 2026",
+   "lien": "https://www.lsa-conso.fr/data/indicateurs/grande-distribution-les-ventes-de-produits-non-alimentaires-ont-perdu-425m-de-chiffre-daffaires-entre-janvier-et-octobre-2026.N3AOAX7F5RFPJAEEIHKZF3NABM.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-13T04:30+00:00",
+   "vu_le": "2026-11-13T13:14+00:00",
+   "resume": "",
+   "enrichi": "2026-11-13"
+  },
+  {
    "id": "be0f2753dcb3",
    "titre": "Carrefour : ce supermarché de Nice ferme désormais à 13h le dimanche, les clients l'ont découvert devant la vitrine",
    "lien": "https://www.demotivateur.fr/lifestyle/fini-les-courses-le-dimanche-apres-midi-ce-carrefour-market-de-nice-ferme-desormais-a-13h-51246",
@@ -61,6 +85,19 @@
    "resume": "Dimanche 8 novembre, les clients du Carrefour Market de Pessicart, à Nice, ont découvert avec surprise que le supermarché n’ouvrirait plus les dimanches après-midi.",
    "enrichi": "2026-11-12",
    "image": "https://www.demotivateur.fr/images-buzz/cover/facade-d-un-carrefour-market-a1c919c4810e.jpg"
+  },
+  {
+   "id": "9b04f2c75341",
+   "titre": "[ VISITE DE CHANTIER ] Auchan Bouliac : l'hyper qui va casser les codes (notamment sur le non-al)",
+   "lien": "https://www.olivierdauvers.fr/2026/11/12/visite-de-chantier-auchan-bouliac-lhyper-qui-va-casser-les-codes-notamment-sur-le-non-al/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-12T19:40+00:00",
+   "vu_le": "2026-11-13T13:14+00:00",
+   "resume": "Voilà plusieurs mois que je passe régulièrement par Auchan Bouliac à Bordeaux. C’est, pour ses promoteurs, le futur d’Auchan. Guillaume Darrasse, le boss, a laissé carte blanche à Clémence Sanlis (la directrice concept, qui a un long passé dans le design commercial) et au maître des lieux, Éric Georget. Objectif : revoir de fond en …",
+   "enrichi": "2026-11-13",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/IMG_0416-scaled.jpg"
   },
   {
    "id": "be9543717715",
@@ -112,6 +149,19 @@
    "resume": "Pourquoi Carrefour confie-t-il ses magasins à d'autres ? Location-gérance, franchise, Carrefour 2030 : le pari d'Alexandre Bompard et son coût social.",
    "enrichi": "2026-11-12",
    "image": "https://lessentieldeleco.fr/wp-content/uploads/2026/11/0c30ae24-4c31-4b07-8c85-9ab778dc35a5-scaled-1.png"
+  },
+  {
+   "id": "84fcce85d1e1",
+   "titre": "GTA 6 en magasin en Belgique, sans aucun franchisé",
+   "lien": "https://lexpress-franchise.com/fr-be/actualites/gta-6-belgique-magasins-sans-franchises/",
+   "source": "autres",
+   "media": "L’Express Franchise",
+   "site": "lexpress-franchise.com",
+   "date": "2026-11-12T14:15+00:00",
+   "vu_le": "2026-11-13T13:14+00:00",
+   "resume": "GTA 6 est en vente en Belgique avant sa sortie. Fnac Darty n'y a aucun franchisé et Game Mania a disparu : MediaMarkt, Krëfel et Carrefour le vendent.",
+   "enrichi": "2026-11-13",
+   "image": "https://lexpress-franchise.com/wp-content/uploads/2026/11/grand-theft-auto-vi-poster.jpg"
   },
   {
    "id": "03416e71c802",
@@ -791,6 +841,18 @@
    "site": "olivierdauvers.fr"
   },
   {
+   "id": "c7ed0755f4b4",
+   "titre": "Laure-Amélie Didot (Mondelez) : « La transition écologique ne peut se faire que collectivement »",
+   "lien": "https://www.lsa-conso.fr/evenements-lsa/tribune-d-experts/laure-amelie-didot-mondelez-la-transition-ecologique-ne-peut-se-faire-que-collectivement.WV5U3D5UPNHVDLMHPASFIGBLVE.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-08T08:30+00:00",
+   "vu_le": "2026-11-13T13:14+00:00",
+   "resume": "",
+   "enrichi": "2026-11-13"
+  },
+  {
    "id": "d4df05bd404e",
    "titre": "Expansion de « Carrefour » en Guinée : 4 nouveaux magasins annoncés et 1 000 emplois attendus",
    "lien": "https://guineematin.com/2026/11/08/expansion-de-carrefour-en-guinee-4-nouveaux-magasins-annonces-et-1-000-emplois-attendus/",
@@ -1025,6 +1087,19 @@
    "image": "https://sf2.doctissimo.fr/wp-content/uploads/doctissimo/2026/11/rappel-conso-ces-merguez-vendues-chez-carrefour-intermarche-et-eleclerc-peuvent-contenir-la-1200x675.jpeg"
   },
   {
+   "id": "194ee6547489",
+   "titre": "Sherpa : nouvelle cordée à la direction et bonne saison 2025-2026",
+   "lien": "https://www.lineaires.com/la-distribution/sherpa-nouvelle-cordee-a-la-direction-et-bonne-saison-2025-2026",
+   "source": "lineaires",
+   "media": "Lineaires",
+   "site": "lineaires.com",
+   "date": "2026-11-05T14:20+00:00",
+   "vu_le": "2026-11-13T13:14+00:00",
+   "resume": "Frédéric Mauduit succède à Olivier Carrié à la présidence de la coopérative de supérettes de montagne : 124 magasins dans les Alpes, le Jura et les Pyrénées.",
+   "enrichi": "2026-11-13",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/cbb5dc27-552c-4678-a1c4-560b79e97571.jpg.webp?itok=24ghUlSn"
+  },
+  {
    "id": "7df22656c4b3",
    "titre": "A l’heure de l’IA, le retail de demain va transformer chaque contact en valeur [Tribune]",
    "lien": "https://www.lsa-conso.fr/evenements-lsa/a-lheure-de-lia-le-retail-de-demain-va-transformer-chaque-contact-en-valeur-tribune.VJTC5WJRYJBQNBHLG4LHVO5BPU.html",
@@ -1230,6 +1305,19 @@
    "resume": "",
    "site": "carrefour.com",
    "enrichi": "2026-11-11"
+  },
+  {
+   "id": "9efe6fd6df60",
+   "titre": "Combien gagne Alexandre Bompard, le PDG de Carrefour ?",
+   "lien": "https://lessentieldeleco.fr/9186-combien-gagne-alexandre-bompard-le-pdg-de-carrefour/",
+   "source": "autres",
+   "media": "L'Essentiel de l'Éco",
+   "site": "lessentieldeleco.fr",
+   "date": "2026-11-02T08:00+00:00",
+   "vu_le": "2026-11-13T13:14+00:00",
+   "resume": "Rapportée au SMIC, la rémunération en cash d'Alexandre Bompard au titre de 2025, 3,49 millions d'euros, équivaut à environ 156 années de salaire minimum.",
+   "enrichi": "2026-11-13",
+   "image": "https://lessentieldeleco.fr/wp-content/uploads/2026/11/Portrait-professionnel-en-costume-bleu-marine-scaled-1.jpg"
   },
   {
    "id": "01d4e1d8c642",
@@ -1945,17 +2033,6 @@
    "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/",
    "source": "lsa",
    "date": "2026-09-15T15:42+00:00",
-   "vu_le": "2026-11-11T07:16+00:00",
-   "resume": "",
-   "site": "lsa-conso.fr",
-   "enrichi": "2026-11-11"
-  },
-  {
-   "id": "22151b56e98e",
-   "titre": "Grande distribution : que reste-t-il des quatre hypermarchés Carrefour de la famille Guillerm ?",
-   "lien": "https://www.lsa-conso.fr/grande-distribution-que-reste-t-il-des-quatre-hypermarches-carrefour-de-la-famille-guillerm.467138",
-   "source": "lsa",
-   "date": "2026-09-14T07:00+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
    "site": "lsa-conso.fr",
