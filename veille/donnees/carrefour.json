@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-13T13:14+00:00",
+ "maj": "2026-11-13T20:31+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -49,6 +49,56 @@
   }
  ],
  "articles": [
+  {
+   "id": "0854d88b44e1",
+   "titre": "Carrefour inaugure au Ghana… et c'est Marcel Desailly qui coupe le ruban",
+   "lien": "https://www.lineaires.com/la-distribution/carrefour-inaugure-au-ghana-et-c-est-marcel-desailly-qui-coupe-le-ruban",
+   "source": "lineaires",
+   "media": "Lineaires",
+   "site": "lineaires.com",
+   "date": "2026-11-13T17:50+00:00",
+   "vu_le": "2026-11-13T20:31+00:00",
+   "resume": "Carrefour vient d'inaugurer le premier hyper à son enseigne au Ghana. Six autres magasins ex-Shoprite vont suivre dans les prochaines semaines. Né et résidant à Accra",
+   "enrichi": "2026-11-13",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/418668c9-031b-452f-a42a-f315e224d042.jpg.webp?itok=xNS7tIJE"
+  },
+  {
+   "id": "1dc455a6544a",
+   "titre": "Ventes de gin en grande distribution : Gibson’s reste en tête d’un marché qui pèse 118,4 millions d’euros",
+   "lien": "https://www.lsa-conso.fr/marches/boissons-alcoolisees/ventes-de-gin-en-grande-distribution-gibsons-reste-en-tete-dun-marche-qui-pese-1184-millions-deuros.MG23CRCNEFNJFMMMIVCP5JPQ24.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-13T17:30+00:00",
+   "vu_le": "2026-11-13T20:31+00:00",
+   "resume": "",
+   "enrichi": "2026-11-13"
+  },
+  {
+   "id": "f565a5b282f8",
+   "titre": "McCain mise sur l'ultra-croustillant, avec ses nouvelles frites Max Crunch",
+   "lien": "https://www.lineaires.com/les-produits/mccain-mise-sur-l-ultra-croustillant-avec-ses-nouvelles-frites-max-crunch",
+   "source": "lineaires",
+   "media": "Lineaires",
+   "site": "lineaires.com",
+   "date": "2026-11-13T14:52+00:00",
+   "vu_le": "2026-11-13T20:31+00:00",
+   "resume": "Le spécialiste des produits surgelés à base de pommes de terre lance une gamme de frites, avec la promesse d'une texture particulièrement croustillante.",
+   "enrichi": "2026-11-13",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/ce6cc1ea-b324-4538-ad78-f3566dc3a86a.jpg.webp?itok=oCX-l_ZC"
+  },
+  {
+   "id": "d054f5ceba96",
+   "titre": "Grande distribution : Carrefour teste la location d’outils avec Loxam et Poppins",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/grande-distribution-carrefour-teste-la-location-doutils-avec-loxam-et-poppins.NB45K6SOLBBYLHJT2C4CTTHODU.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-13T14:34+00:00",
+   "vu_le": "2026-11-13T20:31+00:00",
+   "resume": "",
+   "enrichi": "2026-11-13"
+  },
   {
    "id": "6524df240887",
    "titre": "Barthélémy Guislain, président du conseil de gérance de l’association familiale Mulliez (AFM) : « Les entreprises du commerce ne sont pas des vaches à lait ! »",
@@ -200,6 +250,19 @@
    "resume": "Vigilance - Des yaourts Bonne Maman aux framboises, vendus chez Auchan, Carrefour, Leclerc, Système U et Intermarché, sont rappelés : ils pourraient contenir de petits morceaux de verre",
    "enrichi": "2026-11-12",
    "image": "https://s.yimg.com/lo/mysterio/api/116f2c095a1e57a6625682cc323b518c6c2af1560cbcf4185ce5cf00946ca898/lightyear_networkapi/resizefill_w1200%3Bquality_80%3Bformat_jpg/https%3A%2F%2Fmedia.zenfs.com%2Ffr%2F20minutes.fr%2F52bf9a2d1778dc6f0e6533d83aaf78ff.jpg"
+  },
+  {
+   "id": "40e0e241bb9f",
+   "titre": "Des yaourts rappelés partout en France pour bris de verre",
+   "lien": "https://www.20minutes.fr/societe/4262309-20261112-yaourts-rappeles-bris-verre-chez-leclerc-carrefour-auchan-intermarche-magasins-u",
+   "source": "autres",
+   "media": "20 Minutes",
+   "site": "20minutes.fr",
+   "date": "2026-11-12T13:53+00:00",
+   "vu_le": "2026-11-13T20:31+00:00",
+   "resume": "Des yaourts Bonne Maman aux framboises, vendus chez Auchan, Carrefour, Leclerc, Système U et Intermarché, sont rappelés : ils pourraient contenir de petits morceaux de verre",
+   "enrichi": "2026-11-13",
+   "image": "https://img.20mn.fr/15t-p2ZGRVKSSw_rG1WdNSk/1444x920_photos-illustratives-d-une-allee-d-un-supermarche-carrefour-express-greuezfrancois-g0110-credit-francois-greuez-sipa-2609041157"
   },
   {
    "id": "2bff3c013519",
@@ -1650,6 +1713,19 @@
    "resume": "",
    "site": "lsa-conso.fr",
    "enrichi": "2026-11-11"
+  },
+  {
+   "id": "8cf5f86ca72f",
+   "titre": "Carrefour : révélations sur un géant face à la crise",
+   "lien": "https://www.francetvpro.fr/contenu-de-presse/78473070",
+   "source": "autres",
+   "media": "FranceTvPro.fr",
+   "site": "francetvpro.fr",
+   "date": "2026-10-15T07:00+00:00",
+   "vu_le": "2026-11-13T20:31+00:00",
+   "resume": "C’est l’enseigne de grande distribution qui a bouleversé la vie des Français ! Inventeur mondial du modèle de l...",
+   "enrichi": "2026-11-13",
+   "image": "https://www.francetvpro.fr/sites/default/files/styles/crop_format_linkedin/public/telechargements/images/COMPLEMENT_DENQUETE-Tristan%20Waleckx.jpg.webp?itok=M_5-LpIX"
   },
   {
    "id": "38f31bf8bf8e",
