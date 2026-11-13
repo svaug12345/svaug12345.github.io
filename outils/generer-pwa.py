@@ -51,6 +51,10 @@ RACINE = Path(__file__).resolve().parent.parent  # racine du dépôt
 #   theme : couleur de la barre d'état Android
 # ------------------------------------------------------------
 PAGES = [
+    dict(dossier="code", nom="Code de la route", court="Code",
+         desc="Entraînement au code : examens blancs, thèmes, panneaux",
+         picto="traffic-cone", tuile="#0f7c7b", trait="#ffffff",
+         fond="#f4f8f8", theme="#0f7c7b"),
     dict(dossier="disque", nom="Place nette", court="Place nette",
          desc="Ce qui prend de la place sur le disque ou le téléphone",
          picto="hard-drive", tuile="#0f7c7b", trait="#ffffff",

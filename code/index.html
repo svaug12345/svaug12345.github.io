@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  baiji.fr/code/ — « Code de la route » (charte SV)
+  Version 1.1.1
+  ------------------------------------------------------------
+  Entraînement au code de la route pour Nanon (conduite
+  accompagnée dès 15 ans) : examen blanc 40 questions / 20 s,
+  entraînement par thème (10 thèmes officiels), « Mes erreurs »,
+  statistiques, panneaux dessinés en SVG.
+  Les questions sont dans src/q1.js … q4.js (projet de travail),
+  insérées ici par build.py : chercher « Q(" » pour les modifier.
+  Historique :
+   • v1.0.0 : 246 questions, examen blanc, thèmes, erreurs, stats
+   • v1.1.0 : 323 questions, 15 panneaux de plus
+   • v1.1.1 : mise en ligne sur baiji.fr/code/ (police Manrope,
+              teal de la charte, compteur de visites, PWA du site,
+              mise en page tablette)
+  ============================================================
+-->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Code de la route</title>
+<meta name="robots" content="noindex">
+<!-- PWA : manifeste, icônes et sw.js fabriqués par outils/generer-pwa.py -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+<link rel="icon" href="icones/icone-192.png">
+<meta name="theme-color" content="#0f7c7b">
+<!-- Police de la charte SV -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+<script src="/journal.js" defer></script>
+<style>
+/* ============ Charte SV : turquoise / bleu-vert sobres ============ */
+:root{
+  --sv:#0f7c7b; --sv-dark:#0b3c49; --sv-light:#e3f4f4; --bg:#f4f8f8; --card:#fff;
+  --txt:#14262b; --muted:#5d7277; --ok:#1f9d55; --ko:#d64545; --line:#d7e4e5;
+  --radius:16px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--txt);font-family:Manrope,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{min-height:100vh}
+button{font:inherit;cursor:pointer;border:0}
+.app{max-width:560px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 16px calc(40px + env(safe-area-inset-bottom))}
+.hidden{display:none!important}
+
+/* En-tête */
+.top{display:flex;align-items:center;gap:12px;margin:4px 0 18px}
+.logo{width:44px;height:44px;border-radius:12px;background:var(--sv-dark);display:grid;place-items:center;flex:none}
+.top h1{font-size:22px;margin:0;line-height:1.1}
+.top small{color:var(--muted);font-size:13px}
+
+/* Cartes */
+.card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(11,60,73,.08)}
+.hero{background:linear-gradient(135deg,var(--sv-dark),var(--sv));color:#fff}
+.hero h2{margin:0 0 4px;font-size:20px}
+.hero p{margin:0 0 14px;opacity:.85;font-size:14px}
+.btn{display:block;width:100%;padding:14px;border-radius:12px;font-weight:600;font-size:16px;background:var(--sv);color:#fff;text-align:center}
+.btn.white{background:#fff;color:var(--sv-dark)}
+.btn.ghost{background:var(--sv-light);color:var(--sv-dark)}
+.btn:disabled{opacity:.4}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+h3{font-size:15px;margin:18px 4px 10px;color:var(--sv-dark);text-transform:uppercase;letter-spacing:.04em}
+
+/* Statistiques */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.stat b{display:block;font-size:22px;color:var(--sv-dark)}
+.stat span{font-size:12px;color:var(--muted)}
+
+/* Liste des thèmes */
+.theme{display:flex;align-items:center;gap:12px;width:100%;background:var(--card);padding:12px 14px;border-radius:12px;margin-bottom:8px;text-align:left;box-shadow:0 1px 2px rgba(11,60,73,.06)}
+.theme .ic{font-size:22px;width:30px;text-align:center}
+.theme .name{flex:1;font-weight:600;font-size:15px;color:var(--txt)}
+.theme .name small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--sv);border-radius:3px}
+
+/* Écran de quiz */
+.qhead{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.qhead .close{background:none;font-size:26px;color:var(--muted);padding:0 4px}
+.qhead .prog{flex:1}
+.qhead .count{font-size:13px;color:var(--muted);font-weight:600}
+.timer{width:44px;height:44px;flex:none;position:relative}
+.timer svg{transform:rotate(-90deg)}
+.timer span{position:absolute;inset:0;display:grid;place-items:center;font-weight:700;font-size:15px;color:var(--sv-dark)}
+.tag{display:inline-block;font-size:12px;font-weight:600;color:var(--sv);background:var(--sv-light);padding:4px 10px;border-radius:20px;margin-bottom:10px}
+.sign{width:130px;height:130px;margin:6px auto 12px}
+.question{font-size:18px;font-weight:600;line-height:1.35;margin:0 0 6px}
+.hint{font-size:12px;color:var(--muted);margin-bottom:14px}
+.answer{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;background:var(--card);border:2px solid var(--line);border-radius:12px;padding:13px 14px;margin-bottom:10px;font-size:16px;color:var(--txt);line-height:1.3}
+.answer .letter{flex:none;width:28px;height:28px;border-radius:8px;background:var(--sv-light);color:var(--sv-dark);display:grid;place-items:center;font-weight:700}
+.answer.sel{border-color:var(--sv);background:#f0fafa}
+.answer.sel .letter{background:var(--sv);color:#fff}
+.answer.good{border-color:var(--ok);background:#edf9f1}
+.answer.good .letter{background:var(--ok);color:#fff}
+.answer.bad{border-color:var(--ko);background:#fdeeee}
+.answer.bad .letter{background:var(--ko);color:#fff}
+.answer:disabled{cursor:default}
+.explain{border-left:4px solid var(--sv);background:#fff;border-radius:10px;padding:12px 14px;margin:6px 0 14px;font-size:15px;line-height:1.45}
+.explain b{display:block;margin-bottom:4px}
+.explain.ok b{color:var(--ok)} .explain.ko b{color:var(--ko)}
+.sticky{position:sticky;bottom:12px}
+
+/* Résultats */
+.score{text-align:center;padding:24px 16px}
+.score .big{font-size:56px;font-weight:800;color:var(--sv-dark);line-height:1}
+.score .big small{font-size:24px;color:var(--muted)}
+.verdict{font-size:20px;font-weight:700;margin:10px 0 4px}
+.verdict.ok{color:var(--ok)} .verdict.ko{color:var(--ko)}
+.recap{font-size:14px;border-top:1px solid var(--line);padding:12px 0}
+.recap .q{font-weight:600;margin-bottom:4px}
+.recap .r{color:var(--muted)}
+.pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:700;margin-right:6px;color:#fff}
+.pill.ok{background:var(--ok)} .pill.ko{background:var(--ko)}
+
+/* Réglages */
+.switch{display:flex;justify-content:space-between;align-items:center;font-size:15px;padding:6px 0}
+.switch input{width:44px;height:24px;accent-color:var(--sv)}
+.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:24px}
+.link{background:none;color:var(--sv);font-weight:600;padding:8px}
+
+/* ============ TABLETTE (à partir de 760 px de large) ============
+   Le téléphone ne change pas. Sur tablette : page plus large,
+   thèmes sur 2 colonnes (3 en paysage), questions un peu plus grandes. */
+@media (min-width:760px){
+  .app{max-width:1180px;padding-left:32px;padding-right:32px}
+  .themes{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .themes .theme{margin:0}
+  .quiz{max-width:720px;margin:0 auto}
+  .question{font-size:21px}
+  .sign{width:160px;height:160px}
+}
+@media (min-width:1100px){ .themes{grid-template-columns:1fr 1fr 1fr} }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+/* ===================================================================
+   Code de la route — appli d'entraînement (charte SV)
+   Version affichée dans le pied de page : pensez à l'incrémenter.
+   =================================================================== */
+const VERSION = "1.1.1";
+
+/* ---------- 1. Chargement de la banque de questions ----------
+   Les fichiers de questions appellent Q(...) : on remplit le tableau QUESTIONS. */
+const QUESTIONS = [];
+function Q(theme, text, answers, good, explain, sign){
+  QUESTIONS.push({theme, text, answers, good, explain, sign});
+}
+</script>
+<script>
+// ============================================================
+//  Panneaux et pictogrammes dessinés en SVG
+//  Chaque fonction renvoie le code SVG (carré 120×120) d'un panneau.
+//  Avantage : aucune image à télécharger, rendu net sur tous les écrans.
+// ============================================================
+const SIGNS = (() => {
+  // Couleurs officielles approximatives de la signalisation
+  const R = "#d0021b", B = "#0a4fa6", Y = "#f5c400", K = "#1a1a1a", W = "#ffffff";
+  // Enveloppe SVG commune
+  const svg = (inner) => `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img">${inner}</svg>`;
+  // Triangle de danger (pointe en haut) avec un contenu au centre
+  const danger = (inner) => svg(`<path d="M60 8 L114 104 H6 Z" fill="${W}" stroke="${R}" stroke-width="10" stroke-linejoin="round"/>${inner}`);
+  // Panneau rond à bord rouge (interdiction / limitation)
+  const rond = (inner, fond = W) => svg(`<circle cx="60" cy="60" r="52" fill="${fond}" stroke="${R}" stroke-width="12"/>${inner}`);
+  // Panneau de limitation de vitesse
+  const limite = (n) => rond(`<text x="60" y="76" font-family="Arial,Helvetica,sans-serif" font-weight="bold" font-size="${n >= 100 ? 40 : 50}" text-anchor="middle" fill="${K}">${n}</text>`);
+  // Petite silhouette de voiture vue de dos (pour l'interdiction de dépasser)
+  const voiture = (x, c) => `<rect x="${x}" y="50" width="22" height="22" rx="5" fill="${c}"/><rect x="${x + 3}" y="44" width="16" height="10" rx="3" fill="${c}"/>`;
+
+  return {
+    stop: svg(`<path d="M38 6 H82 L114 38 V82 L82 114 H38 L6 82 V38 Z" fill="${R}" stroke="${W}" stroke-width="4"/>
+      <text x="60" y="73" font-family="Arial,Helvetica,sans-serif" font-weight="bold" font-size="34" text-anchor="middle" fill="${W}">STOP</text>`),
+    cedez: svg(`<path d="M6 14 H114 L60 108 Z" fill="${W}" stroke="${R}" stroke-width="10" stroke-linejoin="round"/>`),
+    prio_droite: danger(`<path d="M44 52 L76 86 M76 52 L44 86" stroke="${K}" stroke-width="8"/>`),
+    intersection_prio: danger(`<path d="M60 40 V94" stroke="${K}" stroke-width="12"/><path d="M42 68 H78" stroke="${K}" stroke-width="5"/>`),
+    route_prio: svg(`<rect x="22" y="22" width="76" height="76" transform="rotate(45 60 60)" fill="${W}" stroke="${K}" stroke-width="2"/>
+      <rect x="32" y="32" width="56" height="56" transform="rotate(45 60 60)" fill="${Y}"/>`),
+    fin_route_prio: svg(`<rect x="22" y="22" width="76" height="76" transform="rotate(45 60 60)" fill="${W}" stroke="${K}" stroke-width="2"/>
+      <rect x="32" y="32" width="56" height="56" transform="rotate(45 60 60)" fill="${Y}"/>
+      <path d="M30 90 L90 30" stroke="${K}" stroke-width="9"/>`),
+    sens_interdit: svg(`<circle cx="60" cy="60" r="54" fill="${R}"/><rect x="24" y="51" width="72" height="18" fill="${W}"/>`),
+    interdit_circulation: rond(""),
+    interdit_depasser: rond(`${voiture(31, R)}${voiture(66, K)}`),
+    stationnement_interdit: rond(`<path d="M24 24 L96 96" stroke="${R}" stroke-width="10"/>`, B),
+    arret_interdit: rond(`<path d="M24 24 L96 96 M96 24 L24 96" stroke="${R}" stroke-width="10"/>`, B),
+    obligation_droite: svg(`<circle cx="60" cy="60" r="54" fill="${B}"/>
+      <path d="M30 60 H80" stroke="${W}" stroke-width="12"/><path d="M70 40 L94 60 L70 80 Z" fill="${W}"/>`),
+    sens_unique: svg(`<rect x="10" y="10" width="100" height="100" rx="8" fill="${B}"/>
+      <path d="M60 94 V44" stroke="${W}" stroke-width="14"/><path d="M38 50 L60 22 L82 50 Z" fill="${W}"/>`),
+    giratoire: danger(`<g fill="none" stroke="${K}" stroke-width="5">
+      <path d="M48 74 A14 14 0 0 1 60 56"/><path d="M68 60 A14 14 0 0 1 70 80"/><path d="M60 88 A14 14 0 0 1 46 82"/></g>
+      <path d="M58 50 L66 57 L56 61 Z M75 82 L66 84 L70 75 Z M42 86 L42 76 L50 82 Z" fill="${K}"/>`),
+    danger: danger(`<rect x="55" y="42" width="10" height="34" rx="3" fill="${K}"/><circle cx="60" cy="87" r="6" fill="${K}"/>`),
+    virage_droite: danger(`<path d="M52 94 V72 Q52 56 68 52" fill="none" stroke="${K}" stroke-width="8"/><path d="M64 42 L80 52 L64 62 Z" fill="${K}"/>`),
+    limit30: limite(30), limit50: limite(50), limit80: limite(80), limit90: limite(90), limit110: limite(110), limit130: limite(130),
+    pietons: svg(`<rect x="10" y="10" width="100" height="100" rx="8" fill="${B}"/><path d="M60 20 L102 96 H18 Z" fill="${W}"/>
+      <circle cx="62" cy="46" r="6" fill="${K}"/><path d="M60 54 L54 72 L46 88 M54 72 L66 88 M58 60 L48 68 M60 58 L72 66" stroke="${K}" stroke-width="5" stroke-linecap="round" fill="none"/>`),
+    // Panonceau « cédez-le-passage cycliste au feu » : triangle pointe en bas, vélo et flèche
+    m12: svg(`<path d="M6 14 H114 L60 108 Z" fill="${W}" stroke="${R}" stroke-width="8" stroke-linejoin="round"/>
+      <g fill="none" stroke="${K}" stroke-width="3"><circle cx="46" cy="50" r="10"/><circle cx="74" cy="50" r="10"/>
+      <path d="M46 50 L56 34 H70 L74 50 M56 34 L62 50 L70 34"/></g>
+      <path d="M50 70 H68" stroke="${K}" stroke-width="5"/><path d="M64 63 L74 70 L64 77 Z" fill="${K}"/>`),
+    // Pictogrammes des médicaments (niveaux 1 et 3)
+    medoc1: svg(`<path d="M60 10 L112 100 H8 Z" fill="${Y}" stroke="${K}" stroke-width="4" stroke-linejoin="round"/>
+      <text x="60" y="58" font-family="Arial" font-weight="bold" font-size="20" text-anchor="middle" fill="${K}">1</text>
+      <circle cx="60" cy="80" r="12" fill="none" stroke="${K}" stroke-width="4"/><path d="M60 68 V92 M48 80 H72" stroke="${K}" stroke-width="3"/>`),
+    medoc3: svg(`<path d="M60 10 L112 100 H8 Z" fill="${R}" stroke="${K}" stroke-width="4" stroke-linejoin="round"/>
+      <text x="60" y="58" font-family="Arial" font-weight="bold" font-size="20" text-anchor="middle" fill="${W}">3</text>
+      <circle cx="60" cy="80" r="12" fill="none" stroke="${W}" stroke-width="4"/><path d="M60 68 V92 M48 80 H72" stroke="${W}" stroke-width="3"/>`),
+    // Témoins du tableau de bord
+    temoin_route: svg(`<rect x="8" y="20" width="104" height="80" rx="14" fill="${K}"/>
+      <path d="M58 38 Q30 38 30 60 Q30 82 58 82 Z" fill="none" stroke="#2f7bff" stroke-width="6"/>
+      <path d="M66 42 H96 M66 54 H96 M66 66 H96 M66 78 H96" stroke="#2f7bff" stroke-width="6"/>`),
+    // ----- Ajouts v1.1.0 -----
+    // Annonce de feux tricolores : trois pastilles rouge / orange / vert
+    feux: danger(`<rect x="50" y="40" width="20" height="56" rx="6" fill="${K}"/>
+      <circle cx="60" cy="52" r="6" fill="${R}"/><circle cx="60" cy="68" r="6" fill="#ff9f1a"/><circle cx="60" cy="84" r="6" fill="#1f9d55"/>`),
+    // Dos-d'âne : une bosse sur une ligne
+    dos_ane: danger(`<path d="M30 88 H44 Q60 60 76 88 H90" fill="none" stroke="${K}" stroke-width="7"/>`),
+    // Chaussée rétrécie : deux bords qui se rapprochent
+    retrecie: danger(`<path d="M44 96 L44 80 L52 64 V44 M76 96 L76 80 L68 64 V44" fill="none" stroke="${K}" stroke-width="6"/>`),
+    // Passage à niveau avec barrières : une barrière à claire-voie
+    pn_barrieres: danger(`<rect x="34" y="64" width="52" height="22" fill="none" stroke="${K}" stroke-width="5"/>
+      <path d="M34 75 H86 M47 64 V86 M60 64 V86 M73 64 V86" stroke="${K}" stroke-width="4"/>`),
+    // Entrée / sortie d'agglomération (nom de ville fictif)
+    agglo: svg(`<rect x="4" y="34" width="112" height="52" rx="6" fill="${W}" stroke="${R}" stroke-width="6"/>
+      <text x="60" y="67" font-family="Arial" font-weight="bold" font-size="14" text-anchor="middle" fill="${K}">VILLEBOURG</text>`),
+    fin_agglo: svg(`<rect x="4" y="34" width="112" height="52" rx="6" fill="${W}" stroke="${R}" stroke-width="6"/>
+      <text x="60" y="67" font-family="Arial" font-weight="bold" font-size="14" text-anchor="middle" fill="${K}">VILLEBOURG</text>
+      <path d="M10 82 L110 38" stroke="${R}" stroke-width="7"/>`),
+    // Autoroute : pont au-dessus de deux voies
+    autoroute: svg(`<rect x="10" y="10" width="100" height="100" rx="8" fill="${B}"/>
+      <rect x="20" y="30" width="80" height="10" fill="${W}"/><rect x="24" y="40" width="8" height="12" fill="${W}"/><rect x="88" y="40" width="8" height="12" fill="${W}"/>
+      <path d="M40 100 L56 46 M80 100 L64 46" stroke="${W}" stroke-width="7"/><path d="M60 100 V90 M60 80 V70 M60 60 V52" stroke="${W}" stroke-width="3"/>`),
+    // Fin de toutes les interdictions : rond blanc à fines rayures diagonales
+    fin_interdictions: svg(`<circle cx="60" cy="60" r="52" fill="${W}" stroke="${K}" stroke-width="2"/>
+      <path d="M36 92 L92 36 M30 84 L84 30 M44 98 L98 44" stroke="${K}" stroke-width="3"/>`),
+    // Fin de limitation : chiffre grisé barré
+    fin_limit50: svg(`<circle cx="60" cy="60" r="52" fill="${W}" stroke="${K}" stroke-width="2"/>
+      <text x="60" y="76" font-family="Arial" font-weight="bold" font-size="50" text-anchor="middle" fill="#9aa5a8">50</text>
+      <path d="M30 92 L90 28 M36 98 L96 34" stroke="${K}" stroke-width="3"/>`),
+    // Interdiction de tourner à gauche : flèche coudée barrée
+    interdit_gauche: rond(`<path d="M66 92 V58 H42" fill="none" stroke="${K}" stroke-width="8"/><path d="M46 46 L30 58 L46 70 Z" fill="${K}"/>
+      <path d="M26 26 L94 94" stroke="${R}" stroke-width="9"/>`),
+    // Demi-tour interdit : flèche en U barrée
+    demi_tour: rond(`<path d="M72 92 V54 Q72 36 56 36 Q42 36 42 54 V70" fill="none" stroke="${K}" stroke-width="7"/><path d="M32 66 L42 82 L52 66 Z" fill="${K}"/>
+      <path d="M26 26 L94 94" stroke="${R}" stroke-width="9"/>`),
+    // Priorité par rapport au sens inverse : grande flèche blanche, petite flèche rouge
+    prio_sens_inverse: svg(`<rect x="10" y="10" width="100" height="100" rx="8" fill="${B}"/>
+      <path d="M44 96 V44" stroke="${W}" stroke-width="10"/><path d="M30 48 L44 26 L58 48 Z" fill="${W}"/>
+      <path d="M78 28 V70" stroke="${R}" stroke-width="7"/><path d="M68 66 L78 84 L88 66 Z" fill="${R}"/>`),
+    // Entrée de zone 30
+    zone30: svg(`<rect x="14" y="6" width="92" height="108" rx="8" fill="${W}" stroke="${K}" stroke-width="2"/>
+      <circle cx="60" cy="48" r="32" fill="${W}" stroke="${R}" stroke-width="8"/>
+      <text x="60" y="60" font-family="Arial" font-weight="bold" font-size="30" text-anchor="middle" fill="${K}">30</text>
+      <text x="60" y="104" font-family="Arial" font-weight="bold" font-size="20" text-anchor="middle" fill="${K}">ZONE</text>`),
+    // Interdit aux véhicules à moteur : voiture + moto
+    interdit_moteur: rond(`<rect x="28" y="46" width="34" height="14" rx="4" fill="${K}"/><rect x="34" y="38" width="20" height="10" rx="3" fill="${K}"/>
+      <circle cx="36" cy="62" r="5" fill="${K}"/><circle cx="54" cy="62" r="5" fill="${K}"/>
+      <circle cx="70" cy="80" r="7" fill="none" stroke="${K}" stroke-width="4"/><circle cx="92" cy="80" r="7" fill="none" stroke="${K}" stroke-width="4"/>
+      <path d="M70 80 L78 68 H86 L92 80" fill="none" stroke="${K}" stroke-width="4"/>`),
+    // Témoin de pression des pneus (orange)
+    temoin_pneu: svg(`<rect x="8" y="20" width="104" height="80" rx="14" fill="${K}"/>
+      <path d="M38 42 Q30 60 38 80 H82 Q90 60 82 42" fill="none" stroke="#ff9f1a" stroke-width="6"/><path d="M36 86 H84" stroke="#ff9f1a" stroke-width="5"/>
+      <rect x="57" y="46" width="6" height="18" rx="2" fill="#ff9f1a"/><circle cx="60" cy="72" r="3.5" fill="#ff9f1a"/>`),
+    temoin_moteur: svg(`<rect x="8" y="20" width="104" height="80" rx="14" fill="${K}"/>
+      <path d="M28 50 H40 V42 H70 L78 50 H88 V44 H96 V78 H88 V72 H78 L70 80 H40 L34 72 H28 Z" fill="none" stroke="#ff9f1a" stroke-width="6" stroke-linejoin="round"/>`)
+  };
+})();
+
+// ============================================================
+//  Banque de questions — partie 1
+//  Thème L : Dispositions légales en matière de circulation
+//  Format : Q(thème, question, [réponses], [index des bonnes réponses], explication, panneau optionnel)
+//  Plusieurs bonnes réponses possibles, comme à l'examen.
+// ============================================================
+
+// ---------- Panneaux et priorités ----------
+Q("L","Que m'impose ce panneau ?",["De marquer un arrêt absolu à la limite de la chaussée abordée","De ralentir et de passer si personne n'arrive","De céder le passage uniquement aux véhicules venant de droite"],[0],"Le STOP impose un arrêt complet (roues immobiles) à la ligne d'effet, puis de céder le passage à tous les usagers de la route abordée, à droite comme à gauche.","stop");
+Q("L","À ce panneau, je dois :",["Céder le passage aux usagers venant de droite et de gauche","M'arrêter obligatoirement même si la voie est libre","Ralentir et m'arrêter seulement si nécessaire"],[0,2],"Le « cédez le passage » n'oblige pas à s'arrêter si la voie est libre, mais impose de laisser passer tous les usagers de la route abordée.","cedez");
+Q("L","Ce panneau m'annonce :",["Une intersection où je suis prioritaire","Une intersection avec priorité à droite","Un passage à niveau"],[1],"Triangle avec une croix noire : intersection où s'applique la priorité à droite. Je ralentis et je laisse passer les véhicules venant de ma droite.","prio_droite");
+Q("L","Ce panneau m'indique :",["Que je suis prioritaire à la prochaine intersection seulement","Que je dois céder le passage à droite","Que la route qui croise doit me céder le passage"],[0,2],"Triangle avec une croix « gros trait vertical » : intersection avec une route non prioritaire. Je suis prioritaire uniquement à cette intersection.","intersection_prio");
+Q("L","Ce panneau signifie :",["Je circule sur une route à caractère prioritaire","Je dois céder le passage à droite à chaque intersection","Je suis prioritaire jusqu'au panneau de fin"],[0,2],"Le losange jaune indique une route à caractère prioritaire : je suis prioritaire à toutes les intersections jusqu'au panneau de fin de caractère prioritaire.","route_prio");
+Q("L","Après ce panneau :",["Je reste prioritaire","Je ne suis plus sur une route à caractère prioritaire","La priorité à droite peut à nouveau s'appliquer"],[1,2],"Losange barré : fin de route à caractère prioritaire. Sans autre panneau, la priorité à droite redevient la règle aux intersections.","fin_route_prio");
+Q("L","Ce panneau m'interdit :",["L'accès à cette voie (sens interdit)","Le stationnement","Le dépassement"],[0],"Rond rouge avec une barre blanche horizontale : sens interdit à tout véhicule.","sens_interdit");
+Q("L","Ce panneau interdit :",["La circulation à tous les véhicules dans les deux sens","Uniquement le stationnement","Uniquement les camions"],[0],"Rond blanc à bordure rouge sans symbole : circulation interdite à tout véhicule dans les deux sens.","interdit_circulation");
+Q("L","Ce panneau m'interdit :",["De dépasser tous les véhicules à moteur autres que les deux-roues","De dépasser les cyclistes","De circuler à plus de 50 km/h"],[0],"Interdiction de dépasser les véhicules à moteur autres que les deux-roues sans side-car. Dépasser un cycliste reste possible si c'est sans danger.","interdit_depasser");
+Q("L","Ce panneau interdit :",["Le stationnement","L'arrêt","La circulation"],[0],"Rond bleu bordé de rouge avec une seule barre : stationnement interdit. L'arrêt (rapide, conducteur à proximité) reste autorisé.","stationnement_interdit");
+Q("L","Ce panneau interdit :",["Le stationnement","L'arrêt","La circulation des vélos"],[0,1],"Rond bleu avec une croix rouge : arrêt ET stationnement interdits.","arret_interdit");
+Q("L","Ce panneau signifie :",["Obligation de tourner à droite","Direction conseillée","Interdiction de tourner à droite"],[0],"Un panneau rond bleu est un panneau d'obligation : ici, direction obligatoire à droite.","obligation_droite");
+Q("L","Ce panneau m'indique :",["Une voie à sens unique","Une obligation d'aller tout droit","Une autoroute"],[0],"Panneau carré bleu avec flèche blanche : panneau d'indication de sens unique.","sens_unique");
+Q("L","Ce panneau m'annonce :",["Un carrefour à sens giratoire","Un rond-point où je serai prioritaire","Une zone de travaux"],[0],"Panneau de danger annonçant un carrefour à sens giratoire. En général, je devrai céder le passage aux véhicules déjà engagés sur l'anneau.","giratoire");
+Q("L","Ce panneau m'annonce :",["Un danger dont la nature n'est pas précisée","Une interdiction","Une fin d'interdiction"],[0],"Triangle avec un point d'exclamation : « autres dangers ». Un panonceau précise souvent la nature du danger.","danger");
+Q("L","Ce panneau m'annonce :",["Un virage à droite","Une obligation de tourner à droite","Un virage à gauche"],[0],"Triangle avec flèche courbée vers la droite : virage dangereux à droite. J'adapte ma vitesse avant le virage.","virage_droite");
+Q("L","Ce panneau m'indique :",["Une vitesse maximale de 30 km/h","Une vitesse conseillée de 30 km/h","Une vitesse minimale de 30 km/h"],[0],"Rond blanc bordé de rouge avec un chiffre : vitesse maximale autorisée.","limit30");
+Q("L","La forme d'un panneau m'informe sur sa fonction. Un panneau triangulaire est :",["Un panneau de danger","Un panneau d'interdiction","Un panneau d'indication"],[0],"Triangles = danger ; ronds = interdiction (bord rouge) ou obligation (fond bleu) ; carrés/rectangles = indication ; losange = priorité ; octogone = STOP.");
+Q("L","Les panneaux à fond jaune sont :",["Des panneaux temporaires (travaux, déviation)","Des panneaux de direction touristique","Des panneaux définitifs"],[0],"La signalisation temporaire est à fond jaune. Elle prime sur la signalisation permanente.");
+Q("L","Un marquage au sol jaune :",["Est temporaire","Prime sur le marquage blanc","Peut être ignoré si le marquage blanc est visible"],[0,1],"En cas de travaux, le marquage jaune est temporaire et s'impose sur le marquage blanc habituel.");
+Q("L","Un agent de la circulation me fait signe de passer alors que le feu est rouge :",["Je passe en suivant l'indication de l'agent","J'attends le feu vert","Je klaxonne pour prévenir"],[0],"Les indications des agents priment sur les feux et les panneaux.");
+Q("L","L'ordre de priorité des règles est :",["Agent > feux > panneaux > règles générales","Panneaux > feux > agent","Feux > agent > panneaux"],[0],"Les ordres d'un agent l'emportent sur tout, puis les feux, puis les panneaux, puis les règles générales (priorité à droite…).");
+
+// ---------- Feux ----------
+Q("L","Le feu passe à l'orange fixe alors que je suis tout près de la ligne d'arrêt :",["Je m'arrête, sauf si je ne peux plus le faire en sécurité","J'accélère pour passer","Il signifie la même chose que le vert"],[0],"Le feu orange fixe impose l'arrêt, sauf si l'arrêt ne peut plus se faire dans des conditions de sécurité suffisantes.");
+Q("L","Un feu orange clignotant signifie :",["Que je dois être prudent","Que les règles de priorité s'appliquent (panneaux ou priorité à droite)","Que je suis forcément prioritaire"],[0,1],"Feu orange clignotant : prudence accrue. On applique les panneaux présents ou, à défaut, la priorité à droite.");
+Q("L","Griller un feu rouge entraîne :",["Un retrait de 4 points","Une amende de 135 €","Un simple avertissement"],[0,1],"Franchir un feu rouge : contravention de 4e classe (135 €) et retrait de 4 points, avec suspension possible du permis.");
+Q("L","Au feu vert, le carrefour est encombré :",["Je m'engage quand même puisque c'est vert","J'attends pour ne pas bloquer l'intersection","Je klaxonne"],[1],"Il est interdit de s'engager dans une intersection si je risque d'y être immobilisé et de bloquer la circulation transversale.");
+
+// ---------- Vitesses ----------
+Q("L","En agglomération, sauf indication contraire, la vitesse est limitée à :",["50 km/h","30 km/h","70 km/h"],[0],"En agglomération, la vitesse maximale est de 50 km/h, sauf panneau (zone 30, rue limitée à 70…).");
+Q("L","Sur une route bidirectionnelle sans séparateur central, hors agglomération, la vitesse maximale par défaut est de :",["80 km/h","90 km/h","110 km/h"],[0],"80 km/h par défaut. Le gestionnaire de la route peut la relever à 90 km/h par des panneaux.");
+Q("L","Sur autoroute, par temps sec, un conducteur expérimenté peut rouler au maximum à :",["130 km/h","110 km/h","150 km/h"],[0],"130 km/h sur autoroute par temps sec, 110 km/h par temps de pluie.");
+Q("L","Sur autoroute, quand il pleut, la vitesse maximale est de :",["110 km/h","130 km/h","90 km/h"],[0],"Par temps de pluie : 110 km/h sur autoroute, 100 km/h sur route à chaussées séparées, 80 km/h sur les autres routes.");
+Q("L","Un jeune conducteur en permis probatoire peut rouler sur autoroute au maximum à :",["110 km/h","130 km/h","90 km/h"],[0],"Permis probatoire : 110 km/h sur autoroute, 100 km/h sur route à chaussées séparées, 80 km/h sur les autres routes.");
+Q("L","Un jeune conducteur, sur une route à chaussées séparées limitée à 110 km/h, peut rouler à :",["100 km/h maximum","110 km/h maximum","90 km/h maximum"],[0],"Les jeunes conducteurs sont limités à 100 km/h sur ces routes.");
+Q("L","Par brouillard, avec une visibilité inférieure à 50 mètres, la vitesse est limitée à :",["50 km/h sur toutes les routes, autoroute comprise","70 km/h","90 km/h sur autoroute"],[0],"Visibilité inférieure à 50 m : 50 km/h maximum partout.");
+Q("L","Dans une zone 30 :",["La vitesse est limitée à 30 km/h","Les cyclistes peuvent souvent circuler à double sens","Les piétons n'ont aucune priorité"],[0,1],"En zone 30, la vitesse est limitée à 30 km/h et les rues sont en général à double sens pour les cyclistes (sauf indication contraire).");
+Q("L","Dans une zone de rencontre :",["Les piétons sont prioritaires et peuvent marcher sur la chaussée","La vitesse est limitée à 20 km/h","La vitesse est limitée à 30 km/h"],[0,1],"Zone de rencontre : 20 km/h maximum et priorité aux piétons, qui peuvent circuler sur la chaussée.");
+Q("L","Sur autoroute, la voie de gauche, quand la circulation est fluide, impose une vitesse minimale de :",["80 km/h","50 km/h","100 km/h"],[0],"Par circulation fluide et bonne visibilité, la vitesse minimale sur la voie la plus à gauche d'une autoroute est de 80 km/h.");
+
+// ---------- Dépassement ----------
+Q("L","Pour dépasser, je dois :",["Vérifier dans mes rétroviseurs et mon angle mort","Mettre mon clignotant","Dépasser par la droite si c'est plus simple"],[0,1],"On dépasse par la gauche, après avoir contrôlé rétroviseurs et angle mort et signalé son intention au clignotant.");
+Q("L","Le dépassement par la droite est autorisé :",["Si le véhicule devant a signalé qu'il tourne à gauche","En circulation en files ininterrompues","Si le véhicule devant roule lentement"],[0,1],"On dépasse normalement par la gauche, sauf si le véhicule devant tourne à gauche, ou en files ininterrompues (bouchons).");
+Q("L","Je peux franchir une ligne continue :",["Jamais pour dépasser une voiture","Pour dépasser un cycliste si la visibilité est suffisante","Pour faire demi-tour"],[0,1],"Interdiction de franchir ou chevaucher une ligne continue. Exception : chevaucher pour dépasser un cycliste, un engin lent (tracteur…) si la visibilité est suffisante.");
+Q("L","En agglomération, pour dépasser un cycliste, je laisse un espace latéral d'au moins :",["1 mètre","50 cm","2 mètres"],[0],"1 m en agglomération, 1,50 m hors agglomération.");
+Q("L","Hors agglomération, pour dépasser un cycliste, je laisse au moins :",["1,50 mètre","1 mètre","50 cm"],[0],"Hors agglomération, l'espace latéral minimal est de 1,50 m.");
+Q("L","Le dépassement est interdit :",["À l'approche d'un sommet de côte sans visibilité","Dans un virage sans visibilité","Sur une ligne discontinue"],[0,1],"Le dépassement est interdit quand la visibilité vers l'avant est insuffisante (sommet de côte, virage).");
+Q("L","Quand je suis dépassé, je dois :",["Serrer à droite et ne pas accélérer","Accélérer","Me décaler vers la gauche"],[0],"Le conducteur dépassé ne doit pas accélérer et doit serrer à droite.");
+
+// ---------- Intersections ----------
+Q("L","À une intersection sans panneau ni feu, je dois laisser passer :",["Les véhicules venant de ma droite","Les véhicules venant de ma gauche","Personne"],[0],"Sans signalisation, c'est la priorité à droite.");
+Q("L","Je veux entrer dans un giratoire précédé d'un panneau « cédez le passage » :",["Je cède le passage aux véhicules déjà sur l'anneau","Je suis prioritaire","Je m'arrête obligatoirement"],[0],"Dans la plupart des giratoires, ceux qui y entrent cèdent le passage à ceux qui y circulent déjà.");
+Q("L","Dans un giratoire, pour sortir, je mets mon clignotant :",["À droite, juste après avoir passé la sortie précédente","À gauche","Je n'en mets pas"],[0],"On signale sa sortie avec le clignotant droit, au niveau de la sortie qui précède la sienne.");
+Q("L","Je tourne à gauche à une intersection, un véhicule arrive en face pour aller tout droit :",["Je le laisse passer","Je passe avant lui","Je klaxonne"],[0],"En tournant à gauche, on coupe la trajectoire des véhicules venant en face : on leur cède le passage.");
+Q("L","Je tourne à droite et un cycliste sur la piste cyclable va tout droit :",["Je lui cède le passage","Je suis prioritaire","Je surveille mon angle mort à droite"],[0,2],"Je ne dois pas couper la trajectoire du cycliste qui continue tout droit. Je contrôle mon angle mort.");
+Q("L","Sortir d'un parking ou d'un chemin de terre pour rejoindre la route :",["Je cède le passage à tous les usagers","La priorité à droite s'applique","Je suis prioritaire si je viens de droite"],[0],"En sortant d'un lieu non ouvert à la circulation publique (parking, chemin de terre, garage), on cède toujours le passage.");
+Q("L","Un véhicule d'intérêt général prioritaire (pompiers, SAMU, police) arrive avec sirène et gyrophare :",["Je lui facilite le passage, même en me serrant sur le côté","Je garde ma trajectoire","Je l'ignore si je suis prioritaire"],[0],"Les véhicules d'intérêt général prioritaires en intervention passent avant tout le monde : je facilite leur passage.");
+
+// ---------- Marquages ----------
+Q("L","Une ligne discontinue avec des traits longs et des intervalles courts (ligne d'avertissement) :",["Annonce l'approche d'une ligne continue","Peut être franchie si nécessaire","Interdit tout dépassement"],[0,1],"La ligne d'avertissement annonce une ligne continue ou un danger. On peut la franchir, mais avec prudence.");
+Q("L","Au sol, une ligne en zigzag jaune indique :",["Un emplacement d'arrêt de bus où arrêt et stationnement sont interdits","Une piste cyclable","Une place de livraison"],[0],"Le zigzag jaune signale l'emplacement réservé à l'arrêt des bus.");
+Q("L","Une ligne continue transversale au sol accompagne :",["Un STOP ou un feu","Un cédez le passage","Un passage piéton"],[0],"Au STOP et aux feux, la ligne d'arrêt est continue. Au cédez le passage, elle est discontinue.");
+Q("L","Les flèches de rabattement au sol indiquent :",["Que je dois me rabattre car une voie va disparaître ou une ligne continue arrive","Une sortie d'autoroute","Une voie réservée aux bus"],[0],"Les flèches de rabattement imposent de se rabattre dans la voie indiquée.");
+
+// ---------- Autoroute ----------
+Q("L","Sur autoroute, il est interdit :",["De faire demi-tour","De faire marche arrière","D'utiliser la bande d'arrêt d'urgence pour doubler"],[0,1,2],"Demi-tour, marche arrière et circulation sur la bande d'arrêt d'urgence sont interdits sur autoroute.");
+Q("L","Sur autoroute, je m'insère depuis la voie d'accélération :",["En prenant la vitesse du trafic et en cédant le passage","En m'arrêtant au bout de la voie","En étant prioritaire"],[0],"La voie d'accélération sert à prendre de la vitesse ; on s'insère en cédant le passage aux véhicules déjà sur l'autoroute.");
+Q("L","La bande d'arrêt d'urgence peut être utilisée :",["En cas de panne ou d'urgence","Pour une pause","Pour téléphoner"],[0],"Elle est réservée aux arrêts d'urgence (panne, malaise…). Pour une pause, on utilise une aire de repos.");
+Q("L","En cas de bouchon sur autoroute, il est recommandé de :",["Créer un corridor de sécurité entre les voies","Rouler sur la bande d'arrêt d'urgence","Allumer mes feux de détresse pour avertir les suivants"],[0,2],"On laisse un couloir pour les secours, et les feux de détresse préviennent les conducteurs qui arrivent derrière.");
+
+// ============================================================
+//  Banque de questions — partie 2
+//  C : Le conducteur   R : La route   U : Les autres usagers
+// ============================================================
+
+// ---------- C : LE CONDUCTEUR ----------
+Q("C","Pour un conducteur expérimenté, le taux d'alcool maximal autorisé est de :",["0,5 g par litre de sang","0,8 g par litre de sang","0,2 g par litre de sang"],[0],"0,5 g/L de sang, soit 0,25 mg/L d'air expiré.");
+Q("C","Pour un conducteur en permis probatoire, le taux d'alcool maximal autorisé est de :",["0,2 g par litre de sang","0,5 g par litre de sang","0,8 g par litre de sang"],[0],"0,2 g/L de sang (0,10 mg/L d'air expiré) : en pratique, aucun verre d'alcool.");
+Q("C","Pour faire baisser plus vite mon taux d'alcool, je peux :",["Boire du café","Boire beaucoup d'eau","Seulement attendre : rien d'autre ne l'accélère"],[2],"Seul le temps élimine l'alcool, environ 0,10 à 0,15 g/L par heure. Café, eau ou air frais n'y changent rien.");
+Q("C","Un verre standard (bière, vin, apéritif servis au bar) fait monter le taux d'alcool d'environ :",["0,20 à 0,25 g/L","0,05 g/L","0,80 g/L"],[0],"Un verre « standard » contient environ 10 g d'alcool pur et augmente le taux d'environ 0,20 à 0,25 g/L.");
+Q("C","Conduire avec un taux d'alcool compris entre 0,5 et 0,8 g/L de sang (conducteur expérimenté) entraîne :",["Un retrait de 6 points","Une amende de 135 €","Aucun retrait de point"],[0,1],"Contravention : 135 € et 6 points retirés, avec immobilisation possible du véhicule.");
+Q("C","Conduire avec 0,8 g/L d'alcool dans le sang ou plus est :",["Un délit","Une simple contravention","Puni de prison possible"],[0,2],"À partir de 0,8 g/L, c'est un délit : jusqu'à 2 ans de prison, 4 500 € d'amende, 6 points et suspension ou annulation du permis.");
+Q("C","Conduire après avoir consommé du cannabis :",["Est un délit","Entraîne un retrait de 6 points","Est autorisé si la consommation date de la veille au soir"],[0,1],"La conduite après usage de stupéfiants est un délit, quel que soit le délai si le test est positif : 6 points, amende, prison possible.");
+Q("C","Le mélange alcool + cannabis :",["Multiplie fortement le risque d'accident","Annule les effets de l'alcool","N'a pas d'effet sur la conduite"],[0],"Les effets s'additionnent et se renforcent : le risque d'accident mortel est multiplié de façon très importante.");
+Q("C","Ce pictogramme sur une boîte de médicament (niveau 3, rouge) signifie :",["Ne pas conduire","Soyez prudent","Aucun risque"],[0],"Niveau 1 jaune : soyez prudent. Niveau 2 orange : soyez très prudent, demandez l'avis d'un médecin. Niveau 3 rouge : attention danger, ne pas conduire.","medoc3");
+Q("C","Ce pictogramme (niveau 1, jaune) sur un médicament signifie :",["Soyez prudent, ne conduisez pas sans avoir lu la notice","Conduite interdite","Aucune précaution"],[0],"Le niveau 1 invite à la prudence et à la lecture de la notice.","medoc1");
+Q("C","Les signes de fatigue au volant sont :",["Bâillements, paupières lourdes","Raideurs dans la nuque, picotements des yeux","Envie de conduire plus vite"],[0,1],"Dès les premiers signes, il faut s'arrêter et faire une pause, voire une sieste de 15 à 20 minutes.");
+Q("C","Lors d'un long trajet, il est conseillé de faire une pause :",["Toutes les 2 heures","Toutes les 5 heures","Uniquement en cas de fatigue"],[0],"Une pause d'au moins 15 minutes toutes les 2 heures est recommandée.");
+Q("C","Pour lutter efficacement contre la somnolence, je :",["M'arrête et fais une courte sieste","Ouvre la fenêtre et monte le son","Bois un soda"],[0],"Fenêtre ouverte, musique ou boisson ne font que masquer la fatigue quelques minutes. Seul le repos est efficace.");
+Q("C","Téléphoner en tenant son téléphone en main en conduisant entraîne :",["Un retrait de 3 points","Une amende de 135 €","Un simple avertissement"],[0,1],"135 € et 3 points. Si une autre infraction est commise en même temps, le permis peut être retenu sur-le-champ.");
+Q("C","Pour téléphoner au volant, les oreillettes ou un casque audio sont :",["Interdits","Autorisés","Autorisés seulement en agglomération"],[0],"Tout dispositif placé dans ou sur l'oreille est interdit en conduisant. Le mieux reste de s'arrêter dans un lieu sûr pour téléphoner.");
+Q("C","Même avec un kit mains libres intégré au véhicule, téléphoner en conduisant :",["Diminue l'attention","Est sans danger","Ne pose aucun problème si la conversation est courte"],[0],"La conversation mobilise l'attention : le conducteur voit moins de choses et réagit plus tard.");
+Q("C","Le temps de réaction moyen d'un conducteur attentif est d'environ :",["1 seconde","0,1 seconde","3 secondes"],[0],"Environ 1 seconde. Il s'allonge avec la fatigue, l'alcool, le téléphone…");
+Q("C","À 50 km/h, pendant 1 seconde de réaction, je parcours environ :",["15 mètres","5 mètres","50 mètres"],[0],"Astuce : chiffre des dizaines × 3. À 50 km/h : 5 × 3 = 15 m.");
+Q("C","À 90 km/h, pendant 1 seconde de réaction, je parcours environ :",["27 mètres","9 mètres","90 mètres"],[0],"9 × 3 = 27 m environ.");
+Q("C","La distance d'arrêt est égale à :",["Distance parcourue pendant le temps de réaction + distance de freinage","Distance de freinage seule","Distance de sécurité × 2"],[0],"Distance d'arrêt = distance de réaction + distance de freinage.");
+Q("C","Sur route sèche, à 50 km/h, ma distance d'arrêt est d'environ :",["40 mètres","15 mètres","100 mètres"],[0],"Réaction ≈ 15 m (5×3) + freinage ≈ 25 m (5×5) = environ 40 m.");
+Q("C","Si je double ma vitesse, ma distance de freinage est :",["Multipliée par 4 environ","Multipliée par 2","Inchangée"],[0],"La distance de freinage augmente avec le carré de la vitesse : vitesse × 2 = distance de freinage × 4.");
+Q("C","Sur route mouillée, ma distance de freinage :",["Augmente","Diminue","Reste identique"],[0],"Sur chaussée mouillée, l'adhérence diminue : la distance de freinage s'allonge nettement.");
+Q("C","La distance de sécurité avec le véhicule qui me précède doit correspondre au minimum à :",["2 secondes","1 seconde","5 mètres"],[0],"Au moins 2 secondes. Astuce : chiffre des dizaines × 6 (à 90 km/h : 54 m environ).");
+Q("C","Ne pas respecter les distances de sécurité est sanctionné par :",["Un retrait de 3 points","Une amende de 135 €","Aucune sanction"],[0,1],"135 € et 3 points.");
+Q("C","Plus ma vitesse augmente :",["Plus mon champ visuel se rétrécit","Plus je vois les côtés de la route","Moins ma distance d'arrêt est longue"],[0],"À grande vitesse, la vision se concentre au loin et le champ visuel se rétrécit : on perçoit moins bien ce qui arrive sur les côtés.");
+Q("C","Un conducteur en permis probatoire démarre avec :",["6 points","12 points","0 point"],[0],"Le permis probatoire démarre avec 6 points.");
+Q("C","Après une formation en conduite accompagnée et sans infraction, le capital de 12 points est atteint au bout de :",["2 ans","3 ans","1 an"],[0],"AAC : +3 points par an pendant 2 ans. Filière classique : +2 points par an pendant 3 ans.");
+Q("C","En filière classique et sans infraction, le jeune conducteur atteint 12 points au bout de :",["3 ans","2 ans","5 ans"],[0],"+2 points par an pendant 3 ans.");
+Q("C","Pendant la période probatoire, je dois apposer à l'arrière de mon véhicule :",["Le disque « A » (jeune conducteur)","Le disque « conduite accompagnée »","Aucun signe"],[0],"Le disque « A » est obligatoire pendant toute la période probatoire.");
+Q("C","En permis probatoire, si je perds 3 points ou plus en une fois :",["Je dois suivre un stage de sensibilisation obligatoire","Mon permis est annulé","Rien de particulier"],[0],"Un stage de sensibilisation à la sécurité routière devient obligatoire (dans les 4 mois).");
+Q("C","Le nombre maximal de points pouvant être retirés en une seule fois (plusieurs infractions simultanées) est de :",["8 points","12 points","6 points"],[0],"Même si plusieurs infractions sont commises en même temps, le retrait ne peut pas dépasser 8 points.");
+Q("C","Un stage volontaire de sensibilisation permet de récupérer :",["4 points","2 points","Tous les points"],[0],"Il permet de récupérer jusqu'à 4 points, une fois par an au maximum.");
+Q("C","Ne pas céder le passage à un piéton engagé entraîne :",["Un retrait de 6 points","Un retrait de 1 point","Aucun retrait"],[0],"Refus de priorité à un piéton : 135 € et 6 points.");
+Q("C","Un excès de vitesse de 50 km/h ou plus :",["Est un délit en cas de récidive","Entraîne un retrait de 6 points","Entraîne une suspension du permis"],[0,1,2],"6 points, suspension du permis, confiscation possible du véhicule. En récidive, c'est un délit.");
+Q("C","La ceinture non bouclée d'un passager de moins de 18 ans engage la responsabilité :",["Du conducteur","Du passager seul","Des parents uniquement"],[0],"Le conducteur est responsable du port de la ceinture (et des sièges enfants) pour les passagers mineurs.");
+Q("C","Ne pas porter sa ceinture de sécurité (conducteur) entraîne :",["Un retrait de 3 points","Une amende de 135 €","Un retrait de 1 point"],[0,1],"135 € et 3 points.");
+Q("C","La nuit, je suis ébloui par les feux d'un véhicule venant en face :",["Je regarde le bord droit de la chaussée","Je fixe ses phares","Je lui fais des appels de phares en continu"],[0],"Regarder le bord droit de la route permet de garder sa trajectoire sans être aveuglé, et je ralentis.");
+Q("C","Avant de conduire de nuit, je pense à :",["Nettoyer mon pare-brise et mes phares","Vérifier mes feux","Mettre des lunettes de soleil"],[0,1],"Un pare-brise sale augmente l'éblouissement ; des feux propres et en état éclairent mieux.");
+Q("C","Une émotion forte (colère, stress) au volant :",["Augmente le risque d'erreur","N'a pas d'influence","Améliore les réflexes"],[0],"Le stress et la colère poussent à prendre plus de risques et dégradent l'attention.");
+Q("C","Régler son siège correctement, c'est :",["Pouvoir enfoncer complètement l'embrayage en gardant la jambe légèrement fléchie","Être collé au volant, coudes très pliés","Avoir les poignets posés sur le haut du volant bras tendus"],[0,2],"Jambe légèrement fléchie embrayage enfoncé, et poignets posés sur le haut du volant avec le dos contre le dossier.");
+Q("C","Pendant la conduite accompagnée, l'accompagnateur doit :",["Être titulaire du permis B depuis au moins 5 ans sans interruption","Être mentionné dans le contrat d'assurance","Être obligatoirement un parent"],[0,1],"L'accompagnateur doit avoir le permis B depuis 5 ans au moins, sans annulation ou suspension récente, et avoir l'accord de l'assureur. Ce n'est pas forcément un parent.");
+Q("C","En conduite accompagnée, le véhicule doit porter :",["Le disque « conduite accompagnée » à l'arrière","Le disque « A »","Aucun disque"],[0],"Le disque « conduite accompagnée » est obligatoire à l'arrière du véhicule.");
+Q("C","Un petit excès de vitesse de moins de 5 km/h, depuis 2024 :",["N'entraîne plus de retrait de point","Est toujours sanctionné par une amende","Est autorisé"],[0,1],"Depuis le 1er janvier 2024, les excès de moins de 5 km/h ne retirent plus de point, mais l'amende reste due.");
+
+// ---------- R : LA ROUTE ----------
+Q("R","Il pleut fortement et je sens que ma voiture « flotte » (aquaplaning) :",["Je lève le pied de l'accélérateur","Je tiens fermement le volant sans braquer","Je freine fort"],[0,1],"En aquaplaning, les pneus perdent le contact avec la route. On lève le pied, on tient le volant droit, on évite de freiner brusquement.");
+Q("R","Au début d'une pluie après une période sèche, la route :",["Est particulièrement glissante","Est plus adhérente","Ne change pas"],[0],"Les premières gouttes se mélangent à la poussière, à l'huile et au caoutchouc : la chaussée devient très glissante.");
+Q("R","Le verglas se forme en priorité :",["Sur les ponts","Dans les zones à l'ombre","Dans les zones ensoleillées"],[0,1],"Les ponts et les zones ombragées gèlent en premier et dégèlent en dernier.");
+Q("R","Le risque de verglas existe même si le thermomètre extérieur affiche :",["+2 °C","+15 °C","+25 °C"],[0],"Vers 0 à +3 °C, du verglas peut déjà se former au sol, surtout la nuit et le matin.");
+Q("R","Les feux de brouillard arrière peuvent être utilisés :",["Par brouillard","Par chute de neige","Par forte pluie"],[0,1],"Ils sont réservés au brouillard et à la neige. Par pluie, même forte, ils éblouissent les autres conducteurs.");
+Q("R","Les feux de brouillard avant peuvent être utilisés :",["Par brouillard","Par chute de neige","Par forte pluie"],[0,1,2],"Les feux de brouillard avant sont autorisés par brouillard, neige et forte pluie.");
+Q("R","Hors agglomération, la nuit, sur une route non éclairée et sans personne en face, j'utilise :",["Les feux de route","Les feux de croisement","Les feux de position seuls"],[0],"Les feux de route éclairent loin (au moins 100 m). Je repasse en feux de croisement dès que je croise ou suis quelqu'un.");
+Q("R","Les feux de croisement éclairent à environ :",["30 mètres","100 mètres","300 mètres"],[0],"Environ 30 m, sans éblouir. Il faut donc adapter sa vitesse à cette portée.");
+Q("R","Je dois passer en feux de croisement :",["Quand je croise un véhicule","Quand je suis un véhicule de près","En agglomération éclairée"],[0,1,2],"Pour ne pas éblouir les autres, et en agglomération éclairée.");
+Q("R","Dans un tunnel, je dois :",["Allumer au moins mes feux de croisement","Garder une distance suffisante","Faire demi-tour si ça bouchonne"],[0,1],"Feux allumés et distance respectée. Le demi-tour et la marche arrière sont interdits dans un tunnel.");
+Q("R","En montagne, dans une longue descente :",["J'utilise le frein moteur en rétrogradant","Je roule au point mort pour économiser","Je freine en continu"],[0],"Le frein moteur évite la surchauffe des freins. Rouler au point mort est dangereux et interdit.");
+Q("R","Sur une route de montagne étroite, quand le croisement est difficile :",["Le véhicule descendant doit s'arrêter le premier","Le véhicule montant doit reculer","Le plus rapide passe"],[0],"C'est au véhicule qui descend de s'arrêter à temps pour laisser passer celui qui monte.");
+Q("R","Les feux rouges d'un passage à niveau clignotent :",["Je m'arrête","Je passe vite avant la barrière","Je passe si je ne vois pas de train"],[0],"Feux rouges clignotants = arrêt obligatoire, même si les barrières ne sont pas encore baissées.");
+Q("R","Je ne dois pas m'engager sur un passage à niveau si :",["Je ne suis pas sûr de pouvoir le dégager","Les feux clignotent","La circulation est fluide"],[0,1],"Il ne faut jamais risquer d'être immobilisé sur les voies.");
+Q("R","Avant un virage, je dois :",["Ralentir avant d'entrer dans le virage","Freiner fort au milieu du virage","Regarder loin vers la sortie du virage"],[0,2],"On adapte sa vitesse avant le virage et on regarde où on veut aller.");
+Q("R","Les rafales de vent latéral sont à craindre :",["En sortie de tunnel","Sur les ponts et viaducs","En dépassant un poids lourd"],[0,1,2],"Le vent peut déporter brusquement la voiture dans ces situations : je tiens fermement le volant.");
+Q("R","Des feuilles mortes mouillées sur la chaussée :",["Rendent la route glissante","Améliorent l'adhérence","N'ont aucun effet"],[0],"Elles forment une couche glissante, comme les marquages au sol mouillés ou les gravillons.");
+Q("R","Sur autoroute, les chevrons tracés sur la voie servent à :",["Évaluer la distance de sécurité","Indiquer une sortie","Signaler une zone de dépassement"],[0],"Je garde au moins 2 chevrons entre moi et le véhicule qui me précède.");
+Q("R","Par brouillard épais, je dois :",["Ralentir","Allumer mes feux de croisement","Allumer mes feux de route"],[0,1],"Les feux de route se réfléchissent dans le brouillard et éblouissent : on utilise les feux de croisement et de brouillard.");
+Q("R","Sur une route enneigée, pour démarrer sans patiner :",["J'accélère doucement, éventuellement en 2e","J'accélère fort en 1re","Je braque les roues"],[0],"Douceur : démarrage en souplesse pour ne pas faire patiner les roues.");
+Q("R","Dans certaines zones de montagne, du 1er novembre au 31 mars :",["Des équipements hiver sont obligatoires (pneus hiver ou chaînes/chaussettes)","Il est interdit de circuler","Rien n'est obligatoire"],[0],"La « loi montagne » impose, dans les communes concernées et signalées, des pneus hiver (ou 4 saisons) ou des chaînes/chaussettes à neige.");
+Q("R","Avec des chaînes à neige, la vitesse maximale est de :",["50 km/h","90 km/h","30 km/h"],[0],"Avec des chaînes, on ne dépasse pas 50 km/h.");
+Q("R","La nuit, ce qui est le plus difficile à voir, c'est :",["Un piéton habillé en sombre","Un véhicule avec ses feux allumés","Un panneau rétroréfléchissant"],[0],"Un piéton en vêtements sombres n'est visible qu'au dernier moment : prudence en agglomération et en campagne.");
+Q("R","En approchant d'un sommet de côte, je :",["Serre à droite","Ralentis si la visibilité est réduite","Dépasse rapidement"],[0,1],"La visibilité est réduite : je serre à droite et je ne dépasse pas.");
+Q("R","Sur une chaussée à trois voies à double sens, la voie du milieu :",["Sert au dépassement dans les deux sens","M'appartient si je roule vite","Peut être occupée de façon prolongée"],[0],"La voie centrale est partagée par les deux sens pour dépasser : prudence, et seulement si elle est libre.");
+
+// ---------- U : LES AUTRES USAGERS ----------
+Q("U","Un piéton attend au bord du passage piéton et montre clairement qu'il veut traverser :",["Je m'arrête pour le laisser passer","Je passe vite avant lui","Je klaxonne"],[0],"Je dois céder le passage au piéton engagé ou qui manifeste clairement l'intention de traverser.");
+Q("U","Près d'une école, je dois :",["Ralentir","Être attentif aux enfants qui peuvent surgir","Klaxonner pour prévenir"],[0,1],"Les enfants sont imprévisibles et difficiles à voir entre les voitures.");
+Q("U","Un car de ramassage scolaire est arrêté avec ses feux de détresse allumés :",["Je ralentis fortement","Je m'attends à ce que des enfants traversent","Je le dépasse rapidement"],[0,1],"Des enfants peuvent descendre et traverser devant ou derrière le car.");
+Q("U","En agglomération, un bus signale qu'il quitte son arrêt :",["Je lui cède le passage","J'accélère pour passer avant","Je suis prioritaire"],[0],"En agglomération, il faut faciliter le départ des transports en commun qui signalent qu'ils quittent leur arrêt.");
+Q("U","Avant d'ouvrir ma portière côté rue, je :",["Contrôle dans mon rétroviseur et je tourne la tête","Ouvre avec la main opposée à la portière","Ouvre d'un coup"],[0,1],"Ouvrir avec la main opposée oblige à pivoter et à voir les cyclistes qui arrivent.");
+Q("U","Un sas vélo devant un feu rouge :",["Est réservé aux cyclistes","Me permet de m'arrêter si je suis pressé","Doit rester libre pour les voitures"],[0],"Le sas vélo est réservé aux cyclistes. Une voiture doit s'arrêter à la première ligne.");
+Q("U","Ce panonceau sous un feu indique aux cyclistes :",["Qu'ils peuvent franchir le feu rouge pour aller dans la direction indiquée, en cédant le passage","Qu'ils doivent toujours s'arrêter","Qu'ils sont toujours prioritaires"],[0],"Le cédez-le-passage cycliste au feu autorise les cyclistes à franchir le feu dans la direction indiquée, en cédant le passage aux autres usagers.","m12");
+Q("U","Un poids lourd tourne à droite à côté de moi :",["Je reste en retrait car il a besoin de place","Je me méfie de ses angles morts","Je le dépasse par la droite"],[0,1],"Les poids lourds ont de grands angles morts et prennent large dans les virages.");
+Q("U","L'autocollant « angles morts » sur l'arrière d'un poids lourd signifie :",["Que le conducteur ne voit pas certaines zones autour du véhicule","Que le camion transporte des matières dangereuses","Que le camion est en panne"],[0],"Si je ne vois pas les rétroviseurs du camion, son conducteur ne me voit pas.");
+Q("U","Je suis derrière un tracteur agricole lent :",["Je reste patient et je dépasse seulement si c'est sans danger","Je le dépasse même sur ligne continue s'il ralentit beaucoup","Je klaxonne pour qu'il se range"],[0],"Le dépassement d'un engin lent sur ligne continue n'est possible que si la visibilité est suffisante. Sinon, patience.");
+Q("U","Je croise des cavaliers :",["Je ralentis et je laisse un grand espace","Je klaxonne pour qu'ils se rangent","J'accélère pour passer vite"],[0],"Un cheval peut s'effrayer d'un bruit ou d'un mouvement brusque.");
+Q("U","Une trottinette électrique (EDPM) :",["Est limitée à 25 km/h","Ne doit pas circuler sur le trottoir (sauf autorisation)","Peut circuler sur autoroute"],[0,1],"Les engins de déplacement personnel motorisés sont bridés à 25 km/h et n'ont, sauf autorisation, pas le droit d'aller sur le trottoir.");
+Q("U","L'âge minimum pour conduire une trottinette électrique est de :",["14 ans","12 ans","18 ans"],[0],"Depuis 2023, il faut avoir au moins 14 ans.");
+Q("U","Un motard circule devant moi :",["Je garde une distance de sécurité suffisante","Je me méfie car il peut freiner très fort","Je peux le suivre de près car il est petit"],[0,1],"Les deux-roues freinent souvent plus court qu'une voiture : il faut garder ses distances.");
+Q("U","Un cycliste peut, en général, s'écarter du bord droit de la route :",["Pour éviter un obstacle ou une portière","Pour être mieux vu","Jamais"],[0,1],"Le cycliste peut s'écarter du bord, notamment pour se protéger des portières : j'en tiens compte en le dépassant.");
+Q("U","Une personne avec une canne blanche s'apprête à traverser :",["Je m'arrête et la laisse traverser","Je klaxonne pour la prévenir","Je contourne rapidement"],[0],"Une canne blanche indique une personne malvoyante : je m'arrête et lui laisse tout le temps nécessaire.");
+Q("U","Un tramway :",["Est en général prioritaire","Freine sur une longue distance","Peut s'arrêter très vite"],[0,1],"Le tramway est lourd et freine sur une grande distance ; il est le plus souvent prioritaire.");
+Q("U","Je vois un ballon traverser la rue devant moi :",["Je ralentis car un enfant peut suivre","Je continue","J'accélère"],[0],"Un ballon annonce souvent un enfant qui court derrière.");
+Q("U","Une personne âgée traverse lentement :",["Je patiente","Je klaxonne","Je la contourne en la frôlant"],[0],"Les personnes âgées peuvent avoir du mal à évaluer les distances et la vitesse : patience.");
+Q("U","Un animal sauvage surgit devant moi à vive allure :",["Je freine fort en gardant les roues droites","Je donne un grand coup de volant","Je klaxonne et j'accélère"],[0],"Un écart brutal peut faire perdre le contrôle ou envoyer dans un arbre ou en face. Mieux vaut freiner en ligne droite.");
+Q("U","Ce panneau annonce un passage pour piétons :",["Je ralentis et je suis prêt à m'arrêter","Je suis prioritaire sur les piétons","Je klaxonne"],[0],"Le passage piéton annoncé impose une attention particulière.","pietons");
+
+// ============================================================
+//  Banque de questions — partie 3
+//  D : Réglementation générale et divers   P : Premiers secours
+//  A : Quitter le véhicule                 M : Mécanique
+//  S : Équipements de sécurité             E : Environnement
+// ============================================================
+
+// ---------- D : RÉGLEMENTATION GÉNÉRALE ET DIVERS ----------
+Q("D","Lors d'un contrôle, je dois pouvoir présenter :",["Mon permis de conduire","Le certificat d'immatriculation (carte grise)","Une facture d'entretien"],[0,1],"Permis et certificat d'immatriculation. Depuis 2024, la vignette verte d'assurance n'est plus obligatoire : l'assurance est vérifiée dans un fichier national.");
+Q("D","Depuis avril 2024, la vignette verte d'assurance sur le pare-brise :",["N'est plus obligatoire","Est toujours obligatoire","Doit être en papier rouge"],[0],"Les forces de l'ordre consultent le Fichier des véhicules assurés. Le véhicule doit bien sûr rester assuré.");
+Q("D","L'assurance minimale obligatoire pour circuler est :",["La responsabilité civile (« au tiers »)","L'assurance tous risques","L'assurance vol"],[0],"La responsabilité civile couvre les dommages causés aux autres. C'est le minimum légal.");
+Q("D","Le premier contrôle technique d'une voiture neuve doit être fait :",["Dans les 6 mois avant ses 4 ans","À 2 ans","À 10 ans"],[0],"Premier contrôle avant les 4 ans du véhicule, puis tous les 2 ans.");
+Q("D","Après le premier, le contrôle technique d'une voiture particulière se fait :",["Tous les 2 ans","Tous les ans","Tous les 5 ans"],[0],"Tous les 2 ans, avec une contre-visite si des défaillances sont relevées.");
+Q("D","Après un déménagement, je dois mettre à jour ma carte grise dans un délai de :",["1 mois","1 an","6 mois"],[0],"Le changement d'adresse doit être déclaré dans le mois.");
+Q("D","Après un accrochage sans blessé, le constat amiable doit être envoyé à mon assureur dans un délai de :",["5 jours ouvrés","1 mois","24 heures"],[0],"5 jours ouvrés. Le constat doit être signé par les deux conducteurs ; on ne modifie plus rien après la signature.");
+Q("D","Sur un constat amiable :",["Chaque conducteur signe","On peut ajouter des éléments après avoir signé","On fait un croquis de l'accident"],[0,2],"On remplit ensemble, on fait un croquis, on signe. Après signature, on ne modifie plus rien.");
+Q("D","Quitter les lieux d'un accident dont je suis responsable sans m'arrêter, c'est :",["Un délit de fuite","Une simple faute","Autorisé si personne n'est blessé"],[0],"Le délit de fuite est sévèrement puni : prison, amende, 6 points, suspension ou annulation du permis.");
+Q("D","Utiliser un détecteur de radars est :",["Interdit","Autorisé","Autorisé hors agglomération"],[0],"Les détecteurs de radars sont interdits : 1 500 € d'amende, 6 points et confiscation de l'appareil.");
+Q("D","L'arrêt, c'est :",["Immobiliser le véhicule le temps de faire monter ou descendre quelqu'un, conducteur à proximité","Laisser le véhicule longtemps sans conducteur","La même chose que le stationnement"],[0],"L'arrêt est bref, le conducteur reste au volant ou à proximité pour repartir. Sinon, c'est du stationnement.");
+Q("D","Stationner sur un trottoir est :",["Un stationnement très gênant, puni de 135 €","Autorisé quelques minutes","Autorisé la nuit"],[0],"Le stationnement sur trottoir, passage piéton ou piste cyclable est très gênant : 135 € et mise en fourrière possible.");
+Q("D","Stationner sur une place réservée aux personnes handicapées sans carte :",["Est puni de 135 €","Est autorisé pour moins de 5 minutes","Peut entraîner la fourrière"],[0,2],"C'est un stationnement très gênant : 135 € et fourrière possible.");
+Q("D","Dans une rue à sens unique, je peux stationner :",["À droite","À gauche","Au milieu de la chaussée"],[0,1],"En sens unique, on peut stationner des deux côtés, sauf interdiction.");
+Q("D","En agglomération, l'avertisseur sonore (klaxon) peut être utilisé :",["Seulement en cas de danger immédiat","Pour saluer un ami","Pour faire avancer la voiture de devant"],[0],"En agglomération, le klaxon n'est autorisé qu'en cas de danger immédiat. La nuit, on préfère les appels lumineux.");
+Q("D","Le permis B permet de conduire :",["Une voiture de 9 places maximum (conducteur compris)","Un véhicule de PTAC ≤ 3,5 tonnes","Un autocar"],[0,1],"Permis B : véhicules jusqu'à 3,5 t de PTAC et 9 places assises conducteur compris.");
+Q("D","Avec un permis B, je peux atteler une remorque :",["De 750 kg de PTAC maximum sans formation supplémentaire","De n'importe quel poids","Jamais"],[0],"Jusqu'à 750 kg sans formalité. Au-delà, une formation (B96) ou le permis BE peuvent être nécessaires.");
+Q("D","Pour conduire une moto 125 cm³ avec un permis B, il faut :",["Avoir le permis B depuis au moins 2 ans","Suivre une formation de 7 heures","Rien de spécial"],[0,1],"2 ans de permis B minimum et une formation pratique de 7 heures.");
+Q("D","Le permis de conduire peut être présenté sous forme numérique :",["Via l'application France Identité","Avec une simple photo de mon permis","Jamais"],[0],"L'application officielle France Identité permet d'avoir son permis sur smartphone. Une simple photo ne vaut rien.");
+Q("D","Un enfant de moins de 10 ans peut voyager à l'avant :",["Dans un siège dos à la route, airbag désactivé","Sans siège s'il est grand","Jamais, quelle que soit la situation"],[0],"En principe interdit, sauf siège bébé dos à la route avec airbag désactivé, ou si les places arrière sont absentes ou occupées par d'autres enfants.");
+Q("D","Jeter un mégot ou un déchet par la fenêtre de la voiture :",["Est puni d'une amende de 135 €","Est autorisé hors agglomération","Est puni d'un retrait de points"],[0],"Abandonner un déchet sur la voie publique depuis un véhicule est sanctionné de 135 €.");
+Q("D","Le disque « conduite accompagnée » est-il obligatoire après l'obtention du permis ?",["Non, c'est ensuite le disque « A »","Oui, pendant 3 ans","Oui, pendant 1 an"],[0],"Après le permis, le jeune conducteur appose le disque « A » pendant sa période probatoire.");
+
+// ---------- P : PREMIERS SECOURS ----------
+Q("P","Face à un accident, l'ordre des actions est :",["Protéger, Alerter, Secourir","Secourir, Alerter, Protéger","Alerter, Secourir, Protéger"],[0],"P.A.S. : on protège d'abord pour éviter un sur-accident, puis on alerte, puis on secourt.");
+Q("P","Pour protéger les lieux d'un accident, je :",["Allume mes feux de détresse","Mets mon gilet de haute visibilité","Place des personnes sur la chaussée pour faire ralentir"],[0,1],"Feux de détresse, gilet, et balisage (triangle) à distance si possible, sans se mettre en danger.");
+Q("P","Le numéro d'urgence européen est le :",["112","17","911"],[0],"Le 112 fonctionne dans toute l'Union européenne, même sans carte SIM dans certains cas.");
+Q("P","Le SAMU se joint au :",["15","18","17"],[0],"15 : SAMU. 18 : pompiers. 17 : police ou gendarmerie. 112 : urgence européenne.");
+Q("P","Les sapeurs-pompiers se joignent au :",["18","15","114"],[0],"18 : sapeurs-pompiers.");
+Q("P","Le 114 permet :",["Aux personnes sourdes ou malentendantes de contacter les secours par SMS","De joindre la police municipale","D'appeler un dépanneur"],[0],"Le 114 est le numéro d'urgence par SMS, visio ou tchat pour les personnes ayant des difficultés à entendre ou parler.");
+Q("P","Mon message d'alerte doit préciser :",["Le lieu exact de l'accident","Le nombre et l'état apparent des victimes","Le nom des victimes"],[0,1],"Lieu précis, nature de l'accident, nombre de victimes et leur état, dangers éventuels. Je raccroche quand on me le dit.");
+Q("P","Sur autoroute, pour donner ma position exacte, je peux utiliser :",["Les bornes kilométriques et le sens de circulation","Les bornes d'appel d'urgence","La couleur de la voiture"],[0,1],"Les bornes orange (tous les 2 km environ) localisent automatiquement l'appel. Les repères kilométriques aident aussi.");
+Q("P","Je peux déplacer une victime :",["Seulement en cas de danger réel, immédiat et non contrôlable (incendie…)","Toujours, pour la mettre plus à l'aise","Pour la sortir du véhicule et l'allonger"],[0],"Déplacer une victime peut aggraver ses blessures, notamment de la colonne vertébrale. On ne le fait qu'en cas de danger vital immédiat.");
+Q("P","Je peux retirer le casque d'un motard blessé :",["Non, sauf nécessité absolue (s'il ne respire plus, par exemple)","Oui, pour qu'il respire mieux","Oui, toujours"],[0],"Retirer un casque peut aggraver une lésion du cou. On le laisse aux secours, sauf nécessité vitale.");
+Q("P","Une victime saigne abondamment :",["J'appuie fortement sur la plaie","Je lui donne à boire","Je la laisse saigner"],[0],"Compression directe de la plaie (avec un tissu propre ou la main protégée), puis on alerte.");
+Q("P","Une victime est inconsciente mais respire. Je la place :",["En position latérale de sécurité (PLS)","Sur le dos, jambes levées","Assise"],[0],"La PLS évite qu'elle s'étouffe avec sa langue ou ses vomissements.");
+Q("P","Une victime est inconsciente et ne respire pas :",["J'alerte et je commence un massage cardiaque","J'utilise un défibrillateur dès qu'il est disponible","Je la mets en PLS"],[0,1],"Arrêt cardiaque : alerter, masser (compressions thoraciques), défibriller dès que possible.");
+Q("P","Un défibrillateur automatisé externe (DAE) :",["Peut être utilisé par tout le monde","Donne les instructions à voix haute","Est réservé aux médecins"],[0,1],"Le DAE guide l'utilisateur et ne délivre un choc que si c'est nécessaire.");
+Q("P","À une victime consciente, je peux :",["Lui parler pour la rassurer","La couvrir","Lui donner à boire"],[0,1],"On rassure, on protège du froid. On ne donne jamais à boire ni à manger (opération possible).");
+Q("P","Pour vérifier si une victime respire, je :",["Bascule doucement sa tête en arrière et regarde si son ventre et sa poitrine se soulèvent","Lui donne une claque","Lui verse de l'eau"],[0],"Tête basculée en arrière, menton élevé, on regarde, écoute et sent la respiration pendant 10 secondes.");
+Q("P","Un véhicule accidenté prend feu avec une victime à l'intérieur :",["Le danger est immédiat : je peux la dégager si je le peux sans me mettre en danger","J'attends les pompiers sans rien faire","J'ouvre le capot"],[0],"Un incendie est un danger réel et immédiat qui justifie de dégager la victime.");
+Q("P","Je suis témoin d'un accident sur autoroute :",["Je m'arrête sur la bande d'arrêt d'urgence en aval de l'accident si je peux aider","Je m'arrête en pleine voie","Je ralentis pour regarder"],[0],"On se gare après l'accident, feux de détresse et gilet, puis on alerte. Ralentir pour regarder provoque des sur-accidents.");
+
+// ---------- A : QUITTER LE VÉHICULE ----------
+Q("A","Avant de quitter mon véhicule stationné, je :",["Serre le frein de stationnement","Coupe le contact","Laisse la clé sur le contact pour faire vite"],[0,1],"Frein serré, contact coupé, clé avec moi, véhicule verrouillé.");
+Q("A","Pour une voiture à boîte manuelle stationnée en pente, je :",["Engage une vitesse","Serre le frein de stationnement","Laisse au point mort"],[0,1],"Frein de stationnement + vitesse engagée (1re en montée, marche arrière en descente).");
+Q("A","Stationné en descente le long d'un trottoir, je tourne mes roues :",["Vers le trottoir","Vers la chaussée","Droites"],[0],"Si le véhicule se met à rouler, les roues viendront buter contre le trottoir.");
+Q("A","Je peux laisser un enfant seul dans la voiture :",["Non, jamais, même quelques minutes","Oui, si les vitres sont entrouvertes","Oui, s'il dort"],[0],"En été, l'habitacle chauffe très vite et peut devenir mortel. Un enfant peut aussi desserrer le frein ou ouvrir une portière.");
+Q("A","Avant de descendre côté circulation, je :",["Regarde dans le rétroviseur et je tourne la tête","Ouvre doucement la portière","Ouvre en grand d'un coup"],[0,1],"Un cycliste ou un deux-roues peut arriver : on vérifie et on ouvre doucement.");
+Q("A","Je fais descendre mes passagers :",["Côté trottoir de préférence","Côté chaussée pour aller plus vite","Peu importe"],[0],"Côté trottoir, ils ne sont pas exposés à la circulation.");
+Q("A","En quittant le véhicule, je ne laisse pas d'objets de valeur visibles :",["Pour éviter le vol","Car c'est interdit","Ça n'a aucune importance"],[0],"Des objets visibles attirent les voleurs. On les emporte ou on les range hors de vue.");
+Q("A","Après une panne sur autoroute, les passagers doivent :",["Sortir du côté droit et attendre derrière la glissière","Rester dans la voiture","Attendre sur la bande d'arrêt d'urgence"],[0],"Tout le monde sort côté droit, gilet sur le dos, et s'abrite derrière la glissière de sécurité.");
+Q("A","Mon véhicule est en panne sur un passage à niveau :",["Je fais sortir tout le monde immédiatement","J'alerte avec le téléphone de la borne ou le 112","J'essaie de redémarrer tant que les feux ne clignotent pas"],[0,1],"On évacue en priorité, puis on alerte pour faire arrêter les trains.");
+Q("A","Je stationne la nuit sur une route non éclairée hors agglomération :",["Mon véhicule doit être signalé par ses feux de position","Je peux le laisser sans éclairage","J'allume les feux de route"],[0],"Hors agglomération la nuit, un véhicule stationné sur la chaussée doit être signalé (feux de position ou de stationnement).");
+
+// ---------- M : MÉCANIQUE ET VÉHICULE ----------
+Q("M","Un témoin rouge s'allume au tableau de bord :",["Je m'arrête dès que possible","Je continue jusqu'au prochain garage","C'est sans importance"],[0],"Rouge = alerte : arrêt immédiat, dès que c'est possible en sécurité. Orange = anomalie à faire vérifier. Vert ou bleu = information.");
+Q("M","Ce témoin bleu indique que :",["Les feux de route sont allumés","Le moteur est froid","Les feux de brouillard avant sont allumés"],[0],"Le témoin bleu correspond aux feux de route (« pleins phares »).","temoin_route");
+Q("M","Ce témoin orange (moteur) allumé en roulant signale :",["Une anomalie du moteur ou de la dépollution à faire vérifier","Un arrêt obligatoire immédiat","Que les feux sont allumés"],[0],"Témoin orange : anomalie, faire contrôler rapidement par un garage.","temoin_moteur");
+Q("M","La profondeur minimale des sculptures d'un pneu est de :",["1,6 mm","0,5 mm","5 mm"],[0],"1,6 mm minimum. Des témoins d'usure sont moulés dans les rainures du pneu.");
+Q("M","La pression des pneus se contrôle :",["Pneus froids","Pneus chauds après un long trajet","Une fois par an"],[0],"À froid, idéalement une fois par mois et avant un long trajet.");
+Q("M","Des pneus sous-gonflés :",["Augmentent la consommation de carburant","S'usent plus vite","Améliorent la tenue de route"],[0,1],"Sous-gonflage = surconsommation, usure accélérée et risque d'éclatement.");
+Q("M","Sur un même essieu, les deux pneus doivent être :",["Identiques (même type et même dimension)","De marques différentes obligatoirement","Peu importe"],[0],"Pneus identiques sur un même essieu, pour un comportement équilibré.");
+Q("M","L'ABS :",["Empêche les roues de se bloquer au freinage","Me permet de garder le contrôle de la direction en freinant fort","Raccourcit toujours la distance de freinage"],[0,1],"L'ABS évite le blocage des roues pour que je puisse diriger la voiture. Il ne réduit pas forcément la distance de freinage.");
+Q("M","L'ESP (contrôle de trajectoire) :",["Aide à corriger une perte de trajectoire","Supprime tout risque de dérapage","Permet de rouler plus vite en virage"],[0],"L'ESP agit sur les freins pour limiter les dérapages, mais il ne fait pas de miracle si la vitesse est excessive.");
+Q("M","Le volant vibre à vitesse élevée. Cela peut venir :",["D'un mauvais équilibrage des roues","D'un pneu abîmé","D'un manque de liquide lave-glace"],[0,1],"Vibrations : équilibrage, pneu déformé… à faire vérifier.");
+Q("M","Une usure irrégulière des pneus (plus usés d'un côté) peut indiquer :",["Un mauvais parallélisme","Une mauvaise pression","Un réservoir vide"],[0,1],"Usure sur un bord : parallélisme ou pression à contrôler.");
+Q("M","Le niveau du liquide de frein baisse anormalement :",["Il peut y avoir une fuite : je fais vérifier sans attendre","C'est normal","Je complète avec de l'eau"],[0],"Une baisse importante peut signaler une fuite ou des plaquettes très usées. Danger.");
+Q("M","Le niveau d'huile moteur se contrôle :",["Moteur arrêté, voiture à plat","Moteur tournant","En roulant"],[0],"Moteur arrêté depuis quelques minutes, sur sol plat, à l'aide de la jauge.");
+Q("M","Une roue de secours « galette » :",["Est temporaire","Impose une vitesse limitée (souvent 80 km/h)","Peut rester montée pendant des mois"],[0,1],"La roue galette dépanne pour quelques kilomètres, à vitesse réduite.");
+Q("M","Des balais d'essuie-glace qui laissent des traces :",["Doivent être changés","Réduisent la visibilité par temps de pluie","Sont sans danger"],[0,1],"Une bonne visibilité est essentielle : on change les balais environ une fois par an.");
+Q("M","La pédale de frein est molle et s'enfonce beaucoup :",["Je m'arrête et fais contrôler le circuit de freinage","Je continue en freinant plus tôt","C'est normal en hiver"],[0],"C'est un signe de défaillance grave du freinage.");
+Q("M","Avant un long trajet, je vérifie :",["La pression des pneus","Les niveaux (huile, liquide de refroidissement, lave-glace)","L'éclairage"],[0,1,2],"Pneus, niveaux et feux : les contrôles de base avant de partir.");
+
+// ---------- S : ÉQUIPEMENTS DE SÉCURITÉ ----------
+Q("S","Le gilet de haute visibilité doit être :",["Accessible depuis le poste de conduite","Rangé dans le coffre sous les bagages","Facultatif"],[0],"Il doit être à portée de main pour l'enfiler avant de sortir du véhicule.");
+Q("S","Le triangle de présignalisation se place :",["À au moins 30 mètres du véhicule","Juste derrière le pare-chocs","À 5 mètres"],[0],"À 30 m au moins, en amont, de manière visible. Sur autoroute, on ne le pose pas si c'est dangereux de le faire.");
+Q("S","L'absence de gilet ou de triangle dans le véhicule est sanctionnée par :",["Une amende","Un retrait de points","Rien"],[0],"Amende (135 €), sans retrait de points.");
+Q("S","La ceinture de sécurité est obligatoire :",["À l'avant","À l'arrière","Seulement sur autoroute"],[0,1],"Obligatoire à toutes les places équipées, sur tous les trajets, même courts.");
+Q("S","L'appuie-tête est bien réglé quand :",["Son haut est au niveau du sommet de la tête","Il est au niveau de la nuque","Il est tout en bas"],[0],"Il protège le cou en cas de choc arrière (coup du lapin).");
+Q("S","Un siège bébé dos à la route installé à l'avant impose de :",["Désactiver l'airbag passager","Laisser l'airbag activé","Rien de spécial"],[0],"L'airbag qui se déclenche contre le siège bébé peut gravement blesser l'enfant.");
+Q("S","Un dispositif de retenue adapté (siège, rehausseur) est obligatoire pour les enfants :",["Jusqu'à 10 ans","Jusqu'à 3 ans","Jusqu'à 16 ans"],[0],"Jusqu'à 10 ans, ou tant que la morphologie l'exige (environ 1,35 m), on utilise un système adapté au poids et à la taille.");
+Q("S","La ceinture de sécurité doit être portée :",["Bien serrée, passant sur l'épaule et le bassin","Sous le bras","Lâche pour plus de confort"],[0],"Sangle sur l'épaule (pas sur le cou) et sur le bassin (pas sur le ventre), sans jeu.");
+Q("S","Les airbags :",["Complètent la ceinture mais ne la remplacent pas","Remplacent la ceinture","Protègent même sans ceinture"],[0],"Sans ceinture, l'airbag peut même blesser.");
+Q("S","Les feux de détresse s'utilisent :",["En cas de panne ou d'accident","Pour signaler un ralentissement brutal ou un bouchon","Pour stationner en double file"],[0,1],"Ils signalent un danger. Stationner en double file reste interdit, même avec les feux de détresse.");
+Q("S","Un limiteur de vitesse :",["M'empêche de dépasser la vitesse que j'ai choisie","Maintient la voiture à une vitesse constante sans accélérer","Freine à ma place"],[0],"Le limiteur fixe un plafond. Le régulateur, lui, maintient une vitesse constante sans que j'appuie sur l'accélérateur.");
+Q("S","Le régulateur de vitesse est déconseillé :",["Sur route mouillée ou glissante","En circulation dense","Sur autoroute dégagée"],[0,1],"Sur sol glissant ou en circulation dense, on garde le contrôle direct de l'accélérateur.");
+Q("S","Les aides à la conduite (freinage d'urgence automatique, alerte de franchissement de ligne…) :",["Ne dispensent jamais d'être attentif","Permettent de téléphoner tranquillement","Conduisent à ma place"],[0],"Ce sont des aides : le conducteur reste responsable et attentif.");
+Q("S","Pour bien régler mes rétroviseurs extérieurs :",["Je vois une petite partie de ma voiture sur le bord intérieur du miroir","Je vois uniquement la route","Je vois uniquement ma carrosserie"],[0],"Une petite bande de carrosserie sert de repère ; le reste du miroir montre la voie de circulation.");
+Q("S","Malgré des rétroviseurs bien réglés, il existe :",["Des angles morts","Aucune zone non visible","Une vision à 360°"],[0],"D'où l'importance de tourner la tête avant de changer de voie.");
+Q("S","Un enfant de moins de 12 ans à vélo doit porter :",["Un casque attaché","Un gilet uniquement","Rien d'obligatoire"],[0],"Le casque est obligatoire pour les moins de 12 ans à vélo, conducteurs ou passagers.");
+
+// ---------- E : ENVIRONNEMENT ----------
+Q("E","Pour consommer moins, je :",["Passe les rapports assez tôt","Anticipe pour éviter les freinages brusques","Fais chauffer le moteur à l'arrêt avant de partir"],[0,1],"Éco-conduite : souplesse, anticipation, rapports passés tôt. On part sans attendre : le moteur chauffe plus vite en roulant doucement.");
+Q("E","La climatisation :",["Augmente la consommation de carburant","N'a aucun effet sur la consommation","Diminue la consommation"],[0],"Elle peut augmenter nettement la consommation, surtout en ville.");
+Q("E","Des barres ou un coffre de toit laissés en permanence :",["Augmentent la consommation","N'ont pas d'effet","Améliorent l'aérodynamisme"],[0],"Ils freinent la voiture dans l'air : on les retire quand on ne s'en sert pas.");
+Q("E","Lever le pied de l'accélérateur avec une vitesse engagée (frein moteur) :",["Coupe l'injection sur la plupart des voitures récentes : consommation quasi nulle","Consomme plus qu'au point mort","Abîme le moteur"],[0],"En décélération, rapport engagé, l'injection est coupée. Au point mort, le moteur continue de consommer.");
+Q("E","La vignette Crit'Air :",["Classe les véhicules selon leurs émissions polluantes","Est utile lors des pics de pollution (circulation différenciée)","Remplace le contrôle technique"],[0,1],"Elle permet aux autorités de restreindre la circulation des véhicules les plus polluants en cas de pic de pollution ou dans certaines zones.");
+Q("E","Une voiture 100 % électrique a la vignette Crit'Air :",["Verte (zéro émission)","Crit'Air 3","Aucune vignette possible"],[0],"Les véhicules électriques et à hydrogène ont la vignette verte, la plus favorable.");
+Q("E","Lors d'un pic de pollution, les vitesses maximales peuvent être :",["Abaissées de 20 km/h","Augmentées","Inchangées obligatoirement"],[0],"En cas de pic de pollution, la préfecture peut abaisser les vitesses de 20 km/h.");
+Q("E","Une voiture électrique roulant à basse vitesse :",["Émet un son artificiel pour prévenir les piétons","Est parfaitement silencieuse","Doit klaxonner"],[0],"Les voitures électriques récentes émettent un son de signalement à basse vitesse, car elles sont très silencieuses.");
+Q("E","Sur une voiture électrique, le freinage régénératif :",["Recharge un peu la batterie en ralentissant","Vide la batterie","N'existe pas"],[0],"En décélérant, le moteur électrique fonctionne en générateur et récupère de l'énergie.");
+Q("E","Par grand froid, l'autonomie d'une voiture électrique :",["Diminue","Augmente","Ne change pas"],[0],"Le froid réduit les performances de la batterie et le chauffage consomme de l'énergie.");
+Q("E","L'huile de vidange usagée doit être :",["Déposée en déchetterie ou chez un garagiste","Versée dans les égouts","Jetée avec les ordures ménagères"],[0],"Elle est très polluante : un litre d'huile peut polluer une très grande surface d'eau.");
+Q("E","Arrêté plus d'une minute (attente devant une école…), je :",["Coupe le moteur","Laisse tourner le moteur","Accélère pour garder la batterie chargée"],[0],"Un moteur qui tourne à l'arrêt pollue et consomme pour rien.");
+Q("E","Rouler à 120 km/h au lieu de 130 km/h sur autoroute :",["Réduit la consommation","Ne fait gagner que quelques minutes sur un trajet moyen","Augmente la pollution"],[0,1],"La consommation augmente fortement avec la vitesse ; le temps perdu est très faible.");
+Q("E","Une conduite souple et anticipée permet :",["De consommer moins","De réduire l'usure des freins et des pneus","De réduire le risque d'accident"],[0,1,2],"L'éco-conduite est aussi une conduite plus sûre.");
+Q("E","Pour un trajet de 1 km en ville, le plus écologique est :",["La marche ou le vélo","La voiture","Le scooter thermique"],[0],"Sur les petits trajets, moteur froid, la voiture consomme et pollue beaucoup.");
+
+// ============================================================
+//  Banque de questions — partie 4 (ajoutée en v1.1.0)
+//  Renforce les thèmes les plus courts + nouveaux panneaux
+// ============================================================
+
+// ---------- Nouveaux panneaux (L) ----------
+Q("L","Ce panneau m'annonce :",["Des feux tricolores","Un passage à niveau","Une zone de travaux"],[0],"Triangle avec trois feux : annonce d'un carrefour équipé de feux. Je me prépare à m'arrêter.","feux");
+Q("L","Ce panneau m'annonce :",["Un ralentisseur ou un dos-d'âne","Une descente dangereuse","Une route glissante"],[0],"Le dos-d'âne impose de ralentir, souvent à 30 km/h.","dos_ane");
+Q("L","Ce panneau m'annonce :",["Une chaussée rétrécie","Une fin de route à chaussées séparées","Un pont mobile"],[0],"La chaussée se rétrécit : je ralentis et je serre à droite.","retrecie");
+Q("L","Ce panneau m'annonce :",["Un passage à niveau muni de barrières","Une barrière de péage","Une fin de chantier"],[0],"Passage à niveau avec barrières : je ralentis et je me tiens prêt à m'arrêter.","pn_barrieres");
+Q("L","À ce panneau d'entrée d'agglomération :",["La vitesse est limitée à 50 km/h, sauf indication contraire","Le klaxon n'est autorisé qu'en cas de danger immédiat","Rien ne change"],[0,1],"Le panneau d'entrée d'agglomération (fond blanc, bord rouge) marque le début des règles de l'agglomération.","agglo");
+Q("L","À ce panneau de sortie d'agglomération :",["Les règles hors agglomération s'appliquent à nouveau","La vitesse reste limitée à 50 km/h","Je peux klaxonner pour avertir d'un danger"],[0,2],"Fin d'agglomération : la vitesse maximale redevient celle de la route (en général 80 km/h).","fin_agglo");
+Q("L","Ce panneau m'indique :",["L'entrée sur une autoroute","Une route pour automobiles uniquement","Un pont"],[0],"Panneau bleu d'autoroute : à partir d'ici, les règles de l'autoroute s'appliquent (130 km/h, piétons et cyclistes interdits…).","autoroute");
+Q("L","Ce panneau signifie :",["Fin de toutes les interdictions signalées pour les véhicules en mouvement","Fin de l'agglomération","Fin de la route à caractère prioritaire"],[0],"Il annule les interdictions précédentes (vitesse, dépassement…). La vitesse redevient celle de la règle générale.","fin_interdictions");
+Q("L","Ce panneau signifie :",["Fin de la limitation à 50 km/h","Vitesse conseillée de 50 km/h","Vitesse minimale de 50 km/h"],[0],"Panneau barré : fin de la limitation indiquée. La vitesse générale de la route s'applique à nouveau.","fin_limit50");
+Q("L","Ce panneau m'interdit :",["De tourner à gauche","D'aller tout droit","De dépasser par la gauche"],[0],"Rond à bord rouge avec une flèche barrée : interdiction de tourner à gauche à la prochaine intersection.","interdit_gauche");
+Q("L","Ce panneau m'interdit :",["De faire demi-tour","De tourner à droite","De faire marche arrière"],[0],"Flèche en U barrée : demi-tour interdit jusqu'à la prochaine intersection.","demi_tour");
+Q("L","Ce panneau m'indique :",["Que je suis prioritaire sur les véhicules venant en sens inverse dans un passage étroit","Que je dois céder le passage aux véhicules venant en face","Un sens unique"],[0],"Carré bleu, grande flèche blanche (moi) et petite flèche rouge (en face) : c'est moi qui passe en premier.","prio_sens_inverse");
+Q("L","Ce panneau m'indique :",["L'entrée d'une zone limitée à 30 km/h","Une vitesse conseillée","La fin d'une zone 30"],[0],"Entrée de zone 30 : toutes les rues de la zone sont limitées à 30 km/h jusqu'au panneau de sortie.","zone30");
+Q("L","Ce panneau m'interdit l'accès :",["Si je suis un véhicule à moteur","Si je suis un piéton","Si je suis un cycliste"],[0],"Interdit à tous les véhicules à moteur. Les cyclistes et les piétons peuvent passer.","interdit_moteur");
+
+// ---------- A : QUITTER LE VÉHICULE ----------
+Q("A","Hors agglomération, je dois arrêter ou stationner mon véhicule :",["Autant que possible hors de la chaussée","Au milieu de la voie","Sur la voie de gauche"],[0],"Hors agglomération, on se gare sur l'accotement quand c'est possible, pour ne pas gêner ni créer de danger.");
+Q("A","En quittant ma voiture, je ferme les vitres :",["Pour éviter les vols","Uniquement s'il pleut","C'est inutile"],[0],"Vitres fermées, portes verrouillées, rien de visible à l'intérieur.");
+Q("A","Je peux laisser mon chien dans la voiture en plein été :",["Non, la chaleur peut lui être mortelle en quelques minutes","Oui, si je me gare à l'ombre","Oui, avec une vitre entrouverte"],[0],"La température dans l'habitacle monte très vite, même à l'ombre et avec une vitre entrouverte.");
+Q("A","Stationné en montée le long d'un trottoir, je tourne mes roues :",["Vers la chaussée","Vers le trottoir","Droites"],[0],"En montée, roues tournées vers la chaussée : si la voiture recule, l'arrière de la roue butera contre le trottoir.");
+Q("A","Une voiture à boîte automatique stationnée :",["Doit avoir le levier sur P","Doit avoir le frein de stationnement serré","Peut rester sur D si le moteur est coupé"],[0,1],"Position P (parking) et frein de stationnement serré.");
+Q("A","Stationner sur une place réservée à la recharge des véhicules électriques sans recharger :",["Est interdit","Est autorisé la nuit","Est autorisé pour les voitures hybrides non branchées"],[0],"Ces places sont réservées aux véhicules en cours de recharge.");
+Q("A","Avec une clé « mains libres », en m'éloignant de la voiture je :",["Vérifie que la voiture est bien verrouillée","Laisse la clé dans la voiture","Ne m'occupe de rien"],[0],"Le verrouillage peut échouer (clé restée dans le véhicule, portière mal fermée) : on vérifie.");
+Q("A","Pour faire descendre de jeunes enfants à l'arrière en toute sécurité :",["J'active la sécurité enfants des portières","Je les fais sortir côté trottoir","Je les laisse sortir seuls côté route"],[0,1],"La sécurité enfants empêche l'ouverture de l'intérieur ; on fait sortir les enfants côté trottoir.");
+Q("A","Avant de quitter ma place de stationnement, je :",["Regarde dans mes rétroviseurs et mon angle mort","Mets mon clignotant","Démarre directement"],[0,1],"On s'assure de pouvoir s'insérer sans danger et on signale son intention.");
+Q("A","Je m'arrête quelques instants en double file pour déposer quelqu'un :",["C'est interdit","C'est autorisé avec les feux de détresse","C'est autorisé moins de 2 minutes"],[0],"L'arrêt en double file est interdit, même brièvement, même avec les feux de détresse.");
+Q("A","Le frein de stationnement électrique :",["Se serre souvent automatiquement à l'arrêt du moteur sur les voitures récentes","Doit quand même être vérifié avant de quitter le véhicule","N'existe pas"],[0,1],"Selon les modèles, il se serre automatiquement : un voyant le confirme au tableau de bord.");
+
+// ---------- S : ÉQUIPEMENTS DE SÉCURITÉ ----------
+Q("S","Une femme enceinte doit porter la ceinture :",["Oui, avec la sangle basse placée sous le ventre","Non, elle en est dispensée","Oui, sangle sur le ventre"],[0],"La ceinture est obligatoire ; la sangle abdominale passe sous le ventre, sur le bassin.");
+Q("S","Les feux de jour (feux diurnes) :",["N'éclairent souvent pas l'arrière du véhicule","Suffisent la nuit","Remplacent les feux de croisement par temps de brouillard"],[0],"Par mauvais temps ou la nuit, il faut allumer les feux de croisement pour être vu de derrière.");
+Q("S","Des objets non attachés dans l'habitacle :",["Peuvent devenir de dangereux projectiles lors d'un choc","Sont sans danger","Améliorent l'équilibre de la voiture"],[0],"Lors d'un choc, un objet de quelques kilos peut peser l'équivalent de plusieurs dizaines de kilos.");
+Q("S","Un chien transporté en voiture :",["Doit être attaché ou placé dans une caisse","Peut voyager sur les genoux du conducteur","Peut passer la tête par la fenêtre sur autoroute"],[0],"Un animal libre peut gêner la conduite et devenir un projectile en cas de choc.");
+Q("S","Le système ISOFIX permet :",["De fixer le siège enfant directement sur la structure de la voiture","De régler les rétroviseurs","De désactiver l'airbag"],[0],"Les points d'ancrage ISOFIX limitent les erreurs d'installation des sièges enfants.");
+Q("S","Pour un enfant, un rehausseur sert :",["À placer correctement la ceinture d'adulte sur l'épaule et le bassin","À mieux voir le paysage","À rien"],[0],"Sans rehausseur, la ceinture passe sur le cou et le ventre de l'enfant : dangereux en cas de choc.");
+Q("S","Avec un véhicule chargé (bagages lourds), je pense à :",["Régler la hauteur de mes phares","Adapter la pression des pneus","Rouler plus vite pour compenser"],[0,1],"La charge relève l'avant : les phares éblouissent. La pression se règle selon la charge (voir la notice).");
+Q("S","Un kit anti-crevaison :",["Permet de rouler quelques kilomètres pour rejoindre un garage","Répare définitivement le pneu","Remplace la roue de secours dans tous les cas"],[0],"C'est une solution temporaire, à vitesse réduite.");
+
+// ---------- E : ENVIRONNEMENT ----------
+Q("E","Transporter des charges inutiles dans le coffre :",["Augmente la consommation","N'a aucun effet","Diminue la consommation"],[0],"Plus le véhicule est lourd, plus il consomme : on vide le coffre de ce qui ne sert pas.");
+Q("E","Un moteur froid :",["Consomme et pollue davantage","Pollue moins","Doit tourner 10 minutes à l'arrêt avant de partir"],[0],"Les premiers kilomètres sont les plus polluants : on évite la voiture pour les tout petits trajets.");
+Q("E","Le système Stop & Start :",["Coupe le moteur à l'arrêt pour économiser du carburant","Augmente la pollution","Est dangereux pour le moteur"],[0],"Il coupe le moteur aux arrêts (feux, bouchons) et le relance automatiquement.");
+Q("E","Une voie réservée au covoiturage (marquée d'un losange) :",["Est réservée aux véhicules transportant au moins le nombre de personnes indiqué","Est ouverte à tous","Est réservée aux camions"],[0],"Ces voies favorisent les véhicules partagés ; le nombre minimum d'occupants est indiqué par la signalisation.");
+Q("E","Préparer son itinéraire avant de partir :",["Évite des kilomètres inutiles","Réduit le stress","Ne sert à rien avec un GPS"],[0,1],"Moins de détours = moins de consommation et une conduite plus sereine.");
+Q("E","Pour réduire le bruit en ville, je :",["Évite les accélérations brutales","N'utilise pas le klaxon sans nécessité","Fais rugir le moteur au feu"],[0,1],"Le bruit routier est une nuisance importante pour la santé.");
+Q("E","Une vitesse stabilisée (sans à-coups) :",["Réduit la consommation","Augmente la consommation","Use davantage les freins"],[0],"Les accélérations et freinages répétés gaspillent de l'énergie.");
+Q("E","Pour une voiture électrique, le plus économique est généralement de recharger :",["À domicile, aux heures creuses","Uniquement sur les bornes rapides d'autoroute","Toujours jusqu'à 100 %"],[0],"La recharge lente à domicile est la moins chère ; la recharge rapide est utile pour les longs trajets.");
+Q("E","Le covoiturage permet :",["De partager les frais","De réduire le nombre de voitures sur la route","D'augmenter la pollution"],[0,1],"Moins de véhicules = moins de pollution et d'embouteillages.");
+
+// ---------- M : MÉCANIQUE ----------
+Q("M","Le témoin rouge de batterie s'allume en roulant :",["Le système de charge est défaillant : je m'arrête dès que possible","C'est normal","Je dois faire le plein"],[0],"La batterie ne se recharge plus : la voiture risque de s'arrêter. On fait vérifier sans attendre.");
+Q("M","Le témoin rouge de température du moteur s'allume :",["Je m'arrête et je coupe le moteur","Je continue en roulant plus vite pour refroidir","J'ouvre immédiatement le bouchon du radiateur"],[0],"Le moteur surchauffe. Ne jamais ouvrir le circuit de refroidissement à chaud : risque de brûlure grave.");
+Q("M","Le témoin orange ABS reste allumé :",["L'ABS ne fonctionne plus mais les freins classiques restent actifs","Les freins ne fonctionnent plus du tout","C'est sans importance"],[0],"Je peux freiner normalement mais sans l'aide de l'ABS : je fais vérifier rapidement.");
+Q("M","Ce témoin orange (pneu avec point d'exclamation) signale :",["Un problème de pression d'un ou plusieurs pneus","Un défaut de frein","Une portière ouverte"],[0],"Je contrôle la pression de mes pneus dès que possible.","temoin_pneu");
+Q("M","Un bruit métallique au freinage peut indiquer :",["Des plaquettes de frein usées","Un pneu trop gonflé","Une batterie faible"],[0],"Les plaquettes usées réduisent l'efficacité du freinage et abîment les disques.");
+Q("M","Des amortisseurs usés :",["Allongent la distance de freinage","Diminuent la tenue de route","N'ont aucun effet sur la sécurité"],[0,1],"Les roues perdent plus souvent le contact avec la route.");
+Q("M","Une voiture électrique possède aussi :",["Une petite batterie 12 volts","Un réservoir d'essence","Une boîte de vitesses manuelle à 5 rapports"],[0],"La batterie 12 V alimente les équipements de bord ; si elle est vide, la voiture peut refuser de démarrer.");
+Q("M","Le liquide de refroidissement se vérifie :",["Moteur froid","Moteur chaud, bouchon ouvert","Jamais"],[0],"À chaud, le circuit est sous pression : risque de brûlure.");
+
+// ---------- P : PREMIERS SECOURS ----------
+Q("P","Sur les lieux d'un accident, je demande de :",["Couper le contact des véhicules accidentés","Ne pas fumer","Déplacer les véhicules avant l'arrivée des secours si des blessés sont à l'intérieur"],[0,1],"Couper le contact et ne pas fumer limitent le risque d'incendie.");
+Q("P","Une brûlure doit être refroidie :",["Avec de l'eau tempérée pendant plusieurs minutes","Avec de la glace directement sur la peau","Avec du beurre"],[0],"On fait couler de l'eau tempérée sur la brûlure le plus tôt possible, environ 10 minutes, puis on alerte si elle est grave.");
+Q("P","Pendant l'appel aux secours, je :",["Raccroche seulement quand l'opérateur me le dit","Raccroche dès que j'ai donné le lieu","Laisse un enfant appeler à ma place"],[0],"L'opérateur peut avoir besoin de précisions ou de vous guider dans les gestes.");
+Q("P","Le massage cardiaque se fait au rythme d'environ :",["100 à 120 compressions par minute","20 compressions par minute","200 compressions par minute"],[0],"Des compressions profondes et régulières, au centre de la poitrine, jusqu'à l'arrivée des secours ou du défibrillateur.");
+Q("P","Une victime consciente se plaint du dos après un choc :",["Je lui demande de ne pas bouger","Je l'aide à se lever","Je la fais marcher pour vérifier"],[0],"Une lésion de la colonne vertébrale peut être aggravée par le moindre mouvement.");
+Q("P","Je suis témoin d'un accident et les secours sont déjà prévenus :",["Je peux rester pour aider ou témoigner sans gêner","Je m'arrête au milieu de la voie pour regarder","Je filme la scène"],[0],"On évite d'encombrer les lieux ; on reste disponible si on peut être utile.");
+Q("P","Une victime saigne du nez après un petit choc :",["Elle se penche en avant et se mouche puis comprime la narine","Elle penche la tête en arrière","Elle s'allonge sur le dos"],[0],"Tête penchée en avant pour ne pas avaler le sang, compression de la narine pendant 10 minutes.");
+Q("P","Pour être efficace sur les lieux d'un accident, il est conseillé :",["De se former aux gestes qui sauvent","D'avoir une trousse de secours","D'avoir un extincteur à poudre en voiture"],[0,1,2],"Une formation courte (PSC1 ou « gestes qui sauvent ») apprend les bons réflexes.");
+
+// ---------- U : LES AUTRES USAGERS ----------
+Q("U","Hors agglomération, en l'absence de trottoir, les piétons doivent marcher :",["Sur le bord gauche de la route, face aux véhicules","Sur le bord droit","Au milieu"],[0],"Ils voient ainsi arriver les véhicules. Les groupes organisés peuvent marcher à droite.");
+Q("U","Un enfant de moins de 8 ans à vélo :",["Peut rouler sur le trottoir, au pas","Doit rouler sur la chaussée","N'a pas le droit de faire du vélo"],[0],"Les enfants de moins de 8 ans peuvent utiliser les trottoirs, à l'allure du pas, sans gêner les piétons.");
+Q("U","La nuit, un vélo doit avoir :",["Un feu avant blanc ou jaune","Un feu arrière rouge","Un klaxon électrique"],[0,1],"Éclairage obligatoire la nuit, ainsi que des catadioptres. Hors agglomération, le gilet est obligatoire de nuit.");
+Q("U","Un véhicule lent avec gyrophare orange et un panneau « convoi exceptionnel » :",["Je suis les indications des véhicules d'accompagnement","Je le dépasse sans précaution","Je klaxonne"],[0],"Ces convois sont larges et lents : patience et prudence.");
+Q("U","Je peux emprunter une voie réservée aux bus :",["Non, sauf si la signalisation l'autorise (vélos, taxis…)","Oui, s'il n'y a pas de bus","Oui, en heure de pointe"],[0],"Circuler sur une voie bus sans autorisation est sanctionné.");
+Q("U","Je dépasse un groupe de cyclistes roulant côte à côte :",["Je patiente et je dépasse en laissant l'espace latéral obligatoire","Je klaxonne pour qu'ils se mettent en file","Je les frôle"],[0],"Les cyclistes peuvent rouler à deux de front quand les conditions le permettent : je respecte 1 m en ville, 1,50 m hors agglomération.");
+Q("U","Un camion me suit de très près sur autoroute :",["Je ne freine pas brusquement","Je reste prévisible","Je freine pour le faire reculer"],[0,1],"Un poids lourd a besoin d'une grande distance pour s'arrêter.");
+
+// ---------- D : RÉGLEMENTATION ET DIVERS ----------
+Q("D","Pour vendre ma voiture d'occasion (de plus de 4 ans), je dois fournir :",["Un contrôle technique de moins de 6 mois","Un certificat de cession","La facture du dernier plein"],[0,1],"Contrôle technique récent, certificat de cession déclaré en ligne et carte grise barrée.");
+Q("D","Une amende forfaitaire payée rapidement (dans les 15 jours) peut être :",["Minorée (moins chère)","Majorée","Doublée"],[0],"Pour beaucoup de contraventions, payer vite donne droit à un montant minoré.");
+Q("D","Si mon permis est perdu ou volé, je fais la déclaration :",["En ligne (ANTS) ou au commissariat en cas de vol","Je n'ai rien à faire","Auprès de mon assureur seulement"],[0],"La déclaration permet de demander un nouveau titre et protège en cas d'usage frauduleux.");
+Q("D","Je prête ma voiture à un ami :",["Je vérifie que mon contrat d'assurance le permet","Il doit avoir un permis valide","Il peut conduire sans permis si c'est court"],[0,1],"Certains contrats limitent les conducteurs autorisés ou prévoient une franchise.");
+Q("D","Une voiture mise en fourrière :",["Entraîne des frais à payer par le propriétaire","Est restituée gratuitement","Est détruite immédiatement"],[0],"Enlèvement et garde sont facturés ; le véhicule est rendu après paiement et présentation des papiers.");
+Q("D","Un avis de contravention envoyé après un flash radar est adressé :",["Au titulaire de la carte grise","À l'assureur","Au constructeur"],[0],"Le titulaire peut désigner le conducteur réel si ce n'était pas lui.");
+
+// ---------- R : LA ROUTE ----------
+Q("R","Avant de partir un matin d'hiver, je :",["Dégivre complètement toutes les vitres","Dégage la neige du toit","Pars avec un petit trou dans le givre du pare-brise"],[0,1],"Il faut une visibilité totale ; la neige du toit peut glisser sur le pare-brise au freinage.");
+Q("R","Sur une route mouillée la nuit :",["Les reflets gênent la vision","Les marquages au sol sont moins visibles","La visibilité est meilleure"],[0,1],"Pluie + nuit : visibilité réduite, il faut ralentir.");
+Q("R","Des gravillons fraîchement répandus sur la route :",["Rendent la chaussée glissante","Peuvent être projetés sur les autres véhicules","Améliorent l'adhérence à grande vitesse"],[0,1],"On respecte la vitesse réduite signalée (souvent 50 km/h).");
+Q("R","Sur une route à forte pente en descente, ma distance de freinage :",["Augmente","Diminue","Ne change pas"],[0],"La pente ajoute de l'élan : il faut freiner plus tôt et utiliser le frein moteur.");
+Q("R","La nuit, un véhicule me suit avec ses feux de route :",["Je peux régler mon rétroviseur intérieur en position nuit","Je freine brusquement pour le prévenir","J'allume mes feux de brouillard arrière"],[0],"La position nuit (ou l'anti-éblouissement automatique) atténue l'éblouissement.");
+Q("R","En sortie de virage, j'aperçois un véhicule arrêté sur ma voie :",["Si j'ai adapté ma vitesse, je peux m'arrêter à temps","Je dois toujours pouvoir m'arrêter dans la distance que je vois libre","Je klaxonne et je passe"],[0,1],"Règle d'or : rouler à une vitesse qui permet de s'arrêter dans l'espace visible devant soi.");
+
+</script>
+<script>
+/* ---------- 2. Thèmes officiels de l'examen (10 thèmes) ---------- */
+const THEMES = {
+  L:{name:"Circulation routière",  sub:"Panneaux, priorités, vitesses", ic:"🚦"},
+  C:{name:"Le conducteur",         sub:"Alcool, fatigue, distances, points", ic:"🧑"},
+  R:{name:"La route",              sub:"Météo, nuit, montagne, virages", ic:"🛣️"},
+  U:{name:"Les autres usagers",    sub:"Piétons, cyclistes, poids lourds", ic:"🚲"},
+  D:{name:"Réglementation & divers", sub:"Papiers, stationnement, permis", ic:"📄"},
+  P:{name:"Premiers secours",      sub:"Protéger, alerter, secourir", ic:"⛑️"},
+  A:{name:"Quitter le véhicule",   sub:"Stationnement, descente, panne", ic:"🚪"},
+  M:{name:"Mécanique",             sub:"Témoins, pneus, freins", ic:"🔧"},
+  S:{name:"Équipements de sécurité", sub:"Ceinture, sièges, gilet, aides", ic:"🦺"},
+  E:{name:"Environnement",         sub:"Éco-conduite, Crit'Air, électrique", ic:"🌱"}
+};
+
+/* Identifiant stable pour chaque question (petit hash du texte),
+   pour que les statistiques survivent à l'ajout de nouvelles questions. */
+function hash(s){ let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) | 0; return (h >>> 0).toString(36); }
+// (le panneau et la 1re réponse sont inclus : plusieurs questions « Ce panneau… » ont le même texte)
+QUESTIONS.forEach(q => q.id = hash(q.theme + q.text + (q.sign || "") + q.answers[0]));
+
+/* ---------- 3. Sauvegarde locale (progression) ----------
+   localStorage peut être indisponible : on protège tout par try/catch. */
+const KEY = "sv-code-v1";
+let DATA = { seen:{}, errors:[], exams:[], chrono:true };
+try { const s = JSON.parse(localStorage.getItem(KEY)); if (s) DATA = Object.assign(DATA, s); } catch(e) {}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(DATA)); } catch(e) {} }
+
+/* ---------- 4. Outils ---------- */
+const $app = document.getElementById("app");
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const LOGO = `<svg width="26" height="26" viewBox="0 0 26 26"><path d="M5 18c4-1 5-9 9-10s4 5 7 3" fill="none" stroke="#7fd6d3" stroke-width="3" stroke-linecap="round"/></svg>`;
+
+/* Taux de maîtrise d'un thème : questions déjà réussies au moins une fois / total */
+function mastery(theme){
+  const qs = QUESTIONS.filter(q => q.theme === theme);
+  const ok = qs.filter(q => DATA.seen[q.id] && DATA.seen[q.id].ok > 0).length;
+  return { ok, total: qs.length, pct: Math.round(100 * ok / qs.length) };
+}
+
+/* ---------- 5. Écran d'accueil ---------- */
+function home(){
+  stopTimer();
+  const exams = DATA.exams;
+  const best = exams.length ? Math.max(...exams.map(e => e.score)) : "–";
+  const last = exams.slice(-5);
+  const avg = last.length ? (last.reduce((s, e) => s + e.score, 0) / last.length).toFixed(1) : "–";
+  const themes = Object.keys(THEMES).map(k => {
+    const m = mastery(k), t = THEMES[k];
+    return `<button class="theme" onclick="start('theme','${k}')">
+      <span class="ic">${t.ic}</span>
+      <span class="name">${t.name}<small>${t.sub} · ${m.ok}/${m.total}</small><span class="bar"><i style="width:${m.pct}%"></i></span></span>
+      <span>›</span></button>`;
+  }).join("");
+
+  $app.innerHTML = `
+  <div class="top"><div class="logo">${LOGO}</div><div><h1>Code de la route</h1><small>${QUESTIONS.length} questions · 10 thèmes officiels</small></div></div>
+
+  <div class="card hero">
+    <h2>Examen blanc</h2>
+    <p>40 questions tirées au hasard, ${DATA.chrono ? "20 secondes par question, " : ""}correction à la fin. Il faut 35 bonnes réponses pour être reçu.</p>
+    <button class="btn white" onclick="start('exam')">Commencer l'examen</button>
+  </div>
+
+  <div class="card">
+    <div class="stats">
+      <div class="stat"><b>${exams.length}</b><span>examens</span></div>
+      <div class="stat"><b>${best}${exams.length ? "<small style='font-size:13px'>/40</small>" : ""}</b><span>meilleur score</span></div>
+      <div class="stat"><b>${avg}</b><span>moyenne (5 derniers)</span></div>
+    </div>
+  </div>
+
+  <div class="row">
+    <button class="btn ghost" onclick="start('quick')">⚡ 20 questions</button>
+    <button class="btn ghost" onclick="start('errors')" ${DATA.errors.length ? "" : "disabled"}>🔁 Mes erreurs (${DATA.errors.length})</button>
+  </div>
+
+  <h3>Entraînement par thème</h3>
+  <div class="themes">${themes}</div>
+
+  <h3>Réglages</h3>
+  <div class="card">
+    <label class="switch">Chronomètre (20 s) en examen blanc <input type="checkbox" ${DATA.chrono ? "checked" : ""} onchange="DATA.chrono=this.checked;save();home()"></label>
+    <button class="link" onclick="resetAsk(this)">Réinitialiser ma progression</button>
+  </div>
+  <div class="foot">Questions originales rédigées selon le programme officiel. À compléter par les séries officielles avant l'examen.<br>SV · v${VERSION}</div>`;
+  window.scrollTo(0, 0);
+}
+
+/* Réinitialisation en deux appuis (pas de boîte de dialogue système) */
+function resetAsk(btn){
+  if (btn.dataset.armed) { DATA = { seen:{}, errors:[], exams:[], chrono:DATA.chrono }; save(); home(); return; }
+  btn.dataset.armed = 1; btn.textContent = "Appuie encore pour tout effacer"; btn.style.color = "var(--ko)";
+}
+
+/* ---------- 6. Lancement d'une série ----------
+   mode : exam (40 q, correction à la fin) | theme | quick | errors (correction immédiate) */
+let S = null; // état de la série en cours
+
+function start(mode, theme){
+  let pool;
+  if (mode === "exam") pool = pickExam();
+  else if (mode === "theme") pool = shuffle(QUESTIONS.filter(q => q.theme === theme));
+  else if (mode === "errors") pool = shuffle(QUESTIONS.filter(q => DATA.errors.includes(q.id)));
+  else pool = shuffle(QUESTIONS).slice(0, 20);
+  if (!pool.length) { home(); return; } // ex. plus aucune erreur à revoir
+
+  // On mélange l'ordre des réponses en gardant la trace des bonnes
+  const items = pool.map(q => {
+    const order = shuffle(q.answers.map((_, i) => i));
+    return { q, order, good: order.map((o, i) => q.good.includes(o) ? i : -1).filter(i => i >= 0), picked: [], done: false };
+  });
+  S = { mode, theme, items, i: 0, title: mode === "theme" ? THEMES[theme].name : mode === "exam" ? "Examen blanc" : mode === "errors" ? "Mes erreurs" : "Série rapide" };
+  showQuestion();
+}
+
+/* Examen blanc : 4 questions par thème (40 au total), comme la répartition officielle */
+function pickExam(){
+  let out = [];
+  Object.keys(THEMES).forEach(k => { out = out.concat(shuffle(QUESTIONS.filter(q => q.theme === k)).slice(0, 4)); });
+  return shuffle(out).slice(0, 40);
+}
+
+/* ---------- 7. Affichage d'une question ---------- */
+function showQuestion(){
+  const it = S.items[S.i], q = it.q, n = S.items.length;
+  const exam = S.mode === "exam";
+  const letters = "ABCD";
+  const answers = it.order.map((o, i) => {
+    let cls = it.picked.includes(i) ? "sel" : "";
+    if (it.done && !exam) cls = it.good.includes(i) ? "good" : (it.picked.includes(i) ? "bad" : "");
+    return `<button class="answer ${cls}" ${it.done ? "disabled" : ""} onclick="toggle(${i})"><span class="letter">${letters[i]}</span><span>${esc(q.answers[o])}</span></button>`;
+  }).join("");
+
+  let feedback = "";
+  if (it.done && !exam){
+    const ok = isRight(it);
+    feedback = `<div class="explain ${ok ? "ok" : "ko"}"><b>${ok ? "✔ Bonne réponse" : "✘ Réponse : " + it.good.map(i => letters[i]).join(" ")}</b>${esc(q.explain)}</div>`;
+  }
+
+  const timer = exam && DATA.chrono ? `<div class="timer"><svg width="44" height="44"><circle cx="22" cy="22" r="19" fill="none" stroke="#d7e4e5" stroke-width="4"/><circle id="tc" cx="22" cy="22" r="19" fill="none" stroke="#0f7c7b" stroke-width="4" stroke-dasharray="119.4" stroke-dashoffset="0" stroke-linecap="round"/></svg><span id="tt">20</span></div>` : "";
+
+  $app.innerHTML = `<div class="quiz">
+  <div class="qhead">
+    <button class="close" onclick="home()">×</button>
+    <div class="prog"><div class="count">${esc(S.title)} · ${S.i + 1}/${n}</div><div class="bar"><i style="width:${100 * (S.i + 1) / n}%"></i></div></div>
+    ${timer}
+  </div>
+  <span class="tag">${THEMES[q.theme].ic} ${THEMES[q.theme].name}</span>
+  ${q.sign && SIGNS[q.sign] ? `<div class="sign">${SIGNS[q.sign]}</div>` : ""}
+  <p class="question">${esc(q.text)}</p>
+  <div class="hint">Une ou plusieurs bonnes réponses</div>
+  ${answers}
+  ${feedback}
+  <div class="sticky">${it.done && !exam
+     ? `<button class="btn" onclick="next()">${S.i + 1 < n ? "Question suivante" : "Voir mon résultat"}</button>`
+     : `<button class="btn" id="val" onclick="validate()" ${it.picked.length ? "" : "disabled"}>Valider</button>`}</div></div>`;
+  window.scrollTo(0, 0);
+  if (exam && DATA.chrono && !it.done) startTimer();
+}
+
+/* Sélection / désélection d'une réponse (plusieurs réponses possibles) */
+function toggle(i){
+  const it = S.items[S.i];
+  if (it.done) return;
+  it.picked = it.picked.includes(i) ? it.picked.filter(x => x !== i) : it.picked.concat(i);
+  // Mise à jour légère sans tout redessiner (le chrono continue)
+  document.querySelectorAll(".answer").forEach((b, k) => b.classList.toggle("sel", it.picked.includes(k)));
+  document.getElementById("val").disabled = !it.picked.length;
+}
+
+/* Une question est juste si les réponses cochées sont exactement les bonnes */
+function isRight(it){
+  return it.picked.length === it.good.length && it.good.every(g => it.picked.includes(g));
+}
+
+/* Validation : on enregistre la statistique puis on passe à la suite */
+function validate(){
+  stopTimer();
+  const it = S.items[S.i];
+  it.done = true;
+  const ok = isRight(it), id = it.q.id;
+  const st = DATA.seen[id] || { ok:0, ko:0 };
+  ok ? st.ok++ : st.ko++;
+  DATA.seen[id] = st;
+  // Liste « Mes erreurs » : on ajoute si raté, on retire si réussi
+  if (!ok && !DATA.errors.includes(id)) DATA.errors.push(id);
+  if (ok) DATA.errors = DATA.errors.filter(x => x !== id);
+  save();
+  if (S.mode === "exam") next(); else showQuestion();
+}
+
+function next(){
+  if (S.i + 1 < S.items.length){ S.i++; showQuestion(); }
+  else results();
+}
+
+/* ---------- 8. Chronomètre (20 s par question en examen blanc) ---------- */
+let timerId = null;
+function startTimer(){
+  stopTimer();
+  const t0 = Date.now(), D = 20000;
+  timerId = setInterval(() => {
+    const left = Math.max(0, D - (Date.now() - t0));
+    const tt = document.getElementById("tt"), tc = document.getElementById("tc");
+    if (tt) tt.textContent = Math.ceil(left / 1000);
+    if (tc) { tc.style.strokeDashoffset = 119.4 * (1 - left / D); if (left < 5000) tc.style.stroke = "#d64545"; }
+    if (left <= 0) validate(); // temps écoulé : on valide ce qui est coché (vide = faux)
+  }, 200);
+}
+function stopTimer(){ if (timerId) { clearInterval(timerId); timerId = null; } }
+
+/* ---------- 9. Résultats ---------- */
+function results(){
+  stopTimer();
+  const total = S.items.length, score = S.items.filter(isRight).length;
+  const exam = S.mode === "exam";
+  if (exam) { DATA.exams.push({ date: Date.now(), score }); save(); }
+  const letters = "ABCD";
+  const passed = exam ? score >= 35 : score / total >= 0.875;
+
+  // Récapitulatif : en examen on montre toutes les corrections, sinon seulement les erreurs
+  const list = S.items.filter(it => exam || !isRight(it)).map(it => {
+    const ok = isRight(it), q = it.q;
+    return `<div class="recap"><div class="q"><span class="pill ${ok ? "ok" : "ko"}">${ok ? "✔" : "✘"}</span>${esc(q.text)}</div>
+      <div class="r">Bonne(s) réponse(s) : <b>${it.good.map(i => letters[i] + ". " + esc(q.answers[it.order[i]])).join(" — ")}</b></div>
+      ${ok ? "" : `<div class="r">Ta réponse : ${it.picked.length ? it.picked.sort().map(i => letters[i]).join(" ") : "aucune (temps écoulé)"}</div><div class="r">${esc(q.explain)}</div>`}</div>`;
+  }).join("");
+
+  $app.innerHTML = `<div class="quiz">
+  <div class="card score">
+    <div class="big">${score}<small>/${total}</small></div>
+    <div class="verdict ${passed ? "ok" : "ko"}">${exam ? (passed ? "Reçu·e ! 🎉" : "Pas encore… il faut 35/40") : (passed ? "Très bien !" : "Continue à t'entraîner")}</div>
+    <div style="color:var(--muted);font-size:14px">${score === total ? "Sans faute !" : `${total - score} erreur${total - score > 1 ? "s" : ""} ajoutée${total - score > 1 ? "s" : ""} à « Mes erreurs »`}</div>
+  </div>
+  <div class="row" style="margin-bottom:12px">
+    <button class="btn" onclick="start('${S.mode}','${S.theme || ""}')">Recommencer</button>
+    <button class="btn ghost" onclick="home()">Accueil</button>
+  </div>
+  ${list ? `<div class="card"><h3 style="margin-top:0">${exam ? "Corrections" : "À revoir"}</h3>${list}</div>` : ""}</div>`;
+  window.scrollTo(0, 0);
+}
+
+/* ---------- 10. Démarrage + mode hors-ligne (seulement sur baiji.fr / GitHub Pages) ---------- */
+home();
+// PWA : service worker « réseau d'abord » du site (seulement en https)
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
