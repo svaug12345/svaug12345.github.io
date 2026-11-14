@@ -167,6 +167,10 @@ PAGES = [
          desc="Tom appelle la Petite Souris (qui le taquine un peu)",
          picto="rat", tuile="#1b1842", trait="#f7c948",
          fond="#1b1842", theme="#1b1842"),
+    dict(dossier="trois-lucioles", nom="Trois Lucioles", court="Lucioles",
+         desc="Jeu d'arcade néon à la manette pour Nanon, Gaby et Tom",
+         picto="sparkles", tuile="#0b0620", trait="#ffd84d",
+         fond="#05030f", theme="#05030f"),
 ]
 
 

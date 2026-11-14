@@ -1,0 +1,39 @@
+{
+  "name": "Trois Lucioles",
+  "short_name": "Lucioles",
+  "description": "Jeu d'arcade néon à la manette pour Nanon, Gaby et Tom",
+  "id": "/trois-lucioles/",
+  "start_url": "/trois-lucioles/",
+  "scope": "/trois-lucioles/",
+  "display": "standalone",
+  "background_color": "#05030f",
+  "theme_color": "#05030f",
+  "lang": "fr",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "icones/icone-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icones/icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icones/icone-masquable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icones/icone-masquable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

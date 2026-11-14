@@ -1,0 +1,138 @@
+<!doctype html>
+<!--
+  ============================================================
+  Trois Lucioles — un jeu pour Nanon, Gaby et Tom (baiji.fr/trois-lucioles/)
+  Version 1.0.0
+  ------------------------------------------------------------
+  Jeu d'arcade néon écrit en LÖVE (Lua), exporté pour le web avec love.js :
+   • love.js + love.wasm = le moteur LÖVE compilé pour le navigateur ;
+   • game.js + game.data = le jeu lui-même (le fichier .love).
+  Cette page est FABRIQUÉE par construire.py du projet local du jeu
+  (dossier Projets/Jeux/New jeu, source = tools/web/index.html) : ne pas la modifier ici.
+  Se joue à la manette (ou au clavier) ; pas de commandes tactiles.
+  ------------------------------------------------------------
+  Historique :
+   • 1.0.0 : première mise en ligne (3 héros, 25 niveaux, 5 boss, mode « Nuit sans fin »)
+  ============================================================
+-->
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#05030f">
+  <title>Trois Lucioles</title>
+  <!--
+    PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »
+    ou « Ajouter à l'écran d'accueil »). Fichiers fabriqués par outils/generer-pwa.py :
+     • manifest.webmanifest : nom, couleurs, icônes de l'appli ;
+     • icones/ : les icônes (apple-touch-icon = celle des iPhone) ;
+     • sw.js : le service worker, enregistré en bas de page.
+  -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <link rel="icon" href="icones/icone-192.png" type="image/png">
+  <!-- « noindex » : la page n'apparaîtra pas sur Google (accessible seulement avec le lien) -->
+  <meta name="robots" content="noindex, nofollow">
+  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+  <script src="/journal.js" defer></script>
+  <style>
+    html, body { margin: 0; height: 100%; background: #05030f; overflow: hidden; }
+    body { display: flex; align-items: center; justify-content: center; font-family: system-ui, sans-serif; color: #cfe3ff; }
+    #canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; outline: none; visibility: hidden; }
+    #splash { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; background: radial-gradient(circle at 50% 40%, #2a0f4a 0%, #05030f 70%); cursor: pointer; padding: 16px; }
+    #splash h1 { font-size: clamp(32px, 9vw, 72px); letter-spacing: .06em; margin: 0 0 8px; color: #fff;
+      text-shadow: 0 0 12px #ff5fd0, 0 0 40px #5fd0ff; }
+    #splash p { margin: 6px 0; font-size: clamp(14px, 3vw, 20px); }
+    #status { opacity: .7; min-height: 1.4em; }
+    .pulse { animation: pulse 1.4s ease-in-out infinite; color: #ffe06a; }
+    @keyframes pulse { 50% { opacity: .35; } }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="0"></canvas>
+  <div id="splash">
+    <h1>TROIS LUCIOLES</h1>
+    <p>Nanon · Gaby · Tom</p>
+    <p class="pulse" id="go">Appuie sur un bouton, une touche ou l'écran pour commencer</p>
+    <p id="status"></p>
+  </div>
+  <script>
+    var started = false;
+    var splash = document.getElementById('splash');
+    var statusEl = document.getElementById('status');
+    var canvas = document.getElementById('canvas');
+
+    // Résolution interne choisie d'après l'écran (4:3 mini, 16:9 environ maxi), plafonnée à 720 lignes
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var h = Math.round(Math.max(480, Math.min(720, window.innerHeight * dpr)));
+    var aspect = Math.max(4 / 3, Math.min(860 / 480, window.innerWidth / Math.max(1, window.innerHeight)));
+    var w = Math.round(h * aspect);
+
+    var Module = {
+      arguments: ['./game.love', '--web=' + w + 'x' + h],
+      INITIAL_MEMORY: 67108864,
+      printErr: console.error.bind(console),
+      canvas: canvas,
+      setStatus: function (text) {
+        if (text) { statusEl.textContent = 'Chargement…'; }
+        else if (Module.remainingDependencies === 0) {
+          splash.style.display = 'none';
+          canvas.style.visibility = 'visible';
+          canvas.focus();
+        }
+      },
+      totalDependencies: 0,
+      remainingDependencies: 0,
+      monitorRunDependencies: function (left) {
+        this.remainingDependencies = left;
+        this.totalDependencies = Math.max(this.totalDependencies, left);
+        Module.setStatus(left ? 'chargement' : '');
+      }
+    };
+
+    function start() {
+      if (started) return;
+      started = true;
+      document.getElementById('go').style.display = 'none';
+      statusEl.textContent = 'Chargement…';
+      var s1 = document.createElement('script');
+      s1.src = 'game.js';
+      s1.onload = function () {
+        var s2 = document.createElement('script');
+        s2.src = 'love.js';
+        s2.onload = function () { Love(Module); };
+        document.body.appendChild(s2);
+      };
+      document.body.appendChild(s1);
+      var el = document.documentElement;
+      if (window.matchMedia('(pointer: coarse)').matches && el.requestFullscreen) { el.requestFullscreen().catch(function () {}); }
+    }
+    window.addEventListener('pointerdown', start);
+    window.addEventListener('keydown', function (e) {
+      if ([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) e.preventDefault();
+      start();
+    });
+    // Démarrage à la manette (sans toucher l'écran)
+    (function poll() {
+      if (started) return;
+      var pads = navigator.getGamepads ? navigator.getGamepads() : [];
+      for (var i = 0; i < pads.length; i++) {
+        var p = pads[i];
+        if (!p) continue;
+        for (var b = 0; b < p.buttons.length; b++) { if (p.buttons[b].pressed) { start(); return; } }
+      }
+      requestAnimationFrame(poll);
+    })();
+    window.addEventListener('click', function () { window.focus(); canvas.focus(); });
+  </script>
+<script>
+  // ---- Page installable : enregistrement du service worker (sw.js, même dossier) ----
+  // Il fonctionne en « réseau d'abord » : la page en ligne est toujours la plus récente.
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    navigator.serviceWorker.register("sw.js");
+  }
+</script>
+</body>
+</html>
