@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr — Page d'accueil des projets (marque SV)
-  Version 1.39.0
+  Version 1.40.0
   ------------------------------------------------------------
   Historique :
    • v1.0.0 : première page d'accueil
@@ -70,6 +70,8 @@
    • v1.37.0 : « Veille » : Carrefour + les sujets que chacun ajoute
    • v1.38.0 : ajout de « MP3 » (le son d'une vidéo YouTube en MP3, par le NAS) dans « Outils »
    • v1.39.0 : ajout de « Code de la route » (entraînement au code pour Nanon) dans « Famille & amis »
+   • v1.40.0 : bouton Recherche (loupe) à côté du crayon : filtre les projets en temps réel
+              sur le nom, la description, la rubrique et des mots-clés cachés (MOTS_CLES)
 
   À déposer dans le dépôt GitHub : svaug12345.github.io
   → c'est le fichier "index.html" à la racine.
@@ -401,7 +403,7 @@
        env(safe-area-inset-…) : décale le bouton sous l'encoche / la barre
        d'état du téléphone quand la page est installée en appli. */
     /* Même allure pour le bouton « Ranger » (crayon), placé juste à gauche */
-    .actualiser, .organiser {
+    .actualiser, .organiser, .chercher {
       position: fixed;
       top:   calc(12px + env(safe-area-inset-top, 0px));
       right: calc(12px + env(safe-area-inset-right, 0px));
@@ -416,15 +418,19 @@
       cursor: pointer;
       transition: opacity .2s, background .2s, border-color .2s;
     }
-    .actualiser:hover,  .organiser:hover,
-    .actualiser:focus-visible, .organiser:focus-visible {
+    .actualiser:hover,  .organiser:hover, .chercher:hover,
+    .actualiser:focus-visible, .organiser:focus-visible, .chercher:focus-visible {
       opacity: 1;
       background: var(--surface-raised);
       border-color: var(--line);
       outline: none;
     }
-    .actualiser svg, .organiser svg { width: 18px; height: 18px; }
+    .actualiser svg, .organiser svg, .chercher svg { width: 18px; height: 18px; }
     .organiser { right: calc(52px + env(safe-area-inset-right, 0px)); }
+    /* La loupe, encore à gauche du crayon (3 boutons espacés de 40 px) */
+    .chercher  { right: calc(92px + env(safe-area-inset-right, 0px)); }
+    /* Recherche ouverte : la loupe reste allumée, comme le crayon en mode Rangement */
+    .en-recherche .chercher { opacity: 1; color: var(--teal); border-color: var(--teal); background: var(--surface-raised); }
     /* En mode Rangement, le crayon reste allumé (en teal) */
     .en-edition .organiser { opacity: 1; color: var(--teal); border-color: var(--teal); background: var(--surface-raised); }
     /* Pendant le rechargement : la flèche tourne */
@@ -434,6 +440,41 @@
     @media (prefers-reduced-motion: reduce) {
       .actualiser.tourne svg { animation: none; }
     }
+
+    /* ---------- Barre de recherche ----------
+       « sticky » : elle reste visible en haut quand on fait défiler
+       les résultats. Cachée tant qu'on n'a pas touché la loupe. */
+    .barre-recherche {
+      position: sticky; top: calc(8px + env(safe-area-inset-top, 0px)); z-index: 5;
+      display: flex; align-items: center; gap: 8px;
+      background: var(--surface-raised); border: 1px solid var(--teal);
+      border-radius: 999px; padding: 6px 6px 6px 16px; margin-bottom: 18px;
+      box-shadow: 0 6px 20px rgb(0 0 0 / .08);
+    }
+    .barre-recherche[hidden] { display: none; }
+    .barre-recherche > svg {                      /* petite loupe dans le champ */
+      flex: none; width: 18px; height: 18px; color: var(--teal);
+      fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .barre-recherche input {
+      flex: 1; min-width: 0; border: 0; outline: none; background: transparent;
+      font: inherit; font-size: 1rem; color: var(--ink); padding: 8px 0;
+    }
+    /* On cache la petite croix native du navigateur : on a la nôtre */
+    .barre-recherche input::-webkit-search-cancel-button { -webkit-appearance: none; }
+    .barre-recherche .compte { flex: none; font-size: .8rem; color: var(--ink-muted); font-family: "JetBrains Mono", ui-monospace, monospace; }
+    .barre-recherche .fermer {
+      flex: none; width: 34px; height: 34px; display: grid; place-items: center;
+      border: 0; border-radius: 50%; background: transparent; color: var(--ink-muted); cursor: pointer;
+    }
+    .barre-recherche .fermer:hover { background: var(--line); color: var(--ink); }
+    .barre-recherche .fermer svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+    /* Étiquette de rubrique sur une carte de résultat (on ne voit plus les titres) */
+    .rubrique-resultat {
+      display: inline-block; margin-top: 4px; font-size: .68rem; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase; color: var(--teal);
+    }
+    .aucun-resultat { color: var(--ink-muted); text-align: center; padding: 24px 0; }
 
     /* ---------- Micro des agents vocaux (après le nom) ---------- */
     .vocal { display: inline-flex; vertical-align: -2px; margin-left: 6px; color: var(--teal); }
@@ -621,6 +662,16 @@
       </svg>
     </button>
 
+    <!-- Bouton « Rechercher » (loupe, Lucide « search », ISC) : ouvre la barre
+         de recherche. Raccourci clavier sur ordinateur : touche « / ». -->
+    <button class="chercher" type="button" id="chercher"
+            aria-label="Rechercher un projet" title="Rechercher (touche /)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+      </svg>
+    </button>
+
     <!-- ===================== EN-TÊTE ===================== -->
     <header>
       <!--
@@ -653,6 +704,18 @@
       </div>
     </div>
 
+    <!-- Barre de recherche (cachée tant qu'on n'a pas touché la loupe).
+         type="search" : sur téléphone, le clavier affiche « Rechercher ». -->
+    <div class="barre-recherche" id="barre-recherche" role="search" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="search" id="champ-recherche" placeholder="Un projet, un mot…"
+             autocomplete="off" spellcheck="false" enterkeyhint="go" aria-label="Rechercher un projet">
+      <span class="compte" id="compte-recherche" aria-live="polite"></span>
+      <button type="button" class="fermer" id="fermer-recherche" aria-label="Fermer la recherche">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+
     <!--
       Les rubriques sont générées automatiquement par le script,
       à partir des listes PROJETS et ORGANISATION.
@@ -667,7 +730,7 @@
 
     <!-- ===================== PIED DE PAGE ===================== -->
     <footer>
-      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.39.0</p>
+      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.40.0</p>
     </footer>
 
     <!--
@@ -936,6 +999,66 @@
 
     /*
       ============================================================
+      MOTS-CLÉS CACHÉS — pour la recherche (loupe)
+      ------------------------------------------------------------
+      Jamais affichés : ils servent seulement à retrouver un projet
+      avec d'autres mots que ceux de son nom ou de sa description.
+      Clé = l'id du projet (comme dans ORGANISATION).
+      Pas besoin d'accents ni de majuscules : la recherche les ignore
+      (« eleve » trouve « élève »). On peut aussi écrire des bouts de
+      mots : la recherche trouve « vid » dans « vidéo ».
+      Un projet absent de cette liste reste trouvable par son nom, sa
+      description et sa rubrique.
+      ============================================================
+    */
+    const MOTS_CLES = {
+      // Maison
+      "famille":      "dashboard tableau de bord maison tv télé météo tâches corvées enfants voitures agenda anniversaires devoirs",
+      "repas":        "menu menus cuisine plats recettes dîner diner courses supermarché liste idées manger semaine",
+      "cartable":     "pronote élève élèves école collège devoirs emploi du temps edt notes messages profs gaby nanon",
+      "voitures":     "auto e-5008 peugeot corsa opel électrique batterie charge borne recharge autonomie chauffage préclimatisation gps position",
+      "mediatheque":  "bibliothèque livres emprunts prêts retour bd dvd paris saclay lecture",
+      "photos":       "immich photothèque albums souvenirs images visages nas galerie",
+      // Outils
+      "qr":           "qr code scanner lecteur flash caméra appareil photo",
+      "pressoir":     "compresser compression vidéo son audio découper couper réduire taille whatsapp mp4",
+      "mp3":          "youtube musique audio télécharger son chanson convertir",
+      "place-nette":  "disque dur stockage espace place ménage nettoyer gros fichiers doublons téléphone pc",
+      "paraphe":      "police écriture manuscrite font typographie lettres gabou",
+      "journal":      "statistiques stats visites logs audience suivi services surveillance pannes nas",
+      // Famille & amis
+      "code":         "code de la route permis conduite accompagnée aac panneaux examen nanon voiture",
+      "revisions":    "leçons élève école révisions quiz apprendre cp devoirs enfants",
+      "nego-papa":    "négociation négocier enfants papa coach argent sorties vocal tom gaby nanon",
+      "foot-chats":   "foot football psg quiz chats titouan ava max vocal enfants",
+      "petite-souris":"dent dents tom vocal petite souris enfants",
+      "monique":      "voisine monique oiseaux nature jardin papoter vocal seb",
+      "grand-verdict":"fils préféré parents papa maman jeu télé blague vocal julien adrien",
+      "sos-amitie":   "charles ami copain écoute blague vocal seb",
+      // Carrefour
+      "veille":       "presse actualités articles news revue de presse carrefour fournisseurs lsa linéaires",
+      "fournisseurs": "ariba sap business network fournisseurs onboarding inscription aide vocal carrefour",
+      "nexus":        "nexus franchisés franchise b2b plateforme ariba aide vocal carrefour",
+      "equipe-nexus": "nexus équipe philippe thomas zeineb franchisés questions vocal carrefour",
+      "prospection-nexus": "nexus prospection appels fournisseurs commercial convaincre vocal carrefour",
+      "salle-negociation": "négociation acheteurs fournisseur entraînement club acheteur formation vocal carrefour",
+      "pochpoch":     "cost killer économies dépenses achats budget vocal carrefour",
+      // Formation
+      "epuration":    "eau eaux usées station d'épuration step boues biologique edeline docteur step calculs",
+      "entretien-tuteur": "tuteur stagiaire élève professeur prof maths enseignant éducation nationale entretien vocal",
+      "fart":         "fart tuteurs stagiaires élèves classe observation vidéos scénettes éducation nationale",
+      // Sites & démos
+      "julien":       "vélo velo mécanicien réparation entretien crevaison freins tac gif-sur-yvette juju",
+      "location":     "location voiture utilitaire minibus réservation lucie démo vocal",
+      // Jeux
+      "undercover":   "undercover espion espions imposteur mots jeu soirée play store android",
+      "quiz-vacances":"quiz vacances souvenirs famille jeu",
+      "en-route":     "voiture trajet jeux route famille ambiance",
+      "unknown-waters": "casse-brique paddle arcade jeu android"
+    };
+
+    /*
+      ============================================================
       ORGANISATION — où chaque projet est rangé
       ------------------------------------------------------------
       • rubriques : dans l'ordre d'affichage. Chaque rubrique a un
@@ -1160,12 +1283,129 @@
     const contenu = document.getElementById("contenu");
     let edition = false;   // vrai pendant le mode Rangement
 
+    // ============================================================
+    // RECHERCHE
+    // ------------------------------------------------------------
+    // « recherche » = le texte tapé (vide = affichage normal par rubriques).
+    // ============================================================
+    let recherche = "";
+    const barreRecherche = document.getElementById("barre-recherche");
+    const champRecherche = document.getElementById("champ-recherche");
+
+    // Texte « simplifié » pour comparer : minuscules, sans accents
+    // (normalize("NFD") sépare « é » en « e » + accent, puis on retire
+    // les accents), œ → oe, et tout ce qui n'est ni lettre ni chiffre → espace.
+    function simplifier(texte) {
+      return String(texte || "").toLowerCase()
+        .replace(/œ/g, "oe").replace(/æ/g, "ae")
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, " ").trim();
+    }
+
+    // Tout le texte où chercher pour un projet : nom, descriptions,
+    // rubrique où il est rangé, mots-clés cachés, adresse.
+    function texteDe(projet, rubrique) {
+      return simplifier([projet.nom, projet.desc, projet.courte, rubrique,
+                         MOTS_CLES[projet.id], projet.url].join(" "));
+    }
+
+    /* Les projets qui correspondent à la recherche, du plus pertinent au moins.
+       Chaque mot tapé doit se retrouver quelque part (en début de mot ou
+       au milieu : « vid » trouve « vidéo »). Score : un mot trouvé dans le
+       NOM compte plus, surtout en début de nom. */
+    function resultatsRecherche() {
+      const mots = simplifier(recherche).split(" ").filter(Boolean);
+      const resultats = [];
+      calculerSections().forEach(section => {
+        section.projets.forEach(projet => {
+          const tout = texteDe(projet, section.nom);
+          if (!mots.every(m => tout.includes(m))) return;    // un mot manque : écarté
+          const nom = simplifier(projet.nom);
+          let score = 0;
+          mots.forEach(m => {
+            if (nom.startsWith(m)) score += 4;
+            else if ((" " + nom).includes(" " + m)) score += 3;
+            else if (nom.includes(m)) score += 2;
+            else if ((" " + tout).includes(" " + m)) score += 1;
+          });
+          if (section.type === "archives") score -= 1;        // archives en dernier
+          resultats.push({ projet, rubrique: section.nom, score });
+        });
+      });
+      // sort est « stable » : à score égal, l'ordre de l'accueil est gardé
+      return resultats.sort((a, b) => b.score - a.score);
+    }
+
+    function dessinerResultats() {
+      const resultats = resultatsRecherche();
+      document.getElementById("compte-recherche").textContent = resultats.length || "";
+      if (!resultats.length) {
+        const vide = document.createElement("p");
+        vide.className = "aucun-resultat";
+        vide.textContent = `Aucun projet pour « ${recherche.trim()} ».`;
+        contenu.appendChild(vide);
+        return;
+      }
+      const grille = document.createElement("div");
+      grille.className = "grille";
+      resultats.forEach(({ projet, rubrique }) => {
+        const carte = dessinerCarte(projet, { type: "resultat" }, 0);
+        // Petite étiquette de la rubrique sous le texte de la carte
+        const etiquette = document.createElement("span");
+        etiquette.className = "rubrique-resultat";
+        etiquette.textContent = rubrique;
+        carte.querySelector(".carte-texte").appendChild(etiquette);
+        grille.appendChild(carte);
+      });
+      contenu.appendChild(grille);
+    }
+
+    function ouvrirRecherche() {
+      if (edition) { edition = false; }        // pas de recherche en mode Rangement
+      barreRecherche.hidden = false;
+      document.body.classList.add("en-recherche");
+      afficher();
+      champRecherche.focus();
+      champRecherche.select();
+    }
+    function fermerRecherche() {
+      recherche = "";
+      champRecherche.value = "";
+      barreRecherche.hidden = true;
+      document.body.classList.remove("en-recherche");
+      afficher();
+    }
+
+    // « input » : déclenché à CHAQUE lettre tapée ou effacée → temps réel
+    champRecherche.addEventListener("input", () => { recherche = champRecherche.value; afficher(); });
+    champRecherche.addEventListener("keydown", e => {
+      if (e.key === "Escape") { fermerRecherche(); document.getElementById("chercher").focus(); }
+      // Entrée : ouvre le premier résultat
+      if (e.key === "Enter") {
+        const premier = contenu.querySelector("a.carte");
+        if (premier) premier.click();
+      }
+    });
+    document.getElementById("chercher").addEventListener("click", () => {
+      barreRecherche.hidden ? ouvrirRecherche() : fermerRecherche();
+    });
+    document.getElementById("fermer-recherche").addEventListener("click", fermerRecherche);
+    // Raccourci « / » sur ordinateur (sauf si on est déjà en train d'écrire)
+    document.addEventListener("keydown", e => {
+      const ecrit = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+      if (e.key === "/" && !ecrit && !e.ctrlKey && !e.metaKey) { e.preventDefault(); ouvrirRecherche(); }
+    });
+
     function afficher() {
       contenu.innerHTML = "";
       document.body.classList.toggle("en-edition", edition);
       document.getElementById("barre-edition").hidden = !edition;
       // Rappel discret en bas de page : rangement perso non recopié sur le site
       document.getElementById("rappel-local").hidden = edition || !orgaModifiee();
+
+      // Recherche en cours : une seule grille de résultats, sans rubriques
+      if (!edition && recherche.trim()) { dessinerResultats(); return; }
+      document.getElementById("compte-recherche").textContent = "";
 
       calculerSections().forEach((section, i) => {
         // Hors mode Rangement, on n'affiche pas les rubriques vides
@@ -1381,6 +1621,10 @@
     // ============================================================
     document.getElementById("organiser").addEventListener("click", () => {
       edition = !edition;
+      if (edition && !barreRecherche.hidden) {      // la recherche se referme
+        recherche = ""; champRecherche.value = "";
+        barreRecherche.hidden = true; document.body.classList.remove("en-recherche");
+      }
       afficher();
       window.scrollTo({ top: 0 });
     });
