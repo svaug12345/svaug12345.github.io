@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-14T01:29+00:00",
+ "maj": "2026-11-14T12:17+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -49,6 +49,43 @@
   }
  ],
  "articles": [
+  {
+   "id": "6e8f1f590ec6",
+   "titre": "« Les enseignes ont un rôle à jouer » : après des années de crise, les premiers signes de la reconquête pour les viandes bio",
+   "lien": "https://www.lsa-conso.fr/marches/frais-non-laitier/les-enseignes-ont-un-role-a-jouer-apres-des-annees-de-crise-les-premiers-signes-de-la-reconquete-pour-les-viandes-bio.SE2SFQ2HLZM73ESMQ77ZSNKM7I.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-14T10:30+00:00",
+   "vu_le": "2026-11-14T12:17+00:00",
+   "resume": "",
+   "enrichi": "2026-11-14"
+  },
+  {
+   "id": "066e3ccfad20",
+   "titre": "Carrefour : \"Un danger grave pour la santé publique\", fermé par arrêt préfectoral, cet hypermarché du Val-d'Oise a dû se mettre au diapason pour rouvrir ses portes",
+   "lien": "https://www.melty.fr/divers/carrefour-un-danger-grave-pour-la-sante-publique-ferme-par-arret-prefectoral-cet-hypermarche-du-val-doise-a-du-se-mettre-au-diapason-pour-rouvrir-ses-portes-2361795.html",
+   "source": "autres",
+   "media": "melty.fr",
+   "site": "melty.fr",
+   "date": "2026-11-14T10:30+00:00",
+   "vu_le": "2026-11-14T12:17+00:00",
+   "resume": "Des constats sanitaires alarmants ont entraîné la fermeture temporaire d'un hypermarché Carrefour dans le Val-d'Oise.",
+   "enrichi": "2026-11-14",
+   "image": "https://www.melty.fr/wp-content/uploads/meltyfr/2026/11/carrefour-dans-la-tourmente.png"
+  },
+  {
+   "id": "a4c3b669b184",
+   "titre": "ENTRETIEN. Quentin Roux est le nouveau directeur de Carrefour Le Mans sud : « Il y a un beau potentiel à exploiter »",
+   "lien": "https://www.ouest-france.fr/economie/commerce/grande-distribution/entretien-quentin-roux-est-le-nouveau-directeur-de-carrefour-le-mans-sud-il-y-a-un-beau-potentiel-a-exploiter-718a02f2-dd0c-11f1-86b6-0a2fbb1d8ed9",
+   "source": "autres",
+   "media": "Ouest-France",
+   "site": "ouest-france.fr",
+   "date": "2026-11-14T07:03+00:00",
+   "vu_le": "2026-11-14T12:17+00:00",
+   "resume": "",
+   "enrichi": "2026-11-14"
+  },
   {
    "id": "0854d88b44e1",
    "titre": "Carrefour inaugure au Ghana… et c'est Marcel Desailly qui coupe le ruban",
@@ -110,6 +147,18 @@
    "vu_le": "2026-11-13T13:14+00:00",
    "resume": "",
    "enrichi": "2026-11-13"
+  },
+  {
+   "id": "4cb458eece2a",
+   "titre": "Les Mousquetaires (Intermarché, Netto...) transforment avec ID Logistics un ancien site Casino en plateforme de 52 000 m²",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/les-mousquetaires-intermarche-netto-transforment-avec-id-logistics-un-ancien-site-casino-en-plateforme-de-52-000-m.K7ZBYG677VC4VIZOK5XBLWA4FA.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-13T07:50+00:00",
+   "vu_le": "2026-11-14T12:17+00:00",
+   "resume": "",
+   "enrichi": "2026-11-14"
   },
   {
    "id": "d3883dc0dff9",
@@ -1077,6 +1126,18 @@
    "image": "https://www.carenews.com/sites/default/files/styles/og_image/public/2026-11/2.png?itok=zNO6PVun"
   },
   {
+   "id": "b6b5a9d8d464",
+   "titre": "Commerce de proximité : comment Frédéric Mauduit veut verdir Sherpa, numéro un de la distribution montagnarde",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/commerce-de-proximite-comment-frederic-mauduit-veut-verdir-sherpa-numero-un-de-la-distribution-montagnarde.QYRRRLPHCBME5ICJ2DD4MAVZOY.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-06T08:30+00:00",
+   "vu_le": "2026-11-14T12:17+00:00",
+   "resume": "",
+   "enrichi": "2026-11-14"
+  },
+  {
    "id": "d783a11ba28c",
    "titre": "de la politique RSE Carrefour",
    "lien": "https://www.carrefour.com/fr/rse/engagements-rse",
@@ -1137,6 +1198,18 @@
    "site": "actu.fr",
    "enrichi": "2026-11-11",
    "image": "https://static.actu.fr/uploads/2026/11/501e8bb35bea6741e8bb35bea681e8v.jpg"
+  },
+  {
+   "id": "0255e7cdc2d9",
+   "titre": "La marque de Kombucha, Noko, investit 4 M€ dans un nouveau site de production",
+   "lien": "https://www.lsa-conso.fr/agro-industriel/boissons-et-liquides/la-marque-de-kombucha-noko-investit-4-m-dans-un-nouveau-site-de-production.SODJQU2QKBEWLMBXEUSEGYFLUM.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-05T16:32+00:00",
+   "vu_le": "2026-11-14T12:17+00:00",
+   "resume": "",
+   "enrichi": "2026-11-14"
   },
   {
    "id": "35b6c2e5e1df",
@@ -1208,6 +1281,18 @@
    "site": "olivierdauvers.fr",
    "enrichi": "2026-11-11",
    "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/Sarcelles-Mise-en-page-1-1-scaled.jpg"
+  },
+  {
+   "id": "53bcf05bc7ae",
+   "titre": "Association familiale Mulliez (Auchan, Leroy Merlin, Decathlon...) : 4 milliards d’euros de projets immobiliers et jusqu’à 400 millions de cessions par an",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/association-familiale-mulliez-auchan-leroy-merlin-decathlon-4-milliards-deuros-de-projets-immobiliers-et-jusqua-400-millions-de-cessions-par-an.ZOXEG4VZMBAKTDUDRUNDZ7IL6M.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-04T13:58+00:00",
+   "vu_le": "2026-11-14T12:17+00:00",
+   "resume": "",
+   "enrichi": "2026-11-14"
   },
   {
    "id": "48f5272a0ad4",
@@ -1754,6 +1839,19 @@
    "image": "https://www.francetvpro.fr/sites/default/files/styles/crop_format_linkedin/public/telechargements/images/COMPLEMENT_DENQUETE-Tristan%20Waleckx.jpg.webp?itok=M_5-LpIX"
   },
   {
+   "id": "e9676e0349c0",
+   "titre": "Carrefour : révélations sur un géant face à la crise en replay - Complément d'enquête",
+   "lien": "https://www.france.tv/france-2/complement-d-enquete/8902050-carrefour-revelations-sur-un-geant-face-a-la-crise.html",
+   "source": "autres",
+   "media": "France TV",
+   "site": "france.tv",
+   "date": "2026-10-15T07:00+00:00",
+   "vu_le": "2026-11-14T12:17+00:00",
+   "resume": "C’est l’enseigne de grande distribution qui a bouleversé la vie des Français ! Inventeur mondial du modèle de l’hypermarché, créateur des premières marques d...",
+   "enrichi": "2026-11-14",
+   "image": "https://medias.france.tv/CHRkkJbspDOyMWdhPhXbyoEffFE/880x0/filters:quality(85):format(jpeg)/y/p/k/php5nzkpy.jpg"
+  },
+  {
    "id": "38f31bf8bf8e",
    "titre": "[ CONCEPT ] Rideau pour Carrefour Occasion !",
    "lien": "https://www.olivierdauvers.fr/2026/10/12/concept-rideau-pour-carrefour-occasion/",
@@ -1973,6 +2071,18 @@
    "resume": "",
    "site": "lsa-conso.fr",
    "enrichi": "2026-11-11"
+  },
+  {
+   "id": "d8e43833edf2",
+   "titre": "Produits dérivés : comment Carrefour travaille les licences pour créer des temps forts commerciaux dans ses magasins",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/produits-derives-comment-carrefour-travaille-les-licences-pour-creer-des-temps-forts-commerciaux-dans-ses-magasins.BVUC6KGLTJA43JBTZJSL6YSJYY.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-10-04T07:00+00:00",
+   "vu_le": "2026-11-14T12:17+00:00",
+   "resume": "",
+   "enrichi": "2026-11-14"
   },
   {
    "id": "f58b60389534",
