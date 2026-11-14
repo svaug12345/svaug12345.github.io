@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-14T18:45+00:00",
+ "maj": "2026-11-14T23:04+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -173,6 +173,19 @@
    "vu_le": "2026-11-13T13:14+00:00",
    "resume": "",
    "enrichi": "2026-11-13"
+  },
+  {
+   "id": "b5baa066f755",
+   "titre": "Rappel Conso : Des yaourts \"Panier de Yoplait\" vendus chez Carrefour, Leclerc, Auchan, Intermarché, Monopr...",
+   "lien": "https://www.jeanmarcmorandini.com/article-657152-rappel-conso-des-yaourts-panier-de-yoplait-vendus-chez-carrefour-leclerc-auchan-intermarche-monoprix-franprix-et-les-magasins-u-sont-rappeles-en-urgence-partout-en-france.html",
+   "source": "autres",
+   "media": "Jean-Marc Morandini",
+   "site": "jeanmarcmorandini.com",
+   "date": "2026-11-13T09:14+00:00",
+   "vu_le": "2026-11-14T23:04+00:00",
+   "resume": "Le site gouvernemental Rappel Conso a lancé, un rappel national concernant des yaourts de la marque Yoplait. Cette procédure concerne différents assortiments aux fruits jaunes, aux fruits rouges, ainsi que les variétés abricot-nectarine et fraise-framboise commercialisées sous la marque Panier",
+   "enrichi": "2026-11-14",
+   "image": "https://static.jeanmarcmorandini.com/sites/jeanmarcmorandini.com/files/styles/facebook/public/capture_decran_2026-11-12_a_14.20.37_0.jpg?itok=1hgPbK2K"
   },
   {
    "id": "4cb458eece2a",
