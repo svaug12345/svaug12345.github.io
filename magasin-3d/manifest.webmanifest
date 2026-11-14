@@ -1,0 +1,39 @@
+{
+  "name": "Magasin 3D · Achats Non Marchands",
+  "short_name": "Magasin 3D",
+  "description": "Un hypermarché en 3D pour voir où interviennent les Achats Non Marchands",
+  "id": "/magasin-3d/",
+  "start_url": "/magasin-3d/",
+  "scope": "/magasin-3d/",
+  "display": "standalone",
+  "background_color": "#0b355f",
+  "theme_color": "#0b355f",
+  "lang": "fr",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "icones/icone-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icones/icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icones/icone-masquable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icones/icone-masquable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -95,6 +95,12 @@ PAGES = [
          desc="S'entraîner à négocier face à un fournisseur vocal",
          picto="handshake", tuile="#0b355f", trait="#ffffff",
          fond="#ffffff", theme="#0b355f"),
+    # Page et icônes FABRIQUÉES par le projet local (scripts/publier-baiji.py, icônes dessinées avec Pillow) :
+    # relancer ce script-ci remplacerait ses icônes par le picto Lucide « store ».
+    dict(dossier="magasin-3d", nom="Magasin 3D · Achats Non Marchands", court="Magasin 3D",
+         desc="Un hypermarché en 3D pour voir où interviennent les Achats Non Marchands",
+         picto="store", tuile="#0b355f", trait="#ffffff",
+         fond="#0b355f", theme="#0b355f"),
     dict(dossier="entretien-tuteur", nom="Entretien tuteur", court="Tuteur",
          desc="S'entraîner à mener l'entretien avec un stagiaire en maths",
          picto="graduation-cap", tuile="#0b4f55", trait="#ffffff",

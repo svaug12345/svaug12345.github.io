@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr — Page d'accueil des projets (marque SV)
-  Version 1.42.0
+  Version 1.43.0
   ------------------------------------------------------------
   Historique :
    • v1.0.0 : première page d'accueil
@@ -75,6 +75,7 @@
    • v1.41.0 : TAC Vélo est en ligne sur son domaine : la carte pointe vers https://tac-velo.fr/
               (baiji.fr/julien/ n'est plus qu'une redirection)
    • v1.42.0 : ajout de « Trois Lucioles » (jeu d'arcade néon à la manette pour Nanon, Gaby et Tom) dans « Jeux »
+   • v1.43.0 : ajout de « Magasin 3D » (hypermarché en 3D des Achats Non Marchands) dans « Carrefour »
 
   À déposer dans le dépôt GitHub : svaug12345.github.io
   → c'est le fichier "index.html" à la racine.
@@ -733,7 +734,7 @@
 
     <!-- ===================== PIED DE PAGE ===================== -->
     <footer>
-      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.42.0</p>
+      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.43.0</p>
     </footer>
 
     <!--
@@ -926,6 +927,10 @@
         desc: "Réserver une voiture, un utilitaire ou un minibus en parlant à Lucie",
         courte: "Réserver un véhicule",
         url: "location/" },
+      { id: "magasin-3d", nom: "Magasin 3D", icone: "magasin",
+        desc: "Un hypermarché en 3D pour voir où interviennent les Achats Non Marchands",
+        courte: "Hypermarché 3D des achats",
+        url: "magasin-3d/" },
       { id: "salle-negociation", nom: "Salle de négociation", icone: "poignee", vocal: true,
         desc: "S'entraîner à négocier face à un fournisseur vocal",
         courte: "Négocier face à un fournisseur",
@@ -1051,6 +1056,7 @@
       "nexus":        "nexus franchisés franchise b2b plateforme ariba aide vocal carrefour",
       "equipe-nexus": "nexus équipe philippe thomas zeineb franchisés questions vocal carrefour",
       "prospection-nexus": "nexus prospection appels fournisseurs commercial convaincre vocal carrefour",
+      "magasin-3d": "magasin 3d hypermarché carrefour achats non marchands ntp danm club acheteur visite guidée maquette formation rayons réserve",
       "salle-negociation": "négociation acheteurs fournisseur entraînement club acheteur formation vocal carrefour",
       "pochpoch":     "cost killer économies dépenses achats budget vocal carrefour",
       // Formation
@@ -1092,7 +1098,7 @@
         { nom: "Maison", projets: ["famille", "repas", "cartable", "voitures", "mediatheque", "photos"] },
         { nom: "Outils", projets: ["qr", "pressoir", "mp3", "place-nette", "paraphe", "journal"] },
         { nom: "Famille & amis", projets: ["code", "revisions", "nego-papa", "foot-chats", "petite-souris", "monique", "grand-verdict", "sos-amitie"] },
-        { nom: "Carrefour", projets: ["veille", "fournisseurs", "nexus", "equipe-nexus", "prospection-nexus", "salle-negociation", "pochpoch"] },
+        { nom: "Carrefour", projets: ["veille", "fournisseurs", "nexus", "equipe-nexus", "prospection-nexus", "salle-negociation", "magasin-3d", "pochpoch"] },
         { nom: "Formation", projets: ["epuration", "entretien-tuteur", "fart"] },
         { nom: "Sites & démos", projets: ["julien", "location"] },
         { nom: "Jeux", projets: ["undercover", "quiz-vacances", "en-route", "unknown-waters", "trois-lucioles"] }
