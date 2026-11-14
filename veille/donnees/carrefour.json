@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-13T20:31+00:00",
+ "maj": "2026-11-14T01:29+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -211,6 +211,19 @@
    "vu_le": "2026-11-13T13:14+00:00",
    "resume": "GTA 6 est en vente en Belgique avant sa sortie. Fnac Darty n'y a aucun franchisé et Game Mania a disparu : MediaMarkt, Krëfel et Carrefour le vendent.",
    "enrichi": "2026-11-13",
+   "image": "https://lexpress-franchise.com/wp-content/uploads/2026/11/grand-theft-auto-vi-poster.jpg"
+  },
+  {
+   "id": "8e91695e3983",
+   "titre": "GTA 6 arrive dans les magasins belges, sans franchisé pour porter le lancement",
+   "lien": "https://lexpress-franchise.com/fr-be/actualites/gta-6-belgique-magasins-sans-franchises/",
+   "source": "autres",
+   "media": "L’Express Franchise",
+   "site": "lexpress-franchise.com",
+   "date": "2026-11-12T14:15+00:00",
+   "vu_le": "2026-11-14T01:29+00:00",
+   "resume": "GTA 6 est en vente en Belgique avant sa sortie. Fnac Darty n'y a aucun franchisé et Game Mania a disparu : MediaMarkt, Krëfel et Carrefour le vendent.",
+   "enrichi": "2026-11-14",
    "image": "https://lexpress-franchise.com/wp-content/uploads/2026/11/grand-theft-auto-vi-poster.jpg"
   },
   {
@@ -1487,6 +1500,19 @@
    "resume": "Carburants, pouvoir d’achat, budget… On reçoit Alexandre Bompard, président-directeur général du groupe Carrefour pour en parler",
    "site": "france.tv",
    "enrichi": "2026-11-11",
+   "image": "https://medias.france.tv/AVYvVHcPI4-k-jxJHcSARkyY1do/880x0/filters:quality(85):format(jpeg)/y/c/f/phpq6jfcy.jpg"
+  },
+  {
+   "id": "0fda38e71dae",
+   "titre": "Pillages, violences : le choc économique - Alexandre Bompard - Extrait vidéo C à vous",
+   "lien": "https://www.france.tv/france-5/c-a-vous/c-a-vous-saison-18/9011671-carburants-pouvoir-d-achat-budget-vers-un-retour-de-l-inflation.html",
+   "source": "autres",
+   "media": "France TV",
+   "site": "france.tv",
+   "date": "2026-10-23T07:00+00:00",
+   "vu_le": "2026-11-14T01:29+00:00",
+   "resume": "Carburants, pouvoir d’achat, budget… On reçoit Alexandre Bompard, président-directeur général du groupe Carrefour pour en parler",
+   "enrichi": "2026-11-14",
    "image": "https://medias.france.tv/AVYvVHcPI4-k-jxJHcSARkyY1do/880x0/filters:quality(85):format(jpeg)/y/c/f/phpq6jfcy.jpg"
   },
   {
