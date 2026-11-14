@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr/code/ — « Code de la route » (charte SV)
-  Version 1.2.1
+  Version 1.3.0
   ------------------------------------------------------------
   Entraînement au code de la route pour Nanon (conduite
   accompagnée dès 15 ans) : examen blanc 40 questions / 20 s,
@@ -23,6 +23,9 @@
               ergonomie PC (clavier A-D / 1-4, Entrée, Échap ; mise en page
               2 colonnes, survols, focus visibles)
    • v1.2.1 : compte à rebours calé sur l'anniversaire de Nanon (8 juin 2027)
+   • v1.3.0 : demi-examen blanc (20 questions, 2 par thème, 18/20 pour être
+              reçue), coach plus taquin, date d'anniversaire retirée de
+              l'écran et des réglages (le compteur vise toujours le 8 juin 2027)
   ============================================================
 -->
 <html lang="fr">
@@ -72,6 +75,8 @@ button{cursor:pointer;border:0}
 .btn{display:block;width:100%;padding:14px;border-radius:12px;font-weight:700;font-size:15px;background:var(--sv);color:#fff;text-align:center;text-transform:uppercase;letter-spacing:.06em;transition:transform .08s,filter .15s}
 .btn:active{transform:scale(.98)}
 .btn.white{background:#fff;color:var(--sv-dark)}
+.btn.demi{margin-top:8px;background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.45)}
+.btn.demi small{text-transform:none;letter-spacing:0;font-weight:600;opacity:.85}
 .btn.ghost{background:var(--sv-light);color:var(--sv-dark)}
 .btn:disabled{opacity:.4;cursor:default}
 .row{display:flex;gap:10px}
@@ -227,7 +232,7 @@ canvas#confettis{position:fixed;inset:0;pointer-events:none;z-index:30}
    Code de la route — appli d'entraînement (charte SV)
    Version affichée dans le pied de page : pensez à l'incrémenter.
    =================================================================== */
-const VERSION = "1.2.1";
+const VERSION = "1.3.0";
 
 /* ---------- 1. Chargement de la banque de questions ----------
    Les fichiers de questions appellent Q(...) : on remplit le tableau QUESTIONS. */
@@ -1026,7 +1031,7 @@ QUESTIONS.forEach(q => q.id = hash(q.theme + q.text + (q.sign || "") + q.answers
    ajoutés sans rien perdre de la progression des versions précédentes. */
 const KEY = "sv-code-v1";
 let DATA = { seen:{}, errors:[], exams:[], chrono:true,
-             xp:0, days:{}, badges:{}, bestCombo:0, prenom:"Nanon", anniv:"" };
+             xp:0, days:{}, badges:{}, bestCombo:0, prenom:"Nanon", demis:[] };
 try { const s = JSON.parse(localStorage.getItem(KEY)); if (s) DATA = Object.assign(DATA, s); } catch(e) {}
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(DATA)); } catch(e) {} }
 
@@ -1056,8 +1061,13 @@ function mascotte(humeur = "content"){
     <rect x="24" y="44" width="72" height="34" rx="14" fill="#16a3a1" opacity=".55"/>${yeux}${bouche}</svg>`;
 }
 // Messages du coach, tirés au hasard (le prénom est personnalisable dans les réglages)
-const BRAVO = ["Bien joué {n} !", "Exactement {n} 👌", "Parfait !", "Tu gères {n} !", "Oui ! Bonne réponse", "Imparable 😎", "Nickel, {n} !"];
-const OUPS  = ["Presque, {n} !", "Pas grave, on retient !", "Raté, mais tu vas t'en souvenir", "Oups ! Petit rappel", "Celle-là est piégeuse 😅"];
+// Ton taquin mais toujours gentil : on se moque un peu, jamais méchamment
+const BRAVO = ["Bien joué {n} !", "Tu gères {n} !", "Imparable 😎", "Pas mal… pour une future conductrice 😏",
+               "Ok, celle-là était facile 😜", "Tu as triché ? Non ? Respect.", "Papa est impressionné (il ne l'avouera jamais)",
+               "Attention, ça va finir par se voir que tu révises", "Nickel, {n} ! Même Vroum est jaloux"];
+const OUPS  = ["Aïe… heureusement que tu n'as pas encore le volant 😬", "Le panneau était pourtant énorme 🙈",
+               "On dira que c'était un test pour voir si je suivais", "Bip bip, erreur détectée 🤖", "Même la poule hésitait sur celle-là 🐔",
+               "Presque, {n} ! (non, pas vraiment 😅)", "Pas grave, tu ne recommenceras plus, hein ?", "Celle-là est piégeuse… mais quand même 😏"];
 const msg = liste => pick(liste).replace("{n}", nom());
 
 /* ---------- 6. Gamification : XP, niveaux, série de jours, badges ---------- */
@@ -1098,6 +1108,7 @@ const BADGES = [
   { id:"exam1",     e:"📝", nom:"Baptême",         desc:"Terminer un premier examen blanc", test: () => DATA.exams.length >= 1 },
   { id:"recue",     e:"🎓", nom:"Reçue !",         desc:"35/40 ou plus à un examen blanc",  test: () => DATA.exams.some(e => e.score >= 35) },
   { id:"parfait",   e:"💎", nom:"Sans faute",      desc:"40/40 à un examen blanc",          test: () => DATA.exams.some(e => e.score === 40) },
+  { id:"demi",      e:"🌗", nom:"Mi-temps",        desc:"18/20 ou plus à un demi-examen",   test: () => (DATA.demis || []).some(e => e.score >= 18) },
   { id:"recue5",    e:"🏅", nom:"Régulière",       desc:"Reçue à 5 examens blancs",         test: () => DATA.exams.filter(e => e.score >= 35).length >= 5 },
   { id:"jour",      e:"☀️", nom:"Objectif du jour", desc:`${OBJECTIF_JOUR} questions dans la journée`, test: () => aujourdhui() >= OBJECTIF_JOUR },
   { id:"serie3",    e:"📅", nom:"3 jours de suite", desc:"Réviser 3 jours d'affilée",       test: () => serieJours() >= 3 },
@@ -1166,16 +1177,13 @@ function mastery(theme){
   return { ok, total: qs.length, pct: Math.round(100 * ok / qs.length) };
 }
 
-/* Compte à rebours jusqu'aux 15 ans (âge minimum de la conduite accompagnée).
-   Par défaut : les 15 ans de Nanon, le 8 juin 2027.
-   Si une autre date est saisie dans les réglages, c'est elle qui compte. */
+/* Compte à rebours jusqu'aux 15 ans (âge minimum de la conduite accompagnée) :
+   les 15 ans de Nanon, le 8 juin 2027 (la date n'est pas affichée). */
 function compteARebours(){
   let cible = new Date(2027, 5, 8); // mois 5 = juin (janvier = 0)
-  if (DATA.anniv) { const n = new Date(DATA.anniv + "T00:00"); cible = new Date(n.getFullYear() + 15, n.getMonth(), n.getDate()); }
   const jours = Math.ceil((cible - new Date()) / 86400000);
   if (jours <= 0) return `🎉 <b>Tu as 15 ans</b> : tu peux commencer la conduite accompagnée, ${nom()} ! Ton entraînement va payer.`;
-  const date = cible.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
-  return `🚗 <b>J-${jours}</b> avant tes 15 ans (le ${date}) et le début de la conduite accompagnée. Chaque série te rapproche du volant !`;
+  return `🚗 <b>J-${jours}</b> avant tes 15 ans et le début de la conduite accompagnée. ${jours > 100 ? "Largement le temps… mais pas de quoi traîner 😏" : "Ça approche, accroche ta ceinture !"}`;
 }
 
 /* ---------- 7. Écran d'accueil ---------- */
@@ -1188,7 +1196,13 @@ function home(){
   const nv = niveau(), serie = serieJours(), jour = aujourdhui();
   const h = new Date().getHours();
   const salut = h < 6 ? "Encore debout" : h < 12 ? "Bonjour" : h < 18 ? "Salut" : "Bonsoir";
-  const accroches = ["Prête pour une série ?", "On révise un peu ?", "Le volant t'attend 🚗", "Quelques questions et hop !", "Objectif : 35/40 et plus !"];
+  // Accroches taquines ; si elle n'est pas venue depuis plus de 2 jours, Vroum le remarque
+  const derniere = Object.keys(DATA.days).sort().pop();
+  const absente = derniere && (new Date() - new Date(derniere + "T00:00")) / 86400000 > 2;
+  const accroches = absente ? ["Tiens, une revenante ! 👀", "Je commençais à croire que tu m'avais oublié…", "Le code ne s'est pas appris tout seul pendant ton absence 😏"]
+    : h < 6 || h >= 23 ? ["Le code, c'est mieux réveillée 😴", "Tu ne dors jamais ?", "Une petite série et au lit !"]
+    : ["Alors, on fait chauffer les neurones ?", "Le code ne va pas s'apprendre tout seul 😏", "Encore toi ? J'adore.",
+       "Promis, aucune question sur la poule.", "Le volant t'attend 🚗", "Prête à épater Papa ?", "Objectif : 35/40, pas 34 😜"];
 
   const themes = Object.keys(THEMES).map(k => {
     const m = mastery(k), t = THEMES[k];
@@ -1226,13 +1240,14 @@ function home(){
       <div class="card hero">
         <h2>Examen blanc</h2>
         <p>40 questions, ${DATA.chrono ? "20 secondes chacune, " : ""}correction à la fin. 35 bonnes réponses pour être reçue. +50 XP si tu réussis !</p>
-        <button class="btn white" onclick="start('exam')">Commencer l'examen</button>
+        <button class="btn white" onclick="start('exam')">Examen complet · 40</button>
+        <button class="btn demi" onclick="start('demi')">Demi-examen · 20 <small>(18/20 pour réussir)</small></button>
       </div>
       <div class="row" style="margin-top:12px">
         <button class="btn ghost" onclick="start('quick')">⚡ 20 questions</button>
         <button class="btn ghost" onclick="start('errors')" ${DATA.errors.length ? "" : "disabled"}>🔁 Erreurs (${DATA.errors.length})</button>
       </div>
-      <div class="clavier"><span class="kbd">E</span> examen · <span class="kbd">R</span> série rapide · <span class="kbd">M</span> mes erreurs</div>
+      <div class="clavier"><span class="kbd">E</span> examen · <span class="kbd">D</span> demi-examen · <span class="kbd">R</span> série rapide · <span class="kbd">M</span> mes erreurs</div>
     </div>
 
     <div class="plein"><h3>Entraînement par thème</h3><div class="themes">${themes}</div></div>
@@ -1249,7 +1264,6 @@ function home(){
 
     <div class="card">
       <label class="reglage">Prénom <input type="text" maxlength="20" value="${esc(DATA.prenom)}" onchange="DATA.prenom=this.value.trim()||'Nanon';save();home()"></label>
-      <label class="reglage">Date d'anniversaire <input type="date" value="${esc(DATA.anniv)}" onchange="DATA.anniv=this.value;save();home()"></label>
       <label class="reglage">Chronomètre (20 s) en examen blanc <input type="checkbox" ${DATA.chrono ? "checked" : ""} onchange="DATA.chrono=this.checked;save();home()"></label>
       <button class="link" onclick="resetAsk(this)">Réinitialiser ma progression</button>
     </div>
@@ -1261,7 +1275,7 @@ function home(){
 /* Réinitialisation en deux appuis (pas de boîte de dialogue système) */
 function resetAsk(btn){
   if (btn.dataset.armed) {
-    DATA = { seen:{}, errors:[], exams:[], chrono:DATA.chrono, xp:0, days:{}, badges:{}, bestCombo:0, prenom:DATA.prenom, anniv:DATA.anniv };
+    DATA = { seen:{}, errors:[], exams:[], chrono:DATA.chrono, xp:0, days:{}, badges:{}, bestCombo:0, prenom:DATA.prenom, demis:[] };
     save(); home(); return;
   }
   btn.dataset.armed = 1; btn.textContent = "Appuie encore pour tout effacer"; btn.style.color = "var(--ko)";
@@ -1273,7 +1287,8 @@ let S = null; // état de la série en cours
 
 function start(mode, theme){
   let pool;
-  if (mode === "exam") pool = pickExam();
+  if (mode === "exam") pool = pickExam(4);
+  else if (mode === "demi") pool = pickExam(2);
   else if (mode === "theme") pool = shuffle(QUESTIONS.filter(q => q.theme === theme));
   else if (mode === "errors") pool = shuffle(QUESTIONS.filter(q => DATA.errors.includes(q.id)));
   else pool = shuffle(QUESTIONS).slice(0, 20);
@@ -1285,21 +1300,24 @@ function start(mode, theme){
     return { q, order, good: order.map((o, i) => q.good.includes(o) ? i : -1).filter(i => i >= 0), picked: [], done: false };
   });
   S = { mode, theme, items, i: 0, combo: 0, xp: 0,
-        title: mode === "theme" ? THEMES[theme].name : mode === "exam" ? "Examen blanc" : mode === "errors" ? "Mes erreurs" : "Série rapide" };
+        title: mode === "theme" ? THEMES[theme].name : mode === "exam" ? "Examen blanc" : mode === "demi" ? "Demi-examen" : mode === "errors" ? "Mes erreurs" : "Série rapide" };
   showQuestion();
 }
 
-/* Examen blanc : 4 questions par thème (40 au total), comme la répartition officielle */
-function pickExam(){
+/* Examen blanc : « parTheme » questions par thème, comme la répartition officielle
+   (4 par thème = 40 questions ; 2 par thème = demi-examen de 20 questions) */
+function pickExam(parTheme){
   let out = [];
-  Object.keys(THEMES).forEach(k => { out = out.concat(shuffle(QUESTIONS.filter(q => q.theme === k)).slice(0, 4)); });
-  return shuffle(out).slice(0, 40);
+  Object.keys(THEMES).forEach(k => { out = out.concat(shuffle(QUESTIONS.filter(q => q.theme === k)).slice(0, parTheme)); });
+  return shuffle(out);
 }
+// Vrai pour les deux formats d'examen (pas de correction avant la fin, chrono)
+const estExamen = () => S && (S.mode === "exam" || S.mode === "demi");
 
 /* ---------- 9. Affichage d'une question ---------- */
 function showQuestion(){
   const it = S.items[S.i], q = it.q, n = S.items.length;
-  const exam = S.mode === "exam";
+  const exam = estExamen();
   const letters = "ABCD";
   const answers = it.order.map((o, i) => {
     let cls = it.picked.includes(i) ? "sel" : "";
@@ -1381,11 +1399,11 @@ function validate(){
   let gain = ok ? 10 + (S.combo > 0 && S.combo % 5 === 0 ? 5 : 0) : 2;
   S.xp += gain;
   const b = document.getElementById("val").getBoundingClientRect();
-  gagnerXP(gain, S.mode === "exam" ? null : b.left + b.width / 2, b.top); // en examen : XP discrets
+  gagnerXP(gain, estExamen() ? null : b.left + b.width / 2, b.top); // en examen : XP discrets
   if (DATA.days[j] === OBJECTIF_JOUR) { toast("🎯", `Objectif du jour atteint, bravo ${DATA.prenom} !`); gagnerXP(20); }
   verifierBadges();
   save();
-  if (S.mode === "exam") next(); else showQuestion();
+  if (estExamen()) next(); else showQuestion();
 }
 
 function next(){
@@ -1412,21 +1430,27 @@ function stopTimer(){ if (timerId) { clearInterval(timerId); timerId = null; } }
 function results(){
   stopTimer();
   const total = S.items.length, score = S.items.filter(isRight).length;
-  const exam = S.mode === "exam";
+  const exam = estExamen(), demi = S.mode === "demi";
   const letters = "ABCD";
-  const passed = exam ? score >= 35 : score / total >= 0.875;
-  // Bonus de fin de série
+  const seuil = demi ? 18 : 35;            // 35/40 au vrai code ; 18/20 pour le demi-examen
+  const passed = exam ? score >= seuil : score / total >= 0.875;
+  // Bonus de fin de série (le demi-examen a sa propre liste, pour ne pas fausser les stats sur 40)
   let bonus = 0;
-  if (exam) { DATA.exams.push({ date: Date.now(), score }); bonus = (passed ? 50 : 10) + (score === 40 ? 100 : 0); }
+  if (S.mode === "exam") { DATA.exams.push({ date: Date.now(), score }); bonus = (passed ? 50 : 10) + (score === 40 ? 100 : 0); }
+  else if (demi) { DATA.demis = (DATA.demis || []).concat({ date: Date.now(), score }); bonus = (passed ? 25 : 5) + (score === 20 ? 40 : 0); }
   else if (score === total && total >= 10) bonus = 30;
   if (bonus) { S.xp += bonus; gagnerXP(bonus); }
   verifierBadges(); save();
   if (passed) setTimeout(confettis, 200);
 
   const nv = niveau();
+  // Verdicts taquins (mais gentils)
   const verdict = exam
-    ? (score === 40 ? `Sans faute, ${nom()} ! Incroyable 💎` : passed ? `Reçue, ${nom()} ! 🎉` : score >= 30 ? "Tout près ! Il faut 35/40" : "Continue, ça va venir !")
-    : (score === total ? "Sans faute !" : passed ? `Très bien, ${nom()} !` : "Continue à t'entraîner 💪");
+    ? (score === total ? `${score}/${total} ?! Qui es-tu et qu'as-tu fait de ${nom()} ? 💎`
+      : passed ? `Reçue, ${nom()} ! Bon, ne prends pas la grosse tête 😎`
+      : score >= seuil - 5 ? `Tout près ! Il fallait ${seuil}/${total}… si près, si loin 😏`
+      : "Hum… on va dire que c'était un échauffement 😅")
+    : (score === total ? "Sans faute ! Tu frimes, là 😏" : passed ? `Très bien, ${nom()} !` : "Il va falloir revoir tout ça… avant Papa 😜");
 
   // Récapitulatif : en examen on montre toutes les corrections, sinon seulement les erreurs
   const list = S.items.filter(it => exam || !isRight(it)).map(it => {
@@ -1460,7 +1484,7 @@ document.addEventListener("keydown", e => {
   if (e.ctrlKey || e.metaKey || e.altKey || /INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
   const k = e.key.toLowerCase();
   if (!S) {                                       // accueil
-    if (k === "e") start("exam"); else if (k === "r") start("quick"); else if (k === "m" && DATA.errors.length) start("errors");
+    if (k === "e") start("exam"); else if (k === "d") start("demi"); else if (k === "r") start("quick"); else if (k === "m" && DATA.errors.length) start("errors");
     return;
   }
   if (k === "escape") { home(); return; }
