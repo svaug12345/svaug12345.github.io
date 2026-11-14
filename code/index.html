@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr/code/ — « Code de la route » (charte SV)
-  Version 2.0.0
+  Version 2.0.1
   ------------------------------------------------------------
   Entraînement au code de la route pour Nanon (conduite
   accompagnée dès 15 ans) : examen blanc 40 questions / 20 s,
@@ -34,6 +34,8 @@
               la journée), semaine en 7 ronds, pictos Lucide à la place des
               emojis d'interface, illustrations retravaillées (lumière,
               ombres, collines), cercle de score, JetBrains Mono pour les chiffres
+   • v2.0.1 : nouvelle intro à plat (la voiture traverse l'écran et révèle
+              le titre, flèche J-xx, rideau qui remonte) à la place de la route en 3D
   ============================================================
 -->
 <html lang="fr">
@@ -79,48 +81,37 @@ button{cursor:pointer;border:0;color:inherit}
 .ico{width:1.25em;height:1.25em;flex:none;vertical-align:-.25em}
 .app{max-width:560px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 16px calc(40px + env(safe-area-inset-bottom))}
 
-/* ---------- Intro d'ouverture : la route de nuit vue du volant ---------- */
-#intro{position:fixed;inset:0;z-index:50;overflow:hidden;cursor:pointer;
-  background:linear-gradient(180deg,#041318 0%,#082730 38%,#0f5a5c 52%,#f0b54a 54.2%,#0a2a22 54.6%);
-  animation:intro-out .5s ease 3.3s forwards}
-#intro.fin{animation:intro-out .35s ease forwards}
-@keyframes intro-out{to{opacity:0;visibility:hidden}}
-#intro .etoiles{position:absolute;inset:0 0 50% 0;background:
-  radial-gradient(1.5px 1.5px at 12% 22%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 28% 48%,#fff 50%,transparent 51%),
-  radial-gradient(1.5px 1.5px at 44% 14%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 63% 36%,#fff 50%,transparent 51%),
-  radial-gradient(1.5px 1.5px at 78% 18%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 90% 52%,#fff 50%,transparent 51%);opacity:.7}
-/* La route : un grand plan couché en perspective dont les pointillés défilent */
-#intro .sol{position:absolute;left:0;right:0;top:54.4%;bottom:0;perspective:160px;perspective-origin:50% 0;overflow:hidden}
-#intro .plan{position:absolute;left:-150%;right:-150%;bottom:0;height:2400px;transform-origin:50% 100%;transform:rotateX(80deg);
-  background-color:#0a2a22;
-  background-image:
-    linear-gradient(90deg,transparent calc(50% - 150px),#e9f3f2 calc(50% - 150px),#e9f3f2 calc(50% - 143px),transparent calc(50% - 143px),transparent calc(50% + 143px),#e9f3f2 calc(50% + 143px),#e9f3f2 calc(50% + 150px),transparent calc(50% + 150px)),
-    linear-gradient(180deg,#16343d 50%,transparent 50%),
-    linear-gradient(90deg,transparent calc(50% - 5px),#fff calc(50% - 5px),#fff calc(50% + 5px),transparent calc(50% + 5px)),
-    linear-gradient(90deg,transparent calc(50% - 165px),#16343d calc(50% - 165px),#16343d calc(50% + 165px),transparent calc(50% + 165px));
-  background-size:auto,30px 180px,auto,auto;background-repeat:no-repeat,repeat-y,no-repeat,no-repeat;
-  animation:defile .38s linear infinite}
-@keyframes defile{from{background-position:0 0,50% 0,0 0,0 0}to{background-position:0 0,50% 180px,0 0,0 0}}
-#intro .phares{position:absolute;left:50%;bottom:-22%;width:120vmin;height:50%;transform:translateX(-50%);
-  background:radial-gradient(closest-side,rgba(255,236,170,.22),rgba(255,236,170,0));pointer-events:none}
-#intro .brume{position:absolute;left:0;right:0;top:50%;height:12%;background:linear-gradient(180deg,transparent,rgba(240,181,74,.25) 40%,rgba(10,42,34,.9));pointer-events:none}
-/* Le panneau : il tombe du ciel sur ses deux poteaux */
-#intro .portique{position:absolute;left:50%;top:12%;bottom:42%;display:flex;flex-direction:column;align-items:center;transform:translateX(-50%);width:min(84vw,380px);text-align:center;
-  animation:chute .9s cubic-bezier(.2,1.4,.4,1) .35s both}
-@keyframes chute{from{transform:translate(-50%,-140%)}to{transform:translate(-50%,0)}}
-#intro .panneau{align-self:stretch;background:var(--sv);color:#fff;border-radius:14px;padding:6px;box-shadow:0 18px 40px rgba(0,0,0,.45)}
-#intro .panneau>div{border:3px solid #fff;border-radius:10px;padding:18px 14px 16px}
-#intro .panneau b{display:block;font-size:clamp(28px,8.4vw,40px);font-weight:800;letter-spacing:-.02em;line-height:1}
-#intro .panneau span{display:block;margin-top:8px;font-size:15px;font-weight:600;opacity:.92}
-#intro .fleche{display:inline-flex;align-items:center;gap:10px;margin-top:10px;background:var(--jaune);color:#1a1300;font-weight:800;font-size:15px;
-  padding:9px 30px 9px 16px;border:3px solid #1a1300;border-radius:8px;clip-path:polygon(0 0,calc(100% - 22px) 0,100% 50%,calc(100% - 22px) 100%,0 100%);
-  animation:glisse .5s ease 1.25s both}
-#intro .fleche code{font-family:var(--mono);font-size:17px}
-@keyframes glisse{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
-#intro .poteaux{align-self:stretch;flex:1;display:flex;justify-content:space-between;padding:0 20%;margin-top:-46px;position:relative;z-index:-1}
-#intro .poteaux i{width:9px;background:linear-gradient(90deg,#8fa3a8,#dfe8ea 45%,#6f8489)}
-#intro .passer{position:absolute;left:0;right:0;bottom:calc(22px + env(safe-area-inset-bottom));text-align:center;opacity:0;animation:glisse .5s ease 1.9s forwards}
-#intro .passer span{display:inline-block;background:rgba(4,19,24,.72);color:#fff;font-size:13px;font-weight:600;padding:8px 16px;border-radius:20px}
+/* ---------- Intro d'ouverture (v2.0.1) : à plat, sans fausse 3D ----------
+   Fond nuit. Une voiture traverse l'écran de gauche à droite ; le titre apparaît
+   dans son sillage (un « volet » qui avance exactement à la vitesse de la voiture).
+   Puis la flèche jaune J-xx se pose, et tout le rideau remonte pour laisser l'accueil. */
+#intro{position:fixed;inset:0;z-index:50;overflow:hidden;cursor:pointer;display:grid;place-items:center;
+  background:radial-gradient(90% 60% at 50% 42%,#12444f 0%,var(--nuit) 62%,#041a20 100%);
+  animation:rideau .55s cubic-bezier(.7,0,.2,1) 3.2s forwards}
+#intro.fin{animation:rideau .4s cubic-bezier(.7,0,.2,1) forwards}
+@keyframes rideau{to{transform:translateY(-100%)}}
+#intro .scene{width:100%;--w:clamp(210px,36vw,400px)}   /* --w = largeur de la voiture avec son faisceau */
+#intro .haut{position:relative}
+/* Le titre : révélé de gauche à droite, en même temps que la voiture passe (même durée, même vitesse) */
+#intro h2{margin:0;padding:0 24px;text-align:center;color:#fff;font-weight:800;font-size:clamp(46px,13.5vw,104px);line-height:.95;letter-spacing:-.045em;
+  clip-path:inset(0 calc(100% + var(--w)) 0 0);animation:volet 1.5s linear .3s forwards}
+@keyframes volet{to{clip-path:inset(0 0 0 0)}}
+/* La route : une simple ligne discontinue qui se trace sous le titre */
+#intro .ligne{height:4px;margin:26px 0 0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.85) 0 26px,transparent 26px 48px);
+  transform-origin:0 50%;transform:scaleX(0);animation:trace .5s ease-out forwards}
+@keyframes trace{to{transform:scaleX(1)}}
+/* La voiture roule sur la ligne ; ses phares éclairent devant elle */
+#intro .auto{position:absolute;left:0;bottom:1px;width:var(--w);transform:translateX(calc(-1 * var(--w)));animation:roule 1.5s linear .3s forwards}
+@keyframes roule{to{transform:translateX(100vw)}}
+#intro .auto svg{display:block;width:100%;overflow:visible;animation:cahot .28s ease-in-out infinite alternate}
+@keyframes cahot{to{transform:translateY(-1.5px)}}
+#intro .fleche{display:flex;width:max-content;margin:30px auto 0;align-items:center;gap:12px;background:var(--jaune);color:#1a1300;font-weight:800;font-size:17px;
+  padding:11px 36px 11px 18px;clip-path:polygon(0 0,calc(100% - 24px) 0,100% 50%,calc(100% - 24px) 100%,0 100%);
+  opacity:0;animation:pose .45s cubic-bezier(.2,1.5,.4,1) 1.85s forwards}
+#intro .fleche code{font-family:var(--mono);font-size:19px}
+@keyframes pose{from{opacity:0;transform:translateX(-30px) scale(.9)}to{opacity:1;transform:none}}
+#intro .mot{margin:16px 0 0;text-align:center;color:rgba(255,255,255,.8);font-size:16px;font-weight:600;opacity:0;animation:fondu .5s ease 2.1s forwards}
+@keyframes fondu{to{opacity:1}}
 
 /* ---------- En-tête ---------- */
 .top{display:flex;align-items:center;gap:12px;margin:2px 0 14px}
@@ -341,7 +332,7 @@ canvas#confettis{position:fixed;inset:0;pointer-events:none;z-index:30}
    Code de la route — appli d'entraînement (charte SV)
    Version affichée dans le pied de page : pensez à l'incrémenter.
    =================================================================== */
-const VERSION = "2.0.0";
+const VERSION = "2.0.1";
 
 /* ---------- 1. Chargement de la banque de questions ----------
    Les fichiers de questions appellent Q(...) : on remplit le tableau QUESTIONS. */
@@ -1372,8 +1363,8 @@ function mastery(theme){
 const joursAvantVolant = () => Math.max(0, Math.ceil((new Date(2027, 5, 8) - new Date()) / 86400000)); // mois 5 = juin
 
 /* ---------- 7. Intro d'ouverture ----------
-   Une route de nuit vue du volant, le panneau « Code de la route » qui tombe,
-   puis l'accueil. Jouée une fois par ouverture de l'appli (sessionStorage),
+   Une voiture traverse l'écran et révèle le titre, la flèche J-xx se pose,
+   puis le rideau remonte sur l'accueil. Jouée une fois par ouverture de l'appli (sessionStorage),
    on la passe en touchant l'écran ; pas d'intro si l'appareil demande moins d'animations. */
 function intro(){
   let vue = false;
@@ -1382,15 +1373,21 @@ function intro(){
   const j = joursAvantVolant();
   const d = document.createElement("div");
   d.id = "intro";
-  d.innerHTML = `<div class="etoiles"></div><div class="brume"></div>
-    <div class="sol"><div class="plan"></div></div><div class="phares"></div>
-    <div class="portique">
-      <div class="panneau"><div><b>Code de la route</b><span>${nom()}, attache ta ceinture</span></div></div>
+  // La voiture de profil (même dessin que dans les illustrations) avec son faisceau de phares
+  const auto = `<svg viewBox="-40 -40 150 46" aria-hidden="true">
+      <defs><linearGradient id="phare" x1="0" x2="1"><stop offset="0" stop-color="#fff3c4" stop-opacity=".75"/><stop offset=".85" stop-color="#fff3c4" stop-opacity="0"/></linearGradient></defs>
+      <path d="M36 -17 L108 -30 V4 L36 -12 Z" fill="url(#phare)"/>
+      <path d="M-34 -10 Q-34 -20 -24 -21 L-14 -33 Q-10 -36 -4 -36 H12 Q18 -36 22 -31 L30 -21 Q36 -20 36 -12 V-6 H-34 Z" fill="#17a09d"/>
+      <path d="M-11 -31 L-17 -22 H0 V-31 Z M4 -31 V-22 H24 L18 -31 Z" fill="#dff4f6"/>
+      <circle cx="-19" cy="-5" r="7" fill="#041a20"/><circle cx="21" cy="-5" r="7" fill="#041a20"/>
+      <circle cx="-19" cy="-5" r="3" fill="#c9d3d6"/><circle cx="21" cy="-5" r="3" fill="#c9d3d6"/>
+      <rect x="31" y="-18" width="5" height="4" rx="1" fill="#ffc933"/></svg>`;
+  d.innerHTML = `<div class="scene">
+      <div class="haut"><h2>Code<br>de la route</h2><div class="ligne"></div><div class="auto">${auto}</div></div>
       ${j ? `<div class="fleche">Le volant <code>J-${j}</code></div>` : ""}
-      <div class="poteaux"><i></i><i></i></div>
-    </div>
-    <div class="passer"><span>Appuie pour démarrer</span></div>`;
-  const finir = () => { d.classList.add("fin"); setTimeout(() => d.remove(), 400); };
+      <p class="mot">${nom()}, attache ta ceinture.</p>
+    </div>`;
+  const finir = () => { d.classList.add("fin"); setTimeout(() => d.remove(), 450); };
   d.addEventListener("click", finir);
   d.addEventListener("animationend", e => { if (e.target === d) d.remove(); });
   document.body.appendChild(d);
