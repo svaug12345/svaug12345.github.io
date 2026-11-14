@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr/code/ — « Code de la route » (charte SV)
-  Version 1.2.0
+  Version 1.2.1
   ------------------------------------------------------------
   Entraînement au code de la route pour Nanon (conduite
   accompagnée dès 15 ans) : examen blanc 40 questions / 20 s,
@@ -22,6 +22,7 @@
               jours, objectif du jour, combos, badges, confettis),
               ergonomie PC (clavier A-D / 1-4, Entrée, Échap ; mise en page
               2 colonnes, survols, focus visibles)
+   • v1.2.1 : compte à rebours calé sur l'anniversaire de Nanon (8 juin 2027)
   ============================================================
 -->
 <html lang="fr">
@@ -226,7 +227,7 @@ canvas#confettis{position:fixed;inset:0;pointer-events:none;z-index:30}
    Code de la route — appli d'entraînement (charte SV)
    Version affichée dans le pied de page : pensez à l'incrémenter.
    =================================================================== */
-const VERSION = "1.2.0";
+const VERSION = "1.2.1";
 
 /* ---------- 1. Chargement de la banque de questions ----------
    Les fichiers de questions appellent Q(...) : on remplit le tableau QUESTIONS. */
@@ -1166,14 +1167,15 @@ function mastery(theme){
 }
 
 /* Compte à rebours jusqu'aux 15 ans (âge minimum de la conduite accompagnée).
-   Sans date d'anniversaire saisie : on vise juin 2027 (début du mois). */
+   Par défaut : les 15 ans de Nanon, le 8 juin 2027.
+   Si une autre date est saisie dans les réglages, c'est elle qui compte. */
 function compteARebours(){
-  let cible, precis = false;
-  if (DATA.anniv) { const n = new Date(DATA.anniv + "T00:00"); cible = new Date(n.getFullYear() + 15, n.getMonth(), n.getDate()); precis = true; }
-  else cible = new Date(2027, 5, 1);
+  let cible = new Date(2027, 5, 8); // mois 5 = juin (janvier = 0)
+  if (DATA.anniv) { const n = new Date(DATA.anniv + "T00:00"); cible = new Date(n.getFullYear() + 15, n.getMonth(), n.getDate()); }
   const jours = Math.ceil((cible - new Date()) / 86400000);
   if (jours <= 0) return `🎉 <b>Tu as 15 ans</b> : tu peux commencer la conduite accompagnée, ${nom()} ! Ton entraînement va payer.`;
-  return `🚗 <b>J-${jours}</b> avant ${precis ? "tes 15 ans" : "juin 2027 (tes 15 ans)"} et le début de la conduite accompagnée. Chaque série te rapproche du volant !`;
+  const date = cible.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+  return `🚗 <b>J-${jours}</b> avant tes 15 ans (le ${date}) et le début de la conduite accompagnée. Chaque série te rapproche du volant !`;
 }
 
 /* ---------- 7. Écran d'accueil ---------- */
