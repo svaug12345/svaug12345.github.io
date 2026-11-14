@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-14T12:17+00:00",
+ "maj": "2026-11-14T18:45+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -49,6 +49,32 @@
   }
  ],
  "articles": [
+  {
+   "id": "c896f03b3492",
+   "titre": "Distribution. Un concurrent pour Carrefour en Israël? Discount et plus. Une nouvelle enseigne.",
+   "lien": "https://israelvalley.com/2026/11/14/distribution-un-concurrent-pour-carrefour-en-israel-discount-et-plus-une-nouvelle-enseigne/",
+   "source": "autres",
+   "media": "IsraelValley",
+   "site": "israelvalley.com",
+   "date": "2026-11-14T18:25+00:00",
+   "vu_le": "2026-11-14T18:45+00:00",
+   "resume": "Une nouvelle enseigne promet de faire baisser le prix des courses en Israël. Fair annonce des prix inférieurs de 35 % à ceux des grandes marques chez Rami Levy, premier magasin prévu en 2027. Nathalie Sosna Ofir Moins de références, davantage de marques propres : Fair veut appliquer cette recette du discount au marché israélien. Gal […]",
+   "enrichi": "2026-11-14",
+   "image": "https://israelvalley.com/wp-content/uploads/2026/09/Logo-Carrefour-Histoire-siginification-et-evolution-2048x1148-1-1024x574.png"
+  },
+  {
+   "id": "ef2163a894f1",
+   "titre": "De \"Je choisis / j'agis\" à la Quinzaine de la conso solidaire, un putain de chemin (et il reste encore tant à faire...)",
+   "lien": "https://www.olivierdauvers.fr/2026/11/14/de-je-choisis-jagis-a-la-quinzaine-de-la-conso-solidaire-un-putain-de-chemin-et-il-reste-encore-tant-a-faire/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-14T17:07+00:00",
+   "vu_le": "2026-11-14T18:45+00:00",
+   "resume": "Pour la plupart des enseignes/magasins qui l’ont suivi, la Quinzaine de la conso solidaire s’achève ce week-end. Le premier bilan à faire est sur l’engagement. Es-qualité d’initiateur du projet via cette idée un peu folle de “Je choisis / J’agis” (c’était le 18 juin 2025, revoir ici), je suis heureux de l’ampleur prise par ce …",
+   "enrichi": "2026-11-14",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/1.png"
+  },
   {
    "id": "6e8f1f590ec6",
    "titre": "« Les enseignes ont un rôle à jouer » : après des années de crise, les premiers signes de la reconquête pour les viandes bio",
@@ -248,6 +274,19 @@
    "resume": "Pourquoi Carrefour confie-t-il ses magasins à d'autres ? Location-gérance, franchise, Carrefour 2030 : le pari d'Alexandre Bompard et son coût social.",
    "enrichi": "2026-11-12",
    "image": "https://lessentieldeleco.fr/wp-content/uploads/2026/11/0c30ae24-4c31-4b07-8c85-9ab778dc35a5-scaled-1.png"
+  },
+  {
+   "id": "1cdeee884c0b",
+   "titre": "Rappel Conso : Des yaourts \"Panier de Yoplait\" vendus chez Carrefour, Leclerc, Auchan, Intermarché, Monoprix, Franprix et les magasins U sont rappelés en urgence partout en France",
+   "lien": "https://www.jeanmarcmorandini.com/article-657152-rappel-conso-des-yaourts-panier-de-yoplait-vendus-chez-carrefour-leclerc-auchan-intermarche-monoprix-franprix-et-les-magasins-u-sont-rappeles-en-urgence-partout-en-france.html",
+   "source": "autres",
+   "media": "Jean-Marc Morandini",
+   "site": "jeanmarcmorandini.com",
+   "date": "2026-11-12T14:23+00:00",
+   "vu_le": "2026-11-14T18:45+00:00",
+   "resume": "Le site gouvernemental Rappel Conso a lancé, un rappel national concernant des yaourts de la marque Yoplait. Cette procédure concerne différents assortiments aux fruits jaunes, aux fruits rouges, ainsi que les variétés abricot-nectarine et fraise-framboise commercialisées sous la marque Panier",
+   "enrichi": "2026-11-14",
+   "image": "https://static.jeanmarcmorandini.com/sites/jeanmarcmorandini.com/files/styles/facebook/public/capture_decran_2026-11-12_a_14.20.37_0.jpg?itok=1hgPbK2K"
   },
   {
    "id": "84fcce85d1e1",
@@ -2234,17 +2273,6 @@
    "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/le-groupe-gbh-distributeur-de-carrefour-en-outre-mer-etoffe-sa-diversification-en-achetant-les-enseignes-keepcool-et-neoness-en-france.RHW2MUO4IRGHVPMG3WSRZ4QFCY.html",
    "source": "lsa",
    "date": "2026-09-21T07:00+00:00",
-   "vu_le": "2026-11-11T07:16+00:00",
-   "resume": "",
-   "site": "lsa-conso.fr",
-   "enrichi": "2026-11-11"
-  },
-  {
-   "id": "743a8f254cbf",
-   "titre": "Carrefour",
-   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/",
-   "source": "lsa",
-   "date": "2026-09-15T15:42+00:00",
    "vu_le": "2026-11-11T07:16+00:00",
    "resume": "",
    "site": "lsa-conso.fr",
