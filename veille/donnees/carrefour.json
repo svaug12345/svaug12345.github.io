@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-15T12:49+00:00",
+ "maj": "2026-11-15T19:24+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -50,6 +50,31 @@
  ],
  "articles": [
   {
+   "id": "9338d5da73d5",
+   "titre": "RETAIL FORUM : J-10 (et y’a même des places à gagner)",
+   "lien": "https://www.olivierdauvers.fr/2026/11/15/retail-forum-j-10-et-ya-meme-des-places-a-gagner/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-15T17:15+00:00",
+   "vu_le": "2026-11-15T19:24+00:00",
+   "resume": "Le RETAIL FORUM approche. Ce qui est sans doute le best event du retail (si j’en juge par les évaluations / oui, on adore les notes !), c’est jeudi 26 novembre dans le cadre toujours agréable du Shangri-La à Paris. En une après-midi (parce que votre temps est précieux) et sans présentations de complaisance (parce …",
+   "enrichi": "2026-11-15",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/J-10-scaled.jpg"
+  },
+  {
+   "id": "656dd78eb173",
+   "titre": "« On s’est fait enfler » : Michel-Édouard Leclerc charge les industriels, annonce 4 % d’inflation et défend Teddy Riner",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/on-sest-fait-enfler-michel-edouard-leclerc-charge-les-industriels-annonce-4-dinflation-et-defend-teddy-riner.OANLW4PEHNFVTOPQT26VQ37OPA.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-15T16:30+00:00",
+   "vu_le": "2026-11-15T19:24+00:00",
+   "resume": "",
+   "enrichi": "2026-11-15"
+  },
+  {
    "id": "df878e519c61",
    "titre": "[ ÉTUDE ] Ce que les clients pensent de l’innovation…",
    "lien": "https://www.olivierdauvers.fr/2026/11/15/etude-ce-que-les-clients-pensent-de-linnovation/",
@@ -71,6 +96,18 @@
    "site": "africa-news-agency.com",
    "date": "2026-11-15T07:49+00:00",
    "vu_le": "2026-11-15T12:49+00:00",
+   "resume": "",
+   "enrichi": "2026-11-15"
+  },
+  {
+   "id": "27ff1451789d",
+   "titre": "Grande distribution : Carrefour ouvre son premier hypermarché à Accra",
+   "lien": "https://africa-news-agency.com/ghana-carrefour-ouvre-son-premier-hypermarche-apres-la-reprise-de-la-franchise-shoprite/",
+   "source": "autres",
+   "media": "Africa News Agency",
+   "site": "africa-news-agency.com",
+   "date": "2026-11-15T07:49+00:00",
+   "vu_le": "2026-11-15T19:24+00:00",
    "resume": "",
    "enrichi": "2026-11-15"
   },
@@ -186,6 +223,19 @@
    "vu_le": "2026-11-13T20:31+00:00",
    "resume": "",
    "enrichi": "2026-11-13"
+  },
+  {
+   "id": "6ce8396eb289",
+   "titre": "L’étonnante promo (géographique) de Leclerc…",
+   "lien": "https://www.olivierdauvers.fr/2026/11/13/letonnante-promo-geographique-de-leclerc/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-13T17:06+00:00",
+   "vu_le": "2026-11-15T19:24+00:00",
+   "resume": "C’est l’histoire d’une étonnante promo, remontée via la ligne Infosretail : les Leclerc d’Amiens-Rivery et de Bapaume qui “géographisent” leur promo (publiée sur Facebook). Jusqu’au 15 novembre, 150 € dépensés permettent de recevoir 60 € de bons d’achat. Belle affaire ! Mais un détail : seuls les clients pouvant justifier de trois codes postaux précis …",
+   "enrichi": "2026-11-15",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/CARTO-Leclerc-Amiens-scaled.jpg"
   },
   {
    "id": "f565a5b282f8",
@@ -922,6 +972,19 @@
    "enrichi": "2026-11-11",
    "image": "https://static.actu.fr/uploads/2026/03/leclerc-woippy.jpeg",
    "site": "actu.fr"
+  },
+  {
+   "id": "e6c16b80f499",
+   "titre": "MDD U : des aliments premium pour chiens et chats en Tetra Pack",
+   "lien": "https://www.lineaires.com/les-produits/mdd-u-des-aliments-premium-pour-chiens-et-chats-en-tetra-pack",
+   "source": "lineaires",
+   "media": "Lineaires",
+   "site": "lineaires.com",
+   "date": "2026-11-09T15:03+00:00",
+   "vu_le": "2026-11-15T19:24+00:00",
+   "resume": "Coopérative U innove sur le marché du petfood en lançant une offre conditionnée en tetra pak, une première pour une MDD, mais aussi pour les marques nationales. Pour",
+   "enrichi": "2026-11-15",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/9782a94c-ac1b-4200-b414-d3a0b3f6278b.jpg.webp?itok=alwM5AS3"
   },
   {
    "id": "b69d77db326f",
