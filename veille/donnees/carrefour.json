@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-14T23:04+00:00",
+ "maj": "2026-11-15T12:49+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -49,6 +49,56 @@
   }
  ],
  "articles": [
+  {
+   "id": "df878e519c61",
+   "titre": "[ ÉTUDE ] Ce que les clients pensent de l’innovation…",
+   "lien": "https://www.olivierdauvers.fr/2026/11/15/etude-ce-que-les-clients-pensent-de-linnovation/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-15T11:52+00:00",
+   "vu_le": "2026-11-15T12:49+00:00",
+   "resume": "DIMANCHE INFOGRAPHIE, suite. À présent, ce que les clients pensent de l’innovation. J’vous ai rassemblé quelques insights extraits d’une étude Shopadvizor à paraître la semaine prochaine. Où l’on apprend notamment que Danone est la marque la plus citée comme innovante (ça fait toujours plaisir !). Ou que la première attente des clients est des innovations …",
+   "enrichi": "2026-11-15",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/DGC-Innos-chiffres-cles-scaled.png"
+  },
+  {
+   "id": "6cea5fb49195",
+   "titre": "Ghana : Carrefour ouvre son premier hypermarché après la reprise de la franchise Shoprite",
+   "lien": "https://africa-news-agency.com/ghana-carrefour-ouvre-son-premier-hypermarche-apres-la-reprise-de-la-franchise-shoprite/",
+   "source": "autres",
+   "media": "Africa News Agency",
+   "site": "africa-news-agency.com",
+   "date": "2026-11-15T07:49+00:00",
+   "vu_le": "2026-11-15T12:49+00:00",
+   "resume": "",
+   "enrichi": "2026-11-15"
+  },
+  {
+   "id": "fa01b77b391c",
+   "titre": "À Cholet, cette nouvelle enseigne de bijoux vient d’ouvrir dans la galerie Carrefour",
+   "lien": "https://www.ouest-france.fr/economie/commerce/a-cholet-cette-nouvelle-enseigne-de-bijoux-vient-douvrir-dans-la-galerie-carrefour-bbde7378-e04b-11f1-9a29-f4bab172af08",
+   "source": "autres",
+   "media": "Ouest-France",
+   "site": "ouest-france.fr",
+   "date": "2026-11-15T07:32+00:00",
+   "vu_le": "2026-11-15T12:49+00:00",
+   "resume": "",
+   "enrichi": "2026-11-15"
+  },
+  {
+   "id": "a161c9ed92f4",
+   "titre": "[ EXCLU ] Carrefour, large leader de la recharge électrique (parmi les enseignes GMS)",
+   "lien": "https://www.olivierdauvers.fr/2026/11/15/exclu-carrefour-large-leader-de-la-recharge-electrique-parmi-les-enseignes-gms/",
+   "source": "dauvers",
+   "media": "",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-15T05:04+00:00",
+   "vu_le": "2026-11-15T12:49+00:00",
+   "resume": "DIMANCHE INFOGRAPHIE, et une première exclu ! Les positions des enseignes GMS sur la recharge électrique, avec mes camarades de ChargeViz. Sont analysées ici les sessions de recharges sur les parkings des enseignes identifiées. Sur ce critère, Carrefour s’impose largement avec plus d’une recharge sur quatre. Carrefour n’est pourtant pas le mieux équipé en bornes …",
+   "enrichi": "2026-11-15",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/DGC-ChargeViz-PDM-scaled.png"
+  },
   {
    "id": "c896f03b3492",
    "titre": "Distribution. Un concurrent pour Carrefour en Israël? Discount et plus. Une nouvelle enseigne.",
@@ -198,6 +248,19 @@
    "vu_le": "2026-11-14T12:17+00:00",
    "resume": "",
    "enrichi": "2026-11-14"
+  },
+  {
+   "id": "e99da67d6bdf",
+   "titre": "[ RETAIL INSIDE ] Bordeaux-St Médard : découvrez le plus grand Jouet Leclerc de France…",
+   "lien": "https://www.olivierdauvers.fr/2026/11/13/retail-inside-bordeaux-st-medard-decouvrez-le-plus-grand-jouet-leclerc-de-france/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-13T06:45+00:00",
+   "vu_le": "2026-11-15T12:49+00:00",
+   "resume": "La course à la taille a encore sévi 😂. Voici donc le plus grand “Jouet Leclerc” de France, ouvert il y a quelques jours : 2 600 m2. Forcément ça claque ! Et l’histoire du projet est toute aussi intéressante que sa réalisation. Ce Jouet Leclerc a profité de la réduction de surface du Brico/Jardi, …",
+   "enrichi": "2026-11-15",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/IMG_0362-scaled.jpg"
   },
   {
    "id": "d3883dc0dff9",
