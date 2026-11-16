@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-16T13:47+00:00",
+ "maj": "2026-11-16T23:45+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -14,8 +14,10 @@
    "site": "https://www.olivierdauvers.fr",
    "couleur": "#c2410c",
    "autres": false,
-   "ok": true,
-   "erreurs": []
+   "ok": false,
+   "erreurs": [
+    "Carrefour site:olivierdauvers.fr : HTTP Error 429: Too Many Requests"
+   ]
   },
   {
    "id": "lsa",
@@ -44,11 +46,50 @@
    "site": "",
    "couleur": "#5d7277",
    "autres": true,
-   "ok": true,
-   "erreurs": []
+   "ok": false,
+   "erreurs": [
+    "Carrefour (hypermarché OR supermarché OR magasins OR enseigne OR distributeur OR \"grande distribution\") : HTTP Error 429: Too Many Requests"
+   ]
   }
  ],
  "articles": [
+  {
+   "id": "0284d440ea68",
+   "titre": "Smyths Toys ouvre son premier magasin en Bretagne, à Brest",
+   "lien": "https://www.lsa-conso.fr/distributeurs-non-alimentaires/jeux-et-jouets/smyths-toys-ouvre-son-premier-magasin-en-bretagne-a-brest.6ZQRG7HCXZCCXC7GBNXZ4EFXII.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-16T15:53+00:00",
+   "vu_le": "2026-11-16T23:45+00:00",
+   "resume": "",
+   "enrichi": "2026-11-16"
+  },
+  {
+   "id": "47a0050495a5",
+   "titre": "Grande distribution : comment Carrefour revient en Italie grâce à sa foncière Carmila",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/grande-distribution-comment-carrefour-revient-en-italie-grace-a-sa-fonciere-carmila.CK4YQUX4JJFTLNPMKTM6PJJN2I.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-16T15:42+00:00",
+   "vu_le": "2026-11-16T23:45+00:00",
+   "resume": "",
+   "enrichi": "2026-11-16"
+  },
+  {
+   "id": "f6b181101838",
+   "titre": "[ DIGITAL ] Pourquoi Carrefour m’adresse-t-il, par courrier, le prospectus de jouets Noël 2026 ? Je sèche…",
+   "lien": "https://www.olivierdauvers.fr/2026/11/16/digital-pourquoi-carrefour-madresse-t-il-par-courrier-le-prospectus-de-jouets-noel-2026-je-seche/",
+   "source": "dauvers",
+   "media": "",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-16T13:48+00:00",
+   "vu_le": "2026-11-16T23:45+00:00",
+   "resume": "Carrefour est (paraît-il) une digital retail company. Notamment utile pour communiquer avec ses clients de manière plus ciblée, plus efficace, plus environnementalement friendly. C’est d’ailleurs pour ça que Carrefour a arrêté la diffusion massive des prospectus pour, désormais, faire du ciblage. Néanmoins, quelques (rares) OP sont encore poussées en “adressé” (comprendre par courrier) lorsque…",
+   "enrichi": "2026-11-16",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/OD-CARREFOUR-JOUETS-scaled.jpg"
+  },
   {
    "id": "855b9032d39a",
    "titre": "Lidl pensait avoir gagné face à Intermarché : l’affaire du concombre lui réserve une mauvaise surprise à presque 190 000 euros",
@@ -462,6 +503,18 @@
    "resume": "Vigilance - Des cuisses de poulet de la marque L’Atelier de Gustave, vendues dans plusieurs magasins Carrefour d’Auvergne-Rhône-Alpes, sont rappelées en raison de la présence de salmonelles",
    "enrichi": "2026-11-12",
    "image": "https://s.yimg.com/lo/mysterio/api/0bd696d0f510aa58fc8a4ecca06ebc32da6c12c863a017e617b7f9da585df474/lightyear_networkapi/resizefill_w1200%3Bquality_80%3Bformat_jpg/https%3A%2F%2Fmedia.zenfs.com%2Ffr%2F20minutes.fr%2Ff5db9959146982d02d496031aed7781f.jpg"
+  },
+  {
+   "id": "04704d446651",
+   "titre": "Prix, promotions, procédures de résiliation : Quelles sont ces 15 nouvelles mesures impulsées par l’Europe qui vont changer la donne ?",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/prix-promotions-procedures-de-resiliation-quelles-sont-ces-15-nouvelles-mesures-impulsees-par-leurope-qui-vont-changer-la-donne.BTZSJ4LGGBDRZJG32XLPJXSAMQ.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-12T16:21+00:00",
+   "vu_le": "2026-11-16T23:45+00:00",
+   "resume": "",
+   "enrichi": "2026-11-16"
   },
   {
    "id": "67c3cb63dcf8",
@@ -2243,6 +2296,19 @@
    "resume": "",
    "site": "lsa-conso.fr",
    "enrichi": "2026-11-11"
+  },
+  {
+   "id": "68c71931b5bf",
+   "titre": "Carrefour City fait escale dans les aéroports parisiens",
+   "lien": "https://www.lineaires.com/la-distribution/carrefour-city-fait-escale-dans-les-aeroports-parisiens",
+   "source": "lineaires",
+   "media": "Lineaires",
+   "site": "lineaires.com",
+   "date": "2026-10-08T07:00+00:00",
+   "vu_le": "2026-11-16T23:45+00:00",
+   "resume": "Carrefour remporte la mise avec deux nouveaux emplacements à Roissy CDG. Au total, le distributeur exploitera neuf magasins Carrefour City, dont trois à l’aéroport",
+   "enrichi": "2026-11-16",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-10/741ff29d-411d-4a03-9726-3ed94f3d9f74.jpg.webp?itok=eU59XSYo"
   },
   {
    "id": "36ef22324228",
