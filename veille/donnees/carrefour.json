@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-16T01:08+00:00",
+ "maj": "2026-11-16T13:47+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -49,6 +49,68 @@
   }
  ],
  "articles": [
+  {
+   "id": "855b9032d39a",
+   "titre": "Lidl pensait avoir gagné face à Intermarché : l’affaire du concombre lui réserve une mauvaise surprise à presque 190 000 euros",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/lidl-pensait-avoir-gagne-face-a-intermarche-laffaire-du-concombre-lui-reserve-une-mauvaise-surprise-a-presque-190-000-euros.D5OIJ6FECVCJ5DCHMIET67U7AE.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-16T11:41+00:00",
+   "vu_le": "2026-11-16T13:47+00:00",
+   "resume": "",
+   "enrichi": "2026-11-16"
+  },
+  {
+   "id": "d80d8a6f22e5",
+   "titre": "Carrefour Market à Hornu : un franchisé recherché",
+   "lien": "https://lexpress-franchise.com/fr-be/articles/carrefour-market-hornu-franchise-ancien-delhaize/",
+   "source": "autres",
+   "media": "L’Express Franchise",
+   "site": "lexpress-franchise.com",
+   "date": "2026-11-16T10:20+00:00",
+   "vu_le": "2026-11-16T13:47+00:00",
+   "resume": "Carrefour Market reprend l'ancienne cellule Delhaize du Shopping Hornu, à Boussu. L'enseigne recrute le franchisé qui exploitera ce futur supermarché hennuyer.",
+   "enrichi": "2026-11-16",
+   "image": "https://lexpress-franchise.com/wp-content/uploads/2026/11/carrefour-market-store-exterior.jpg"
+  },
+  {
+   "id": "95de1df0b31d",
+   "titre": "Groupe Blachère (Marie Blachère, Mangeons Frais) : un cadre historique reprend les commandes de la franchise",
+   "lien": "https://www.lsa-conso.fr/nominations-organisation/groupe-blachere-marie-blachere-mangeons-frais-un-cadre-historique-reprend-les-commandes-de-la-franchise.AXNE2JHEDZFCZFWLPD4HBOAEXU.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-16T08:56+00:00",
+   "vu_le": "2026-11-16T13:47+00:00",
+   "resume": "",
+   "enrichi": "2026-11-16"
+  },
+  {
+   "id": "192510fee397",
+   "titre": "Bonnes idées / Bonnes pratiques (118) : faire disparaître les rideaux d’accès aux réserves",
+   "lien": "https://www.olivierdauvers.fr/2026/11/16/bonnes-idees-bonnes-pratiques-118-creer-des-evenements-en-magasin-monoprix-paris-saint-paul/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-16T08:46+00:00",
+   "vu_le": "2026-11-16T13:47+00:00",
+   "resume": "Suite de ma série d’inspirations “bonnes idées / bonnes pratiques” dans le prolongement de mes ouvrages sur l’IMAGE-PRIX, le PENSER-CLIENT et la PRÉFÉRENCE (disponibles ici). Aujourd’hui, direction Leclerc à St-Médard (33). Je vous ai déjà présenté ce qui est le plus grand Leclerc Jouets de France (2 600 m2, revoir sur le fil du blog). …",
+   "enrichi": "2026-11-16",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/Mise-en-page-1_Page-1-4-scaled.jpg"
+  },
+  {
+   "id": "843c15eff2c7",
+   "titre": "Un concept store dédié à la Pop Culture ouvre dans Paris",
+   "lien": "https://www.lsa-conso.fr/la-revue-du-jouet/evenement/un-concept-store-dedie-a-la-pop-culture-ouvre-dans-paris.BCVTVJNTHVDEBPVIHZLQSA33YI.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-16T07:00+00:00",
+   "vu_le": "2026-11-16T13:47+00:00",
+   "resume": "",
+   "enrichi": "2026-11-16"
+  },
   {
    "id": "9338d5da73d5",
    "titre": "RETAIL FORUM : J-10 (et y’a même des places à gagner)",
