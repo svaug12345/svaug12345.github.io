@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-15T19:24+00:00",
+ "maj": "2026-11-16T01:08+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -261,6 +261,19 @@
    "vu_le": "2026-11-13T20:31+00:00",
    "resume": "",
    "enrichi": "2026-11-13"
+  },
+  {
+   "id": "584ea2a29801",
+   "titre": "La MINUTE RETAIL / Bio : l’utopie ne fait pas une stratégie !",
+   "lien": "https://www.olivierdauvers.fr/2026/11/13/la-minute-retail-bio-lutopie-ne-fait-pas-une-strategie/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-13T11:21+00:00",
+   "vu_le": "2026-11-16T01:08+00:00",
+   "resume": "Cette semaine, je reviens sur le nouvel objectif de la filière bio, rendu public il y a quelques jours à l’occasion des 50 ans du syndicat professionnel Synabio. L’objectif donc : que le bio pèse pour 12 % de l’assiette des Français en 2030. Aujourd’hui, c’est – toujours selon Synabio – moins de 6 %. …",
+   "enrichi": "2026-11-16",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/X-MR-46-BIS-scaled.jpg"
   },
   {
    "id": "6524df240887",
@@ -2343,6 +2356,19 @@
    "site": "lineaires.com",
    "enrichi": "2026-11-11",
    "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-09/2be71a3f-7e4c-4ea8-b307-c0fd64486303.jpg.webp?itok=x6ekkpMG"
+  },
+  {
+   "id": "37f1948165a2",
+   "titre": "Alexandre Bompard élu président de la Fédération du commerce et de la distribution",
+   "lien": "https://www.republikgroup.com/articles/2501adbf-bdb2-f111-a6a7-6045bd9f5987/alexandre-bompard-elu-president-de-la-federation-du-commerce-et-de-la-distribution",
+   "source": "autres",
+   "media": "www.republikgroup.com",
+   "site": "republikgroup.com",
+   "date": "2026-09-26T08:28+00:00",
+   "vu_le": "2026-11-16T01:08+00:00",
+   "resume": "Les enseignes adhérentes à la Fédération du commerce et de la distribution ont élu Alexandre Bompard, PDG du groupe Carrefour, à la présidence de la FCD. Il succède à François Bouriez, administrateur du groupe Louis Delhaize.",
+   "enrichi": "2026-11-16",
+   "image": "https://cdn.inwink.com/a37e7b3a-3c11-444e-8684-39edf2ad3de3/65b980fd-092a-413b-a7c0-07490dc90276"
   },
   {
    "id": "a92711cce654",
