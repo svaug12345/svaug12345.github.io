@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   MP3 — extraire le son d'une vidéo YouTube en MP3, ou un extrait vidéo
-  Version 1.1.0
+  Version 1.1.1
   ------------------------------------------------------------
   Comment ça marche :
    • cette page (baiji.fr, hébergée sur GitHub Pages) ne fait PAS le travail :
@@ -28,6 +28,9 @@
               durée 8 / 15 / 30 / 60 s), lecteur YouTube pour viser le
               début, minutage « t= » du lien repris, aperçu de la vidéo
               obtenue ; liste « Derniers fichiers » (MP3 + vidéos)
+   • v1.1.1 : message clair si le NAS n'a pas encore le service vidéo
+              (404 / 405 : la demande arrive chez MeTube, qui ne connaît
+              pas /video/…)
 -->
 <html lang="fr">
 <head>
@@ -319,7 +322,7 @@
   /* =====================================================================
      RÉGLAGES
      ===================================================================== */
-  const VERSION = "1.1.0";
+  const VERSION = "1.1.1";
   // Adresse du service du NAS. « ?service=… » dans l'adresse permet d'en
   // essayer un autre (ex. ?service=http://192.168.1.161:8095 à la maison).
   const SERVICE = (new URLSearchParams(location.search).get("service") || "https://mp3.baiji.fr").replace(/\/+$/, "");
@@ -370,7 +373,9 @@
     }
     if (!rep.ok) {
       // 502/503 sur /video/… : le portier n'arrive pas au service « decoupe »
-      if (rep.status >= 502 && chemin.startsWith("/video/"))
+      // 404 / 405 sur /video/… : le portier n'a pas (encore) la nouvelle règle
+      // et envoie la demande à MeTube, qui ne connaît pas cette adresse
+      if ((rep.status >= 502 || rep.status === 404 || rep.status === 405) && chemin.startsWith("/video/"))
         throw new Error("Le service vidéo du NAS ne répond pas (pas encore déployé, ou en train de démarrer).");
       // Le service « decoupe » explique ses refus en JSON : {erreur: "…"}
       let detail = "";
