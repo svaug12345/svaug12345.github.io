@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-16T23:45+00:00",
+ "maj": "2026-11-17T14:38+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -14,10 +14,8 @@
    "site": "https://www.olivierdauvers.fr",
    "couleur": "#c2410c",
    "autres": false,
-   "ok": false,
-   "erreurs": [
-    "Carrefour site:olivierdauvers.fr : HTTP Error 429: Too Many Requests"
-   ]
+   "ok": true,
+   "erreurs": []
   },
   {
    "id": "lsa",
@@ -46,13 +44,112 @@
    "site": "",
    "couleur": "#5d7277",
    "autres": true,
-   "ok": false,
-   "erreurs": [
-    "Carrefour (hypermarché OR supermarché OR magasins OR enseigne OR distributeur OR \"grande distribution\") : HTTP Error 429: Too Many Requests"
-   ]
+   "ok": true,
+   "erreurs": []
   }
  ],
  "articles": [
+  {
+   "id": "c48c064e40b6",
+   "titre": "Carrefour toujours à la recherche de la bonne formule pour ses hypermarchés",
+   "lien": "https://www.abcbourse.com/marches/carrefour-toujours-a-la-recherche-de-la-bonne-formule-pour-ses-hypermarches_706228",
+   "source": "autres",
+   "media": "ABC Bourse",
+   "site": "abcbourse.com",
+   "date": "2026-11-17T14:02+00:00",
+   "vu_le": "2026-11-17T14:38+00:00",
+   "resume": "Le distributeur Carrefour a détaillé mardi ses objectifs commerciaux pour ses hypermarchés, un format dont il est l",
+   "enrichi": "2026-11-17",
+   "image": "https://www.abcbourse.com/imgabc/734-x.jpg"
+  },
+  {
+   "id": "dfdb541bbea5",
+   "titre": "Carrefour l’emporte en appel : un franchisé soupçonnait le groupe d’avoir caché le projet d’un Carrefour City à 100 mètres de son magasin",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour-lemporte-en-appel-un-franchise-soupconnait-le-groupe-davoir-cache-le-projet-dun-carrefour-city-a-100-metres-de-son-magasin.BELSMJ3VJ5ATXCHHAZ4PLJ75MU.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-17T12:12+00:00",
+   "vu_le": "2026-11-17T14:38+00:00",
+   "resume": "",
+   "enrichi": "2026-11-17"
+  },
+  {
+   "id": "a6a29af17a91",
+   "titre": "[ VIDÉO ] Les COULISSES de la CONSO : Cdiscount, à la veille du pic de Black Friday",
+   "lien": "https://www.olivierdauvers.fr/2026/11/17/video-les-coulisses-de-la-conso-cdiscount-a-la-veille-du-pic-de-black-friday/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-17T11:07+00:00",
+   "vu_le": "2026-11-17T14:38+00:00",
+   "resume": "Comme tous les e-commerçants, Cdiscount est entré dans le sprint de la fin d’année. Dans la foulée de Black Friday, le lundi 30 novembre devrait être la journée la plus importante de l’année avec, uniquement pour l’entrepôt dont je vous propose la visite ici à Cestas, plus de 120 000 commandes préparées et expédiées. Suivez-moi …",
+   "enrichi": "2026-11-17",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/OD-CDISCOUNT.jpg"
+  },
+  {
+   "id": "db39f3acb3e7",
+   "titre": "Mondelez prêt à céder Heudebert, Cracotte et Grany au groupe italien NewPrinces Group, repreneur des activités transalpines de Carrefour",
+   "lien": "https://www.lsa-conso.fr/agro-industriel/epicerie/mondelez/mondelez-pret-a-ceder-heudebert-cracotte-et-grany-au-groupe-italien-newprincess-group-repreneur-des-activites-transalpines-de-carrefour.SZENEDS76VEWRK67RUTQR3QTLU.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-17T11:04+00:00",
+   "vu_le": "2026-11-17T14:38+00:00",
+   "resume": "",
+   "enrichi": "2026-11-17"
+  },
+  {
+   "id": "174054a10425",
+   "titre": "Black Friday Carrefour : l’enseigne continue de proposer un déluge d’offres ultra intéressantes",
+   "lien": "https://www.parismatch.com/guide-shopping/black-friday-carrefour-lenseigne-continue-proposer-deluge-doffres-ultra-interessantes-7xoeTCZCPUS6QE8YUnxBCf",
+   "source": "autres",
+   "media": "Paris Match",
+   "site": "parismatch.com",
+   "date": "2026-11-17T08:22+00:00",
+   "vu_le": "2026-11-17T14:38+00:00",
+   "resume": "Le Black Friday se poursuit sur le site officiel Carrefour qui vient de faire dégringoler les prix d’une multitude d’appareils électroménagers, d’équipements multimédias et d’accessoires high-tech. Ne manquez pas ces offres « méchamment barrées » à durée extrêmement limitée (jusqu’au 30 novembre).",
+   "enrichi": "2026-11-17",
+   "image": "https://images.ctfassets.net/iatfclnjf6rx/7lzpxcA3daOj7KsV5BkqhY/fb71ae4a76bea3569d01c7923b494e14/BF-Carrefour.jpg?w=1600"
+  },
+  {
+   "id": "c6ca023bcfd1",
+   "titre": "Carrefour : CP Carrefour réaffirme sa conviction dans le modèle de l’hypermarché, pilier de sa performance",
+   "lien": "https://www.zonebourse.com/actualite-bourse/carrefour-cp-carrefour-reaffirme-sa-conviction-dans-le-modele-de-la-hypermarche-pilier-de-sa-per-ce785edfd18cff20",
+   "source": "autres",
+   "media": "Zonebourse",
+   "site": "zonebourse.com",
+   "date": "2026-11-17T08:12+00:00",
+   "vu_le": "2026-11-17T14:38+00:00",
+   "resume": "17 Nov 2026 07:30 CET Subscribe Nom de l'emetteur CARREFOUR See attachment / Voir document joint / Zie bijlage / Ver documento em anexo...",
+   "enrichi": "2026-11-17",
+   "image": "https://cdn.zonebourse.com/static/web-assets/images/editorial/fallback/twitter_zb_fdblanc.png"
+  },
+  {
+   "id": "9a2a2c69ad2b",
+   "titre": "E.Leclerc : qui dirige vraiment le « Mouvement » de 799 magasins, 550 adhérents et 62,9 milliards d’euros de chiffre d’affaires ?",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/e-leclerc/eleclerc-qui-dirige-vraiment-le-mouvement-de-799-magasins-550-adherents-et-629-milliards-deuros-de-chiffre-daffaires.ZAVNUIKNJNGM3JNROA3DSGFSF4.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-17T06:15+00:00",
+   "vu_le": "2026-11-17T14:38+00:00",
+   "resume": "",
+   "enrichi": "2026-11-17"
+  },
+  {
+   "id": "791f39748af9",
+   "titre": "[ RETAIL INSIDE ] Découvrez Montpellier-Grabels, le dernier Super U ouvert",
+   "lien": "https://www.olivierdauvers.fr/2026/11/16/retail-inside-decouvrez-montpellier-grabels-le-dernier-super-u-ouvert/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-16T17:36+00:00",
+   "vu_le": "2026-11-17T14:38+00:00",
+   "resume": "C’est le dernier Super U ouvert, il y a quelques jours. 3 000 m2 à Grabels au Nord de Montpellier : une commune de 9 000 habitants historiquement sous-équipée commercialement avec, côté grandes surtaces, un Grand Frais récent (2021) et un Auchan Super moribond, devenu Lidl (ce qui traduit son emprise locale !). Enfant du …",
+   "enrichi": "2026-11-17",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/1-2-scaled.jpg"
+  },
   {
    "id": "0284d440ea68",
    "titre": "Smyths Toys ouvre son premier magasin en Bretagne, à Brest",
@@ -113,6 +210,19 @@
    "vu_le": "2026-11-16T13:47+00:00",
    "resume": "Carrefour Market reprend l'ancienne cellule Delhaize du Shopping Hornu, à Boussu. L'enseigne recrute le franchisé qui exploitera ce futur supermarché hennuyer.",
    "enrichi": "2026-11-16",
+   "image": "https://lexpress-franchise.com/wp-content/uploads/2026/11/carrefour-market-store-exterior.jpg"
+  },
+  {
+   "id": "53045b6ea578",
+   "titre": "Carrefour Market reprend l’ancienne cellule Delhaize du Shopping Hornu et cherche un franchisé",
+   "lien": "https://lexpress-franchise.com/fr-be/articles/carrefour-market-hornu-franchise-ancien-delhaize/",
+   "source": "autres",
+   "media": "L’Express Franchise",
+   "site": "lexpress-franchise.com",
+   "date": "2026-11-16T10:20+00:00",
+   "vu_le": "2026-11-17T14:38+00:00",
+   "resume": "",
+   "enrichi": "2026-11-17",
    "image": "https://lexpress-franchise.com/wp-content/uploads/2026/11/carrefour-market-store-exterior.jpg"
   },
   {
@@ -1174,6 +1284,19 @@
    "enrichi": "2026-11-11",
    "image": "https://www.demotivateur.fr/images-buzz/cover/enseigne-carrefour-777f99ae873a.jpg",
    "site": "demotivateur.fr"
+  },
+  {
+   "id": "21523e48d193",
+   "titre": "MDD U : des aliments premium pour chiens et chats en Tetra Pak",
+   "lien": "https://www.lineaires.com/les-produits/mdd-u-des-aliments-premium-pour-chiens-et-chats-en-tetra-pak",
+   "source": "lineaires",
+   "media": "Lineaires",
+   "site": "lineaires.com",
+   "date": "2026-11-09T08:00+00:00",
+   "vu_le": "2026-11-17T14:38+00:00",
+   "resume": "Coopérative U innove sur le marché du petfood en lançant une offre conditionnée en Tetra Pak, une première pour une MDD, mais aussi pour les marques nationales. Pour",
+   "enrichi": "2026-11-17",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/9782a94c-ac1b-4200-b414-d3a0b3f6278b.jpg.webp?itok=alwM5AS3"
   },
   {
    "id": "387f1784f18e",
