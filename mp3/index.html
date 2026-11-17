@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
-  MP3 — extraire le son d'une vidéo YouTube en MP3
-  Version 1.0.0
+  MP3 — extraire le son d'une vidéo YouTube en MP3, ou un extrait vidéo
+  Version 1.1.0
   ------------------------------------------------------------
   Comment ça marche :
    • cette page (baiji.fr, hébergée sur GitHub Pages) ne fait PAS le travail :
@@ -10,7 +10,12 @@
      un « portier » (Caddy) vérifie le jeton secret (en-tête X-Jeton), puis
      MeTube télécharge la vidéo avec yt-dlp et la convertit en MP3 ;
    • la page suit l'avancement (/history), puis récupère le fichier
-     (/audio_download/…) et propose de l'enregistrer ou de le partager.
+     (/audio_download/…) et propose de l'enregistrer ou de le partager ;
+   • VIDÉO (v1.1.0) : un Short entier ou un morceau (8 s par défaut).
+     Les demandes vont à /video/… : le portier les envoie au service
+     « decoupe » du même projet (yt-dlp ne télécharge QUE le morceau),
+     qui rend un MP4 H.264 lisible partout. Un lecteur YouTube intégré
+     aide à choisir le début (« Début ici », « Revoir le morceau »).
   Code du service : dépôt privé nas-docker, dossier mp3/.
   Jeton : demandé une fois, gardé sur l'appareil (localStorage « mp3.jeton »).
   ⚖️ Usage perso, sur des contenus qu'on a le droit de récupérer.
@@ -19,12 +24,16 @@
    • v1.0.0 : première version : lien YouTube → MP3 (320, 192 ou 128 kbit/s),
               barre de progression, bouton « Enregistrer » et « Partager »,
               liste des derniers MP3 du NAS ; mise en page TABLETTE
+   • v1.1.0 : extraits VIDÉO (MP4) : Short entier ou morceau (début +
+              durée 8 / 15 / 30 / 60 s), lecteur YouTube pour viser le
+              début, minutage « t= » du lien repris, aperçu de la vidéo
+              obtenue ; liste « Derniers fichiers » (MP3 + vidéos)
 -->
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>MP3</title>
+  <title>MP3 & vidéo</title>
   <meta name="robots" content="noindex">
   <!-- Compteur de visites de baiji.fr -->
   <script src="/journal.js" defer></script>
@@ -118,6 +127,25 @@
     .qualites button[aria-pressed=true] { background: var(--teal); border-color: var(--teal); color: #fff; }
     .aide { font-size: 12px; color: var(--muted); line-height: 1.45; }
 
+    /* Choix Son / Vidéo, puis Entière / Morceau : mêmes pastilles, en plus grand */
+    .onglets button { font-family: inherit; font-size: 14px; font-weight: 800; padding: 11px 4px; }
+    .onglets button svg { width: 17px; height: 17px; vertical-align: -3px; margin-right: 4px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* Le morceau : début + durée */
+    .ligne-temps { display: flex; gap: 10px; align-items: flex-end; }
+    .ligne-temps > div { display: flex; flex-direction: column; gap: 6px; }
+    .ligne-temps .debut { width: 120px; flex: none; }
+    .ligne-temps .debut input { font-family: var(--mono); font-weight: 700; text-align: center; width: 100%; }
+    .ligne-temps .durees { flex: 1; min-width: 0; }
+    .fin-morceau { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+
+    /* Lecteur YouTube (aperçu pour viser le début) */
+    .cadre { position: relative; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: #000; }
+    .cadre iframe, .cadre > div { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+    /* Aperçu de la vidéo obtenue */
+    #apercu { width: 100%; max-height: 60vh; border-radius: 12px; background: #000; }
+
     /* Suivi de l'extraction */
     .titre-video { font-weight: 700; line-height: 1.35; word-break: break-word; }
     .etat { font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
@@ -135,6 +163,8 @@
     .liste { list-style: none; display: flex; flex-direction: column; }
     .liste li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
     .liste li:first-child { border-top: 0; }
+    .liste .sorte { width: 26px; height: 26px; flex: none; border-radius: 8px; background: var(--teal-soft); display: grid; place-items: center; }
+    .liste .sorte svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
     .liste .nom { flex: 1; min-width: 0; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .liste .taille { font-family: var(--mono); font-size: 12px; color: var(--muted); }
     .liste button { padding: 7px 10px; border-radius: 9px; background: var(--teal-soft); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
@@ -159,7 +189,7 @@
 <main>
   <header>
     <h1>MP3</h1>
-    <div class="sub">Le son d'une vidéo YouTube, en MP3, par le NAS</div>
+    <div class="sub">Le son d'une vidéo YouTube en MP3, ou un extrait vidéo, par le NAS</div>
   </header>
 
   <div class="col-gauche">
@@ -185,16 +215,69 @@
           <input type="text" id="lien" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://youtu.be/…" required>
           <button class="btn btn-soft" type="button" id="coller" title="Coller le lien copié">Coller</button>
         </div>
-        <label>Qualité</label>
-        <div class="qualites" id="qualites">
-          <button type="button" data-q="320" aria-pressed="true">320</button>
-          <button type="button" data-q="192" aria-pressed="false">192</button>
-          <button type="button" data-q="128" aria-pressed="false">128</button>
+        <!-- Son ou vidéo ? (v1.1.0) -->
+        <div class="qualites onglets" id="modes">
+          <button type="button" data-mode="son" aria-pressed="true">
+            <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Son MP3</button>
+          <button type="button" data-mode="video" aria-pressed="false">
+            <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m10 9 5 3-5 3z"/></svg>Vidéo MP4</button>
         </div>
-        <p class="aide">En kbit/s : 320 = la meilleure, 128 = fichier plus léger (≈ 1 Mo par minute).</p>
+
+        <!-- ===== Réglages du SON ===== -->
+        <div id="bloc-son" style="display:flex;flex-direction:column;gap:12px">
+          <label>Qualité</label>
+          <div class="qualites" id="qualites">
+            <button type="button" data-q="320" aria-pressed="true">320</button>
+            <button type="button" data-q="192" aria-pressed="false">192</button>
+            <button type="button" data-q="128" aria-pressed="false">128</button>
+          </div>
+          <p class="aide">En kbit/s : 320 = la meilleure, 128 = fichier plus léger (≈ 1 Mo par minute).</p>
+        </div>
+
+        <!-- ===== Réglages de la VIDÉO ===== -->
+        <div id="bloc-video" style="display:flex;flex-direction:column;gap:12px" hidden>
+          <div class="qualites onglets" id="formes">
+            <button type="button" data-forme="entiere" aria-pressed="false">Vidéo entière</button>
+            <button type="button" data-forme="morceau" aria-pressed="true">Un morceau</button>
+          </div>
+          <p class="aide" id="aide-entiere" hidden>Pour un Short (ou une vidéo de 10 min au plus) : toute la vidéo, en MP4.</p>
+
+          <div id="bloc-morceau" style="display:flex;flex-direction:column;gap:12px">
+            <div class="ligne-temps">
+              <div class="debut">
+                <label for="debut">Début</label>
+                <!-- texte libre : « 1:23 », « 83 » ou « 1:02:03 » (lu par lireTemps) -->
+                <input type="text" id="debut" inputmode="decimal" autocomplete="off" placeholder="0:00" value="0:00">
+              </div>
+              <div class="durees">
+                <label>Durée</label>
+                <div class="qualites" id="durees">
+                  <button type="button" data-d="8" aria-pressed="true">8 s</button>
+                  <button type="button" data-d="15" aria-pressed="false">15 s</button>
+                  <button type="button" data-d="30" aria-pressed="false">30 s</button>
+                  <button type="button" data-d="60" aria-pressed="false">60 s</button>
+                </div>
+              </div>
+            </div>
+            <div class="fin-morceau" id="fin-morceau"></div>
+
+            <!-- Lecteur YouTube : sert à trouver le bon moment -->
+            <div id="bloc-lecteur" style="display:flex;flex-direction:column;gap:8px" hidden>
+              <div class="cadre"><div id="lecteur"></div></div>
+              <div class="boutons">
+                <button class="btn btn-soft" type="button" id="debut-ici">
+                  <svg viewBox="0 0 24 24"><path d="M12 22V2"/><path d="m5 9 7-7 7 7"/></svg>Début ici</button>
+                <button class="btn btn-soft" type="button" id="revoir">
+                  <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Revoir le morceau</button>
+              </div>
+              <p class="aide" id="aide-lecteur">Lance la vidéo, mets-la en pause au bon moment, puis « Début ici ».</p>
+            </div>
+          </div>
+        </div>
+
         <button class="btn btn-main btn-wide" type="submit" id="extraire">
           <svg viewBox="0 0 24 24"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></svg>
-          Extraire en MP3
+          <span id="texte-extraire">Extraire en MP3</span>
         </button>
       </form>
     </section>
@@ -205,6 +288,8 @@
       <div class="barre attente" id="barre"><div></div></div>
       <div class="etat"><span id="etat">Envoi au NAS…</span><span class="pct" id="pct"></span></div>
       <p class="erreur" id="erreur" hidden></p>
+      <!-- Aperçu de la vidéo obtenue (v1.1.0) ; « playsinline » = pas de plein écran forcé sur iPhone -->
+      <video id="apercu" controls playsinline hidden></video>
       <div class="boutons" id="boutons" hidden>
         <a class="btn btn-main" id="enregistrer" href="#">
           <svg viewBox="0 0 24 24"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
@@ -220,7 +305,7 @@
 
   <!-- ===== Les derniers MP3 du NAS ===== -->
   <section class="card" id="carte-liste" hidden>
-    <h2>Derniers MP3</h2>
+    <h2>Derniers fichiers</h2>
     <ul class="liste" id="liste"></ul>
   </section>
 
@@ -234,15 +319,18 @@
   /* =====================================================================
      RÉGLAGES
      ===================================================================== */
-  const VERSION = "1.0.0";
+  const VERSION = "1.1.0";
   // Adresse du service du NAS. « ?service=… » dans l'adresse permet d'en
   // essayer un autre (ex. ?service=http://192.168.1.161:8095 à la maison).
   const SERVICE = (new URLSearchParams(location.search).get("service") || "https://mp3.baiji.fr").replace(/\/+$/, "");
   const CLE_JETON = "mp3.jeton";          // où le jeton est rangé dans l'appareil
   const CLE_QUALITE = "mp3.qualite";      // dernière qualité choisie
+  const CLE_MODE = "mp3.mode";            // « son » ou « video » (dernier choix)
+  const CLE_FORME = "mp3.forme";          // vidéo : « entiere » ou « morceau »
+  const CLE_DUREE = "mp3.duree";          // vidéo : durée du morceau (s)
   const PAUSE_SUIVI = 1500;               // ms entre deux nouvelles de l'avancement
   const DUREE_MAX = 15 * 60e3;            // on abandonne le suivi au bout de 15 min
-  const NB_DERNIERS = 8;                  // taille de la liste « Derniers MP3 »
+  const NB_DERNIERS = 10;                 // taille de la liste « Derniers fichiers »
 
   // Raccourci : un élément par son id
   const $ = id => document.getElementById(id);
@@ -280,7 +368,15 @@
       demanderJeton("Jeton refusé par le NAS. Vérifie-le et tape-le à nouveau.");
       throw new JetonRefuse();
     }
-    if (!rep.ok) throw new Error(`Le NAS a répondu ${rep.status} ${rep.statusText || ""}`.trim());
+    if (!rep.ok) {
+      // 502/503 sur /video/… : le portier n'arrive pas au service « decoupe »
+      if (rep.status >= 502 && chemin.startsWith("/video/"))
+        throw new Error("Le service vidéo du NAS ne répond pas (pas encore déployé, ou en train de démarrer).");
+      // Le service « decoupe » explique ses refus en JSON : {erreur: "…"}
+      let detail = "";
+      try { detail = (await rep.json()).erreur || ""; } catch {}
+      throw new Error(detail || `Le NAS a répondu ${rep.status} ${rep.statusText || ""}`.trim());
+    }
     return rep;
   }
   const apiJSON = async (chemin, options) => (await api(chemin, options)).json();
@@ -330,7 +426,7 @@
   $("coller").addEventListener("click", async () => {
     try {
       const t = await navigator.clipboard.readText();
-      if (t) $("lien").value = premierLien(t);
+      if (t) { $("lien").value = premierLien(t); lienChange(); }
     } catch {
       $("lien").focus();                 // refusé : on laisse coller à la main
     }
@@ -349,6 +445,154 @@
     qualite = b.dataset.q; ecrire(CLE_QUALITE, qualite); afficherQualite();
   });
   afficherQualite();
+
+  /* =====================================================================
+     SON ou VIDÉO ; vidéo ENTIÈRE ou MORCEAU ; DURÉE du morceau (v1.1.0)
+     Chaque choix est gardé dans l'appareil pour la prochaine fois.
+     ===================================================================== */
+  let mode = lire(CLE_MODE) === "video" ? "video" : "son";
+  let forme = lire(CLE_FORME) === "entiere" ? "entiere" : "morceau";
+  let duree = Number(lire(CLE_DUREE)) || 8;
+
+  // Petit outil : met « aria-pressed » sur le bon bouton d'un groupe
+  const presser = (groupe, attribut, valeur) => {
+    for (const b of $(groupe).children) b.setAttribute("aria-pressed", b.dataset[attribut] === String(valeur));
+  };
+
+  function afficherMode() {
+    presser("modes", "mode", mode);
+    presser("formes", "forme", forme);
+    presser("durees", "d", duree);
+    $("bloc-son").hidden = mode !== "son";
+    $("bloc-video").hidden = mode !== "video";
+    $("bloc-morceau").hidden = forme !== "morceau";
+    $("aide-entiere").hidden = forme !== "entiere";
+    $("texte-extraire").textContent =
+      mode === "son" ? "Extraire en MP3" : forme === "entiere" ? "Extraire la vidéo" : `Extraire ${duree} secondes`;
+    afficherFin();
+    majLecteur();
+  }
+  $("modes").addEventListener("click", e => {
+    const b = e.target.closest("button[data-mode]");
+    if (b) { mode = b.dataset.mode; ecrire(CLE_MODE, mode); afficherMode(); }
+  });
+  $("formes").addEventListener("click", e => {
+    const b = e.target.closest("button[data-forme]");
+    if (b) { forme = b.dataset.forme; ecrire(CLE_FORME, forme); afficherMode(); }
+  });
+  $("durees").addEventListener("click", e => {
+    const b = e.target.closest("button[data-d]");
+    if (b) { duree = Number(b.dataset.d); ecrire(CLE_DUREE, duree); afficherMode(); }
+  });
+
+  /* ---------------------------------------------------------------------
+     TEMPS : « 1:23 » ⇄ 83 secondes
+     --------------------------------------------------------------------- */
+  // « 1:23 », « 83 », « 83,5 », « 1:02:03 » → secondes ; NaN si illisible ; vide = 0
+  function lireTemps(texte) {
+    const t = String(texte).trim().replace(",", ".");
+    if (!t) return 0;
+    if (!/^\d+(\.\d+)?(:\d{1,2}(\.\d+)?){0,2}$/.test(t)) return NaN;
+    return t.split(":").reduce((total, morceau) => total * 60 + parseFloat(morceau), 0);
+  }
+  // 83.4 → « 1:23.4 » ; 3723 → « 1:02:03 » (au dixième de seconde)
+  function ecrireTemps(secondes) {
+    const dixiemes = Math.round(Math.max(0, secondes) * 10);   // tout en entiers : pas d'arrondi bizarre
+    const total = Math.floor(dixiemes / 10), d = dixiemes % 10;
+    const h = Math.floor(total / 3600), m = Math.floor(total % 3600 / 60), s = total % 60;
+    const ss = String(s).padStart(2, "0") + (d ? "." + d : "");
+    return h ? `${h}:${String(m).padStart(2, "0")}:${ss}` : `${m}:${ss}`;
+  }
+  // « t=1m23s », « t=83 », « start=83 » d'un lien partagé « à partir de… » → secondes
+  function tempsDuLien(texte) {
+    try {
+      const u = new URL(texte);
+      const t = u.searchParams.get("t") || u.searchParams.get("start");
+      const m = t && t.match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s?)?$/);
+      return m ? (+m[1] || 0) * 3600 + (+m[2] || 0) * 60 + (+m[3] || 0) : null;
+    } catch { return null; }
+  }
+  // Sous le début : « 1:23 → 1:31 »
+  function afficherFin() {
+    const d = lireTemps($("debut").value);
+    $("fin-morceau").textContent = isNaN(d) ? "Début illisible : écris par exemple 1:23 (minutes:secondes)"
+                                            : `de ${ecrireTemps(d)} à ${ecrireTemps(d + duree)}`;
+  }
+  $("debut").addEventListener("input", afficherFin);
+
+  // Le lien change (saisie, collage, lien reçu) : minutage « t= », Short, lecteur
+  let dernierLien = "";
+  function lienChange() {
+    const brut = premierLien($("lien").value);
+    if (brut === dernierLien) return;
+    dernierLien = brut;
+    const t = tempsDuLien(brut);
+    if (t !== null) $("debut").value = ecrireTemps(t);
+    // Un lien de Short en mode vidéo : on propose la vidéo entière (modifiable)
+    if (mode === "video" && /\/shorts\//.test(brut)) { forme = "entiere"; ecrire(CLE_FORME, forme); }
+    afficherMode();
+  }
+  $("lien").addEventListener("input", lienChange);
+
+  /* ---------------------------------------------------------------------
+     LECTEUR YOUTUBE (aperçu pour viser le début du morceau)
+     API officielle « IFrame Player » : chargée seulement quand on en a
+     besoin (mode vidéo + morceau + lien YouTube valable).
+     --------------------------------------------------------------------- */
+  let lecteur = null;          // l'objet YT.Player
+  let apiYT = null;            // promesse : l'API est chargée
+  let idLecteur = "";          // vidéo actuellement dans le lecteur
+  let surveillance = 0;        // minuterie de « Revoir le morceau »
+
+  function chargerApiYT() {
+    if (!apiYT) apiYT = new Promise(pret => {
+      window.onYouTubeIframeAPIReady = pret;   // appelée par l'API une fois chargée
+      const s = document.createElement("script");
+      s.src = "https://www.youtube.com/iframe_api";
+      document.head.append(s);
+    });
+    return apiYT;
+  }
+
+  async function majLecteur() {
+    const id = idYouTube(premierLien($("lien").value));
+    const utile = mode === "video" && forme === "morceau" && !!id;
+    $("bloc-lecteur").hidden = !utile;
+    if (!utile || id === idLecteur) return;
+    idLecteur = id;
+    $("aide-lecteur").textContent = "Lance la vidéo, mets-la en pause au bon moment, puis « Début ici ».";
+    const debut = lireTemps($("debut").value) || 0;
+    try { await chargerApiYT(); } catch { return; }
+    if (lecteur) { lecteur.cueVideoById({ videoId: id, startSeconds: debut }); return; }
+    lecteur = new YT.Player("lecteur", {
+      videoId: id,
+      host: "https://www.youtube-nocookie.com",   // version « sans cookies » de YouTube
+      playerVars: { playsinline: 1, rel: 0, start: Math.floor(debut) },
+      events: {
+        // 101 / 150 = le propriétaire interdit l'intégration ailleurs que sur YouTube
+        onError: () => { $("aide-lecteur").textContent = "Aperçu impossible pour cette vidéo : tape le début à la main (l'extraction marche quand même)."; },
+      },
+    });
+  }
+
+  // « Début ici » : l'instant affiché par le lecteur devient le début du morceau
+  $("debut-ici").addEventListener("click", () => {
+    if (!lecteur || !lecteur.getCurrentTime) return;
+    $("debut").value = ecrireTemps(lecteur.getCurrentTime());
+    afficherFin();
+  });
+
+  // « Revoir le morceau » : joue de début à début + durée, puis pause
+  $("revoir").addEventListener("click", () => {
+    const d = lireTemps($("debut").value);
+    if (!lecteur || !lecteur.seekTo || isNaN(d)) return;
+    clearInterval(surveillance);
+    lecteur.seekTo(d, true);
+    lecteur.playVideo();
+    surveillance = setInterval(() => {
+      if (lecteur.getCurrentTime() >= d + duree) { lecteur.pauseVideo(); clearInterval(surveillance); }
+    }, 150);
+  });
 
   /* =====================================================================
      EXTRACTION
@@ -382,7 +626,9 @@
     const numero = ++suiviEnCours;
     afficherSuivi({ titre: url, etat: "Envoi au NAS…" });
     $("extraire").disabled = true;
+    if (lecteur && lecteur.pauseVideo) lecteur.pauseVideo();   // on coupe l'aperçu
     try {
+      if (mode === "video") { await extraireVideo(numero, url); return; }
       const rep = await apiJSON("/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -420,10 +666,49 @@
         throw new Error(traduireErreur(fini.msg || fini.error));
       } else if (fini && fini.filename) {
         afficherSuivi({ titre: fini.title, etat: "Récupération du fichier…", pct: 100 });
-        await recupererFichier(fini);
+        await recupererFichier(depuisMeTube(fini));
         chargerListe();
         return;
       }
+      await new Promise(r => setTimeout(r, PAUSE_SUIVI));
+    }
+  }
+
+  /* =====================================================================
+     EXTRAIT VIDÉO (v1.1.0) — service « decoupe » du NAS
+     1. POST /video/lancer {url, debut, duree} → {id} (sans durée = entière) ;
+     2. GET /video/suivi?id=… toutes les 1,5 s ;
+     3. une fois fini, GET /video/fichier?nom=… (le MP4).
+     ===================================================================== */
+  async function extraireVideo(numero, url) {
+    const corps = { url };
+    if (forme === "morceau") {
+      const d = lireTemps($("debut").value);
+      if (isNaN(d)) throw new Error("Début illisible : écris par exemple 1:23 (minutes:secondes).");
+      corps.debut = d;
+      corps.duree = duree;
+    }
+    const { id } = await apiJSON("/video/lancer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(corps),
+    });
+    const debut = Date.now();
+    while (numero === suiviEnCours) {
+      if (Date.now() - debut > DUREE_MAX) throw new Error("C'est bien long… La vidéo arrivera peut-être quand même : regarde « Derniers fichiers » dans un moment.");
+      const s = await apiJSON("/video/suivi?id=" + encodeURIComponent(id));
+      if (s.statut === "erreur") throw new Error(traduireErreur(s.erreur));
+      if (s.statut === "fini") {
+        afficherSuivi({ titre: s.titre, etat: "Récupération du fichier…", pct: 100 });
+        await recupererFichier(depuisDecoupe(s));
+        chargerListe();
+        return;
+      }
+      // En attente derrière d'autres extraits ? On le dit.
+      const etat = s.statut === "attente"
+        ? (s.position > 1 ? `Dans la file (${s.position - 1} avant)…` : "Dans la file d'attente…")
+        : s.etape;
+      afficherSuivi({ titre: s.titre || url, etat, pct: s.pct });
       await new Promise(r => setTimeout(r, PAUSE_SUIVI));
     }
   }
@@ -447,23 +732,33 @@
   const adresseFichier = nomRelatif => "/audio_download/" + nomRelatif.split("/").map(encodeURIComponent).join("/");
   const nomCourt = nomRelatif => nomRelatif.split("/").pop();
 
-  async function recupererFichier(el) {
-    const blob = await (await api(adresseFichier(el.filename))).blob();
-    const nom = nomCourt(el.filename);
+  // Un fichier à récupérer, décrit de la même façon qu'il vienne de MeTube (MP3)
+  // ou du service « decoupe » (MP4) : {chemin, nom, titre, type}
+  const depuisMeTube = el => ({
+    chemin: adresseFichier(el.filename), nom: nomCourt(el.filename), titre: el.title, type: "audio/mpeg",
+  });
+  const depuisDecoupe = el => ({
+    chemin: "/video/fichier?nom=" + encodeURIComponent(el.nom), nom: el.nom, titre: el.titre, type: "video/mp4",
+  });
+
+  async function recupererFichier({ chemin, nom, titre, type }) {
+    const blob = await (await api(chemin)).blob();
     if (urlFichier) URL.revokeObjectURL(urlFichier);     // libère le précédent
-    urlFichier = URL.createObjectURL(new Blob([blob], { type: "audio/mpeg" }));
+    urlFichier = URL.createObjectURL(new Blob([blob], { type }));
     const a = $("enregistrer");
     a.href = urlFichier;
     a.download = nom;                     // « download » = enregistrer au lieu d'ouvrir
 
     // Partager (WhatsApp, Drive…) : seulement si le navigateur sait partager des fichiers
-    const fichier = new File([blob], nom, { type: "audio/mpeg" });
+    const fichier = new File([blob], nom, { type });
     const peutPartager = !!(navigator.canShare && navigator.canShare({ files: [fichier] }));
     $("partager").hidden = !peutPartager;
     $("partager").onclick = () => navigator.share({ files: [fichier], title: nom }).catch(() => {});
 
-    afficherSuivi({ titre: el.title || nom, etat: `<span class="ok">✓ Prêt</span> · ${tailleLisible(blob.size)}`, pct: 100, html: true });
+    afficherSuivi({ titre: titre || nom, etat: `<span class="ok">✓ Prêt</span> · ${tailleLisible(blob.size)}`, pct: 100, html: true });
     $("boutons").hidden = false;
+    // Une vidéo : on la montre tout de suite, pour vérifier le morceau
+    if (type.startsWith("video/")) { $("apercu").src = urlFichier; $("apercu").hidden = false; }
   }
 
   /* =====================================================================
@@ -473,6 +768,7 @@
     $("carte-suivi").hidden = false;
     $("erreur").hidden = true;
     $("boutons").hidden = true;
+    $("apercu").pause(); $("apercu").hidden = true;      // l'aperçu ne sert qu'au résultat
     if (titre) $("titre").textContent = titre;
     $("etat")[html ? "innerHTML" : "textContent"] = etat;
     // Pas encore de pourcentage : barre « va-et-vient »
@@ -491,33 +787,49 @@
   const tailleLisible = o => o > 1e6 ? (o / 1e6).toFixed(1).replace(".", ",") + " Mo" : Math.round(o / 1e3) + " ko";
 
   /* =====================================================================
-     DERNIERS MP3 (terminés, du plus récent au plus ancien)
+     DERNIERS FICHIERS : MP3 de MeTube + vidéos de « decoupe », mêlés,
+     du plus récent au plus ancien (v1.1.0)
      ===================================================================== */
+  const ICONE_SON = '<svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>';
+  const ICONE_VIDEO = '<svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m10 9 5 3-5 3z"/></svg>';
+
   async function chargerListe() {
     if (!lire(CLE_JETON)) return;
-    let h;
-    try { h = await apiJSON("/history"); } catch { return; }   // liste facultative : on se tait
-    const mp3 = (h.done || [])
-      .filter(el => el.status === "finished" && el.filename && /\.mp3$/i.test(el.filename))
-      .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
-      .slice(0, NB_DERNIERS);
-    $("carte-liste").hidden = !mp3.length;
-    $("liste").replaceChildren(...mp3.map(el => {
+    // Les deux listes en même temps ; chacune est facultative (en cas de
+    // panne de l'une, on montre l'autre, sans message d'erreur)
+    const [h, videos] = await Promise.all([
+      apiJSON("/history").catch(() => null),
+      apiJSON("/video/liste").catch(() => []),
+    ]);
+    const elements = [
+      ...((h && h.done) || [])
+        .filter(el => el.status === "finished" && el.filename && /\.mp3$/i.test(el.filename))
+        // MeTube date en nanosecondes → secondes
+        .map(el => ({ titre: el.title || nomCourt(el.filename), taille: el.size, date: (el.timestamp || 0) / 1e9,
+                      icone: ICONE_SON, fichier: depuisMeTube(el) })),
+      ...(Array.isArray(videos) ? videos : [])
+        .map(v => ({ titre: v.titre, taille: v.taille, date: v.date, icone: ICONE_VIDEO, fichier: depuisDecoupe(v) })),
+    ].sort((a, b) => b.date - a.date).slice(0, NB_DERNIERS);
+
+    $("carte-liste").hidden = !elements.length;
+    $("liste").replaceChildren(...elements.map(el => {
       const li = document.createElement("li");
+      const sorte = document.createElement("span");
+      sorte.className = "sorte"; sorte.innerHTML = el.icone;   // icône fixe, écrite par nous
       const nom = document.createElement("span");
-      nom.className = "nom"; nom.textContent = el.title || nomCourt(el.filename);
+      nom.className = "nom"; nom.textContent = el.titre;      // textContent : un titre ne peut pas injecter de HTML
       const taille = document.createElement("span");
-      taille.className = "taille"; taille.textContent = el.size ? tailleLisible(el.size) : "";
+      taille.className = "taille"; taille.textContent = el.taille ? tailleLisible(el.taille) : "";
       const b = document.createElement("button");
       b.type = "button"; b.textContent = "Ouvrir";
-      // Réaffiche ce MP3 dans la carte de suivi, prêt à enregistrer
+      // Réaffiche ce fichier dans la carte de suivi, prêt à enregistrer
       b.onclick = async () => {
         ++suiviEnCours;
-        afficherSuivi({ titre: el.title, etat: "Récupération du fichier…", pct: 100 });
-        try { await recupererFichier(el); } catch (err) { if (!(err instanceof JetonRefuse)) afficherErreur(err.message); }
+        afficherSuivi({ titre: el.titre, etat: "Récupération du fichier…", pct: 100 });
+        try { await recupererFichier(el.fichier); } catch (err) { if (!(err instanceof JetonRefuse)) afficherErreur(err.message); }
         $("carte-suivi").scrollIntoView({ behavior: "smooth", block: "nearest" });
       };
-      li.append(nom, taille, b);
+      li.append(sorte, nom, taille, b);
       return li;
     }));
   }
@@ -529,6 +841,7 @@
   const recu = new URLSearchParams(location.search);
   const lienRecu = recu.get("lien") || recu.get("url") || recu.get("text");
   if (lienRecu) $("lien").value = premierLien(lienRecu);
+  lienChange();                           // minutage « t= », Short, puis affichage des réglages
 
   if (lire(CLE_JETON)) chargerListe(); else demanderJeton();
 

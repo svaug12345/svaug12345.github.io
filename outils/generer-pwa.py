@@ -60,7 +60,7 @@ PAGES = [
          picto="hard-drive", tuile="#0f7c7b", trait="#ffffff",
          fond="#f4f7f7", theme="#0f7c7b"),
     dict(dossier="mp3", nom="MP3", court="MP3",
-         desc="Le son d'une vidéo YouTube en MP3, par le NAS",
+         desc="Le son d'une vidéo YouTube en MP3, ou un extrait vidéo, par le NAS",
          picto="audio-lines", tuile="#0f7c7b", trait="#ffffff",
          fond="#f6f9f9", theme="#0f7c7b"),
     dict(dossier="pressoir", nom="Pressoir", court="Pressoir",
