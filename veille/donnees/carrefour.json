@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-17T14:38+00:00",
+ "maj": "2026-11-17T22:58+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -50,6 +50,105 @@
  ],
  "articles": [
   {
+   "id": "9d1a61b3226a",
+   "titre": "Innovations alimentaires : Ducros, le leader des épices, se décarcasse pour séduire les jeunes en s’inspirant des tendances mondiales et des réseaux sociaux",
+   "lien": "https://www.lsa-conso.fr/pgc/nouveautes-produits/innovations-alimentaires-ducros-le-leader-des-epices-se-decarcasse-pour-seduire-les-jeunes-en-sinspirant-des-tendances-mondiales-et-des-reseaux-sociaux.H4GEN5LIXNHGTOPWDGPP7TJWRQ.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-17T18:40+00:00",
+   "vu_le": "2026-11-17T22:58+00:00",
+   "resume": "",
+   "enrichi": "2026-11-17"
+  },
+  {
+   "id": "daf5a75edae6",
+   "titre": "Découvrez les 34 familles de PGC sur lesquelles Carrefour met la priorité",
+   "lien": "https://www.olivierdauvers.fr/2026/11/17/decouvrez-les-34-familles-de-pgc-sur-lesquelles-carrefour-met-la-priorite/",
+   "source": "dauvers",
+   "media": "",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-17T18:07+00:00",
+   "vu_le": "2026-11-17T22:58+00:00",
+   "resume": "Envie de savoir quels sont les segments d’offre les plus porteurs aujourd’hui dans l’assortiment d’un hypermarché ? Carrefour a partagé la liste des segments qu’il souhaite développer en priorité dans ses magasins. Précisément 34 familles de produits, sur les 200 qui composent son offre PGC. Ces 34 familles ne pèsent que 6 % du CA, …",
+   "enrichi": "2026-11-17",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/34-familles-carrefour-scaled.jpg"
+  },
+  {
+   "id": "04960556c9cb",
+   "titre": "E-commerce : de nouveau épinglé par Bruxelles, Temu risque une amende allant jusqu’à 6 % de son chiffre d’affaires mondial",
+   "lien": "https://www.lsa-conso.fr/e-commerce/temu/e-commerce-de-nouveau-epingle-par-bruxelles-temu-risque-une-amende-allant-jusqua-6-de-son-chiffre-daffaires-mondial.YNVE3KEC7RH53DXO4AST67TIYQ.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-17T17:31+00:00",
+   "vu_le": "2026-11-17T22:58+00:00",
+   "resume": "",
+   "enrichi": "2026-11-17"
+  },
+  {
+   "id": "26ccc92d971d",
+   "titre": "Les hypers Carrefour \" en ligne sur les objectifs \" du plan 2030",
+   "lien": "https://www.lineaires.com/la-distribution/les-hypers-carrefour-en-ligne-sur-les-objectifs-du-plan-2030",
+   "source": "lineaires",
+   "media": "Lineaires",
+   "site": "lineaires.com",
+   "date": "2026-11-17T16:57+00:00",
+   "vu_le": "2026-11-17T22:58+00:00",
+   "resume": "Ce 17 novembre, Carrefour avait convié les analystes financiers à son hyper de Montesson (78) pour un point d'étape sur le volet hypers France de son plan stratégique",
+   "enrichi": "2026-11-17",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/56c9bca2-811b-4f03-a5b0-df68e8e25ea5.jpg.webp?itok=M9paRQCa"
+  },
+  {
+   "id": "297ef907234c",
+   "titre": "Parts de marché NielsenIQ P11 : Les Mousquetaires en prennent pour un an à festoyer !",
+   "lien": "https://www.olivierdauvers.fr/2026/11/17/parts-de-marche-nielseniq-p11-les-mousquetaires-en-prennent-pour-un-an-a-festoyer/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-17T16:42+00:00",
+   "vu_le": "2026-11-17T22:58+00:00",
+   "resume": "À Bondoufle, au siège des Mousquetaires, on va finir par avoir mal à la tête… Tous les mois, à l’heure de découvrir les parts de marché, on sabrera le champagne (avec l’épée maison of course !). Car, ça y est !, l’accord cadre signé avec Auchan pour le passage sous enseignes des supermarchés commence à …",
+   "enrichi": "2026-11-17",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/P11-NielsenIQ-enseignes-scaled.jpg"
+  },
+  {
+   "id": "114a6103b42e",
+   "titre": "Grande distribution : les Mousquetaires s’envolent tandis qu’Auchan et Carrefour reculent, au mois d’octobre [Parts de marché, NielsenIQ]",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/grande-distribution-les-mousquetaires-senvolent-en-octobre-auchan-et-carrefour-reculent-parts-de-marche-nielseniq.RE33XMVG6FHZREVN7UMDY4UXQM.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-17T16:35+00:00",
+   "vu_le": "2026-11-17T22:58+00:00",
+   "resume": "",
+   "enrichi": "2026-11-17"
+  },
+  {
+   "id": "e0851334b195",
+   "titre": "Carrefour veut faire de ses hypermarchés un moteur de croissance d'ici 2030...",
+   "lien": "https://bourse.fortuneo.fr/actualites/carrefour-veut-faire-de-ses-hypermarches-un-moteur-de-croissance-d-ici-2030-5646555",
+   "source": "autres",
+   "media": "Fortuneo",
+   "site": "bourse.fortuneo.fr",
+   "date": "2026-11-17T14:46+00:00",
+   "vu_le": "2026-11-17T22:58+00:00",
+   "resume": "(Zonebourse.com) - Le distributeur (-1,2% peu avant 16h00) réaffirme sa confiance dans le modèle de l",
+   "enrichi": "2026-11-17"
+  },
+  {
+   "id": "dbc68f74b02e",
+   "titre": "Étiquettes électroniques : Vusion veut racheter son concurrent Pricer pour 88 millions d’euros",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/etiquettes-electroniques-vusion-veut-racheter-son-concurrent-pricer-pour-88-millions-deuros.VWGQQS6EVBCTLJEYST7RHRQKRA.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-17T14:35+00:00",
+   "vu_le": "2026-11-17T22:58+00:00",
+   "resume": "",
+   "enrichi": "2026-11-17"
+  },
+  {
    "id": "c48c064e40b6",
    "titre": "Carrefour toujours à la recherche de la bonne formule pour ses hypermarchés",
    "lien": "https://www.abcbourse.com/marches/carrefour-toujours-a-la-recherche-de-la-bonne-formule-pour-ses-hypermarches_706228",
@@ -96,6 +195,18 @@
    "site": "lsa-conso.fr",
    "date": "2026-11-17T11:04+00:00",
    "vu_le": "2026-11-17T14:38+00:00",
+   "resume": "",
+   "enrichi": "2026-11-17"
+  },
+  {
+   "id": "7bbe4b541c4c",
+   "titre": "Négociations commerciales : les industriels étrillent le modèle français, noté 2 sur 10",
+   "lien": "https://www.lsa-conso.fr/agro-industriel/negociations-commerciales-les-industriels-etrillent-le-modele-francais-note-2-sur-10.3SEE2PJCSBHK3DGJUAL5QC6FOA.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-17T10:23+00:00",
+   "vu_le": "2026-11-17T22:58+00:00",
    "resume": "",
    "enrichi": "2026-11-17"
   },
