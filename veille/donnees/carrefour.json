@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-18T14:16+00:00",
+ "maj": "2026-11-18T22:37+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -49,6 +49,119 @@
   }
  ],
  "articles": [
+  {
+   "id": "ed61552900c2",
+   "titre": "Les MDD battent leur record historique en octobre selon Worldpanel",
+   "lien": "https://www.olivierdauvers.fr/2026/11/18/les-mdd-battent-leur-record-historique-en-octobre-selon-worldpanel/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-18T21:33+00:00",
+   "vu_le": "2026-11-18T22:37+00:00",
+   "resume": "Faut-il vraiment s’en étonner alors que le pouvoir d’achat est sur toutes les lèves et l’inflation à venir dans tous les esprits ? Non, évidemment. Décodage (en version grand public) ce matin sur RTL. Ici >>",
+   "enrichi": "2026-11-18",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/OD-MDD-1024x603.png"
+  },
+  {
+   "id": "99b8a60bc09b",
+   "titre": "Comment Carrefour choisit ses combats au non-al",
+   "lien": "https://www.olivierdauvers.fr/2026/11/18/comment-carrefour-choisit-ses-combats-au-non-al/",
+   "source": "dauvers",
+   "media": "",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-18T18:15+00:00",
+   "vu_le": "2026-11-18T22:37+00:00",
+   "resume": "Un chiffre pour illustrer le recul du non-alimentaire dans les hypermarchés Carrefour ? En 2018, le non-al représentait 20 % du CA. Huit ans plus tard, la part est descendue à 15 %. Sans surprise, le distributeur revoit à la baisse les surfaces de rayons comme le textile, le bricolage, l’automobile, la puériculture, la musique …",
+   "enrichi": "2026-11-18",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/carrefour_nonal_3-1024x768.png"
+  },
+  {
+   "id": "ba446285c891",
+   "titre": "SodaStream accélère sur les soft drinks avec une nouvelle machine",
+   "lien": "https://www.lsa-conso.fr/pgc/nouveautes-produits/sodastream-accelere-sur-les-soft-drinks-avec-une-nouvelle-machine.BDNTNVZA4BDLNAI4VHT2TFHKU4.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-18T17:55+00:00",
+   "vu_le": "2026-11-18T22:37+00:00",
+   "resume": "",
+   "enrichi": "2026-11-18"
+  },
+  {
+   "id": "e4477edcc4d7",
+   "titre": "Carrefour Proximité dévoile Gus & Mia et Étape Express : quelles perspectives pour les porteurs de projet ?",
+   "lien": "https://www.toute-la-franchise.com/news-carrefour-proximite-gus-mia-etape-express",
+   "source": "autres",
+   "media": "Toute la Franchise",
+   "site": "toute-la-franchise.com",
+   "date": "2026-11-18T16:42+00:00",
+   "vu_le": "2026-11-18T22:37+00:00",
+   "resume": "",
+   "enrichi": "2026-11-18"
+  },
+  {
+   "id": "b264db40ff4a",
+   "titre": "Le Carrefour de Cherbourg est racheté pour 1 € : voici ce que ça va changer pour l'hypermarché des Eléis",
+   "lien": "https://actu.fr/societe/le-carrefour-de-cherbourg-est-rachete-pour-1-e-voici-ce-que-ca-va-changer-pour-lhypermarche-des-eleis_65072577.html",
+   "source": "autres",
+   "media": "Actu.fr",
+   "site": "actu.fr",
+   "date": "2026-11-18T15:36+00:00",
+   "vu_le": "2026-11-18T22:37+00:00",
+   "resume": "Plusieurs millions d’euros de travaux sont investis pour moderniser l’hypermarché Carrefour des Eleis, à Cherbourg (Manche), après son rachat annoncé à l’automne 2026.",
+   "enrichi": "2026-11-18",
+   "image": "https://static.actu.fr/uploads/2026/11/a97c7b9ea12668d7c7b9ea126818c7v.jpg"
+  },
+  {
+   "id": "90264a72d2a5",
+   "titre": "[Exclusif] Carrefour Proximité va lancer deux nouvelles enseignes dans la restauration et le travel retail",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/exclusif-carrefour-proximite-va-lancer-deux-nouvelles-enseignes-dans-la-restauration-et-le-travel-retail.QMXPZY3QKNEXHAVTR4YHSTFLFQ.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-18T15:20+00:00",
+   "vu_le": "2026-11-18T22:37+00:00",
+   "resume": "",
+   "enrichi": "2026-11-18"
+  },
+  {
+   "id": "9704da33d408",
+   "titre": "Carrefour reprend le dernier hypermarché français de son franchisé LabelVie",
+   "lien": "https://www.linforme.com/grande-conso/article/carrefour-reprend-le-dernier-hypermarche-francais-de-son-franchise-labelvie_14783.html",
+   "source": "autres",
+   "media": "l'Informé",
+   "site": "linforme.com",
+   "date": "2026-11-18T14:37+00:00",
+   "vu_le": "2026-11-18T22:37+00:00",
+   "resume": "Le magasin d’Aulnay-sous-Bois près de Paris, qui servait de test pour l’enseigne Atacadão, faisait partie des 6 magasins gérés depuis 2022 par le partenaire marocain du distributeur français.",
+   "enrichi": "2026-11-18",
+   "image": "https://linforme-focus.sirius.press/2026/11/18/0/0/0/0/1440/720/60/0/c4c5523_upload-1-87dcrscz24fd-afp-20250821-726a88h-v1-highres-franceeconomyretailatacadao.jpg"
+  },
+  {
+   "id": "28098540998b",
+   "titre": "[ TECH ] Cdiscount teste l’inventaire en temps réel de ses entrepôts. Voici comment…",
+   "lien": "https://www.olivierdauvers.fr/2026/11/18/tech-cdiscount-teste-linventaire-en-temps-reel-de-ses-entrepots-voici-comment/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-18T14:28+00:00",
+   "vu_le": "2026-11-18T22:37+00:00",
+   "resume": "Encore une application des technos de reconnaissance d’image appliquée à l’inventaire… On connaissait les petites caméras de Vusion (format étiquette électronique) qui “regardent” le rayon d’en face pour détecter les ruptures. Voici donc les caméras embarquées sur les chariots de Cdiscount qui sillonnent les entrepôts. Des chariots utilisés notamment pour la préparation des commandes et …",
+   "enrichi": "2026-11-18",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/IMG_0288-scaled.jpg"
+  },
+  {
+   "id": "3b483ab2c4f1",
+   "titre": "Réunie au salon Deauville Preshow 2026, la filière du jouet est en marche vers de nouveaux records de ventes",
+   "lien": "https://www.lsa-conso.fr/distributeurs-non-alimentaires/jeux-et-jouets/reunie-au-salon-deauville-preshow-2026-la-filiere-jouet-est-en-marche-vers-de-nouveaux-records-de-ventes.VGYEQGEEORBWNCTPX7XRFDIYIE.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-18T13:17+00:00",
+   "vu_le": "2026-11-18T22:37+00:00",
+   "resume": "",
+   "enrichi": "2026-11-18"
+  },
   {
    "id": "c10d6294421d",
    "titre": "Carrefour veut ouvrir son nouveau concept de magasin en plein cœur de Rouen",
