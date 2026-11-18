@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-17T22:58+00:00",
+ "maj": "2026-11-18T14:16+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -50,6 +50,144 @@
  ],
  "articles": [
   {
+   "id": "c10d6294421d",
+   "titre": "Carrefour veut ouvrir son nouveau concept de magasin en plein cœur de Rouen",
+   "lien": "https://actu.fr/normandie/rouen_76540/carrefour-va-ouvrir-son-nouveau-concept-de-magasin-en-plein-coeur-de-rouen-potager-city_65069477.html",
+   "source": "autres",
+   "media": "Actu.fr",
+   "site": "actu.fr",
+   "date": "2026-11-18T10:29+00:00",
+   "vu_le": "2026-11-18T14:16+00:00",
+   "resume": "L'enseigne Carrefour déploie depuis 2023 de nouveaux magasins de proximité. Ce concept, encore inédit en Normandie, doit débarquer prochainement en plein cœur de Rouen.",
+   "enrichi": "2026-11-18",
+   "image": "https://static.actu.fr/uploads/2026/11/carrefour-nouveau-magasin-potager-city-rouen.jpeg"
+  },
+  {
+   "id": "8c0d5f75151b",
+   "titre": "L’hypermarché n’est pas mort : Alexandre Bompard en fait “le socle” de la croissance de Carrefour “dopé à l’IA”",
+   "lien": "https://www.gondola.be/fr/news/lhypermarche-nest-pas-mort-alexandre-bompard-en-fait-le-socle-de-la-croissance-de-carrefour",
+   "source": "autres",
+   "media": "Gondola Magazine",
+   "site": "gondola.be",
+   "date": "2026-11-18T10:27+00:00",
+   "vu_le": "2026-11-18T14:16+00:00",
+   "resume": "À l’occasion de sa Journée Investisseurs qui se tenait ce lundi dans le gigantesque hypermarché de Montesson, le PDG du groupe Carrefour a réfuté les prédictions annonçant la disparition des grands formats. Porté par la franchise, la technologie et le commerce en ligne, le modèle dévoile sa feuille de route pour 2030. Loin d’être condamné, l’hypermarché redevient un levier stratégique.",
+   "enrichi": "2026-11-18",
+   "image": "https://images.gondola.be/2026-11/gondola_7.png?fit=max&h=630&ixlib=php-4.1.0&w=1200&s=d7ded6419c96c0d53eec67c0fbeda2d0"
+  },
+  {
+   "id": "7f916830b5aa",
+   "titre": "Grand Prix de l'Innovation Carrefour 2026 : découvrez les lauréats",
+   "lien": "https://www.lineaires.com/les-produits/grand-prix-de-l-innovation-carrefour-2026-decouvrez-les-laureats",
+   "source": "lineaires",
+   "media": "Lineaires",
+   "site": "lineaires.com",
+   "date": "2026-11-18T10:14+00:00",
+   "vu_le": "2026-11-18T14:16+00:00",
+   "resume": "Les clients de l'enseigne ont voté en octobre pour leurs produits innovants préférés, répartis en 20 catégories. Au total, 2 millions de votes ont été",
+   "enrichi": "2026-11-18",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/f13ad14c-48c2-4567-9865-c02908e17161.jpg.webp?itok=_G_6KMLj"
+  },
+  {
+   "id": "8fc374fcea84",
+   "titre": "Black Friday : Carrefour fait -10 % sur les boîtiers E85 pour passer à l’éthanol",
+   "lien": "https://www.caradisiac.com/black-friday-carrefour-fait-10-sur-les-boitiers-e85-pour-passer-a-l-ethanol-225124.htm",
+   "source": "autres",
+   "media": "Caradisiac",
+   "site": "caradisiac.com",
+   "date": "2026-11-18T10:00+00:00",
+   "vu_le": "2026-11-18T14:16+00:00",
+   "resume": "Le Black Friday ça marche aussi pour votre voiture ! Et cette année l’enseigne de supermarché Carrefour propose une offre un peu spéciale : une réduction de 10 % pour l’achat d’un boîtier de conversion à l’E85. On vous explique.",
+   "enrichi": "2026-11-18",
+   "image": "https://images.caradisiac.com/logos/6/9/9/9/296999/S8-black-friday-carrefour-fait-10-sur-les-boitiers-e85-pour-passer-a-l-ethanol-225124.jpg"
+  },
+  {
+   "id": "5364eed68c13",
+   "titre": "Nouveautés : Eléphant (Lipton Teas and Infusions) dévoile trois infusions aux notes torréfiées et gourmandes à l’occasion de ses 130 ans",
+   "lien": "https://www.lsa-conso.fr/pgc/nouveautes-produits/nouveautes-elephant-lipton-teas-and-infusions-devoile-trois-infusions-aux-notes-torrefiees-et-gourmandes-a-loccasion-de-ses-130-ans.2XYSFAXWDBAJNKMHBGNQMBAM4M.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-18T09:58+00:00",
+   "vu_le": "2026-11-18T14:16+00:00",
+   "resume": "",
+   "enrichi": "2026-11-18"
+  },
+  {
+   "id": "574da2d2532b",
+   "titre": "[ ÉTUDE ] La proximité (rurale) profite de la flambée des carburants",
+   "lien": "https://www.olivierdauvers.fr/2026/11/18/etude-la-proximite-rurale-profite-de-la-flambee-des-carburants/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-18T09:12+00:00",
+   "vu_le": "2026-11-18T14:16+00:00",
+   "resume": "L’heure est (presque) au bilan de l’année. Côté circuits, deux grands gagnants : la proximité et le e-commerce. Symboliquement, c’est la proximité qui l’emporte : + 6,9 % vs + 6,7 %. Et, ce, grâce à l’envolée de la proximité rurale. Impossible de ne pas faire le lien avec l’envolée des prix du carburant. La …",
+   "enrichi": "2026-11-18",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/Mise-en-page-1_Page-1-21-scaled.jpg"
+  },
+  {
+   "id": "43f1739a44fa",
+   "titre": "Seconde main : Jouga, spécialiste des jouets d’occasion, accroît sa diffusion et s’affiche désormais dans 170 hypers et supermarchés",
+   "lien": "https://www.lsa-conso.fr/la-conso-s-engage/occasion/seconde-main-jouga-specialiste-des-jouets-doccasion-accroit-sa-diffusion-et-saffiche-desormais-dans-170-hypers-et-supermarches.7F6FOFEDY5DRRN6KHDDTLJNGYI.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-18T08:10+00:00",
+   "vu_le": "2026-11-18T14:16+00:00",
+   "resume": "",
+   "enrichi": "2026-11-18"
+  },
+  {
+   "id": "ac39b9148909",
+   "titre": "Après la seconde main, la réparation s’impose comme le prochain service clé de la distribution [Tribune]",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/apres-la-seconde-main-la-reparation-simpose-comme-le-prochain-service-cle-de-la-distribution-tribune.N7YND7WCU5FELCKIYXNHOWXR6Q.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-18T08:01+00:00",
+   "vu_le": "2026-11-18T14:16+00:00",
+   "resume": "",
+   "enrichi": "2026-11-18"
+  },
+  {
+   "id": "40f82997be64",
+   "titre": "À ceux qui pensent qu'on a déjà tout inventé... (non ! l'imagination de l'homme est sans limite)",
+   "lien": "https://www.olivierdauvers.fr/2026/11/18/a-ceux-qui-pensent-quon-a-deja-tout-invente-non-limagination-de-lhomme-est-sans-limite/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-18T07:02+00:00",
+   "vu_le": "2026-11-18T14:16+00:00",
+   "resume": "La phrase revient parfois : tout a déjà été inventé ! Ben non… Ça manquait, non, le flacon de savon musical spécial Noël ? Voilà, c’est fait ! J’vous ai trouvé ça chez Normal. Et je dois confesser en avoir acheté un 🥳 🤪 😂. Ici >>",
+   "enrichi": "2026-11-18",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/Mise-en-page-1_Page-1-18-scaled.jpg"
+  },
+  {
+   "id": "3d46da1a8a51",
+   "titre": "Marketing digital : Mr.Bricolage se lance dans l’e-retail-media avec Unlimitail, et les débuts semblent très prometteurs [Exclusif]",
+   "lien": "https://www.lsa-conso.fr/metiers/marketing/marketing-digital/marketing-digital-mrbricolage-se-lance-dans-le-retail-media-avec-unlimitail-et-les-debuts-semblent-tres-prometteurs-exclusif.ZF3YNFZVFFG7TCQHACJENYOGGI.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-18T04:26+00:00",
+   "vu_le": "2026-11-18T14:16+00:00",
+   "resume": "",
+   "enrichi": "2026-11-18"
+  },
+  {
+   "id": "799b0bcfdf39",
+   "titre": "Carrefour : comment le groupe veut relancer 100 hypermarchés en France d’ici à 2030",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/carrefour-comment-le-groupe-veut-relancer-100-hypermarches-en-france-dici-a-2030.ZKVF24W6SNBNTB2H2RLFGBHDSE.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-17T18:44+00:00",
+   "vu_le": "2026-11-18T14:16+00:00",
+   "resume": "",
+   "enrichi": "2026-11-18"
+  },
+  {
    "id": "9d1a61b3226a",
    "titre": "Innovations alimentaires : Ducros, le leader des épices, se décarcasse pour séduire les jeunes en s’inspirant des tendances mondiales et des réseaux sociaux",
    "lien": "https://www.lsa-conso.fr/pgc/nouveautes-produits/innovations-alimentaires-ducros-le-leader-des-epices-se-decarcasse-pour-seduire-les-jeunes-en-sinspirant-des-tendances-mondiales-et-des-reseaux-sociaux.H4GEN5LIXNHGTOPWDGPP7TJWRQ.html",
@@ -60,6 +198,18 @@
    "vu_le": "2026-11-17T22:58+00:00",
    "resume": "",
    "enrichi": "2026-11-17"
+  },
+  {
+   "id": "8cadec297c58",
+   "titre": "Archives des PGC",
+   "lien": "https://www.olivierdauvers.fr/tag/pgc/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-17T18:16+00:00",
+   "vu_le": "2026-11-18T14:16+00:00",
+   "resume": "",
+   "enrichi": "2026-11-18"
   },
   {
    "id": "daf5a75edae6",
@@ -211,6 +361,18 @@
    "enrichi": "2026-11-17"
   },
   {
+   "id": "b81653562ecd",
+   "titre": "Rappelé partout en France, ce fromage vendu chez Intermarché, Système U et Carrefour peut provoquer la salmonellose",
+   "lien": "https://www.ouest-france.fr/economie/consommation/rappel-produit/rappele-partout-en-france-ce-fromage-vendu-chez-intermarche-systeme-u-et-carrefour-peut-provoquer-la-salmonellose-c3a22e9a-e26e-11f1-9549-83e3460b2e87",
+   "source": "autres",
+   "media": "Ouest-France",
+   "site": "ouest-france.fr",
+   "date": "2026-11-17T10:18+00:00",
+   "vu_le": "2026-11-18T14:16+00:00",
+   "resume": "",
+   "enrichi": "2026-11-18"
+  },
+  {
    "id": "174054a10425",
    "titre": "Black Friday Carrefour : l’enseigne continue de proposer un déluge d’offres ultra intéressantes",
    "lien": "https://www.parismatch.com/guide-shopping/black-friday-carrefour-lenseigne-continue-proposer-deluge-doffres-ultra-interessantes-7xoeTCZCPUS6QE8YUnxBCf",
@@ -284,6 +446,18 @@
    "vu_le": "2026-11-16T23:45+00:00",
    "resume": "",
    "enrichi": "2026-11-16"
+  },
+  {
+   "id": "4f0e4d93f576",
+   "titre": "Grande distribution : comment Carrefour revient en Italie grâce à la foncière Carmila",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/grande-distribution-comment-carrefour-revient-en-italie-grace-a-sa-fonciere-carmila.CK4YQUX4JJFTLNPMKTM6PJJN2I.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-16T15:42+00:00",
+   "vu_le": "2026-11-18T14:16+00:00",
+   "resume": "",
+   "enrichi": "2026-11-18"
   },
   {
    "id": "f6b181101838",
@@ -1153,6 +1327,19 @@
    "enrichi": "2026-11-11",
    "image": "https://my-angers.info/wp-content/uploads/2026/11/IMG_0471-scaled.jpg",
    "site": "my-angers.info"
+  },
+  {
+   "id": "d33dd69dbe07",
+   "titre": "[ EXCLU ] Intermarché et Sodebo déjà fâchés !",
+   "lien": "https://www.olivierdauvers.fr/2026/11/10/exclu-intermarche-et-sodebo-deja-faches/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-10T14:05+00:00",
+   "vu_le": "2026-11-18T14:16+00:00",
+   "resume": "La saison des négos est officiellement ouvertes ! Les premières fâcheries sont en effet déjà là. La plus visible : Intermarché et Sodebo. Signe qui ne trompe pas : la diffusion de quelques stars des rayons qui baisse (fortement pour les pizzas par exemple). Conséquence : les tablettes se vident. Et quand se rajoute de …",
+   "enrichi": "2026-11-18",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/IMG_0096-copie-scaled.jpg"
   },
   {
    "id": "35047ad1e43b",
