@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-18T22:37+00:00",
+ "maj": "2026-11-19T14:30+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -49,6 +49,144 @@
   }
  ],
  "articles": [
+  {
+   "id": "07eb8798ed7c",
+   "titre": "Grand Frais : La branche épicerie, EEF, reprise par ses fondateurs, les frères Bahadourian et Crédit Mutuel pour une valorisation de 1,5 milliard",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/grand-frais-la-branche-epicerie-eef-reprise-par-ses-fondateurs-les-freres-bahadourian-et-credit-mutuel-pour-une-valorisation-de-15-milliard.P2DBO6HLMNDXTLN5MEEVAFBAHU.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-19T13:20+00:00",
+   "vu_le": "2026-11-19T14:30+00:00",
+   "resume": "",
+   "enrichi": "2026-11-19"
+  },
+  {
+   "id": "36ae508a503f",
+   "titre": "« Je venais faire mes courses exprès pour le voir » : star du supermarché, « le chat de Carrefour » va enfin avoir une famille",
+   "lien": "https://www.leparisien.fr/oise-60/je-venais-faire-mes-courses-expres-pour-le-voir-star-du-supermarche-le-chat-de-carrefour-va-enfin-avoir-une-famille-19-11-2026-DKYPMGUZMFCCHMFI5I2PBNJIMQ.php",
+   "source": "autres",
+   "media": "Le Parisien",
+   "site": "leparisien.fr",
+   "date": "2026-11-19T11:52+00:00",
+   "vu_le": "2026-11-19T14:30+00:00",
+   "resume": "",
+   "enrichi": "2026-11-19"
+  },
+  {
+   "id": "25fb7070679d",
+   "titre": "Le Carrefour Market de Zandhoven fête ses 30 ans avec un relooking et une réouverture festive",
+   "lien": "https://newsroom.carrefour.be/s/73749296-0e69-48df-8181-b4241ef9667b?preview",
+   "source": "autres",
+   "media": "Carrefour België",
+   "site": "newsroom.carrefour.be",
+   "date": "2026-11-19T10:51+00:00",
+   "vu_le": "2026-11-19T14:30+00:00",
+   "resume": "Zandhoven, le 19 novembre 2026 – Le Carrefour Market de la Langestraat, à Zandhoven, rouvre ses portes aujourd’hui après une rénovation en...",
+   "enrichi": "2026-11-19",
+   "image": "https://cdn.uc.assets.prezly.com/ea04880b-0bd9-48fe-ab52-4ab79ec74a24/-/crop/4284x2477/0,1475/-/preview/-/preview/600x600/"
+  },
+  {
+   "id": "6fb608ec7cfb",
+   "titre": "La “new para” de Carrefour",
+   "lien": "https://www.olivierdauvers.fr/2026/11/19/la-new-para-de-carrefour/",
+   "source": "dauvers",
+   "media": "",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-19T10:44+00:00",
+   "vu_le": "2026-11-19T14:30+00:00",
+   "resume": "Le pilote du nouveau concept parapharmacie de Carrefour a été lancé fin 2025. 31 sites ont été déployés à date, en hyper ou en galerie. 130 ont vocation à l’être d’ici 2030. Vous voyez ici la réalisation à Montesson (78). Ce n’est pas étonnant : la parapharmacie enregistre en moyenne 8 % de croissance par …",
+   "enrichi": "2026-11-19",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/para-scaled.jpg"
+  },
+  {
+   "id": "a669d3be4253",
+   "titre": "Carrefour : réalisez des économies en faisant vos courses sur l’application de l’enseigne",
+   "lien": "https://www.parismatch.com/guide-shopping/carrefour-realisez-economies-en-faisant-vos-courses-sur-lapplication-lenseigne-1tQimOExen5hczmZ9M3ZEQ",
+   "source": "autres",
+   "media": "Paris Match",
+   "site": "parismatch.com",
+   "date": "2026-11-19T10:42+00:00",
+   "vu_le": "2026-11-19T14:30+00:00",
+   "resume": "Faites vos courses rapidement et simplement où que vous soyez en téléchargeant l’application Carrefour sur votre smartphone. Dotée d’une multitude de fonctions pratiques, cette interface permet d’accéder en un coup d’œil aux bons plans et aux coupons de réduction du moment.",
+   "enrichi": "2026-11-19",
+   "image": "https://images.ctfassets.net/iatfclnjf6rx/7AhrdEDH3LzEzM3PJn21Wb/644bd25c315abea3baba9f7e864be589/carrefour-drive.jpg?w=1600"
+  },
+  {
+   "id": "717592c826ac",
+   "titre": "Carrefour : voici où sont situés les 27 magasins « référents » qui dessinent le futur des hypermarchés de l’enseigne [Exclusif]",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/carrefour-voici-ou-sont-situes-les-27-magasins-referents-qui-dessinent-le-futur-des-hypermarches-de-lenseigne-exclusif.TEIFD4Z4SNBY7K7IZ56Q62K5WA.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-19T09:55+00:00",
+   "vu_le": "2026-11-19T14:30+00:00",
+   "resume": "",
+   "enrichi": "2026-11-19"
+  },
+  {
+   "id": "3ece30076688",
+   "titre": "Leroy Merlin : pourquoi l’enseigne de bricolage va-t-elle fermer son magasin de Marseille Grand-Littoral ?",
+   "lien": "https://www.lsa-conso.fr/marches/bricolage-jardinage/leroy-merlin-pourquoi-lenseigne-de-bricolage-va-t-elle-fermer-son-magasin-de-marseille-grand-littoral.4F5FKKRVSFBPRHXP42DAQJUCNI.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-19T08:54+00:00",
+   "vu_le": "2026-11-19T14:30+00:00",
+   "resume": "",
+   "enrichi": "2026-11-19"
+  },
+  {
+   "id": "debc0a0df4c7",
+   "titre": "[ CONSO à IMPACT ] 10 ans pour C'est qui le patron et plus de 10 millions de produits vendus en octobre",
+   "lien": "https://www.olivierdauvers.fr/2026/11/19/conso-a-impact-10-ans-pour-cest-qui-le-patron-et-plus-de-10-millions-de-produits-vendus-en-octobre/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-19T06:38+00:00",
+   "vu_le": "2026-11-19T14:30+00:00",
+   "resume": "La démarche C’est qui le patron fête officiellement ses 10 ans aujourd’hui. Un anniversaire et un record pour la coopérative de consommateurs (dont je suis administrateur bénévole). En octobre, la marque a franchi le cap des 10 millions de produits vendus, en hausse de 21 %. Sur l’ensemble de l’année, la hausse sera moindre mais …",
+   "enrichi": "2026-11-19",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/DGC-CQLP-10-ans-scaled.jpg"
+  },
+  {
+   "id": "cb367bd009f2",
+   "titre": "Bonnes idées / Bonnes pratiques (119) : Commander en ligne pour ses clients (depuis le magasin)",
+   "lien": "https://www.olivierdauvers.fr/2026/11/19/bonnes-idees-bonnes-pratiques-119-commander-en-ligne-pour-ses-clients-depuis-le-magasin/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-19T06:33+00:00",
+   "vu_le": "2026-11-19T14:30+00:00",
+   "resume": "Suite de ma série d’inspirations “bonnes idées / bonnes pratiques” dans le prolongement de mes ouvrages sur l’IMAGE-PRIX, le PENSER-CLIENT et la PRÉFÉRENCE (disponibles ici). Aujourd’hui, direction Tape à l’œil. Comme beaucoup, l’enseigne textile utilise son activité e-commerce pour proposer “plus de tailles, plus de choix”. Mais – et c’est l’originalité – Tape à l’œil …",
+   "enrichi": "2026-11-19",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/IMG_9959-scaled.jpg"
+  },
+  {
+   "id": "b93c1be6f026",
+   "titre": "Les camping-cars ventouses incitent le Carrefour de Berck à interdire le stationnement sur son parking",
+   "lien": "https://www.lemondeducampingcar.fr/etapes/les-camping-cars-ventouses-incitent-le-carrefour-de-berck-a-interdire-le-stationnement-sur-son-parking/250983",
+   "source": "autres",
+   "media": "Le Monde du Camping-Car",
+   "site": "lemondeducampingcar.fr",
+   "date": "2026-11-19T04:49+00:00",
+   "vu_le": "2026-11-19T14:30+00:00",
+   "resume": "À Berck-sur-Mer, dans le Pas-de-Calais, le stationnement des camping-cars sur le parking de l’hypermarché Carrefour va être réglementé. Face aux abus constatés en haute saison, l’enseigne prévoit de l’interdire en journée et de le limiter à la nuit. En France, de nombreux magasins de grande distribution tolèrent le stationnement des camping-cars sur leurs parkings. Si … Continuer la lecture de…",
+   "enrichi": "2026-11-19",
+   "image": "https://www.lemondeducampingcar.fr/wp/wp-content/uploads/2026/11/parking-hypermarche-Carrefour-Berck-credit-Google-Maps.jpg"
+  },
+  {
+   "id": "b4534af8cf48",
+   "titre": "Madeleines, quatre-quarts, brownies...La pâtisserie industrielle, catégorie de près de 1,4 milliard d’euros, ne lève pas le pied sur l’innovation",
+   "lien": "https://www.lsa-conso.fr/marches/epicerie-sucree/madeleines-quatre-quarts-browniesla-patisserie-industrielle-categorie-de-pres-de-14-milliard-deuros-ne-leve-pas-le-pied-sur-linnovation.SYGE7VOQM5ICHKSDSV4VFQXRJU.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-19T04:02+00:00",
+   "vu_le": "2026-11-19T14:30+00:00",
+   "resume": "",
+   "enrichi": "2026-11-19"
+  },
   {
    "id": "ed61552900c2",
    "titre": "Les MDD battent leur record historique en octobre selon Worldpanel",
@@ -3018,6 +3156,19 @@
    "site": "lineaires.com",
    "enrichi": "2026-11-11",
    "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-09/2be71a3f-7e4c-4ea8-b307-c0fd64486303.jpg.webp?itok=x6ekkpMG"
+  },
+  {
+   "id": "25ee7f04ced6",
+   "titre": "Carrefour 2030 : que retenir du nouveau plan stratégique d’Alexandre Bompard ?",
+   "lien": "https://www.republikgroup.com/articles/284765ae-b6b2-f111-a6a7-6045bd9f5987/carrefour-2030-que-retenir-du-nouveau-plan-strategique-d-alexandre-bompard-",
+   "source": "autres",
+   "media": "www.republikgroup.com",
+   "site": "republikgroup.com",
+   "date": "2026-09-27T14:47+00:00",
+   "vu_le": "2026-11-19T14:30+00:00",
+   "resume": "Carrefour 2030 marque une nouvelle étape pour le distributeur. Recentrage sur trois pays, engagement annuel sur les prix, offensive sur le frais et pari massif sur l’intelligence artificielle : Alexandre Bompard assume une stratégie de conquête. Reste à savoir si l’exécution opérationnelle tiendra les promesses affichées.",
+   "enrichi": "2026-11-19",
+   "image": "https://cdn.inwink.com/a37e7b3a-3c11-444e-8684-39edf2ad3de3/55b3fbc3-0857-4830-92e2-83de5640242b"
   },
   {
    "id": "37f1948165a2",
