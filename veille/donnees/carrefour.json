@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-19T14:30+00:00",
+ "maj": "2026-11-19T22:41+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -50,6 +50,107 @@
  ],
  "articles": [
   {
+   "id": "f2c9f80d82db",
+   "titre": "Parts de marché : l'intégration d'Auchan Supermarché commence à profiter à Intermarché",
+   "lien": "https://www.lineaires.com/la-distribution/parts-de-marche-l-integration-d-auchan-supermarche-commence-a-profiter-a",
+   "source": "lineaires",
+   "media": "Lineaires",
+   "site": "lineaires.com",
+   "date": "2026-11-19T19:17+00:00",
+   "vu_le": "2026-11-19T22:41+00:00",
+   "resume": "+0,7 point, c'est ce qu'affiche Intermarché qui atteint 18,3% de parts de marché à P11, du 5 octobre au 1er novembre, selon Worldpanel by Numerator. Le distributeur",
+   "enrichi": "2026-11-19",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/9a504387-fe16-4e0e-802d-4abdd3ad9e88.jpg.webp?itok=PjSvPlxW"
+  },
+  {
+   "id": "e0548839f904",
+   "titre": "[ EXCLU ] L’image prix des enseignes de bricolage-jardinage sur les réseaux sociaux",
+   "lien": "https://www.olivierdauvers.fr/2026/11/19/exclu-limage-prix-des-enseignes-de-bricolage-jardinage-sur-les-reseaux-sociaux/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-19T18:59+00:00",
+   "vu_le": "2026-11-19T22:41+00:00",
+   "resume": "Je continue de partager avec vous, en exclusivité, le baromètre image-prix dynamique de TBWA fondé sur le “social listening”. Aujourd’hui, les enseignes de bricolage (GSB, négoce) et les jardineries. L’agence TBWA aspire toutes les conversations publiques sur les réseaux sociaux (forums, posts, vidéos, commentaires, etc.) pour identifier ce que les Français disent des enseignes. Parce …",
+   "enrichi": "2026-11-19",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/BIIP-brico-Mise-en-page-1-scaled.png"
+  },
+  {
+   "id": "90ae82ec5449",
+   "titre": "Grande distribution : Intermarché continue de caracoler en tête, U et E.Leclerc suivent, Auchan décroche et Carrefour souffre [Octobre, parts de marché Worldpanel]",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/grande-distribution-intermarche-continue-de-caracoler-en-tete-u-et-eleclerc-suivent-auchan-decroche-et-carrefour-souffre-octobre-parts-de-marche-worldpanel.3XQ5OPX33ZF3RICERV7LT6X6B4.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-19T17:28+00:00",
+   "vu_le": "2026-11-19T22:41+00:00",
+   "resume": "",
+   "enrichi": "2026-11-19"
+  },
+  {
+   "id": "3d2c4cb67294",
+   "titre": "Alexandre Bompard (Carrefour), Thierry Cotillard (Intermarché) Dominique Schelcher (U), Barthélémy Guislain (Mulliez), Philippe Michaud (E.Leclerc)… au chevet du commerce",
+   "lien": "https://www.lsa-conso.fr/economie/consommation/pouvoir-d-achat/alexandre-bompard-carrefour-thierry-cotillard-intermarche-dominique-schelcher-u-barthelemy-guislain-mulliez-philippe-michaud-eleclerc-au-chevet-du-commerce.RFFXDQTHAZDRRLLKAWE2YVX6NU.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-19T16:38+00:00",
+   "vu_le": "2026-11-19T22:41+00:00",
+   "resume": "",
+   "enrichi": "2026-11-19"
+  },
+  {
+   "id": "6cab42ee6946",
+   "titre": "Fermé définitivement, GiFi change de bannière au profit d'un supermarché concurrent de Carrefour dans cette commune du Calvados",
+   "lien": "https://www.melty.fr/divers/ferme-definitivement-gifi-change-de-banniere-au-profit-dun-supermarche-concurrent-de-carrefour-dans-cette-commune-du-calvados-2363208.html",
+   "source": "autres",
+   "media": "melty.fr",
+   "site": "melty.fr",
+   "date": "2026-11-19T16:30+00:00",
+   "vu_le": "2026-11-19T22:41+00:00",
+   "resume": "GiFi connaît de nombreuses difficultés financières depuis plusieurs mois. De plus, certains points de vente ont vu leurs enseignes remplacées par un géant du supermarché.",
+   "enrichi": "2026-11-19",
+   "image": "https://www.melty.fr/wp-content/uploads/meltyfr/2026/11/ferme-definitivement-gifi-change-de-banniere-au-profit-dun-supermarche-concurrent-de-carrefour-dans-cette-commune-du-calvados.jpg"
+  },
+  {
+   "id": "e30d5947ad0d",
+   "titre": "Vers un retour de l’enseigne Carrefour à la place d’Atacadao dans le centre commercial O’Parinor à Aulnay-sous-Bois ?",
+   "lien": "https://www.aulnaylibre.com/2026/11/vers-un-retour-de-l-enseigne-carrefour-a-la-place-d-atacadao-dans-le-centre-commercial-o-parinor-a-aulnay-sous-bois.html",
+   "source": "autres",
+   "media": "Aulnaylibre",
+   "site": "aulnaylibre.com",
+   "date": "2026-11-19T15:27+00:00",
+   "vu_le": "2026-11-19T22:41+00:00",
+   "resume": "",
+   "enrichi": "2026-11-19"
+  },
+  {
+   "id": "3b71deb25511",
+   "titre": "Carrefour ajoute Wero dans ses moyens de paiement",
+   "lien": "https://www.lineaires.com/la-distribution/carrefour-ajoute-wero-dans-ses-moyens-de-paiement",
+   "source": "lineaires",
+   "media": "Lineaires",
+   "site": "lineaires.com",
+   "date": "2026-11-19T15:15+00:00",
+   "vu_le": "2026-11-19T22:41+00:00",
+   "resume": "Le distributeur vient d'annoncer l'ajout de Wero comme nouveau moyen de paiement sur son site en ligne, pour les achats non alimentaires.",
+   "enrichi": "2026-11-19",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/86baefa6-9bc3-4b35-b408-b378e7a0bae3.jpg.webp?itok=R9DEfNwT"
+  },
+  {
+   "id": "76b46ff1f1dd",
+   "titre": "Des caméras plus discrètes et des signaux lumineux plus visibles : voici les nouveaux rails Vusion",
+   "lien": "https://www.olivierdauvers.fr/2026/11/19/des-cameras-plus-discretes-et-des-signaux-lumineux-plus-visibles-voici-les-nouveaux-rails-vusion/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-19T14:48+00:00",
+   "vu_le": "2026-11-19T22:41+00:00",
+   "resume": "La nouvelle génération d’équipement sur laquelle planche Vusion comporte deux évolutions qui seront très visibles en rayon. D’abord des caméras désormais directement intégrées dans les rails, qui se feront ainsi plus discrètes. Elles prendront toujours une photo par heure pour surveiller l’état du rayon situé en face, mais avec une meilleure résolution et une batterie …",
+   "enrichi": "2026-11-19",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/vusionevo-Mise-en-page-1-scaled.jpg"
+  },
+  {
    "id": "07eb8798ed7c",
    "titre": "Grand Frais : La branche épicerie, EEF, reprise par ses fondateurs, les frères Bahadourian et Crédit Mutuel pour une valorisation de 1,5 milliard",
    "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/grand-frais-la-branche-epicerie-eef-reprise-par-ses-fondateurs-les-freres-bahadourian-et-credit-mutuel-pour-une-valorisation-de-15-milliard.P2DBO6HLMNDXTLN5MEEVAFBAHU.html",
@@ -60,6 +161,19 @@
    "vu_le": "2026-11-19T14:30+00:00",
    "resume": "",
    "enrichi": "2026-11-19"
+  },
+  {
+   "id": "ea5e5b5c50de",
+   "titre": "Le frère d’Angèle caissier chez Carrefour : “À chaque fois que je suis dans un supermarché je pense aux gens qui y travaillent du coup, et ça me fait pas du tout envie”, cette expérience l'a traumatisé",
+   "lien": "https://www.melty.fr/people/le-frere-dangele-caissier-chez-carrefour-a-chaque-fois-que-je-suis-dans-un-supermarche-je-pense-aux-gens-qui-y-travaillent-du-coup-et-ca-me-fait-pas-du-tout-envie-cette-2363137.html",
+   "source": "autres",
+   "media": "melty.fr",
+   "site": "melty.fr",
+   "date": "2026-11-19T12:30+00:00",
+   "vu_le": "2026-11-19T22:41+00:00",
+   "resume": "Roméo Elvis, rappeur et frère de la chanteuse emblématique Angèle, a galéré avant de se faire un nom en solo dans l'industrie de la musique.",
+   "enrichi": "2026-11-19",
+   "image": "https://www.melty.fr/wp-content/uploads/meltyfr/2026/11/le-frere-dangele-caissier-chez-carrefour-a-chaque-fois-que-je-suis-dans-un-supermarche-je-pense-aux-gens-qui-y-travaillent-du-coup-et-ca-me-fait-pas-du-tout-envie-cette.jpg"
   },
   {
    "id": "36ae508a503f",
@@ -709,6 +823,18 @@
    "vu_le": "2026-11-18T14:16+00:00",
    "resume": "",
    "enrichi": "2026-11-18"
+  },
+  {
+   "id": "2598246e6a5e",
+   "titre": "Travaux au carrefour de l’Enseigne à Trébrivan : la circulation vers Maël-Carhaix déviée par Ladien",
+   "lien": "https://www.letelegramme.fr/cotes-d-armor/trebrivan-22340/travaux-au-carrefour-de-lenseigne-a-trebrivan-la-circulation-vers-mael-carhaix-deviee-par-ladien-7160351.php",
+   "source": "autres",
+   "media": "Le Télégramme",
+   "site": "letelegramme.fr",
+   "date": "2026-11-16T14:01+00:00",
+   "vu_le": "2026-11-19T22:41+00:00",
+   "resume": "",
+   "enrichi": "2026-11-19"
   },
   {
    "id": "f6b181101838",
@@ -2577,6 +2703,19 @@
    "resume": "Carburants, pouvoir d’achat, budget… On reçoit Alexandre Bompard, président-directeur général du groupe Carrefour pour en parler",
    "enrichi": "2026-11-14",
    "image": "https://medias.france.tv/AVYvVHcPI4-k-jxJHcSARkyY1do/880x0/filters:quality(85):format(jpeg)/y/c/f/phpq6jfcy.jpg"
+  },
+  {
+   "id": "c6e5e7ce8a20",
+   "titre": "Invités : Alexandre Bompard, Noémie Schulz, Ludovic Vigogne, Julia Martin en replay - C à vous",
+   "lien": "https://www.france.tv/france-5/c-a-vous/c-a-vous-saison-18/8934636-emission-du-vendredi-23-octobre-2026.html",
+   "source": "autres",
+   "media": "France TV",
+   "site": "france.tv",
+   "date": "2026-10-23T07:00+00:00",
+   "vu_le": "2026-11-19T22:41+00:00",
+   "resume": "Mobilisation du 24 octobre : l’inquiétude des commerçants…- Alexandre Bompard, président-directeur général du groupe CarrefourMaintien de l’ordre : Emmanuel ...",
+   "enrichi": "2026-11-19",
+   "image": "https://medias.france.tv/rryDyeD1u1cefWa6CSYtaU2sVpo/880x0/filters:quality(85):format(jpeg)/g/7/s/phpwzxs7g.jpg"
   },
   {
    "id": "71812157c429",
