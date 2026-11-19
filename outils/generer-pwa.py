@@ -95,6 +95,12 @@ PAGES = [
          desc="S'entraîner à négocier face à un fournisseur vocal",
          picto="handshake", tuile="#0b355f", trait="#ffffff",
          fond="#ffffff", theme="#0b355f"),
+    # Icônes provisoires = copie de celles de salle-negociation/ (rsvg-convert absent le 19/11/2026) :
+    # relancer ce script leur donnera le picto « scale » (la balance).
+    dict(dossier="table-negociation", nom="Table de négociation", court="Table négo",
+         desc="Le visuel d'une négociation : une acheteuse face à trois fournisseurs",
+         picto="scale", tuile="#0b355f", trait="#ffffff",
+         fond="#f7f7f7", theme="#0b355f"),
     # Page et icônes FABRIQUÉES par le projet local (scripts/publier-baiji.py, icônes dessinées avec Pillow) :
     # relancer ce script-ci remplacerait ses icônes par le picto Lucide « store ».
     dict(dossier="magasin-3d", nom="Magasin 3D · Achats Non Marchands", court="Magasin 3D",
