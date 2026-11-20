@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-19T22:41+00:00",
+ "maj": "2026-11-20T14:08+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -49,6 +49,146 @@
   }
  ],
  "articles": [
+  {
+   "id": "2e83af9d5059",
+   "titre": "Grande distribution : deux prises de contrôle conjoint autorisées autour de JBM",
+   "lien": "https://www.juriguide.com/2026/11/20/distribution-jbm-sodibor-lormontdis-carrefour-autorisations-2026/",
+   "source": "autres",
+   "media": "Juriguide",
+   "site": "juriguide.com",
+   "date": "2026-11-20T12:58+00:00",
+   "vu_le": "2026-11-20T14:08+00:00",
+   "resume": "Le 19 novembre 2026, l’Autorité de la concurrence a autorisé deux opérations de contrôle conjoint concernant Sodibor et Lormontdis. JBM et GH Participations figurent dans les deux dossiers ; Amidis et Compagnie (groupe Carrefour) n’intervient que dans celui de Sodibor.",
+   "enrichi": "2026-11-20",
+   "image": "https://www.juriguide.com/wp-content/uploads/2026/11/a7e1bc38-facade-carrefour-market-parking-1600x1066-1.jpg"
+  },
+  {
+   "id": "7d79ba6a4c26",
+   "titre": "Gus & Mia, la restauration rapide de Carrefour Proximité : 1re ouverture à Toulouse",
+   "lien": "https://melles750.fr/articles/2026/2026-11-20-gus-mia-carrefour-restauration-rapide-toulouse",
+   "source": "autres",
+   "media": "Melles750",
+   "site": "melles750.fr",
+   "date": "2026-11-20T12:45+00:00",
+   "vu_le": "2026-11-20T14:08+00:00",
+   "resume": "Carrefour Proximité lance Gus & Mia, une enseigne de restauration rapide sur place ou à emporter inspirée d",
+   "enrichi": "2026-11-20",
+   "image": "https://melles750.fr/images/2026/11/gus-mia-carrefour-toulouse.jpg"
+  },
+  {
+   "id": "ccb1693d18e9",
+   "titre": "Zara, Fnac, nouveau concept Carrefour… La gare d’Austerlitz s’offre plus de 100 commerces et restaurants pour 2027",
+   "lien": "https://www.lsa-conso.fr/immobilier-commercial/zara-fnac-nouveau-concept-carrefour-la-gare-dausterlitz-soffre-plus-de-100-commerces-et-restaurants-pour-2027.4NYBPB6OBBFORIYENVONJIGNDU.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-20T12:25+00:00",
+   "vu_le": "2026-11-20T14:08+00:00",
+   "resume": "",
+   "enrichi": "2026-11-20"
+  },
+  {
+   "id": "e7ddd93a2861",
+   "titre": "Carrefour Market Zandhoven : 30 ans et rénovation",
+   "lien": "https://lexpress-franchise.com/fr-be/actualites/carrefour-market-zandhoven-franchise-30-ans/",
+   "source": "autres",
+   "media": "L’Express Franchise",
+   "site": "lexpress-franchise.com",
+   "date": "2026-11-20T10:55+00:00",
+   "vu_le": "2026-11-20T14:08+00:00",
+   "resume": "À Zandhoven, une famille de franchisés rouvre son Carrefour Market pour ses 30 ans, après 12 jours de travaux, avec consignes à colis et ouverture le dimanche.",
+   "enrichi": "2026-11-20",
+   "image": "https://lexpress-franchise.com/wp-content/uploads/2026/11/supermarche-carrefour-market-zandhoven.png"
+  },
+  {
+   "id": "3842873f441d",
+   "titre": "Carrefour rappelle un Airfryer 6 L : le revêtement de la grille est en cause",
+   "lien": "https://www.economiematin.fr/rappel-airfryer-carrefour-home-haf6l1750-26-2026",
+   "source": "autres",
+   "media": "Economie Matin",
+   "site": "economiematin.fr",
+   "date": "2026-11-20T10:13+00:00",
+   "vu_le": "2026-11-20T14:08+00:00",
+   "resume": "Le modèle Carrefour Home HAF6L1750-26, commercialisé du 27 avril au 19 novembre 2026, fait l’objet d’un rappel national pour un risque chimique. Tous les lots sont concernés : les acheteurs doivent cesser de l’utiliser et",
+   "enrichi": "2026-11-20",
+   "image": "https://www.economiematin.fr/wp-content/uploads/2026/11/e905f65c-friteuse-air-noire-panier-ouvert-cuisine-1600x1066-1.jpg"
+  },
+  {
+   "id": "af8fec2eb346",
+   "titre": "Carrefour va lancer deux nouveaux concepts de restauration rapide : le premier magasin ouvrira d'ici la fin du mois dans une grande ville d'Occitanie",
+   "lien": "https://www.lindependant.fr/2026/11/20/carrefour-va-lancer-deux-nouveaux-concepts-de-restauration-rapide-le-premier-magasin-ouvrira-dici-la-fin-du-mois-dans-une-grande-ville-doccitanie-13662651.php",
+   "source": "autres",
+   "media": "L'Indépendant",
+   "site": "lindependant.fr",
+   "date": "2026-11-20T09:36+00:00",
+   "vu_le": "2026-11-20T14:08+00:00",
+   "resume": "Les deux nouvelles enseignes proposeront exclusivement de la vente à emporter.",
+   "enrichi": "2026-11-20",
+   "image": "https://images.lindependant.fr/api/v1/images/view/6b0013f01aeaa10195089f03/hd/image.jpg?v=1"
+  },
+  {
+   "id": "4b8d6854d869",
+   "titre": "Carrefour Express : d’ancien machiniste RATP à gérant d’un magasin parisien avec 7 500 euros d’apport",
+   "lien": "https://www.observatoiredelafranchise.fr/indiscretions-actualite/CARREFOUR-EXPRESS-carrefour-express-d-ancien-machiniste-ratp-a-gerant-d-un-magasin-parisien-avec-7-500-euros-d-apport-84872.htm",
+   "source": "autres",
+   "media": "Observatoire de la franchise",
+   "site": "observatoiredelafranchise.fr",
+   "date": "2026-11-20T09:29+00:00",
+   "vu_le": "2026-11-20T14:08+00:00",
+   "resume": "",
+   "enrichi": "2026-11-20"
+  },
+  {
+   "id": "d129833eaaec",
+   "titre": "Carrefour conclut un nouvel accord social pour ouvrir 16 magasins intégrés le dimanche après-midi",
+   "lien": "https://www.gondola.be/fr/news/carrefour-conclut-un-nouvel-accord-social-pour-ouvrir-16-magasins-integres-le-dimanche-apres",
+   "source": "autres",
+   "media": "Gondola Magazine",
+   "site": "gondola.be",
+   "date": "2026-11-20T09:19+00:00",
+   "vu_le": "2026-11-20T14:08+00:00",
+   "resume": "Moins d'un an après avoir conclu un accord historique sur l'ouverture dominicale de ses magasins intégrés, Carrefour Belgique franchit une nouvelle étape. Selon les informations recueillies par Gondola auprès de deux sources sources syndicales distinctes, un nouvel accord vient d'être conclu avec les partenaires sociaux. Il permettra aux hypermarchés situés en zone touristique de prolonger leur…",
+   "enrichi": "2026-11-20",
+   "image": "https://images.gondola.be/2019-04/5r4a7977_1.jpg?fit=max&h=630&ixlib=php-4.1.0&w=1200&s=177e5ea081020f4bf18e6fca48f1086b"
+  },
+  {
+   "id": "c3620b4d6d83",
+   "titre": "Carrefour s’inspire d’IKEA pour lancer Gus & Mia, son concept de restauration rapide",
+   "lien": "https://mcetv.ouest-france.fr/2026/carrefour-gus-mia-restauration-rapide-ikea/",
+   "source": "autres",
+   "media": "MCE TV",
+   "site": "mcetv.ouest-france.fr",
+   "date": "2026-11-20T06:02+00:00",
+   "vu_le": "2026-11-20T14:08+00:00",
+   "resume": "Carrefour Proximité lance Gus & Mia, un concept de restauration rapide inspiré d'IKEA, avec une première ouverture à Toulouse fin novembre.",
+   "enrichi": "2026-11-20",
+   "image": "https://media-mcetv.ouest-france.fr/wp-content/uploads/2026/07/generique-ikea.jpg"
+  },
+  {
+   "id": "470f47665c4b",
+   "titre": "\"Inspiré de ce qu'a fait IKEA\": à quoi va ressembler le nouveau concept de restauration rapide de Carrefour?",
+   "lien": "https://rmc.bfmtv.com/conso/alimentation/grande-distribution/inspire-de-ce-qu-a-fait-ikea-a-quoi-va-ressembler-le-nouveau-concept-de-restauration-rapide-de-carrefour_AN-202611200094.html",
+   "source": "autres",
+   "media": "RMC",
+   "site": "rmc.bfmtv.com",
+   "date": "2026-11-20T05:03+00:00",
+   "vu_le": "2026-11-20T14:08+00:00",
+   "resume": "Lors du Forum de la proximité organisé par le magazine spécialisé LSA ce 18 novembre, le président de Carrefour Proximité a dévoilé deux nouveaux concepts. RMC Conso fait le point.",
+   "enrichi": "2026-11-20",
+   "image": "https://io-fsly-bfmtv.cdn.nextradiotv.com/QWfXwf-t5PfbLVAw2Qr5fnnvAgw=/0x131:2048x1283/2048x0/images/Carrefour-2285487.jpg"
+  },
+  {
+   "id": "09f966755c91",
+   "titre": "Black Friday : Fnac Darty, Amazon, Seb... dans les coulisses d’un temps fort commercial préparé plus d’un an à l’avance",
+   "lien": "https://www.lsa-conso.fr/mes-magazines/magazines-lsa/black-friday-fnac-darty-amazon-seb-dans-les-coulisses-dun-temps-fort-commercial-prepare-plus-dun-an-a-lavance.7ZJS2NNRVZKBJBHNVKSPJEIPYQ.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-20T04:35+00:00",
+   "vu_le": "2026-11-20T14:08+00:00",
+   "resume": "",
+   "enrichi": "2026-11-20"
+  },
   {
    "id": "f2c9f80d82db",
    "titre": "Parts de marché : l'intégration d'Auchan Supermarché commence à profiter à Intermarché",
@@ -123,6 +263,19 @@
    "vu_le": "2026-11-19T22:41+00:00",
    "resume": "",
    "enrichi": "2026-11-19"
+  },
+  {
+   "id": "78ce4fe49262",
+   "titre": "Comment choisir son enseigne bio en France : l'expertise Carrefour, pionnière depuis 1992 (2026)",
+   "lien": "https://www.capital.fr/conso/comment-choisir-son-enseigne-bio-en-france-l-expertise-carrefour-pionniere-depuis-1992-2026-1531987",
+   "source": "autres",
+   "media": "Capital.fr",
+   "site": "capital.fr",
+   "date": "2026-11-19T15:16+00:00",
+   "vu_le": "2026-11-20T14:08+00:00",
+   "resume": "Carrefour est le premier distributeur de produits biologiques en grande surface en France depuis 2016, avec une gamme propre Agriculture Biologique lancée en 1992.",
+   "enrichi": "2026-11-20",
+   "image": "https://www.capital.fr/imgre/fit/~1~cap~2026~11~19~92dcb6e9-50d1-4330-a954-3c3d240a87a8.jpg/1200x630/focus-point/50%2C50/comment-choisir-son-enseigne-bio-en-france-l-expertise-carrefour-pionniere-depuis-1992-2026.jpg"
   },
   {
    "id": "3b71deb25511",
@@ -277,6 +430,19 @@
    "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/IMG_9959-scaled.jpg"
   },
   {
+   "id": "189529c2b4b2",
+   "titre": "GTA VI : Leclerc, Carrefour, Auchan… Où peut-on acheter le jeu au meilleur prix ?",
+   "lien": "https://www.marmiton.org/shopping/gta-vi-leclerc-carrefour-auchan-ou-peut-on-acheter-le-jeu-au-meilleur-prix-s4141089.html",
+   "source": "autres",
+   "media": "Marmiton",
+   "site": "marmiton.org",
+   "date": "2026-11-19T06:00+00:00",
+   "vu_le": "2026-11-20T14:08+00:00",
+   "resume": "Vous l'attendez depuis des années et le grand jour approche enfin ! À quelques heures de la sortie de GTA VI, les fans sont nombreux à vouloir mettre la main sur leur exemplaire. Mais avant de vous précipiter en magasin, encore faut-il savoir quelle enseigne propose le prix le plus bas !",
+   "enrichi": "2026-11-20",
+   "image": "https://assets.afcdn.com/story/20261118/2334962_w1500h844c1cx600cy338cxt0cyt0cxb1200cyb675.webp"
+  },
+  {
    "id": "b93c1be6f026",
    "titre": "Les camping-cars ventouses incitent le Carrefour de Berck à interdire le stationnement sur son parking",
    "lien": "https://www.lemondeducampingcar.fr/etapes/les-camping-cars-ventouses-incitent-le-carrefour-de-berck-a-interdire-le-stationnement-sur-son-parking/250983",
@@ -350,6 +516,18 @@
    "vu_le": "2026-11-18T22:37+00:00",
    "resume": "",
    "enrichi": "2026-11-18"
+  },
+  {
+   "id": "577cba180603",
+   "titre": "Carrefour : les deux heureuses surprises qui pourraient rendre le modèle des hypers plus rentable",
+   "lien": "https://www.lesechos.fr/industrie-services/conso-distribution/chez-carrefour-les-deux-heureuses-surprises-qui-pourraient-rendre-le-modele-des-hypers-plus-rentable-2263337",
+   "source": "autres",
+   "media": "Les Echos",
+   "site": "lesechos.fr",
+   "date": "2026-11-18T15:46+00:00",
+   "vu_le": "2026-11-20T14:08+00:00",
+   "resume": "",
+   "enrichi": "2026-11-20"
   },
   {
    "id": "b264db40ff4a",
@@ -2969,6 +3147,19 @@
    "image": "https://medias.france.tv/CHRkkJbspDOyMWdhPhXbyoEffFE/880x0/filters:quality(85):format(jpeg)/y/p/k/php5nzkpy.jpg"
   },
   {
+   "id": "ae99dbc8ca26",
+   "titre": "\"Ce genre de montant en caisse n'existe pas\" : comment des magasins Carrefour sont soupçonnés de détourner l'argent des promotions",
+   "lien": "https://www.franceinfo.fr/economie/enquete-francetv-ce-genre-de-montant-en-caisse-n-existe-pas-comment-des-magasins-carrefour-sont-soupconnes-de-detourner-l-argent-des-promotions_8237773.html",
+   "source": "autres",
+   "media": "franceinfo",
+   "site": "franceinfo.fr",
+   "date": "2026-10-15T07:00+00:00",
+   "vu_le": "2026-11-20T14:08+00:00",
+   "resume": "Le magazine \"Complément d'enquête\" dévoile des tickets de caisse d'un hypermarché qui laissent entrevoir une fraude sur les remises immédiates versées par les fournisseurs grâce à des ventes fictives.",
+   "enrichi": "2026-11-20",
+   "image": "https://www.franceinfo.fr/pictures/Mz_0n_uZBNXPiPl7Nop7LShclFw/0x292:5607x3445/1500x843/2026/10/14/6acfe1bd06121702433719.jpg"
+  },
+  {
    "id": "38f31bf8bf8e",
    "titre": "[ CONCEPT ] Rideau pour Carrefour Occasion !",
    "lien": "https://www.olivierdauvers.fr/2026/10/12/concept-rideau-pour-carrefour-occasion/",
@@ -3383,17 +3574,6 @@
    "site": "bfmtv.com",
    "enrichi": "2026-11-11",
    "image": "https://io-fsly-bfmtv.cdn.nextradiotv.com/76VI2aSnFitNioDYYuacNs1CvUQ=/0x0:1280x720/1280x0/images/Inflation-Les-fruits-et-legumes-sont-en-hausse-observe-Alexandre-Bompard-PDG-de-Carrefour-2352707.jpg"
-  },
-  {
-   "id": "0bc47ba93f84",
-   "titre": "Le groupe GBH, distributeur de Carrefour en outre-mer, étoffe sa diversification en achetant les enseignes Keepcool et Neoness en France",
-   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/le-groupe-gbh-distributeur-de-carrefour-en-outre-mer-etoffe-sa-diversification-en-achetant-les-enseignes-keepcool-et-neoness-en-france.RHW2MUO4IRGHVPMG3WSRZ4QFCY.html",
-   "source": "lsa",
-   "date": "2026-09-21T07:00+00:00",
-   "vu_le": "2026-11-11T07:16+00:00",
-   "resume": "",
-   "site": "lsa-conso.fr",
-   "enrichi": "2026-11-11"
   }
  ]
 }
