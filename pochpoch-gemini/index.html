@@ -1,13 +1,18 @@
 <!doctype html>
 <!--
   Page « PochPoch — test Gemini Live » : le cost killer vocal, SANS ElevenLabs
-  Version 1.0.0 – 21/11/2026
+  Version 1.0.1 – 21/11/2026
   En ligne : https://baiji.fr/pochpoch-gemini/
 
   Historique :
    • 1.0.0 : première version. Même page que /pochpoch/ (fond Matrix, un bouton),
              mais la conversation passe par la « Gemini Live API » de Google
              (modèle gemini-3.8-live) au lieu de l'agent ElevenLabs.
+   • 1.0.1 : la connexion échouait avec le message illisible « [object Event] ».
+             - si la 1re tentative échoue, la page réessaie avec l'autre version
+               de l'API Google (« v1beta ») ;
+             - si ça échoue encore, elle interroge Google pour afficher la VRAIE
+               raison (clé refusée, modèle indisponible, quota, crédit…).
 
   À quoi sert cette page ?
   - À COMPARER : même personnage, même prompt, même habillage que /pochpoch/.
@@ -329,7 +334,7 @@
     /* ============================================================
        1. RÉGLAGES
        ============================================================ */
-    const VERSION = "1.0.0";
+    const VERSION = "1.0.1";
 
     // Le modèle « conversation en direct » de Google (remplace l'agent ElevenLabs)
     const MODELE = "gemini-3.8-live";
@@ -337,6 +342,15 @@
     // SDK officiel Google, version figée pour éviter qu'une mise à jour casse la page.
     // « /+esm » demande au CDN une version prête pour « import » dans un navigateur.
     const SDK_URL = "https://cdn.jsdelivr.net/npm/@google/genai@3.6.1/+esm";
+
+    // Versions de l'API Google essayées l'une après l'autre pour ouvrir la ligne.
+    // null = celle que le SDK choisit tout seul (« v1 ») ; « v1beta » = celle des
+    // exemples de la documentation. Selon le modèle et le compte, une seule des deux
+    // peut répondre : on tente donc les deux avant d'abandonner.
+    const VERSIONS_API = [null, "v1beta"];
+
+    // Adresse (classique, pas WebSocket) qui sert au diagnostic en cas d'échec
+    const API_GOOGLE = "https://generativelanguage.googleapis.com/v1beta/models/";
 
     // Voix proposées (toutes masculines). La liste complète (30 voix) est dans la doc
     // Google « speech generation ». Le mot entre parenthèses est le style annoncé par Google.
@@ -700,6 +714,8 @@ Dès que l'appel commence, tu décroches en disant exactement : « Pochepoche, j
     function nouvelAppel() {
       return {
         session: null,          // la connexion à Google
+        connecte: false,        // true une fois la ligne vraiment ouverte
+        fermeture: null,        // dernier code / raison de fermeture donnés par Google
         audio: null,            // l'AudioContext
         flux: null,             // le flux du micro
         analyseMicro: null,
@@ -866,13 +882,45 @@ Dès que l'appel commence, tu décroches en disant exactement : « Pochepoche, j
       toutFermer(appel);
       etat("erreur");
       ecrire(TEXTES.erreur);
-      let texte = (e && (e.message || e.reason)) || String(e || "Erreur inconnue");
+      // Un « Event » du navigateur n'a pas de texte : sans cette précaution on
+      // afficherait « [object Event] » (c'était le défaut de la v1.0.0).
+      let texte = typeof e === "string" ? e : (e && (e.message || e.reason)) || "";
+      if (!texte) texte = "Connexion impossible (aucun détail donné par le navigateur).";
       // Quelques traductions des cas les plus courants
       if (e && e.name === "NotAllowedError") texte = "Micro refusé : autorisez le micro pour cette page.";
       if (e && e.name === "NotFoundError")   texte = "Aucun micro trouvé sur cet appareil.";
       detail.textContent = texte;
       // Le bouton redevient utilisable ; le message, lui, reste affiché
       setTimeout(() => { if (!appel) { etat(""); ecrire(TEXTES.repos); } }, 2500);
+    }
+
+    // --- Diagnostic : pourquoi la ligne ne s'ouvre pas ? ---
+    // Quand un WebSocket est refusé, le navigateur ne dit PAS pourquoi (c'est voulu,
+    // par sécurité). On pose donc la question autrement : une requête classique à
+    // Google « ce modèle existe-t-il pour cette clé ? ». Là, Google répond en clair.
+    // La clé part dans un en-tête (x-goog-api-key), pas dans l'adresse.
+    async function diagnostiquer(cle) {
+      try {
+        const reponse = await fetch(API_GOOGLE + MODELE, { headers: { "x-goog-api-key": cle } });
+        if (reponse.ok) {
+          return "Clé acceptée et modèle " + MODELE + " trouvé, mais Google refuse d'ouvrir la ligne vocale " +
+                 "(modèle peut-être absent du niveau gratuit, ou quota atteint).";
+        }
+        let message = "";
+        try { message = (await reponse.json()).error?.message || ""; } catch {}
+        const cas = {
+          400: "Clé API refusée",
+          401: "Clé API refusée",
+          402: "Crédit prépayé épuisé",
+          403: "Clé API non autorisée pour ce service",
+          404: "Modèle " + MODELE + " introuvable pour cette clé",
+          429: "Quota dépassé",
+        };
+        return (cas[reponse.status] || "Erreur " + reponse.status) + (message ? " : " + message : "") + ".";
+      } catch {
+        return "Impossible de joindre Google : pas de réseau, ou un bloqueur du navigateur " +
+               "(sur Brave : essayer en baissant les « Shields » pour baiji.fr).";
+      }
     }
 
     // --- Le clic sur le bouton ---
@@ -933,37 +981,64 @@ Dès que l'appel commence, tu décroches en disant exactement : « Pochepoche, j
 
         // 5) Connexion à Google. C'est ici qu'on décrit « l'agent » :
         //    le personnage, la voix, et l'outil pour raccrocher.
-        const ia = new GoogleGenAI({ apiKey: cle });
-        const session = await ia.live.connect({
-          model: MODELE,
-          config: {
-            responseModalities: ["AUDIO"],                   // on veut une réponse parlée
-            systemInstruction: PROMPT,
-            speechConfig: {
-              voiceConfig: { prebuiltVoiceConfig: { voiceName: voixChoix.value } },
-            },
-            tools: [{
-              functionDeclarations: [{
-                name: "raccrocher",
-                description: "Termine l'appel téléphonique. À appeler juste après avoir dit la phrase de conclusion.",
-              }],
+        const reglagesAgent = {
+          responseModalities: ["AUDIO"],                   // on veut une réponse parlée
+          systemInstruction: PROMPT,
+          speechConfig: {
+            voiceConfig: { prebuiltVoiceConfig: { voiceName: voixChoix.value } },
+          },
+          tools: [{
+            functionDeclarations: [{
+              name: "raccrocher",
+              description: "Termine l'appel téléphonique. À appeler juste après avoir dit la phrase de conclusion.",
             }],
+          }],
+        };
+        const rappels = {
+          onmessage: (m) => recevoir(a, m),
+          // Tant que la ligne n'est pas ouverte (a.connecte), on ne fait que NOTER ce
+          // qui se passe : c'est la boucle ci-dessous qui décide de réessayer ou non.
+          onerror: (e) => { if (a.connecte && !a.ferme) erreur(e); },
+          // La connexion s'est fermée sans qu'on l'ait demandé (clé refusée, crédit
+          // épuisé, limite de durée de Google…) : Google donne un code et une raison.
+          onclose: (e) => {
+            a.fermeture = { code: e?.code, raison: e?.reason };
+            if (!a.connecte || a.ferme) return;
+            if (!e || e.code === 1000) raccrocher("Ligne fermée par Google.");
+            else erreur("Connexion fermée" + (e.code ? " (" + e.code + ")" : "") +
+                        (e.reason ? " : " + e.reason : ""));
           },
-          callbacks: {
-            onmessage: (m) => recevoir(a, m),
-            onerror:   (e) => { if (!a.ferme) erreur(e); },
-            // La connexion s'est fermée sans qu'on l'ait demandé (clé refusée, crédit
-            // épuisé, limite de durée de Google…) : on affiche la raison donnée.
-            onclose:   (e) => {
-              if (a.ferme) return;
-              if (a.session && (!e || e.code === 1000)) raccrocher("Ligne fermée par Google.");
-              else erreur({ message: "Connexion fermée" + (e?.code ? " (" + e.code + ")" : "") +
-                                     (e?.reason ? " : " + e.reason : "") });
-            },
-          },
-        });
+        };
+
+        // On essaie chaque version de l'API jusqu'à ce qu'une ligne s'ouvre.
+        // « ia.live.connect » échoue (throw) si la ligne ne s'ouvre pas : on passe alors
+        // à la version suivante.
+        let session = null;
+        const echecs = [];                                   // pour le message final
+        for (const version of VERSIONS_API) {
+          a.fermeture = null;
+          try {
+            const ia = new GoogleGenAI(version ? { apiKey: cle, httpOptions: { apiVersion: version } }
+                                               : { apiKey: cle });
+            session = await ia.live.connect({ model: MODELE, config: reglagesAgent, callbacks: rappels });
+            break;                                           // ligne ouverte : on sort de la boucle
+          } catch (e) {
+            const f = a.fermeture;
+            echecs.push((version || "v1") + " → " +
+              (f && (f.code || f.raison) ? "code " + (f.code || "?") + (f.raison ? " « " + f.raison + " »" : "")
+                                         : "refusée avant l'ouverture"));
+          }
+          if (a.ferme) return;
+        }
+        if (!session) {
+          // Aucune version n'a marché : on demande à Google une explication lisible
+          const raison = await diagnostiquer(cle);
+          if (!a.ferme) erreur(raison + " [" + echecs.join(" ; ") + "]");
+          return;
+        }
         if (a.ferme) { try { session.close(); } catch {} return; }
         a.session = session;
+        a.connecte = true;
 
         // 6) Le micro part chez Google, par paquets de 50 ms
         capteur.port.onmessage = (e) => {
