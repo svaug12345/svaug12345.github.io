@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Page « PochPoch — test Gemini Live » : le cost killer vocal, SANS ElevenLabs
-  Version 1.1.0 – 21/11/2026
+  Version 1.2.0 – 21/11/2026
   En ligne : https://baiji.fr/pochpoch-gemini/
 
   Historique :
@@ -17,6 +17,9 @@
              - bouton « HAUT-PARLEUR » pendant l'appel (choix retenu pour la suite) ;
              - l'écran reste allumé pendant l'appel (sinon le téléphone coupe la page) ;
              - à la fin, la page dit QUI a coupé : vous, Pochepoche, Google ou le garde-fou.
+   • 1.2.0 : couper la parole du bout du doigt. En haut-parleur « chacun son tour »,
+             on ne peut pas interrompre Pochepoche à la voix : il suffit maintenant de
+             toucher la ligne « POCHEPOCHE PARLE » pour le faire taire et parler.
 
   À quoi sert cette page ?
   - À COMPARER : même personnage, même prompt, même habillage que /pochpoch/.
@@ -155,7 +158,18 @@
       opacity: .8;
       text-align: center;
       min-height: 1.2em;
+      /* C'est un <button> (pour couper la parole) : on lui retire l'allure de bouton */
+      display: block;
+      width: 100%;
+      padding: 6px 0;
+      font-family: inherit;
+      color: inherit;
+      background: none;
+      border: 0;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
     }
+    #parole:focus-visible { outline: 1px solid var(--vert); }
 
     /* Bouton « haut-parleur » : dans le panneau, sous « qui a la parole » */
     #hp { display: block; margin: 12px auto 0; }
@@ -311,7 +325,8 @@
         <span class="chrono" id="chrono">00:00</span>
       </div>
       <canvas id="onde" aria-hidden="true"></canvas>
-      <div id="parole"></div>
+      <!-- Un bouton : le toucher pendant que Pochepoche parle lui coupe la parole -->
+      <button id="parole" type="button"></button>
       <!-- Affiché seulement sur téléphone / tablette (voir « SUR_TELEPHONE » dans le code) -->
       <button class="petit" id="hp" type="button" aria-pressed="false" hidden>HAUT-PARLEUR : NON</button>
     </section>
@@ -344,7 +359,7 @@
     /* ============================================================
        1. RÉGLAGES
        ============================================================ */
-    const VERSION = "1.1.0";
+    const VERSION = "1.2.0";
 
     // Le modèle « conversation en direct » de Google (remplace l'agent ElevenLabs)
     const MODELE = "gemini-3.8-live";
@@ -444,7 +459,7 @@ Dès que l'appel commence, tu décroches en disant exactement : « Pochepoche, j
       connexion:  "Autorisation en cours…",
       raccrocher: "Raccrocher",
       erreur:     "Accès refusé",
-      ilParle:    "▶ POCHEPOCHE PARLE",
+      ilParle:    "▶ POCHEPOCHE PARLE · TOUCHEZ POUR LE COUPER",
       aVous:      "● À VOUS — PARLEZ",
       hpNon:      "HAUT-PARLEUR : NON",
       hpOui:      "HAUT-PARLEUR : OUI",
@@ -750,6 +765,8 @@ Dès que l'appel commence, tu décroches en disant exactement : « Pochepoche, j
         dernierSon: 0,          // dernière fois où Pochepoche parlait (pour « chacun son tour »)
         verrouEcran: null,      // garde l'écran allumé pendant l'appel
         avisFin: "",            // Google a prévenu qu'il allait fermer la session
+        tourEnCours: false,     // true tant que Google n'a pas fini d'envoyer la réponse en cours
+        sourd: false,           // true = on jette la fin de la réponse qu'on vient de couper
         audio: null,            // l'AudioContext
         flux: null,             // le flux du micro
         analyseMicro: null,
@@ -822,13 +839,19 @@ Dès que l'appel commence, tu décroches en disant exactement : « Pochepoche, j
       if (a.ferme) return;
       const contenu = message.serverContent;
 
-      // 1) De la voix à jouer
+      // 1) De la voix à jouer (sauf si on vient de lui couper la parole : voir « sourd »)
       for (const part of contenu?.modelTurn?.parts || []) {
-        if (part.inlineData?.data) jouer(a, part.inlineData.data, part.inlineData.mimeType);
+        if (!part.inlineData?.data) continue;
+        a.tourEnCours = true;
+        if (!a.sourd) jouer(a, part.inlineData.data, part.inlineData.mimeType);
       }
 
       // 2) On a parlé par-dessus PochPoch : Google nous dit de couper le son
       if (contenu?.interrupted) couperLaVoix(a);
+
+      // 2 bis) La réponse en cours est terminée (finie ou interrompue) : la suivante
+      //        devra de nouveau être jouée normalement.
+      if (contenu?.turnComplete || contenu?.interrupted) { a.tourEnCours = false; a.sourd = false; }
 
       // 3) PochPoch utilise son outil « raccrocher »
       for (const fc of message.toolCall?.functionCalls || []) {
@@ -932,6 +955,21 @@ Dès que l'appel commence, tu décroches en disant exactement : « Pochepoche, j
       // Le bouton redevient utilisable ; le message, lui, reste affiché
       setTimeout(() => { if (!appel) { etat(""); ecrire(TEXTES.repos); } }, 2500);
     }
+
+    // --- Couper la parole du bout du doigt ---
+    // Utile surtout en haut-parleur « chacun son tour », où la voix ne peut pas
+    // l'interrompre. On fait trois choses :
+    //  1. on jette tout le son qui restait à jouer ;
+    //  2. si Google est encore en train d'envoyer la suite de la phrase, on devient
+    //     « sourd » à cette suite (sinon elle se remettrait à jouer) ;
+    //  3. on rouvre le micro tout de suite (dernierSon = 0), pour pouvoir parler.
+    function couperLaParole(a) {
+      if (!a || !a.session || !ilParle(a)) return;
+      couperLaVoix(a);
+      a.sourd = a.tourEnCours;
+      a.dernierSon = 0;
+    }
+    parole.addEventListener("click", () => couperLaParole(appel));
 
     // --- (Re)brancher le micro avec d'autres réglages, en cours d'appel ---
     // On coupe d'abord l'ancien micro : tant qu'un micro « mode appel » est ouvert,
