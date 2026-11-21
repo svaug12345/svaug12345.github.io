@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<!--
+  Bande-son — le son des films et des séries du NAS
+  Version 1.0.0
+  ------------------------------------------------------------
+  Comment ça marche :
+   • cette page (baiji.fr, hébergée sur GitHub Pages) ne fait PAS le travail :
+     un film pèse plusieurs Go, bien trop pour le navigateur d'un téléphone
+     (c'est la différence avec Pressoir, qui travaille dans le téléphone) ;
+   • c'est une TÉLÉCOMMANDE : elle parle au service « bande » du projet
+     « mp3 » du NAS (https://mp3.baiji.fr/bande/…). Les films y sont déjà :
+     rien n'est envoyé ni téléchargé pour faire l'extraction ;
+   • on parcourt les dossiers du NAS, on coche des vidéos ou des dossiers
+     ENTIERS (une saison, une série), on choisit la qualité, et tout part
+     dans une FILE D'ATTENTE que le NAS traite un fichier après l'autre ;
+   • on peut fermer la page : le NAS continue. En revenant, on retrouve
+     l'avancement et les fichiers à télécharger.
+  Le même « portier » que la page MP3 vérifie le jeton (en-tête X-Jeton) :
+  le jeton est donc partagé avec elle (localStorage « mp3.jeton »).
+  Téléchargement : la page demande un « ticket » au NAS, puis ouvre un
+  lien normal (un lien ne sait pas envoyer d'en-tête, et charger 200 Mo
+  en mémoire serait trop lourd pour un téléphone).
+  Code du service : dépôt privé nas-docker, dossier mp3/bande/.
+  ⚖️ Usage perso, sur des films et des séries qu'on possède.
+  ------------------------------------------------------------
+  Historique :
+   • v1.0.0 : première version : explorateur des bibliothèques du NAS,
+              sélection de vidéos et de dossiers entiers, formats
+              (origine sans perte, MP3, M4A, Opus), débit, langue de la
+              piste, file d'attente avec avancement et annulation,
+              téléchargement des sons, mise en page TABLETTE
+-->
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Bande-son</title>
+  <meta name="robots" content="noindex">
+  <!-- Compteur de visites de baiji.fr -->
+  <script src="/journal.js" defer></script>
+
+  <!--
+    PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »).
+    Fichiers fabriqués par outils/generer-pwa.py :
+     • manifest.webmanifest : nom, couleurs, icônes de l'appli ;
+     • icones/ : les icônes (apple-touch-icon = celle des iPhone) ;
+     • sw.js : le service worker, enregistré en bas de page.
+  -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <link rel="icon" href="icones/icone-192.png">
+  <meta name="theme-color" content="#0f7c7b">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- Polices de la charte SV : Manrope (texte) + JetBrains Mono (chiffres) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ===================== COULEURS (charte SV) ===================== */
+    :root {
+      --surface: #f6f9f9;  --raised: #ffffff;  --line: #d6e2e3;
+      --ink: #102a2e;      --muted: #4d6468;
+      --teal: #0f7c7b;     --teal-deep: #0b4f55;  --teal-soft: #d4ecea;
+      --good: #16a34a;     --bad: #dc2626;
+      --track: #e3ecec;    /* fond de la barre de progression */
+      --mono: "JetBrains Mono", ui-monospace, monospace;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --surface: #0e1a1c; --raised: #152427; --line: #26393c;
+        --ink: #e6f1f1;     --muted: #9db3b5;
+        --teal: #3cc2b8;    --teal-deep: #1d6b6e; --teal-soft: #1c4245;
+        --track: #22383b;
+      }
+    }
+
+    /* ===================== BASE ===================== */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Manrope, system-ui, sans-serif; background: var(--surface); color: var(--ink);
+      min-height: 100vh;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    button, input { font: inherit; color: inherit; }
+    button { border: 0; background: none; cursor: pointer; }
+    [hidden] { display: none !important; }
+    /* 110 px en bas : la place de la barre « Ajouter à la file », qui flotte */
+    main { max-width: 560px; margin: 0 auto; padding: 18px 16px 110px; display: flex; flex-direction: column; gap: 14px; }
+    .colonne { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+    svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ===================== EN-TÊTE ===================== */
+    header { padding: 2px; }
+    h1 { font-size: 26px; font-weight: 800; letter-spacing: -.02em; }
+    .sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    /* ===================== CARTES ===================== */
+    .card { background: var(--raised); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+    .card h2 { font-size: 15px; font-weight: 800; }
+    .titre-carte { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+    .titre-carte h2 { white-space: nowrap; }
+    .titre-carte .fil { flex-basis: 0; }
+    .label { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+    .aide { font-size: 12px; color: var(--muted); line-height: 1.45; }
+    .erreur { color: var(--bad); font-size: 13px; font-weight: 600; line-height: 1.45; word-break: break-word; }
+
+    .field { display: flex; gap: 8px; }
+    input[type=password] {
+      flex: 1; min-width: 0; padding: 12px 14px; border-radius: 12px;
+      border: 1px solid var(--line); background: var(--surface);
+    }
+    input:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+
+    /* Boutons : capitales espacées (charte SV) */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 13px 16px; border-radius: 12px; font-size: 13px; font-weight: 800;
+      letter-spacing: .08em; text-transform: uppercase; white-space: nowrap;
+    }
+    .btn-main { background: var(--teal); color: #fff; }
+    .btn-main:disabled { opacity: .5; cursor: default; }
+    .btn svg { width: 18px; height: 18px; }
+    /* Petit bouton discret (dans les titres de carte et les lignes) */
+    .mini { padding: 7px 10px; border-radius: 9px; background: var(--teal-soft); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+    .mini:disabled { opacity: .5; }
+
+    /* Pastilles de choix (bibliothèque, format, débit, langue) */
+    .choix { display: flex; gap: 6px; }
+    .choix button {
+      flex: 1; min-width: 0; padding: 10px 4px; border-radius: 10px; border: 1px solid var(--line);
+      font-size: 13px; font-weight: 800; background: var(--surface);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .choix.chiffres button { font-family: var(--mono); font-weight: 700; }
+    .choix button[aria-pressed=true] { background: var(--teal); border-color: var(--teal); color: #fff; }
+    .choix button:disabled { opacity: .45; }
+
+    /* ===================== EXPLORATEUR ===================== */
+    /* Fil d'Ariane : Séries › Nom de la série › Saison 1 (défile si trop long) */
+    .fil { flex: 1; min-width: 0; display: flex; align-items: center; gap: 4px; overflow-x: auto; scrollbar-width: none; font-size: 13px; font-weight: 700; white-space: nowrap; }
+    .fil::-webkit-scrollbar { display: none; }
+    .fil button { padding: 6px 8px; border-radius: 8px; color: var(--teal); font-weight: 800; }
+    .fil button:last-of-type { color: var(--ink); }
+    .fil span { color: var(--muted); }
+
+    .lignes { list-style: none; display: flex; flex-direction: column; }
+    .lignes li { display: flex; align-items: center; border-top: 1px solid var(--line); min-height: 50px; }
+    .lignes li:first-child { border-top: 0; }
+    /* La case à cocher : une grande zone tactile (44 px) autour d'un carré de 22 px */
+    .case { width: 44px; height: 50px; flex: none; display: grid; place-items: center; margin-left: -8px; }
+    .case i { width: 22px; height: 22px; border-radius: 7px; border: 2px solid var(--line); display: grid; place-items: center; background: var(--surface); }
+    .case svg { width: 14px; height: 14px; stroke-width: 3; color: #fff; opacity: 0; }
+    .case[aria-checked=true] i { background: var(--teal); border-color: var(--teal); }
+    .case[aria-checked=true] svg { opacity: 1; }
+    /* Le reste de la ligne : un dossier s'ouvre au toucher, une vidéo se coche */
+    .corps { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; padding: 8px 0; text-align: left; }
+    .corps > svg { width: 20px; height: 20px; flex: none; color: var(--teal); }
+    .corps .nom { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; line-height: 1.3; word-break: break-word; }
+    .corps .taille { font-family: var(--mono); font-size: 12px; color: var(--muted); flex: none; }
+    .corps .fleche { width: 16px; height: 16px; color: var(--muted); }
+    .vide { font-size: 13px; color: var(--muted); padding: 14px 0; text-align: center; }
+
+    /* ===================== FILE D'ATTENTE ===================== */
+    .resume { font-size: 13px; color: var(--muted); }
+    .resume b { color: var(--ink); font-family: var(--mono); }
+    .travail { flex-direction: column; align-items: stretch !important; gap: 6px; padding: 10px 0; }
+    .travail .haut { display: flex; align-items: center; gap: 10px; }
+    .travail .nom { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .travail .detail { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .travail .detail.erreur { white-space: normal; }
+    .etat { font-family: var(--mono); font-size: 12px; font-weight: 700; flex: none; color: var(--muted); }
+    .etat.fini { color: var(--good); }
+    .etat.rate { color: var(--bad); }
+    .croix { width: 32px; height: 32px; flex: none; border-radius: 9px; display: grid; place-items: center; color: var(--muted); margin-right: -6px; }
+    .croix svg { width: 16px; height: 16px; }
+    .barre { height: 8px; border-radius: 999px; background: var(--track); overflow: hidden; }
+    .barre > div { height: 100%; width: 0; background: var(--teal); border-radius: 999px; transition: width .6s; }
+    .boutons { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* ===================== BARRE « AJOUTER » (à la file) ===================== */
+    /* Flotte en bas de l'écran dès qu'une case est cochée */
+    #barre-ajout {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+      padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+      background: var(--raised); border-top: 1px solid var(--line);
+      display: flex; align-items: center; gap: 12px; justify-content: center;
+    }
+    #barre-ajout .compte { font-size: 13px; font-weight: 700; flex: 1; max-width: 420px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #barre-ajout .compte small { display: block; font-size: 11px; font-weight: 600; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Message bref en bas d'écran (« 12 vidéos ajoutées ») */
+    #toast {
+      position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%); z-index: 6;
+      background: var(--ink); color: var(--surface); padding: 10px 16px; border-radius: 12px;
+      font-size: 13px; font-weight: 700; max-width: calc(100vw - 32px); text-align: center;
+    }
+
+    footer { margin-top: 18px; font-size: 12px; color: var(--muted); text-align: center; line-height: 1.8; }
+    footer button { text-decoration: underline; font-size: 12px; color: var(--muted); }
+
+    /* ===================== TABLETTE ===================== */
+    /* Téléphone (< 760 px) : rien ne change. Tablette et ordinateur : page
+       élargie, explorateur à gauche, réglages + file + sons à droite. */
+    @media (min-width: 760px) {
+      main { max-width: 1180px; display: grid; grid-template-columns: 1fr 1fr; align-items: start; column-gap: 18px; }
+      header, footer, #carte-jeton { grid-column: 1 / -1; }
+    }
+    @media (min-width: 1100px) {
+      main { grid-template-columns: 3fr 2fr; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Bande-son</h1>
+    <div class="sub">Le son des films et des séries, extrait par le NAS</div>
+  </header>
+
+  <!-- ===== Jeton (demandé une seule fois par appareil, partagé avec la page MP3) ===== -->
+  <section class="card" id="carte-jeton" hidden>
+    <h2>Jeton du NAS</h2>
+    <p class="aide">Le même jeton que pour la page MP3 (fiche « MP3 – jeton » du gestionnaire de mots de passe).
+      Il reste mémorisé sur cet appareil.</p>
+    <form class="field" id="form-jeton">
+      <input type="password" id="jeton" autocomplete="off" placeholder="Jeton" required>
+      <button class="btn btn-main" type="submit">OK</button>
+    </form>
+    <p class="erreur" id="erreur-jeton" hidden></p>
+  </section>
+
+  <div class="colonne">
+    <!-- ===== L'explorateur : les dossiers du NAS ===== -->
+    <section class="card" id="carte-explorateur">
+      <!-- Les bibliothèques (Séries, Films…) : remplies par le NAS -->
+      <div class="choix" id="racines"></div>
+      <div class="titre-carte">
+        <nav class="fil" id="fil" aria-label="Dossier affiché"></nav>
+        <button class="mini" type="button" id="tout-cocher" hidden>Tout cocher</button>
+      </div>
+      <p class="erreur" id="erreur-explorateur" hidden></p>
+      <ul class="lignes" id="lignes"></ul>
+      <p class="aide">Touche un dossier pour l'ouvrir, sa case pour le prendre <b>en entier</b> (toute une saison, toute une série).</p>
+    </section>
+  </div>
+
+  <div class="colonne">
+    <!-- ===== Les réglages : format, qualité, langue ===== -->
+    <section class="card" id="carte-reglages">
+      <span class="label">Format</span>
+      <div class="choix" id="formats">
+        <button type="button" data-v="mp3">MP3</button>
+        <button type="button" data-v="m4a">M4A</button>
+        <button type="button" data-v="opus">Opus</button>
+        <button type="button" data-v="origine">Origine</button>
+      </div>
+      <div id="bloc-debit" style="display:flex;flex-direction:column;gap:12px">
+        <span class="label">Qualité (kbit/s)</span>
+        <div class="choix chiffres" id="debits">
+          <button type="button" data-v="96">96</button>
+          <button type="button" data-v="128">128</button>
+          <button type="button" data-v="192">192</button>
+          <button type="button" data-v="320">320</button>
+        </div>
+      </div>
+      <p class="aide" id="aide-format"></p>
+      <span class="label">Langue de la piste</span>
+      <div class="choix" id="langues">
+        <button type="button" data-v="fr">Français</button>
+        <button type="button" data-v="en">Anglais</button>
+        <button type="button" data-v="">Par défaut</button>
+      </div>
+      <p class="aide">Si la langue demandée n'existe pas dans un fichier, le NAS prend sa piste par défaut.</p>
+    </section>
+
+    <!-- ===== La file d'attente ===== -->
+    <section class="card" id="carte-file" hidden>
+      <div class="titre-carte">
+        <h2>File d'attente</h2>
+        <div class="boutons">
+          <button class="mini" type="button" id="vider" hidden>Effacer les terminés</button>
+          <button class="mini" type="button" id="tout-annuler" hidden>Tout annuler</button>
+        </div>
+      </div>
+      <div class="resume" id="resume"></div>
+      <ul class="lignes" id="travaux"></ul>
+      <button class="mini" type="button" id="voir-tout" hidden style="align-self:center"></button>
+      <p class="aide">Tu peux fermer la page : le NAS continue tout seul.</p>
+    </section>
+
+    <!-- ===== Les sons déjà extraits ===== -->
+    <section class="card" id="carte-sons" hidden>
+      <h2>Derniers sons</h2>
+      <ul class="lignes" id="sons"></ul>
+      <p class="aide">Tous les fichiers sont aussi sur le NAS : dossier <b>docker › mp3 › bandes-son</b>.</p>
+    </section>
+  </div>
+
+  <footer>
+    Usage perso, sur des films et des séries qu'on possède.<br>
+    Bande-son <span id="version"></span> · baiji.fr · <button type="button" id="changer-jeton">changer le jeton</button>
+  </footer>
+</main>
+
+<!-- La barre qui flotte en bas dès qu'une case est cochée -->
+<div id="barre-ajout" hidden>
+  <div class="compte"><span id="compte"></span><small id="compte-detail"></small></div>
+  <button class="mini" type="button" id="decocher">Décocher</button>
+  <button class="btn btn-main" type="button" id="ajouter">
+    <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>Ajouter
+  </button>
+</div>
+<div id="toast" role="status" hidden></div>
+
+<script>
+  /* =====================================================================
+     RÉGLAGES
+     ===================================================================== */
+  const VERSION = "1.0.0";
+  // Adresse du service du NAS. « ?service=… » dans l'adresse permet d'en
+  // essayer un autre (ex. ?service=http://192.168.1.161:8095 à la maison).
+  const SERVICE = (new URLSearchParams(location.search).get("service") || "https://mp3.baiji.fr").replace(/\/+$/, "");
+  const PREFIXE = "/bande";               // le portier envoie /bande/… au service « bande »
+  const CLE_JETON = "mp3.jeton";          // le MÊME jeton que la page MP3 (même portier)
+  const CLE_FORMAT = "bande.format";      // derniers réglages choisis
+  const CLE_DEBIT = "bande.debit";
+  const CLE_LANGUE = "bande.langue";
+  const CLE_RACINE = "bande.racine";      // dernière bibliothèque ouverte
+  const PAUSE_ACTIVE = 2000;              // ms entre deux nouvelles quand le NAS travaille
+  const PAUSE_CALME = 20000;              // … et quand la file est vide
+  const NB_VISIBLES = 8;                  // travaux montrés avant « Voir tout »
+
+  // Raccourci : un élément par son id
+  const $ = id => document.getElementById(id);
+  $("version").textContent = "v" + VERSION;
+
+  // Les pictos (Lucide, licence ISC) : seulement l'intérieur du <svg>
+  const PICTOS = {
+    dossier: '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+    film: '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M3 7.5h4"/><path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/><path d="M17 16.5h4"/>',
+    fleche: '<path d="m9 18 6-6-6-6"/>',
+    coche: '<path d="M20 6 9 17l-5-5"/>',
+    croix: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  };
+  const svg = (nom, classe = "") => `<svg viewBox="0 0 24 24" class="${classe}" aria-hidden="true">${PICTOS[nom]}</svg>`;
+
+  /* =====================================================================
+     STOCKAGE (protégé : en navigation privée, localStorage peut refuser)
+     ===================================================================== */
+  const lire = cle => { try { return localStorage.getItem(cle) ?? ""; } catch { return ""; } };
+  const ecrire = (cle, val) => { try { val !== "" && val != null ? localStorage.setItem(cle, val) : localStorage.removeItem(cle); } catch {} };
+
+  /* =====================================================================
+     DIALOGUE AVEC LE NAS
+     Chaque requête porte le jeton dans l'en-tête « X-Jeton ».
+     401 = jeton refusé → on l'efface et on le redemande.
+     ===================================================================== */
+  class JetonRefuse extends Error {}
+
+  async function api(chemin, options = {}) {
+    const jeton = lire(CLE_JETON);
+    if (!jeton) { demanderJeton(); throw new JetonRefuse(); }
+    let rep;
+    try {
+      rep = await fetch(SERVICE + PREFIXE + chemin, {
+        ...options,
+        headers: { ...(options.headers || {}), "X-Jeton": jeton },
+        cache: "no-store",
+      });
+    } catch {
+      // fetch n'échoue que si le NAS est injoignable (ou bloqué par CORS)
+      throw new Error("Le NAS ne répond pas (mp3.baiji.fr). Il est peut-être éteint ou en cours de redémarrage.");
+    }
+    if (rep.status === 401) {
+      ecrire(CLE_JETON, "");
+      demanderJeton("Jeton refusé par le NAS. Vérifie-le et tape-le à nouveau.");
+      throw new JetonRefuse();
+    }
+    if (!rep.ok) {
+      // Le service explique ses refus en JSON : {erreur: "…"}. S'il n'y a pas
+      // de JSON, c'est que la demande n'est pas arrivée jusqu'à lui :
+      //  • 502 / 503 : le portier ne le trouve pas (il démarre, ou il est arrêté) ;
+      //  • 404 / 405 : le portier n'a pas encore la règle /bande/ et envoie la
+      //    demande à MeTube, qui ne connaît pas cette adresse.
+      let detail = "";
+      try { detail = (await rep.json()).erreur || ""; } catch {}
+      if (!detail && (rep.status >= 502 || rep.status === 404 || rep.status === 405))
+        detail = "Le service Bande-son du NAS ne répond pas (pas encore déployé, ou en train de démarrer).";
+      throw new Error(detail || `Le NAS a répondu ${rep.status}`);
+    }
+    return rep.json();
+  }
+  // Envoi d'une demande en JSON
+  const poster = (chemin, donnees) => api(chemin, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(donnees || {}),
+  });
+
+  /* =====================================================================
+     JETON
+     ===================================================================== */
+  function demanderJeton(message) {
+    $("carte-jeton").hidden = false;
+    $("erreur-jeton").hidden = !message;
+    $("erreur-jeton").textContent = message || "";
+  }
+  $("form-jeton").addEventListener("submit", e => {
+    e.preventDefault();
+    ecrire(CLE_JETON, $("jeton").value.trim());
+    $("jeton").value = "";
+    $("carte-jeton").hidden = true;
+    demarrer();                            // le jeton est bon si les bibliothèques arrivent
+  });
+  $("changer-jeton").addEventListener("click", () => { ecrire(CLE_JETON, ""); demanderJeton(); });
+
+  /* =====================================================================
+     PETITS OUTILS D'AFFICHAGE
+     ===================================================================== */
+  // 1536000000 → « 1,4 Go »
+  function taille(octets) {
+    if (octets >= 1e9) return (octets / 1e9).toFixed(1).replace(".", ",") + " Go";
+    if (octets >= 1e6) return Math.round(octets / 1e6) + " Mo";
+    return Math.max(1, Math.round(octets / 1e3)) + " ko";
+  }
+  // Fabrique un élément : el("li", "classe", "texte")
+  function el(balise, classe, texte) {
+    const e = document.createElement(balise);
+    if (classe) e.className = classe;
+    if (texte != null) e.textContent = texte;     // textContent : un nom de fichier ne peut jamais devenir du HTML
+    return e;
+  }
+  let minuteurToast;
+  function toast(message) {
+    $("toast").textContent = message;
+    $("toast").hidden = false;
+    clearTimeout(minuteurToast);
+    minuteurToast = setTimeout(() => { $("toast").hidden = true; }, 3500);
+  }
+  // Une erreur à montrer (sauf « jeton refusé », déjà traité par la carte du jeton)
+  const signaler = err => { if (!(err instanceof JetonRefuse)) toast(err.message); };
+
+  /* =====================================================================
+     LES RÉGLAGES (format, débit, langue) — des groupes de pastilles
+     ===================================================================== */
+  const reglages = {
+    format: lire(CLE_FORMAT) || "mp3",
+    debit: lire(CLE_DEBIT) || "192",
+    // La langue est rangée « fr », « en » ou « - » (= piste par défaut du fichier).
+    // Rien de rangé = jamais choisi : on part sur le français.
+    langue: { "": "fr", "-": "" }[lire(CLE_LANGUE)] ?? lire(CLE_LANGUE),
+  };
+
+  // Branche un groupe de pastilles sur une valeur de « reglages »
+  function pastilles(idGroupe, nom, cle) {
+    const boutons = [...$(idGroupe).querySelectorAll("button")];
+    const peindre = () => boutons.forEach(b => b.setAttribute("aria-pressed", b.dataset.v === reglages[nom]));
+    boutons.forEach(b => b.addEventListener("click", () => {
+      reglages[nom] = b.dataset.v;
+      // La langue « par défaut » vaut "" : on la range « - » pour la distinguer de « jamais choisi »
+      ecrire(cle, nom === "langue" && b.dataset.v === "" ? "-" : b.dataset.v);
+      peindre(); expliquerFormat();
+    }));
+    peindre();
+  }
+  pastilles("formats", "format", CLE_FORMAT);
+  pastilles("debits", "debit", CLE_DEBIT);
+  pastilles("langues", "langue", CLE_LANGUE);
+
+  // Le petit texte sous le format : à quoi s'attendre (taille, durée)
+  function expliquerFormat() {
+    const origine = reglages.format === "origine";
+    $("bloc-debit").hidden = origine;
+    if (origine) {
+      $("aide-format").textContent = "La piste est recopiée telle quelle : aucune perte, quelques secondes par film. " +
+        "Le fichier garde le format du film (AC3, AAC, DTS… souvent en 5.1) : parfait pour archiver, pas toujours lisible sur un téléphone.";
+      return;
+    }
+    // Poids d'une heure de son : débit (kbit/s) × 3600 s ÷ 8 = ko
+    const moParHeure = Math.round(reglages.debit * 3600 / 8 / 1000);
+    const noms = { mp3: "MP3 : lisible absolument partout.", m4a: "M4A (AAC) : un peu meilleur que le MP3 à débit égal.",
+                   opus: "Opus : le plus efficace, 96 suffit largement pour des voix." };
+    $("aide-format").textContent = `${noms[reglages.format]} En stéréo, environ ${moParHeure} Mo par heure. Comptez 1 à 3 min de travail par film.`;
+  }
+  expliquerFormat();
+
+  /* =====================================================================
+     L'EXPLORATEUR
+     « racine » = le n° de la bibliothèque (Séries, Films…) ;
+     « chemin » = le dossier affiché, à l'intérieur de cette bibliothèque.
+     ===================================================================== */
+  let racines = [];                        // [{racine, nom, ok}]
+  let racine = null;                       // n° de la bibliothèque ouverte
+  let chemin = "";                         // dossier affiché ("" = le haut de la bibliothèque)
+  let contenu = { dossiers: [], fichiers: [] };
+  // La sélection : chemin complet → {dossier: true/false, taille}. Elle survit
+  // quand on change de dossier (on peut cocher dans plusieurs séries), mais
+  // pas quand on change de bibliothèque.
+  const selection = new Map();
+  const complet = nom => (chemin ? chemin + "/" : "") + nom;
+
+  async function chargerRacines() {
+    racines = await api("/racines");
+    $("racines").replaceChildren(...racines.map(r => {
+      const b = el("button", "", r.nom);
+      b.type = "button";
+      b.disabled = !r.ok;                  // dossier introuvable sur le NAS (volume mal réglé)
+      b.title = r.ok ? "" : "Dossier introuvable sur le NAS";
+      b.addEventListener("click", () => ouvrirRacine(r.racine));
+      b.dataset.racine = r.racine;
+      return b;
+    }));
+    $("racines").hidden = racines.length < 2;       // une seule bibliothèque : pas besoin de pastilles
+    const dispo = racines.filter(r => r.ok);
+    if (!dispo.length) {
+      $("erreur-explorateur").hidden = false;
+      $("erreur-explorateur").textContent = "Le NAS ne trouve aucun dossier de films ou de séries (volumes à vérifier dans le docker-compose du projet mp3).";
+      return;
+    }
+    const memoire = Number(lire(CLE_RACINE));
+    ouvrirRacine(dispo.some(r => r.racine === memoire) ? memoire : dispo[0].racine);
+  }
+
+  function ouvrirRacine(n) {
+    if (n !== racine) selection.clear();
+    racine = n;
+    ecrire(CLE_RACINE, String(n));
+    [...$("racines").children].forEach(b => b.setAttribute("aria-pressed", Number(b.dataset.racine) === n));
+    ouvrir("");
+  }
+
+  async function ouvrir(nouveauChemin) {
+    $("erreur-explorateur").hidden = true;
+    try {
+      contenu = await api(`/dossier?racine=${racine}&chemin=${encodeURIComponent(nouveauChemin)}`);
+      chemin = contenu.chemin;
+    } catch (err) {
+      if (err instanceof JetonRefuse) return;
+      $("erreur-explorateur").hidden = false;
+      $("erreur-explorateur").textContent = err.message;
+      return;
+    }
+    dessinerFil(); dessinerLignes(); dessinerBarre();
+    // Chemin trop long pour l'écran : on montre la fin (le dossier courant).
+    // À faire APRÈS le dessin des lignes, qui affiche ou cache « Tout cocher »
+    // et change donc la largeur disponible.
+    $("fil").scrollLeft = 1e6;
+    $("carte-explorateur").scrollIntoView({ block: "nearest" });
+  }
+
+  // Séries › Nom de la série › Saison 1 : chaque morceau est un bouton
+  function dessinerFil() {
+    const morceaux = chemin ? chemin.split("/") : [];
+    const nomRacine = (racines.find(r => r.racine === racine) || {}).nom || "NAS";
+    const elements = [];
+    const bouton = (texte, cible) => {
+      const b = el("button", "", texte); b.type = "button";
+      b.addEventListener("click", () => ouvrir(cible));
+      return b;
+    };
+    elements.push(bouton(nomRacine, ""));
+    morceaux.forEach((m, i) => {
+      elements.push(el("span", "", "›"));
+      elements.push(bouton(m, morceaux.slice(0, i + 1).join("/")));
+    });
+    $("fil").replaceChildren(...elements);
+  }
+
+  function dessinerLignes() {
+    const lignes = [];
+    const ligne = (nom, estDossier, tailleFichier) => {
+      const cle = complet(nom);
+      const li = el("li");
+      // La case à cocher
+      const coche = el("button", "case"); coche.type = "button";
+      coche.setAttribute("role", "checkbox");
+      coche.setAttribute("aria-checked", selection.has(cle));
+      coche.setAttribute("aria-label", (estDossier ? "Prendre tout le dossier " : "Prendre ") + nom);
+      coche.innerHTML = `<i>${svg("coche")}</i>`;
+      const basculer = () => {
+        selection.has(cle) ? selection.delete(cle) : selection.set(cle, { dossier: estDossier, taille: tailleFichier || 0 });
+        coche.setAttribute("aria-checked", selection.has(cle));
+        dessinerBarre();
+      };
+      coche.addEventListener("click", basculer);
+      // Le corps de la ligne : un dossier s'ouvre, une vidéo se coche
+      const corps = el("button", "corps"); corps.type = "button";
+      corps.innerHTML = svg(estDossier ? "dossier" : "film");
+      corps.append(el("span", "nom", nom));
+      if (estDossier) corps.insertAdjacentHTML("beforeend", svg("fleche", "fleche"));
+      else corps.append(el("span", "taille", taille(tailleFichier)));
+      corps.addEventListener("click", estDossier ? () => ouvrir(cle) : basculer);
+      li.append(coche, corps);
+      return li;
+    };
+    contenu.dossiers.forEach(d => lignes.push(ligne(d.nom, true)));
+    contenu.fichiers.forEach(f => lignes.push(ligne(f.nom, false, f.taille)));
+    if (!lignes.length) lignes.push(el("li", "vide", "Aucune vidéo dans ce dossier."));
+    $("lignes").replaceChildren(...lignes);
+    $("tout-cocher").hidden = contenu.dossiers.length + contenu.fichiers.length < 2;
+    majToutCocher();
+  }
+
+  // « Tout cocher » devient « Tout décocher » quand tout le dossier affiché est pris
+  const visibles = () => [...contenu.dossiers.map(d => ({ cle: complet(d.nom), dossier: true, taille: 0 })),
+                          ...contenu.fichiers.map(f => ({ cle: complet(f.nom), dossier: false, taille: f.taille }))];
+  const toutEstCoche = () => visibles().length > 0 && visibles().every(v => selection.has(v.cle));
+  function majToutCocher() { $("tout-cocher").textContent = toutEstCoche() ? "Tout décocher" : "Tout cocher"; }
+  $("tout-cocher").addEventListener("click", () => {
+    const retirer = toutEstCoche();
+    visibles().forEach(v => retirer ? selection.delete(v.cle) : selection.set(v.cle, { dossier: v.dossier, taille: v.taille }));
+    dessinerLignes(); dessinerBarre();
+  });
+
+  /* =====================================================================
+     LA BARRE « AJOUTER À LA FILE »
+     ===================================================================== */
+  function dessinerBarre() {
+    majToutCocher();
+    const n = selection.size;
+    $("barre-ajout").hidden = n === 0;
+    if (!n) return;
+    const dossiers = [...selection.values()].filter(v => v.dossier).length;
+    const videos = n - dossiers;
+    const pluriel = (nb, mot) => `${nb} ${mot}${nb > 1 ? "s" : ""}`;
+    $("compte").textContent = [dossiers && pluriel(dossiers, "dossier"), videos && pluriel(videos, "vidéo")].filter(Boolean).join(" + ");
+    const format = reglages.format === "origine" ? "origine" : `${reglages.format.toUpperCase()} ${reglages.debit}`;
+    const langue = { fr: "français", en: "anglais", "": "piste par défaut" }[reglages.langue];
+    $("compte-detail").textContent = `${format} · ${langue}`;
+  }
+  // Les réglages changent → le rappel dans la barre aussi
+  ["formats", "debits", "langues"].forEach(id => $(id).addEventListener("click", dessinerBarre));
+
+  $("decocher").addEventListener("click", () => { selection.clear(); dessinerLignes(); dessinerBarre(); });
+
+  $("ajouter").addEventListener("click", async () => {
+    $("ajouter").disabled = true;
+    try {
+      const rep = await poster("/lancer", {
+        racine, chemins: [...selection.keys()],
+        format: reglages.format, debit: Number(reglages.debit), langue: reglages.langue,
+      });
+      // Le NAS a déplié les dossiers : il dit combien de vidéos sont vraiment parties
+      let message = `${rep.ajoutes} vidéo${rep.ajoutes > 1 ? "s" : ""} dans la file`;
+      if (rep.deja) message += ` (${rep.deja} y étai${rep.deja > 1 ? "ent" : "t"} déjà)`;
+      toast(message);
+      selection.clear(); dessinerLignes(); dessinerBarre();
+      toutMontrer = false;
+      await suivre();
+      $("carte-file").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    } catch (err) { signaler(err); }
+    $("ajouter").disabled = false;
+  });
+
+  /* =====================================================================
+     LA FILE D'ATTENTE
+     La page redemande l'état au NAS toutes les 2 s tant qu'il travaille,
+     toutes les 20 s sinon, et pas du tout quand l'onglet est caché.
+     ===================================================================== */
+  let minuteurSuivi;
+  let toutMontrer = false;                 // « Voir tout » a été touché
+  let finisConnus = -1;                    // pour recharger « Derniers sons » quand un travail se termine
+
+  const LIBELLES = { attente: "en attente", en_cours: "", fini: "✓", erreur: "échec", annule: "annulé" };
+
+  async function suivre() {
+    clearTimeout(minuteurSuivi);
+    let actifs = 0;
+    try {
+      const { travaux } = await api("/file");
+      actifs = travaux.filter(t => t.statut === "attente" || t.statut === "en_cours").length;
+      dessinerFile(travaux);
+      const finis = travaux.filter(t => t.statut === "fini").length;
+      if (finis !== finisConnus) { finisConnus = finis; chargerSons(); }
+    } catch (err) {
+      if (err instanceof JetonRefuse) return;          // on reprendra une fois le jeton retapé
+    }
+    if (!document.hidden) minuteurSuivi = setTimeout(suivre, actifs ? PAUSE_ACTIVE : PAUSE_CALME);
+  }
+  // Retour sur l'onglet : des nouvelles tout de suite
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && lire(CLE_JETON)) suivre(); });
+
+  function dessinerFile(travaux) {
+    $("carte-file").hidden = travaux.length === 0;
+    if (!travaux.length) return;
+    const compte = statut => travaux.filter(t => t.statut === statut).length;
+    const attente = compte("attente"), enCours = compte("en_cours"), finis = compte("fini"), rates = compte("erreur");
+    // Le résumé : « 1 en cours · 11 en attente · 4 terminés »
+    const morceaux = [];
+    if (enCours) morceaux.push(`<b>${enCours}</b> en cours`);
+    if (attente) morceaux.push(`<b>${attente}</b> en attente`);
+    if (finis) morceaux.push(`<b>${finis}</b> terminé${finis > 1 ? "s" : ""}`);
+    if (rates) morceaux.push(`<b>${rates}</b> en échec`);
+    $("resume").innerHTML = morceaux.join(" · ") || "Rien en cours.";
+    $("tout-annuler").hidden = attente + enCours < 2;
+    $("vider").hidden = travaux.length === attente + enCours;
+
+    // Ordre d'affichage : celui qui tourne, puis l'attente, puis les terminés (les plus récents d'abord)
+    const rang = { en_cours: 0, attente: 1 };
+    const tries = [...travaux].sort((a, b) => (rang[a.statut] ?? 2) - (rang[b.statut] ?? 2)
+      || ((rang[a.statut] ?? 2) === 2 ? b.fin - a.fin : a.cree - b.cree));
+    const montres = toutMontrer ? tries : tries.slice(0, NB_VISIBLES);
+    $("travaux").replaceChildren(...montres.map(ligneTravail));
+    $("voir-tout").hidden = toutMontrer || tries.length <= NB_VISIBLES;
+    $("voir-tout").textContent = `Voir les ${tries.length - NB_VISIBLES} autres`;
+  }
+
+  function ligneTravail(t) {
+    const li = el("li", "travail");
+    const haut = el("div", "haut");
+    haut.append(el("span", "nom", t.nom));
+    const etat = el("span", "etat", t.statut === "en_cours" ? `${Math.round(t.pct || 0)} %` : LIBELLES[t.statut]);
+    if (t.statut === "fini") etat.classList.add("fini");
+    if (t.statut === "erreur") etat.classList.add("rate");
+    haut.append(etat);
+    if (t.statut === "fini") {
+      const b = el("button", "mini", "Télécharger"); b.type = "button";
+      b.addEventListener("click", () => telecharger(t.sortie, b));
+      haut.append(b);
+    }
+    if (t.statut === "attente" || t.statut === "en_cours") {
+      const x = el("button", "croix"); x.type = "button";
+      x.setAttribute("aria-label", "Annuler " + t.nom);
+      x.innerHTML = svg("croix");
+      x.addEventListener("click", async () => { try { await poster("/annuler", { id: t.id }); suivre(); } catch (err) { signaler(err); } });
+      haut.append(x);
+    }
+    li.append(haut);
+    if (t.statut === "en_cours") {
+      const barre = el("div", "barre"), plein = el("div");
+      plein.style.width = (t.pct || 0) + "%";
+      barre.append(plein); li.append(barre);
+    }
+    // La ligne de détail : l'erreur, ou « dossier · format · piste (· taille) »
+    if (t.statut === "erreur") li.append(el("div", "detail erreur", t.erreur));
+    else {
+      const format = t.format === "origine" ? "origine" : `${t.format.toUpperCase()} ${t.debit}`;
+      const details = [t.dossier !== "." && t.dossier, format, t.piste, t.statut === "fini" && taille(t.taille)];
+      li.append(el("div", "detail", details.filter(Boolean).join(" · ")));
+    }
+    return li;
+  }
+
+  $("voir-tout").addEventListener("click", () => { toutMontrer = true; suivre(); });
+  $("vider").addEventListener("click", async () => { try { await poster("/vider"); toutMontrer = false; suivre(); } catch (err) { signaler(err); } });
+  // « Tout annuler » : deux appuis (le premier demande confirmation sur le bouton lui-même)
+  let confirmeAnnuler;
+  $("tout-annuler").addEventListener("click", async () => {
+    const b = $("tout-annuler");
+    if (!b.dataset.sur) {
+      b.dataset.sur = "1"; b.textContent = "Sûr ? Tout annuler";
+      confirmeAnnuler = setTimeout(() => { delete b.dataset.sur; b.textContent = "Tout annuler"; }, 4000);
+      return;
+    }
+    clearTimeout(confirmeAnnuler); delete b.dataset.sur; b.textContent = "Tout annuler";
+    try { await poster("/annuler", { tout: true }); suivre(); } catch (err) { signaler(err); }
+  });
+
+  /* =====================================================================
+     LES SONS EXTRAITS + TÉLÉCHARGEMENT
+     ===================================================================== */
+  async function chargerSons() {
+    let sons;
+    try { sons = await api("/sorties"); } catch { return; }
+    $("carte-sons").hidden = sons.length === 0;
+    $("sons").replaceChildren(...sons.map(s => {
+      const li = el("li", "travail");
+      const haut = el("div", "haut");
+      haut.append(el("span", "nom", s.nom));
+      const b = el("button", "mini", "Télécharger"); b.type = "button";
+      b.addEventListener("click", () => telecharger(s.chemin, b));
+      haut.append(b);
+      // Le dossier du fichier (Séries/Nom/Saison 1) + sa taille
+      const dossier = s.chemin.split("/").slice(0, -1).join(" › ");
+      li.append(haut, el("div", "detail", [dossier, taille(s.taille)].filter(Boolean).join(" · ")));
+      return li;
+    }));
+  }
+
+  // Téléchargement en deux temps : 1) un ticket, demandé AVEC le jeton ;
+  // 2) un lien ordinaire qui porte le ticket. Le navigateur télécharge
+  // alors lui-même (barre de progression, reprise…), sans rien garder en mémoire.
+  async function telecharger(cheminSon, bouton) {
+    bouton.disabled = true;
+    try {
+      const { ticket } = await api("/ticket?nom=" + encodeURIComponent(cheminSon));
+      const lien = document.createElement("a");
+      lien.href = `${SERVICE}${PREFIXE}/telecharger?t=${encodeURIComponent(ticket)}`;
+      lien.download = "";                  // « télécharge, n'ouvre pas »
+      document.body.append(lien); lien.click(); lien.remove();
+      toast("Téléchargement lancé");
+    } catch (err) { signaler(err); }
+    bouton.disabled = false;
+  }
+
+  /* =====================================================================
+     DÉMARRAGE
+     ===================================================================== */
+  async function demarrer() {
+    try { await chargerRacines(); }
+    catch (err) {
+      if (err instanceof JetonRefuse) return;
+      $("erreur-explorateur").hidden = false;
+      $("erreur-explorateur").textContent = err.message;
+    }
+    suivre();
+  }
+  if (lire(CLE_JETON)) demarrer(); else demanderJeton();
+
+  // Page installable (service worker)
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>

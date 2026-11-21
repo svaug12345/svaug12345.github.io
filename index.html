@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr — Page d'accueil des projets (marque SV)
-  Version 1.44.2
+  Version 1.45.0
   ------------------------------------------------------------
   Historique :
    • v1.0.0 : première page d'accueil
@@ -79,6 +79,7 @@
    • v1.44.0 : ajout de « Table de négociation » (le visuel d'une négociation, scénario fictif) dans « Carrefour »
    • v1.44.1 : « Table de négociation » porte le petit micro (négociation vocale en direct)
    • v1.44.2 : « Table de négociation » perd le petit micro (négociations enregistrées, plus d'agent vocal en direct)
+   • v1.45.0 : ajout de « Bande-son » (le son des films et des séries, extrait par le NAS) dans « Outils »
 
   À déposer dans le dépôt GitHub : svaug12345.github.io
   → c'est le fichier "index.html" à la racine.
@@ -737,7 +738,7 @@
 
     <!-- ===================== PIED DE PAGE ===================== -->
     <footer>
-      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.44.2</p>
+      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.45.0</p>
     </footer>
 
     <!--
@@ -786,6 +787,7 @@
       signature: `<path d="m21 17-2.156-1.868A.5.5 0 0 0 18 15.5v.5a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1c0-2.545-3.991-3.97-8.5-4a1 1 0 0 0 0 5c4.153 0 4.745-11.295 5.708-13.5a2.5 2.5 0 1 1 3.31 3.284"/> <path d="M3 21h18"/>`,  // signature
       couverts: `<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/> <path d="M7 2v20"/> <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>`,  // utensils
       livre: `<path d="M12 5v16"/> <path d="m16 12 2 2 4-4"/> <path d="M22 6V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2h4.001A2 2 0 0022 17v-1.344"/>`,  // book-open-check
+      film: `<rect width="18" height="18" x="3" y="3" rx="2"/> <path d="M7 3v18"/> <path d="M3 7.5h4"/> <path d="M3 12h18"/> <path d="M3 16.5h4"/> <path d="M17 3v18"/> <path d="M17 7.5h4"/> <path d="M17 16.5h4"/>`,  // film
       video: `<path d="m12.296 3.464 3.02 3.956"/> <path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3z"/> <path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/> <path d="m6.18 5.276 3.1 3.899"/>`,  // clapperboard
       masque: `<path d="M18 11c-1.5 0-2.5.5-3 2"/> <path d="M4 6a2 2 0 0 0-2 2v4a5 5 0 0 0 5 5 8 8 0 0 1 5 2 8 8 0 0 1 5-2 5 5 0 0 0 5-5V8a2 2 0 0 0-2-2h-3a8 8 0 0 0-5 2 8 8 0 0 0-5-2z"/> <path d="M6 11c1.5 0 2.5.5 3 2"/>`,  // venetian-mask
       vagues: `<path d="M2 12q2.5 2 5 0t5 0 5 0 5 0"/> <path d="M2 19q2.5 2 5 0t5 0 5 0 5 0"/> <path d="M2 5q2.5 2 5 0t5 0 5 0 5 0"/>`,  // waves
@@ -861,6 +863,10 @@
         desc: "Le son d'une vidéo YouTube en MP3, ou un extrait vidéo (Short, morceau de 8 s…), par le NAS (accès par jeton)",
         courte: "YouTube en MP3 ou vidéo",
         url: "mp3/" },                       // service : projet « mp3 » du NAS (mp3.baiji.fr)
+      { id: "bande-son",   nom: "Bande-son",    icone: "film",
+        desc: "Le son des films et des séries du NAS : file d'attente, dossiers entiers, qualité au choix (accès par jeton)",
+        courte: "Le son des films et séries",
+        url: "bande-son/" },                 // service : conteneur « bande » du projet « mp3 » du NAS (mp3.baiji.fr/bande/)
       { id: "place-nette", nom: "Place nette",  icone: "disque",
         desc: "Ce qui prend de la place sur le disque ou le téléphone",
         courte: "Qui prend la place ?",
@@ -1045,6 +1051,7 @@
       "qr":           "qr code scanner lecteur flash caméra appareil photo",
       "pressoir":     "compresser compression vidéo son audio découper couper réduire taille whatsapp mp4",
       "mp3":          "youtube musique audio télécharger son chanson convertir vidéo short extrait morceau découper mp4",
+      "bande-son":    "film films série séries audio son extraire extraction piste bande originale nas plex mp3 m4a opus podcast écouter file d'attente dossier saison",
       "place-nette":  "disque dur stockage espace place ménage nettoyer gros fichiers doublons téléphone pc",
       "paraphe":      "police écriture manuscrite font typographie lettres gabou",
       "journal":      "statistiques stats visites logs audience suivi services surveillance pannes nas",
@@ -1104,7 +1111,7 @@
     const ORGANISATION = {
       rubriques: [
         { nom: "Maison", projets: ["famille", "repas", "cartable", "voitures", "mediatheque", "photos"] },
-        { nom: "Outils", projets: ["qr", "pressoir", "mp3", "place-nette", "paraphe", "journal"] },
+        { nom: "Outils", projets: ["qr", "pressoir", "mp3", "bande-son", "place-nette", "paraphe", "journal"] },
         { nom: "Famille & amis", projets: ["code", "revisions", "nego-papa", "foot-chats", "petite-souris", "monique", "grand-verdict", "sos-amitie"] },
         { nom: "Carrefour", projets: ["veille", "fournisseurs", "nexus", "equipe-nexus", "prospection-nexus", "salle-negociation", "table-negociation", "magasin-3d", "pochpoch"] },
         { nom: "Formation", projets: ["epuration", "entretien-tuteur", "fart"] },
