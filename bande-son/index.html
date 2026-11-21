@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Bande-son — le son des films et des séries du NAS
-  Version 1.0.0
+  Version 1.0.1
   ------------------------------------------------------------
   Comment ça marche :
    • cette page (baiji.fr, hébergée sur GitHub Pages) ne fait PAS le travail :
@@ -34,6 +34,9 @@
               piste, file d'attente avec avancement et annulation,
               sons rangés à côté des vidéos (dossiers « … - mp3 »),
               téléchargement des sons, mise en page TABLETTE
+   • v1.0.1 : file d'attente et « Derniers sons » rangés dans l'ordre
+              alphabétique (dossier, puis nom ; « Épisode 2 » avant
+              « Épisode 10 ») au lieu de « le plus récent d'abord »
 -->
 <html lang="fr">
 <head>
@@ -324,7 +327,7 @@
   /* =====================================================================
      RÉGLAGES
      ===================================================================== */
-  const VERSION = "1.0.0";
+  const VERSION = "1.0.1";
   // Adresse du service du NAS. « ?service=… » dans l'adresse permet d'en
   // essayer un autre (ex. ?service=http://192.168.1.161:8095 à la maison).
   const SERVICE = (new URLSearchParams(location.search).get("service") || "https://mp3.baiji.fr").replace(/\/+$/, "");
@@ -443,6 +446,11 @@
     clearTimeout(minuteurToast);
     minuteurToast = setTimeout(() => { $("toast").hidden = true; }, 3500);
   }
+  // Comparaison « alphabétique » à la française : les accents et les majuscules
+  // ne comptent pas (« Épisode » se range avec « Episode »), et les nombres sont
+  // lus comme des nombres (« Épisode 2 » avant « Épisode 10 »).
+  const ALPHA = new Intl.Collator("fr", { numeric: true, sensitivity: "base" });
+
   // Une erreur à montrer (sauf « jeton refusé », déjà traité par la carte du jeton)
   const signaler = err => { if (!(err instanceof JetonRefuse)) toast(err.message); };
 
@@ -706,10 +714,12 @@
     $("tout-annuler").hidden = attente + enCours < 2;
     $("vider").hidden = travaux.length === attente + enCours;
 
-    // Ordre d'affichage : celui qui tourne, puis l'attente, puis les terminés (les plus récents d'abord)
+    // Ordre d'affichage : celui qui tourne, puis l'attente, puis les terminés ;
+    // dans chaque groupe, l'ordre alphabétique (dossier, puis nom du fichier).
     const rang = { en_cours: 0, attente: 1 };
+    const cleTri = t => t.dossier + "/" + t.nom;
     const tries = [...travaux].sort((a, b) => (rang[a.statut] ?? 2) - (rang[b.statut] ?? 2)
-      || ((rang[a.statut] ?? 2) === 2 ? b.fin - a.fin : a.cree - b.cree));
+      || ALPHA.compare(cleTri(a), cleTri(b)));
     const montres = toutMontrer ? tries : tries.slice(0, NB_VISIBLES);
     $("travaux").replaceChildren(...montres.map(ligneTravail));
     $("voir-tout").hidden = toutMontrer || tries.length <= NB_VISIBLES;
@@ -774,6 +784,9 @@
     let sons;
     try { sons = await api("/sorties"); } catch { return; }
     $("carte-sons").hidden = sons.length === 0;
+    // Le NAS envoie les 30 derniers sons, du plus récent au plus ancien :
+    // on les range par bibliothèque, puis par ordre alphabétique du chemin.
+    sons.sort((a, b) => a.racine - b.racine || ALPHA.compare(a.chemin, b.chemin));
     $("sons").replaceChildren(...sons.map(s => {
       const li = el("li", "travail");
       const haut = el("div", "haut");
