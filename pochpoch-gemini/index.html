@@ -1,0 +1,1012 @@
+<!doctype html>
+<!--
+  Page « PochPoch — test Gemini Live » : le cost killer vocal, SANS ElevenLabs
+  Version 1.0.0 – 21/11/2026
+  En ligne : https://baiji.fr/pochpoch-gemini/
+
+  Historique :
+   • 1.0.0 : première version. Même page que /pochpoch/ (fond Matrix, un bouton),
+             mais la conversation passe par la « Gemini Live API » de Google
+             (modèle gemini-3.8-live) au lieu de l'agent ElevenLabs.
+
+  À quoi sert cette page ?
+  - À COMPARER : même personnage, même prompt, même habillage que /pochpoch/.
+    Seul le moteur vocal change. On peut donc juger la voix, la réactivité
+    et le coût de Google face à ElevenLabs.
+
+  Ce qui change par rapport à ElevenLabs (à savoir pour lire le code) :
+  - ElevenLabs fournit un « agent » tout fait : son SDK s'occupe du micro,
+    du haut-parleur, de savoir qui parle… Ici, Google ne fournit que le
+    « tuyau » (une connexion WebSocket). C'est donc CETTE PAGE qui fait :
+      1. la capture du micro et sa conversion au format attendu
+         (son brut « PCM 16 bits », 16 000 échantillons par seconde) ;
+      2. la lecture de la voix reçue (PCM 24 000 Hz), morceau par morceau,
+         sans trou entre les morceaux ;
+      3. la coupure immédiate du son quand on interrompt PochPoch ;
+      4. le raccrochage (bouton, ou PochPoch lui-même via un « outil »).
+  - Le prompt de PochPoch n'est plus rangé chez ElevenLabs : il est écrit
+    plus bas, dans la constante PROMPT.
+
+  ⚠ PAGE DE TEST : la clé API Gemini est saisie une fois dans la page et
+    reste dans CE navigateur (localStorage). Elle n'est JAMAIS dans le code
+    ni dans le dépôt, et ne part que chez Google. Avant de donner le lien
+    à d'autres personnes, il faudra un petit serveur relais qui distribue
+    des « jetons éphémères » (voir le commentaire « POUR ALLER PLUS LOIN »).
+-->
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <!-- Indispensable pour un bon affichage sur téléphone -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PochPoch · test Gemini</title>
+  <!-- « noindex » : la page n'apparaîtra pas sur Google (accessible seulement avec le lien) -->
+  <meta name="robots" content="noindex, nofollow">
+  <!-- Couleur de la barre du navigateur sur Android -->
+  <meta name="theme-color" content="#000000">
+  <!-- Police monospace « terminal » -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* ---------- Couleurs (une seule source de vérité) ---------- */
+    :root {
+      --fond:   #000000;   /* noir total */
+      --vert:   #33ff66;   /* vert phosphore façon Matrix */
+      --vert-2: #0d3b1a;   /* vert très sombre, pour les bordures au repos */
+      --rouge:  #ff3344;   /* raccrocher / erreur */
+    }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--fond);
+      overflow: hidden;              /* pas de barre de défilement */
+    }
+
+    /* Indispensable : sans cette règle, « display:flex » plus bas l'emporterait
+       sur l'attribut hidden et les éléments cachés resteraient visibles. */
+    [hidden] { display: none !important; }
+
+    /* Le canvas de la pluie occupe tout l'écran, derrière le reste */
+    #pluie {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Conteneur qui centre tout au milieu de l'écran, en colonne */
+    main {
+      position: relative;            /* au-dessus du canvas */
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+      padding: 0 16px;
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      color: var(--vert);
+    }
+
+    /* Petite étiquette qui rappelle qu'on est sur la version de test */
+    #etiquette {
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      opacity: .55;
+    }
+
+    /* ---------- Le panneau « ligne ouverte » (caché au repos) ---------- */
+    #panneau {
+      width: min(420px, 100%);
+      box-sizing: border-box;
+      background: rgba(0, 0, 0, 0.85);   /* fond opaque pour lire par-dessus la pluie */
+      border: 1px solid var(--vert);
+      box-shadow: 0 0 24px rgba(51, 255, 102, 0.2);
+      padding: 14px 16px 12px;
+      display: none;                     /* affiché seulement pendant l'appel */
+    }
+    body.en-ligne #panneau { display: block; animation: apparait .35s ease-out; }
+
+    /* Ligne du haut : voyant + « LIGNE OUVERTE » ……… chrono */
+    .entete {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      letter-spacing: 0.16em;
+      text-shadow: 0 0 6px rgba(51, 255, 102, 0.5);
+    }
+    .entete .chrono { margin-left: auto; font-variant-numeric: tabular-nums; }
+
+    /* Le voyant : un petit rond vert qui clignote comme une LED */
+    .voyant {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--vert);
+      box-shadow: 0 0 10px var(--vert);
+      animation: led 1s ease-in-out infinite;
+    }
+
+    /* L'oscilloscope : une onde qui bouge avec les voix */
+    #onde {
+      display: block;
+      width: 100%;
+      height: 64px;
+      margin: 10px 0 6px;
+    }
+
+    /* Qui a la parole */
+    #parole {
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      opacity: .8;
+      text-align: center;
+      min-height: 1.2em;
+    }
+
+    /* ---------- Le bouton principal ---------- */
+    #bouton {
+      font-family: inherit;
+      font-size: clamp(15px, 2.4vw, 19px);
+      letter-spacing: 0.18em;
+      color: var(--vert);
+      background: rgba(0, 0, 0, 0.82);
+      border: 1px solid var(--vert-2);
+      padding: 18px 30px;
+      cursor: pointer;
+      text-shadow: 0 0 8px rgba(51, 255, 102, 0.55);
+      transition: border-color .25s, box-shadow .25s, color .25s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* Le petit curseur clignotant après le texte, comme dans un terminal */
+    #bouton::after {
+      content: "_";
+      margin-left: 2px;
+      animation: clignote 1s steps(1) infinite;
+    }
+    #bouton:hover,
+    #bouton:focus-visible {
+      outline: none;
+      border-color: var(--vert);
+      box-shadow: 0 0 18px rgba(51, 255, 102, 0.25);
+    }
+
+    /* Pendant la connexion : bordure allumée + le bouton « respire » */
+    body.connexion #bouton {
+      border-color: var(--vert);
+      cursor: progress;
+      animation: respire 1.2s ease-in-out infinite;
+    }
+
+    /* Pendant l'appel : le bouton devient « Raccrocher », en rouge */
+    body.en-ligne #bouton {
+      color: var(--rouge);
+      border-color: var(--rouge);
+      text-shadow: 0 0 8px rgba(255, 51, 68, 0.6);
+      box-shadow: 0 0 20px rgba(255, 51, 68, 0.25);
+    }
+    body.en-ligne #bouton::after { content: none; }   /* pas de curseur sur Raccrocher */
+
+    /* En cas d'erreur (micro refusé, clé refusée…) : tout passe en rouge */
+    body.erreur #bouton {
+      color: var(--rouge);
+      border-color: var(--rouge);
+      text-shadow: 0 0 8px rgba(255, 51, 68, 0.6);
+    }
+
+    /* ---------- Saisie de la clé API (affichée seulement si besoin) ---------- */
+    #cle-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: min(420px, 100%);
+    }
+    #cle-form label { font-size: 12px; letter-spacing: 0.14em; opacity: .8; }
+    #cle-form .ligne { display: flex; gap: 8px; }
+    #cle {
+      flex: 1;
+      min-width: 0;                      /* autorise le champ à rétrécir sur petit écran */
+      font: inherit;
+      font-size: 16px;                   /* 16 px mini : évite le zoom automatique sur iPhone */
+      color: var(--vert);
+      background: rgba(0, 0, 0, 0.85);
+      border: 1px solid var(--vert);
+      padding: 12px;
+    }
+    #cle:focus-visible { outline: 2px solid var(--vert); outline-offset: 2px; }
+
+    /* Boutons secondaires (OK, changer la clé) : même esprit, en plus petit */
+    .petit {
+      font: inherit;
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      color: var(--vert);
+      background: rgba(0, 0, 0, 0.82);
+      border: 1px solid var(--vert-2);
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+    .petit:hover, .petit:focus-visible { outline: none; border-color: var(--vert); }
+
+    /* ---------- Message sous le bouton (erreur détaillée, bilan de l'appel) ---------- */
+    #detail {
+      max-width: min(520px, 100%);
+      min-height: 1.4em;
+      font-size: 12px;
+      line-height: 1.5;
+      text-align: center;
+      opacity: .85;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 2px 8px;
+      overflow-wrap: anywhere;           /* une longue erreur technique ne déborde pas */
+    }
+    #detail:empty { background: none; }
+    body.erreur #detail { color: var(--rouge); }
+
+    /* ---------- Réglages de test (voix, clé) : cachés pendant l'appel ---------- */
+    #reglages {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+    }
+    #reglages label { opacity: .8; }
+    #voix {
+      font: inherit;
+      font-size: 12px;
+      color: var(--vert);
+      background: #000;
+      border: 1px solid var(--vert-2);
+      padding: 7px 8px;
+    }
+    body.en-ligne #reglages,
+    body.connexion #reglages { display: none; }
+
+    @keyframes clignote { 50% { opacity: 0; } }
+    @keyframes respire  { 50% { opacity: .5; } }
+    @keyframes led      { 50% { opacity: .25; box-shadow: none; } }
+    @keyframes apparait { from { opacity: 0; transform: translateY(6px); } }
+
+    /* Accessibilité : si l'utilisateur a demandé moins d'animations, on les coupe */
+    @media (prefers-reduced-motion: reduce) {
+      #bouton::after, body.connexion #bouton, .voyant, #panneau { animation: none !important; }
+    }
+  </style>
+  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+  <script src="/journal.js" defer></script>
+</head>
+<body>
+  <!-- La pluie Matrix -->
+  <canvas id="pluie" aria-hidden="true"></canvas>
+
+  <main>
+    <div id="etiquette">TEST · GEMINI LIVE</div>
+
+    <!-- Panneau « ligne ouverte » : invisible au repos, affiché pendant l'appel.
+         aria-live : les lecteurs d'écran annoncent les changements de texte. -->
+    <section id="panneau" aria-live="polite">
+      <div class="entete">
+        <span class="voyant" aria-hidden="true"></span>
+        <span>LIGNE OUVERTE</span>
+        <span class="chrono" id="chrono">00:00</span>
+      </div>
+      <canvas id="onde" aria-hidden="true"></canvas>
+      <div id="parole"></div>
+    </section>
+
+    <!-- Saisie de la clé API : n'apparaît que la première fois (ou via « changer la clé ») -->
+    <form id="cle-form" hidden>
+      <label for="cle">CLÉ API GEMINI (gardée dans ce navigateur uniquement)</label>
+      <div class="ligne">
+        <input id="cle" type="password" autocomplete="off" spellcheck="false" placeholder="AIza…">
+        <button class="petit" type="submit">OK</button>
+      </div>
+    </form>
+
+    <!-- Le bouton principal -->
+    <button id="bouton" type="button">Demander l'autorisation</button>
+
+    <!-- Erreur détaillée ou bilan de l'appel -->
+    <div id="detail" role="status"></div>
+
+    <!-- Réglages de test -->
+    <div id="reglages">
+      <label for="voix">VOIX</label>
+      <select id="voix"></select>
+      <button class="petit" id="changer-cle" type="button">changer la clé</button>
+    </div>
+  </main>
+
+  <!-- type="module" : permet d'utiliser « import » pour charger le SDK depuis un CDN -->
+  <script type="module">
+    /* ============================================================
+       1. RÉGLAGES
+       ============================================================ */
+    const VERSION = "1.0.0";
+
+    // Le modèle « conversation en direct » de Google (remplace l'agent ElevenLabs)
+    const MODELE = "gemini-3.8-live";
+
+    // SDK officiel Google, version figée pour éviter qu'une mise à jour casse la page.
+    // « /+esm » demande au CDN une version prête pour « import » dans un navigateur.
+    const SDK_URL = "https://cdn.jsdelivr.net/npm/@google/genai@3.6.1/+esm";
+
+    // Voix proposées (toutes masculines). La liste complète (30 voix) est dans la doc
+    // Google « speech generation ». Le mot entre parenthèses est le style annoncé par Google.
+    const VOIX = [
+      ["Algenib",    "Algenib (rocailleuse)"],
+      ["Charon",     "Charon (posée)"],
+      ["Orus",       "Orus (ferme)"],
+      ["Alnilam",    "Alnilam (ferme)"],
+      ["Rasalgethi", "Rasalgethi (posée)"],
+      ["Enceladus",  "Enceladus (soufflée)"],
+    ];
+
+    // Garde-fou portefeuille : Google facture AUSSI le temps où il nous écoute,
+    // silences compris. Un onglet oublié coûterait donc de l'argent : on raccroche
+    // d'office au bout de 5 minutes.
+    const DUREE_MAX_S = 300;
+
+    // Tarifs en dollars par MILLION de jetons, pour l'estimation affichée après l'appel.
+    // ⚠ Relevés sur un comparatif tiers (nov. 2026), pas sur la page officielle :
+    //   à vérifier sur la page « pricing » de Google avant de s'y fier.
+    const PRIX = { audioEntree: 3.00, audioSortie: 12.00, texteEntree: 0.75, texteSortie: 4.50 };
+
+    // Où la clé et la voix choisie sont rangées dans le navigateur
+    const CLE_STOCKAGE  = "pochpoch-gemini.cle";
+    const VOIX_STOCKAGE = "pochpoch-gemini.voix";
+
+    // Le personnage. C'est le prompt de l'agent ElevenLabs, repris tel quel, avec
+    // deux ajouts : la phrase d'accueil (ElevenLabs la gérait à part) et l'outil
+    // « raccrocher » (ElevenLabs avait son propre outil pour terminer l'appel).
+    const PROMPT = `# Personnage
+Tu es PochPoch, l'assistant vocal cost killer. Un cost killer dur, à l'ancienne. Ton unique mission : écouter les envies de dépenses de la personne qui t'appelle et lui expliquer, de façon expéditive, pourquoi cette dépense n'est pas pertinente.
+
+# Ton nom (prononciation)
+Ton nom s'écrit « PochPoch » mais se prononce « pochepoche ». Quand tu dis ton nom, prononce-le TOUJOURS « Pochepoche ».
+
+# Début de l'appel
+Dès que l'appel commence, tu décroches en disant exactement : « Pochepoche, j'écoute. Vous voulez dépenser quoi, encore ? » — puis tu attends la réponse.
+
+# Ton et style
+- Voix grave, débit posé, autorité froide. Sec, agacé, mais jamais pressé de crier : tu laisses tomber tes phrases comme des sentences.
+- Tu soupires (« Pff… », « Non mais sérieusement… », « Encore ? »). Chaque minute de cet appel coûte déjà trop cher.
+- Phrases courtes. 2 à 3 phrases maximum par réponse. Jamais de longs discours, jamais de listes.
+- Tu ne tutoies jamais : vouvoiement sec et distant.
+- Tu restes drôle par ta mauvaise foi et ton exaspération, mais jamais grossier : pas d'insulte, pas de mot vulgaire, pas de moquerie sur le physique, l'origine ou la situation personnelle de la personne. Tu t'agaces contre la dépense, pas contre la personne.
+- Tu parles uniquement français.
+
+# Méthode (une seule question ou un seul argument à la fois)
+1. Fais dire précisément ce que la personne veut acheter et combien ça coûte. Si elle reste floue, agace-toi et exige un montant.
+2. Démonte la dépense avec UN argument cinglant à la fois, pioché parmi :
+   - Le besoin : « Besoin ou envie ? Parce que l'envie, ça ne passe pas en commande. »
+   - L'existant : vous avez déjà un équivalent, réparez-le, réutilisez-le, empruntez-le.
+   - Le coût complet : prix d'achat plus entretien, abonnements, consommables, formation, mise au rebut.
+   - L'usage réel : combien de fois par an ? Ramené à l'usage, c'est un scandale.
+   - Les alternatives : location, occasion, mutualisation, version gratuite, le collègue ou le voisin qui l'a déjà.
+   - Le report : attendez trois mois. Si vous l'avez oublié, c'est que vous n'en aviez pas besoin.
+   - La mise en concurrence : « Vous avez trois devis ? Non ? Alors on n'en parle même pas. »
+   - Le budget : ce n'était pas prévu, et ce qui n'est pas prévu n'existe pas.
+3. Si la personne contre-argumente, tu balaies d'un revers de main et tu sors un autre argument. Tu ne lâches pas.
+4. Seule exception : si la dépense est réellement imposée par la sécurité, la santé ou une obligation légale, tu cèdes à contrecœur, en grognant, et tu exiges trois devis et la version la moins chère.
+5. Quand tu as eu le dernier mot, conclus sèchement à voix haute (« Dépense refusée. Au revoir. »), PUIS appelle la fonction raccrocher pour terminer l'appel. Ne dis jamais le nom de la fonction à voix haute.
+
+# Garde-fous
+- Si la personne parle d'un vrai problème grave (détresse, danger, santé), tu sors immédiatement du personnage, tu parles calmement et tu l'orientes vers les secours (15, 112) ou une personne de confiance.
+- Si on te demande hors sujet, tu ramènes sèchement vers la dépense : « Je ne suis pas là pour bavarder. Votre dépense ? »`;
+
+    // Tous les textes affichés, regroupés ici pour les modifier facilement
+    const TEXTES = {
+      repos:      "Demander l'autorisation",
+      connexion:  "Autorisation en cours…",
+      raccrocher: "Raccrocher",
+      erreur:     "Accès refusé",
+      ilParle:    "▶ POCHEPOCHE PARLE",
+      aVous:      "● À VOUS — PARLEZ",
+    };
+
+    // Caractères qui tombent : katakana (le côté Matrix), chiffres… et symboles d'argent
+    const GLYPHES = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホ0123456789€$£%-";
+
+    const bouton   = document.getElementById("bouton");
+    const chrono   = document.getElementById("chrono");
+    const parole   = document.getElementById("parole");
+    const detail   = document.getElementById("detail");
+    const cleForm  = document.getElementById("cle-form");
+    const cleChamp = document.getElementById("cle");
+    const voixChoix = document.getElementById("voix");
+    const canvas   = document.getElementById("pluie");
+    const ctx      = canvas.getContext("2d");
+    const onde     = document.getElementById("onde");
+    const ctxOnde  = onde.getContext("2d");
+
+    // Respecte le réglage « réduire les animations » du système
+    const calme = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // localStorage peut être indisponible (navigation privée stricte) : on protège chaque accès
+    function lire(nom)          { try { return localStorage.getItem(nom) || ""; } catch { return ""; } }
+    function ecrireStock(nom, v) { try { v ? localStorage.setItem(nom, v) : localStorage.removeItem(nom); } catch {} }
+
+    // Remplit la liste des voix et reprend le dernier choix
+    for (const [id, nom] of VOIX) voixChoix.add(new Option(nom, id));
+    voixChoix.value = VOIX.some(([id]) => id === lire(VOIX_STOCKAGE)) ? lire(VOIX_STOCKAGE) : VOIX[0][0];
+    voixChoix.addEventListener("change", () => ecrireStock(VOIX_STOCKAGE, voixChoix.value));
+
+    /* ============================================================
+       2. LA PLUIE MATRIX  (identique à /pochpoch/)
+       Principe : l'écran est découpé en colonnes. Chaque colonne a
+       une « goutte » (sa position verticale). À chaque image, on
+       dessine un caractère au niveau de la goutte puis on la descend.
+       On ne vide pas l'écran : on le recouvre d'un noir presque
+       transparent, ce qui laisse une traînée qui s'estompe.
+       ============================================================ */
+    const TAILLE = 16;          // taille d'un caractère en pixels
+    let gouttes  = [];          // position (en lignes) de la goutte de chaque colonne
+    let intensite = 0;          // 0 = calme, 1 = PochPoch parle fort
+
+    function redimensionner() {
+      // On adapte les canvas à la taille réelle de l'écran (écrans haute définition compris)
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width  = innerWidth  * ratio;
+      canvas.height = innerHeight * ratio;
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      const colonnes = Math.ceil(innerWidth / TAILLE);
+      gouttes = Array.from({ length: colonnes }, () => -Math.random() * 60);
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, innerWidth, innerHeight);
+      redimensionnerOnde();
+    }
+
+    let derniere = 0;
+    function dessinerPluie(t) {
+      requestAnimationFrame(dessinerPluie);
+
+      // Cadence : ~14 images/s au repos, jusqu'à ~40 quand PochPoch s'énerve
+      const intervalle = 70 - intensite * 45;
+      if (t - derniere < intervalle) return;
+      derniere = t;
+
+      ctx.fillStyle = "rgba(0, 0, 0, 0.08)";            // voile = effet de traînée
+      ctx.fillRect(0, 0, innerWidth, innerHeight);
+      ctx.font = `${TAILLE}px "JetBrains Mono", monospace`;
+
+      for (let i = 0; i < gouttes.length; i++) {
+        const y = gouttes[i] * TAILLE;
+        const lettre = GLYPHES[Math.floor(Math.random() * GLYPHES.length)];
+        const lum = 0.35 + intensite * 0.65;            // plus lumineux quand il parle
+        ctx.fillStyle = Math.random() < 0.06
+          ? `rgba(200, 255, 210, ${lum})`               // quelques têtes presque blanches
+          : `rgba(51, 255, 102, ${lum * 0.8})`;
+        ctx.fillText(lettre, i * TAILLE, y);
+        if (y > innerHeight && Math.random() > 0.975) gouttes[i] = 0;
+        gouttes[i]++;
+      }
+    }
+
+    /* ============================================================
+       3. L'ONDE (oscilloscope du panneau « ligne ouverte »)
+       ============================================================ */
+    let phase = 0;              // fait « avancer » l'onde dans le temps
+    let volumeLisse = 0;        // volume lissé, pour une onde fluide
+
+    function redimensionnerOnde() {
+      const ratio = window.devicePixelRatio || 1;
+      onde.width  = onde.clientWidth  * ratio;
+      onde.height = onde.clientHeight * ratio;
+      ctxOnde.setTransform(ratio, 0, 0, ratio, 0, 0);
+    }
+
+    function dessinerOnde(volume) {
+      const l = onde.clientWidth, h = onde.clientHeight, milieu = h / 2;
+      ctxOnde.clearRect(0, 0, l, h);
+
+      // Ligne de base discrète
+      ctxOnde.strokeStyle = "rgba(51, 255, 102, 0.15)";
+      ctxOnde.lineWidth = 1;
+      ctxOnde.beginPath();
+      ctxOnde.moveTo(0, milieu);
+      ctxOnde.lineTo(l, milieu);
+      ctxOnde.stroke();
+
+      // L'onde elle-même : amplitude minimale de 2 px pour montrer que la ligne « vit »
+      const amplitude = 2 + volume * (h / 2 - 4);
+      ctxOnde.strokeStyle = "#33ff66";
+      ctxOnde.lineWidth = 2;
+      ctxOnde.shadowColor = "#33ff66";
+      ctxOnde.shadowBlur = 8;
+      ctxOnde.beginPath();
+      for (let x = 0; x <= l; x += 2) {
+        // Deux sinusoïdes mélangées = un signal moins « parfait », plus organique.
+        // L'enveloppe sin(π·x/l) fait que l'onde est nulle aux deux bords.
+        const enveloppe = Math.sin(Math.PI * x / l);
+        const y = milieu + enveloppe * amplitude *
+          (0.7 * Math.sin(x * 0.045 + phase) + 0.3 * Math.sin(x * 0.11 - phase * 1.7));
+        x === 0 ? ctxOnde.moveTo(x, y) : ctxOnde.lineTo(x, y);
+      }
+      ctxOnde.stroke();
+      ctxOnde.shadowBlur = 0;
+      phase += 0.15;
+    }
+
+    addEventListener("resize", redimensionner);
+    redimensionner();
+    if (!calme) requestAnimationFrame(dessinerPluie);
+
+    /* ============================================================
+       4. LES ÉTATS DE LA PAGE
+       On met une classe sur <body> (« connexion », « en-ligne »,
+       « erreur ») : le CSS se charge de tout afficher/cacher.
+       ============================================================ */
+    function etat(nom) {
+      document.body.className = nom || "";
+    }
+
+    // Écrit un texte lettre par lettre dans le bouton (effet terminal)
+    let machineAEcrire = null;
+    function ecrire(texte) {
+      clearInterval(machineAEcrire);
+      if (calme) { bouton.textContent = texte; return; }
+      let i = 0;
+      bouton.textContent = "";
+      machineAEcrire = setInterval(() => {
+        bouton.textContent = texte.slice(0, ++i);
+        if (i >= texte.length) clearInterval(machineAEcrire);
+      }, 35);
+    }
+
+    // Chrono de l'appel (mm:ss)
+    let debutAppel = 0, minuterie = null;
+    function mmss(s) {
+      // padStart(2, "0") ajoute un zéro devant : 7 → "07"
+      return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+    }
+    function lancerChrono() {
+      debutAppel = Date.now();
+      chrono.textContent = "00:00";
+      minuterie = setInterval(() => {
+        const s = Math.floor((Date.now() - debutAppel) / 1000);
+        chrono.textContent = mmss(s);
+        // Garde-fou portefeuille (voir DUREE_MAX_S)
+        if (s >= DUREE_MAX_S) raccrocher("Appel coupé d'office au bout de " + DUREE_MAX_S / 60 + " min (garde-fou).");
+      }, 1000);
+    }
+
+    /* ============================================================
+       5. LA CLÉ API
+       Elle est saisie une fois puis gardée dans localStorage.
+       ============================================================ */
+    function demanderCle() {
+      cleForm.hidden = false;
+      bouton.hidden = true;
+      detail.textContent = "";
+      cleChamp.value = "";
+      cleChamp.focus();
+    }
+
+    cleForm.addEventListener("submit", (e) => {
+      e.preventDefault();                       // pas de rechargement de la page
+      const cle = cleChamp.value.trim();
+      if (!cle) return;
+      ecrireStock(CLE_STOCKAGE, cle);
+      cleChamp.value = "";
+      cleForm.hidden = true;
+      bouton.hidden = false;
+      bouton.focus();
+    });
+
+    document.getElementById("changer-cle").addEventListener("click", () => {
+      ecrireStock(CLE_STOCKAGE, "");
+      demanderCle();
+    });
+
+    /* ============================================================
+       6. LE SON
+       Tout passe par un seul « AudioContext » (la table de mixage
+       du navigateur) :
+
+         micro ─► analyseur micro ─► capteur (AudioWorklet) ─► envoi à Google
+         voix reçue de Google ─► analyseur voix ─► haut-parleur
+
+       Les deux « analyseurs » ne servent qu'à mesurer le volume pour
+       animer l'onde et la pluie.
+       ============================================================ */
+
+    // --- 6a. Le « capteur » : un mini-programme qui tourne dans le fil audio du
+    // navigateur (AudioWorklet). Il reçoit le son du micro par paquets de 128
+    // échantillons, à la fréquence du matériel (souvent 48 000 Hz), et doit
+    // fournir du 16 000 Hz en nombres entiers 16 bits.
+    // Méthode : on fait la MOYENNE de chaque petit groupe d'échantillons
+    // (≈ 3 pour 48 000 Hz), ce qui réduit la fréquence tout en lissant le son.
+    // Il est écrit dans une chaîne de texte car un AudioWorklet doit être chargé
+    // comme un fichier à part : on fabrique ce « fichier » à la volée (Blob).
+    const CODE_CAPTEUR = `
+      class Capteur extends AudioWorkletProcessor {
+        constructor() {
+          super();
+          this.pas = sampleRate / 16000;       // nb d'échantillons d'entrée pour 1 de sortie
+          this.position = 0;                   // avancement dans le groupe en cours
+          this.somme = 0; this.nombre = 0;     // pour calculer la moyenne du groupe
+          this.tampon = new Int16Array(800);   // 800 échantillons = 50 ms de son à 16 kHz
+          this.rempli = 0;
+        }
+        process(entrees) {
+          const canal = entrees[0] && entrees[0][0];   // 1re entrée, 1er canal (mono)
+          if (!canal) return true;                     // rien reçu : on reste en vie
+          for (let i = 0; i < canal.length; i++) {
+            this.somme += canal[i]; this.nombre++; this.position++;
+            if (this.position >= this.pas) {
+              this.position -= this.pas;
+              // moyenne du groupe, bornée entre -1 et 1, puis convertie en entier 16 bits
+              const m = Math.max(-1, Math.min(1, this.somme / this.nombre));
+              this.somme = 0; this.nombre = 0;
+              this.tampon[this.rempli++] = m * 32767;
+              if (this.rempli === this.tampon.length) {
+                // paquet plein : on en envoie une COPIE à la page, puis on recommence
+                this.port.postMessage(this.tampon.buffer.slice(0));
+                this.rempli = 0;
+              }
+            }
+          }
+          return true;
+        }
+      }
+      registerProcessor("capteur", Capteur);
+    `;
+
+    // --- 6b. Conversions binaire ⇄ base64 (le WebSocket transporte du texte JSON,
+    // donc le son voyage encodé en base64).
+    function versBase64(tampon) {
+      const octets = new Uint8Array(tampon);
+      let texte = "";
+      for (let i = 0; i < octets.length; i++) texte += String.fromCharCode(octets[i]);
+      return btoa(texte);
+    }
+    function depuisBase64(b64) {
+      const texte = atob(b64);
+      const octets = new Uint8Array(texte.length);
+      for (let i = 0; i < texte.length; i++) octets[i] = texte.charCodeAt(i);
+      return octets;
+    }
+
+    // --- 6c. Mesure du volume (entre 0 et 1) à partir d'un analyseur :
+    // on calcule la « moyenne quadratique » (RMS) du signal.
+    let mesure = null;                     // tableau de travail, créé au premier appel
+    function volume(analyseur) {
+      if (!analyseur) return 0;
+      if (!mesure) mesure = new Uint8Array(analyseur.fftSize);
+      analyseur.getByteTimeDomainData(mesure);       // valeurs 0…255, le silence vaut 128
+      let somme = 0;
+      for (let i = 0; i < mesure.length; i++) {
+        const v = (mesure[i] - 128) / 128;
+        somme += v * v;
+      }
+      return Math.sqrt(somme / mesure.length);
+    }
+
+    /* ============================================================
+       7. L'APPEL VOCAL AVEC POCHPOCH
+       ============================================================ */
+    // Tout ce qui concerne l'appel en cours est rangé dans un seul objet.
+    // null = pas d'appel.
+    let appel = null;
+
+    function nouvelAppel() {
+      return {
+        session: null,          // la connexion à Google
+        audio: null,            // l'AudioContext
+        flux: null,             // le flux du micro
+        analyseMicro: null,
+        analyseVoix: null,
+        sources: new Set(),     // morceaux de voix en cours ou en attente de lecture
+        finLecture: 0,          // instant (horloge audio) où la voix reçue aura fini de jouer
+        boucle: 0,              // identifiant de la boucle d'animation
+        finDemandee: 0,         // heure à laquelle PochPoch a demandé à raccrocher (0 = non)
+        ferme: false,           // true dès qu'on a commencé à tout fermer
+        // Compteurs de jetons pour l'estimation du coût
+        jetons: { audioEntree: 0, audioSortie: 0, texteEntree: 0, texteSortie: 0 },
+      };
+    }
+
+    // PochPoch a-t-il la parole ? Oui tant qu'il reste de la voix à jouer.
+    function ilParle(a) {
+      return a.audio && a.audio.currentTime < a.finLecture;
+    }
+
+    // --- Lecture d'un morceau de voix reçu de Google ---
+    // Les morceaux arrivent plus vite qu'ils ne se jouent : on les met bout à
+    // bout en programmant chacun pile à la fin du précédent (finLecture).
+    function jouer(a, b64, typeMime) {
+      // Le type ressemble à « audio/pcm;rate=24000 » : on y lit la fréquence
+      const frequence = Number((/rate=(\d+)/.exec(typeMime || "") || [])[1]) || 24000;
+      const octets = depuisBase64(b64);
+      // 2 octets par échantillon, « petit-boutiste » (little-endian) : DataView le lit proprement
+      const vue = new DataView(octets.buffer);
+      const nb = Math.floor(octets.length / 2);
+      if (!nb) return;
+      const tampon = a.audio.createBuffer(1, nb, frequence);
+      const canal = tampon.getChannelData(0);
+      for (let i = 0; i < nb; i++) canal[i] = vue.getInt16(i * 2, true) / 32768;   // → entre -1 et 1
+
+      const source = a.audio.createBufferSource();
+      source.buffer = tampon;
+      source.connect(a.analyseVoix);
+      // Si on a pris du retard (ou si c'est le début d'une phrase), on repart de
+      // « maintenant + 50 ms » : cette petite marge évite les craquements.
+      const depart = Math.max(a.finLecture, a.audio.currentTime + 0.05);
+      source.start(depart);
+      a.finLecture = depart + tampon.duration;
+      a.sources.add(source);
+      source.onended = () => a.sources.delete(source);
+    }
+
+    // --- On a coupé la parole à PochPoch : on jette tout ce qui restait à jouer ---
+    function couperLaVoix(a) {
+      for (const s of a.sources) { try { s.stop(); } catch {} }
+      a.sources.clear();
+      a.finLecture = 0;
+    }
+
+    // --- Additionne les jetons annoncés par Google (pour l'estimation du coût) ---
+    function compter(a, usage) {
+      for (const d of usage.promptTokensDetails || []) {
+        if (d.modality === "AUDIO") a.jetons.audioEntree += d.tokenCount || 0;
+        else                        a.jetons.texteEntree += d.tokenCount || 0;
+      }
+      for (const d of usage.responseTokensDetails || []) {
+        if (d.modality === "AUDIO") a.jetons.audioSortie += d.tokenCount || 0;
+        else                        a.jetons.texteSortie += d.tokenCount || 0;
+      }
+      // La « réflexion » du modèle est facturée comme du texte produit
+      a.jetons.texteSortie += usage.thoughtsTokenCount || 0;
+    }
+
+    // --- Traitement de chaque message reçu de Google ---
+    function recevoir(a, message) {
+      if (a.ferme) return;
+      const contenu = message.serverContent;
+
+      // 1) De la voix à jouer
+      for (const part of contenu?.modelTurn?.parts || []) {
+        if (part.inlineData?.data) jouer(a, part.inlineData.data, part.inlineData.mimeType);
+      }
+
+      // 2) On a parlé par-dessus PochPoch : Google nous dit de couper le son
+      if (contenu?.interrupted) couperLaVoix(a);
+
+      // 3) PochPoch utilise son outil « raccrocher »
+      for (const fc of message.toolCall?.functionCalls || []) {
+        if (fc.name === "raccrocher") a.finDemandee = Date.now();
+        // On accuse réception, sinon le modèle peut rester en attente de la réponse
+        try {
+          a.session.sendToolResponse({
+            functionResponses: [{ id: fc.id, name: fc.name, response: { result: "ok" } }],
+          });
+        } catch {}
+      }
+
+      // 4) Compteurs de jetons
+      if (message.usageMetadata) compter(a, message.usageMetadata);
+    }
+
+    // --- Boucle d'animation pendant l'appel (≈ 60 fois par seconde) ---
+    function animerAppel() {
+      const a = appel;
+      if (!a || a.ferme) return;
+      const parle = ilParle(a);
+      parole.textContent = parle ? TEXTES.ilParle : TEXTES.aVous;
+
+      const sortie = Math.min(1, volume(a.analyseVoix)  * 4);
+      const entree = Math.min(1, volume(a.analyseMicro) * 4);
+      const v = parle ? sortie : entree * 0.6;       // votre voix fait une onde plus petite
+      // Lissage (moyenne glissante) pour éviter un effet stroboscope
+      volumeLisse = volumeLisse * 0.75 + v * 0.25;
+      intensite   = intensite * 0.8 + (parle ? sortie : 0) * 0.2;
+      dessinerOnde(volumeLisse);
+
+      // PochPoch a demandé à raccrocher : on attend qu'il ait fini sa dernière
+      // phrase (plus rien à jouer, et au moins 1,5 s écoulée), 8 s au maximum.
+      if (a.finDemandee) {
+        const attente = Date.now() - a.finDemandee;
+        if ((attente > 1500 && !parle) || attente > 8000) { raccrocher(); return; }
+      }
+      a.boucle = requestAnimationFrame(animerAppel);
+    }
+
+    // --- Ferme proprement tout ce qui a été ouvert (micro, son, connexion) ---
+    function toutFermer(a) {
+      if (!a || a.ferme) return;
+      a.ferme = true;
+      cancelAnimationFrame(a.boucle);
+      clearInterval(minuterie);
+      couperLaVoix(a);
+      // Éteint le micro (le voyant rouge du navigateur disparaît)
+      if (a.flux) for (const piste of a.flux.getTracks()) piste.stop();
+      try { a.session?.close(); } catch {}
+      try { a.audio?.close(); } catch {}
+      if (appel === a) appel = null;
+      intensite = 0;
+      volumeLisse = 0;
+      parole.textContent = "";
+    }
+
+    // --- Bilan affiché après l'appel : durée + estimation du coût ---
+    function bilan(a) {
+      const duree = debutAppel ? Math.round((Date.now() - debutAppel) / 1000) : 0;
+      const j = a.jetons;
+      const total = j.audioEntree + j.audioSortie + j.texteEntree + j.texteSortie;
+      if (!total) return "Appel de " + mmss(duree) + ".";
+      const dollars = (j.audioEntree * PRIX.audioEntree + j.audioSortie * PRIX.audioSortie +
+                       j.texteEntree * PRIX.texteEntree + j.texteSortie * PRIX.texteSortie) / 1e6;
+      return "Appel de " + mmss(duree) + " · " + total.toLocaleString("fr-FR") + " jetons · ≈ " +
+        dollars.toLocaleString("fr-FR", { minimumFractionDigits: 3, maximumFractionDigits: 3 }) +
+        " $ (estimation, à vérifier dans AI Studio)";
+    }
+
+    // --- Fin normale de l'appel (bouton, PochPoch, garde-fou) ---
+    function raccrocher(message) {
+      const a = appel;
+      if (!a) return;
+      const texte = (message ? message + " " : "") + bilan(a);
+      toutFermer(a);
+      etat("");
+      ecrire(TEXTES.repos);
+      detail.textContent = texte;
+    }
+
+    // --- Fin sur erreur : on montre le message technique (utile sur une page de test) ---
+    function erreur(e) {
+      console.error("PochPoch (Gemini) :", e);
+      toutFermer(appel);
+      etat("erreur");
+      ecrire(TEXTES.erreur);
+      let texte = (e && (e.message || e.reason)) || String(e || "Erreur inconnue");
+      // Quelques traductions des cas les plus courants
+      if (e && e.name === "NotAllowedError") texte = "Micro refusé : autorisez le micro pour cette page.";
+      if (e && e.name === "NotFoundError")   texte = "Aucun micro trouvé sur cet appareil.";
+      detail.textContent = texte;
+      // Le bouton redevient utilisable ; le message, lui, reste affiché
+      setTimeout(() => { if (!appel) { etat(""); ecrire(TEXTES.repos); } }, 2500);
+    }
+
+    // --- Le clic sur le bouton ---
+    bouton.addEventListener("click", async () => {
+      // Clic pendant l'appel : on raccroche
+      if (appel && appel.session) { raccrocher(); return; }
+      if (appel) return;                                   // connexion en cours : évite les doubles clics
+
+      // Pas encore de clé : on la demande d'abord
+      const cle = lire(CLE_STOCKAGE);
+      if (!cle) { demanderCle(); return; }
+
+      // Retour visuel IMMÉDIAT : on montre que la demande est partie
+      const a = appel = nouvelAppel();
+      debutAppel = 0;
+      etat("connexion");
+      ecrire(TEXTES.connexion);
+      detail.textContent = "";
+
+      try {
+        // 1) La table de mixage. À créer tout de suite, dans le clic : les navigateurs
+        //    refusent de jouer du son qui n'a pas été déclenché par un geste.
+        a.audio = new (window.AudioContext || window.webkitAudioContext)();
+        await a.audio.resume();
+
+        // 2) Le micro. Les trois options demandent au navigateur de nettoyer le son ;
+        //    « echoCancellation » est la plus importante : elle retire du micro la voix
+        //    de PochPoch qui sort du haut-parleur, sinon il s'interromprait lui-même.
+        a.flux = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        });
+        if (a.ferme) return;
+
+        // 3) On charge le capteur (voir 6a) et le SDK Google
+        const adresse = URL.createObjectURL(new Blob([CODE_CAPTEUR], { type: "application/javascript" }));
+        await a.audio.audioWorklet.addModule(adresse);
+        URL.revokeObjectURL(adresse);
+        const { GoogleGenAI } = await import(SDK_URL);
+        if (a.ferme) return;
+
+        // 4) Branchements audio
+        a.analyseVoix = a.audio.createAnalyser();
+        a.analyseVoix.fftSize = 512;
+        a.analyseVoix.connect(a.audio.destination);          // → haut-parleur
+
+        a.analyseMicro = a.audio.createAnalyser();
+        a.analyseMicro.fftSize = 512;
+        const micro   = a.audio.createMediaStreamSource(a.flux);
+        const capteur = new AudioWorkletNode(a.audio, "capteur");
+        // Un nœud qui n'est relié à rien n'est pas calculé par certains navigateurs :
+        // on relie donc le capteur à la sortie à travers un volume à ZÉRO
+        // (on ne veut surtout pas s'entendre soi-même).
+        const muet = a.audio.createGain();
+        muet.gain.value = 0;
+        micro.connect(a.analyseMicro);
+        micro.connect(capteur);
+        capteur.connect(muet).connect(a.audio.destination);
+
+        // 5) Connexion à Google. C'est ici qu'on décrit « l'agent » :
+        //    le personnage, la voix, et l'outil pour raccrocher.
+        const ia = new GoogleGenAI({ apiKey: cle });
+        const session = await ia.live.connect({
+          model: MODELE,
+          config: {
+            responseModalities: ["AUDIO"],                   // on veut une réponse parlée
+            systemInstruction: PROMPT,
+            speechConfig: {
+              voiceConfig: { prebuiltVoiceConfig: { voiceName: voixChoix.value } },
+            },
+            tools: [{
+              functionDeclarations: [{
+                name: "raccrocher",
+                description: "Termine l'appel téléphonique. À appeler juste après avoir dit la phrase de conclusion.",
+              }],
+            }],
+          },
+          callbacks: {
+            onmessage: (m) => recevoir(a, m),
+            onerror:   (e) => { if (!a.ferme) erreur(e); },
+            // La connexion s'est fermée sans qu'on l'ait demandé (clé refusée, crédit
+            // épuisé, limite de durée de Google…) : on affiche la raison donnée.
+            onclose:   (e) => {
+              if (a.ferme) return;
+              if (a.session && (!e || e.code === 1000)) raccrocher("Ligne fermée par Google.");
+              else erreur({ message: "Connexion fermée" + (e?.code ? " (" + e.code + ")" : "") +
+                                     (e?.reason ? " : " + e.reason : "") });
+            },
+          },
+        });
+        if (a.ferme) { try { session.close(); } catch {} return; }
+        a.session = session;
+
+        // 6) Le micro part chez Google, par paquets de 50 ms
+        capteur.port.onmessage = (e) => {
+          if (a.ferme) return;
+          try {
+            session.sendRealtimeInput({
+              audio: { data: versBase64(e.data), mimeType: "audio/pcm;rate=16000" },
+            });
+          } catch {}
+        };
+
+        // 7) La ligne est ouverte : on affiche le panneau et on lance chrono + onde
+        etat("en-ligne");
+        ecrire(TEXTES.raccrocher);
+        redimensionnerOnde();      // le canvas vient d'apparaître : on mesure sa taille
+        lancerChrono();
+        animerAppel();
+
+        // 8) PochPoch doit parler en premier (comme le « premier message » d'ElevenLabs).
+        //    Le modèle attend normalement qu'on lui parle : on lui envoie donc un petit
+        //    texte « l'appel commence », et le prompt lui dit quoi répondre.
+        session.sendClientContent({
+          turns: [{ role: "user", parts: [{ text: "(L'appel commence : décroche.)" }] }],
+          turnComplete: true,
+        });
+      } catch (e) {
+        // Micro refusé, pas de réseau, clé invalide…
+        if (!a.ferme) erreur(e);
+      }
+    });
+
+    /* ============================================================
+       POUR ALLER PLUS LOIN (avant de partager le lien)
+       Aujourd'hui la clé API est dans le navigateur de celui qui teste.
+       Pour une page ouverte à d'autres, il faut un petit serveur (par
+       exemple sur Cloud Run, à côté du connecteur Chirp) qui garde la
+       clé et distribue à la page un « jeton éphémère » : un laissez-passer
+       valable une seule fois et quelques minutes, verrouillé sur ce
+       modèle et ce prompt. La page ferait alors :
+           const { jeton } = await (await fetch(URL_DU_SERVEUR)).json();
+           const ia = new GoogleGenAI({ apiKey: jeton });
+       et tout le reste du code resterait identique.
+       ============================================================ */
+  </script>
+</body>
+</html>
