@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Page « PochPoch — test Gemini Live » : le cost killer vocal, SANS ElevenLabs
-  Version 1.0.1 – 21/11/2026
+  Version 1.1.0 – 21/11/2026
   En ligne : https://baiji.fr/pochpoch-gemini/
 
   Historique :
@@ -13,6 +13,10 @@
                de l'API Google (« v1beta ») ;
              - si ça échoue encore, elle interroge Google pour afficher la VRAIE
                raison (clé refusée, modèle indisponible, quota, crédit…).
+   • 1.1.0 : sur téléphone, le son sortait par l'écouteur (celui des appels).
+             - bouton « HAUT-PARLEUR » pendant l'appel (choix retenu pour la suite) ;
+             - l'écran reste allumé pendant l'appel (sinon le téléphone coupe la page) ;
+             - à la fin, la page dit QUI a coupé : vous, Pochepoche, Google ou le garde-fou.
 
   À quoi sert cette page ?
   - À COMPARER : même personnage, même prompt, même habillage que /pochpoch/.
@@ -152,6 +156,10 @@
       text-align: center;
       min-height: 1.2em;
     }
+
+    /* Bouton « haut-parleur » : dans le panneau, sous « qui a la parole » */
+    #hp { display: block; margin: 12px auto 0; }
+    #hp[aria-pressed="true"] { border-color: var(--vert); box-shadow: 0 0 12px rgba(51, 255, 102, 0.3); }
 
     /* ---------- Le bouton principal ---------- */
     #bouton {
@@ -304,6 +312,8 @@
       </div>
       <canvas id="onde" aria-hidden="true"></canvas>
       <div id="parole"></div>
+      <!-- Affiché seulement sur téléphone / tablette (voir « SUR_TELEPHONE » dans le code) -->
+      <button class="petit" id="hp" type="button" aria-pressed="false" hidden>HAUT-PARLEUR : NON</button>
     </section>
 
     <!-- Saisie de la clé API : n'apparaît que la première fois (ou via « changer la clé ») -->
@@ -334,7 +344,7 @@
     /* ============================================================
        1. RÉGLAGES
        ============================================================ */
-    const VERSION = "1.0.1";
+    const VERSION = "1.1.0";
 
     // Le modèle « conversation en direct » de Google (remplace l'agent ElevenLabs)
     const MODELE = "gemini-3.8-live";
@@ -376,6 +386,18 @@
     // Où la clé et la voix choisie sont rangées dans le navigateur
     const CLE_STOCKAGE  = "pochpoch-gemini.cle";
     const VOIX_STOCKAGE = "pochpoch-gemini.voix";
+    const HP_STOCKAGE   = "pochpoch-gemini.hp";      // "1" = haut-parleur demandé
+
+    // Deux façons de régler le micro :
+    //  - « appel »  : le téléphone nettoie le son et retire l'écho… mais se met en
+    //    « mode appel », et beaucoup de téléphones envoient alors le son dans l'écouteur ;
+    //  - « simple » : aucun traitement ; le téléphone reste en mode « musique » et le
+    //    son sort par le haut-parleur. En échange, le micro entend Pochepoche (écho).
+    const MICRO_APPEL  = { echoCancellation: true,  noiseSuppression: true,  autoGainControl: true };
+    const MICRO_SIMPLE = { echoCancellation: false, noiseSuppression: false, autoGainControl: false };
+
+    // Écran tactile = téléphone ou tablette : le bouton haut-parleur n'a de sens que là
+    const SUR_TELEPHONE = matchMedia("(pointer: coarse)").matches;
 
     // Le personnage. C'est le prompt de l'agent ElevenLabs, repris tel quel, avec
     // deux ajouts : la phrase d'accueil (ElevenLabs la gérait à part) et l'outil
@@ -424,6 +446,10 @@ Dès que l'appel commence, tu décroches en disant exactement : « Pochepoche, j
       erreur:     "Accès refusé",
       ilParle:    "▶ POCHEPOCHE PARLE",
       aVous:      "● À VOUS — PARLEZ",
+      hpNon:      "HAUT-PARLEUR : NON",
+      hpOui:      "HAUT-PARLEUR : OUI",
+      // « chacun son tour » : voir reglerHautParleur()
+      hpTour:     "HAUT-PARLEUR : OUI (chacun son tour)",
     };
 
     // Caractères qui tombent : katakana (le côté Matrix), chiffres… et symboles d'argent
@@ -433,6 +459,7 @@ Dès que l'appel commence, tu décroches en disant exactement : « Pochepoche, j
     const chrono   = document.getElementById("chrono");
     const parole   = document.getElementById("parole");
     const detail   = document.getElementById("detail");
+    const boutonHP = document.getElementById("hp");
     const cleForm  = document.getElementById("cle-form");
     const cleChamp = document.getElementById("cle");
     const voixChoix = document.getElementById("voix");
@@ -716,6 +743,13 @@ Dès que l'appel commence, tu décroches en disant exactement : « Pochepoche, j
         session: null,          // la connexion à Google
         connecte: false,        // true une fois la ligne vraiment ouverte
         fermeture: null,        // dernier code / raison de fermeture donnés par Google
+        microSource: null,      // le nœud audio branché sur le micro
+        capteur: null,          // le nœud « capteur » (voir 6a)
+        microSimple: false,     // true = micro sans traitement (voir MICRO_SIMPLE)
+        chacunSonTour: false,   // true = on n'écoute pas le micro pendant que Pochepoche parle
+        dernierSon: 0,          // dernière fois où Pochepoche parlait (pour « chacun son tour »)
+        verrouEcran: null,      // garde l'écran allumé pendant l'appel
+        avisFin: "",            // Google a prévenu qu'il allait fermer la session
         audio: null,            // l'AudioContext
         flux: null,             // le flux du micro
         analyseMicro: null,
@@ -807,7 +841,10 @@ Dès que l'appel commence, tu décroches en disant exactement : « Pochepoche, j
         } catch {}
       }
 
-      // 4) Compteurs de jetons
+      // 4) Google prévient qu'il va bientôt fermer la session (limite de durée)
+      if (message.goAway) a.avisFin = "Google avait annoncé la fin de la session. ";
+
+      // 5) Compteurs de jetons
       if (message.usageMetadata) compter(a, message.usageMetadata);
     }
 
@@ -830,7 +867,7 @@ Dès que l'appel commence, tu décroches en disant exactement : « Pochepoche, j
       // phrase (plus rien à jouer, et au moins 1,5 s écoulée), 8 s au maximum.
       if (a.finDemandee) {
         const attente = Date.now() - a.finDemandee;
-        if ((attente > 1500 && !parle) || attente > 8000) { raccrocher(); return; }
+        if ((attente > 1500 && !parle) || attente > 8000) { raccrocher("Pochepoche a raccroché."); return; }
       }
       a.boucle = requestAnimationFrame(animerAppel);
     }
@@ -846,6 +883,8 @@ Dès que l'appel commence, tu décroches en disant exactement : « Pochepoche, j
       if (a.flux) for (const piste of a.flux.getTracks()) piste.stop();
       try { a.session?.close(); } catch {}
       try { a.audio?.close(); } catch {}
+      try { a.verrouEcran?.release(); } catch {}          // l'écran peut de nouveau s'éteindre
+      boutonHP.hidden = true;
       if (appel === a) appel = null;
       intensite = 0;
       volumeLisse = 0;
@@ -894,6 +933,79 @@ Dès que l'appel commence, tu décroches en disant exactement : « Pochepoche, j
       setTimeout(() => { if (!appel) { etat(""); ecrire(TEXTES.repos); } }, 2500);
     }
 
+    // --- (Re)brancher le micro avec d'autres réglages, en cours d'appel ---
+    // On coupe d'abord l'ancien micro : tant qu'un micro « mode appel » est ouvert,
+    // le téléphone reste en mode appel.
+    async function brancherMicro(a, reglages) {
+      try { a.microSource?.disconnect(); } catch {}
+      if (a.flux) for (const piste of a.flux.getTracks()) piste.stop();
+      const flux = await navigator.mediaDevices.getUserMedia({ audio: reglages });
+      if (a.ferme) { for (const piste of flux.getTracks()) piste.stop(); return; }
+      a.flux = flux;
+      a.microSource = a.audio.createMediaStreamSource(flux);
+      a.microSource.connect(a.analyseMicro);
+      a.microSource.connect(a.capteur);
+    }
+
+    // --- Haut-parleur : oui / non ---
+    // Les navigateurs n'ont pas de bouton « haut-parleur » universel. On essaie donc
+    // deux méthodes, de la meilleure à la plus rustique :
+    //  A) demander au navigateur d'envoyer le son vers la sortie « haut-parleur »
+    //     (setSinkId). Quand c'est possible, tout le reste est inchangé.
+    //  B) sinon, repasser le micro en réglage « simple » : le téléphone quitte le mode
+    //     appel et le son sort par le haut-parleur. Mais sans anti-écho, le micro
+    //     entendrait Pochepoche, qui se couperait la parole tout seul. On passe donc
+    //     en « chacun son tour » : le micro n'est pas écouté pendant qu'il parle
+    //     (on ne peut alors plus l'interrompre à la voix).
+    async function reglerHautParleur(a, actif) {
+      let parSortie = false;
+      try {
+        if (typeof a.audio.setSinkId === "function") {
+          if (!actif) {
+            await a.audio.setSinkId("");                       // "" = sortie par défaut
+          } else {
+            const sorties = (await navigator.mediaDevices.enumerateDevices())
+              .filter((d) => d.kind === "audiooutput");
+            // On cherche une sortie nommée « speaker… » / « haut-parleur », pas l'écouteur
+            const hp = sorties.find((d) => /speaker|haut/i.test(d.label) && !/ear|oreill|écout/i.test(d.label));
+            if (hp) { await a.audio.setSinkId(hp.deviceId); parSortie = true; }
+          }
+        }
+      } catch {}                                                // méthode A refusée : on tente la B
+      if (a.ferme) return;
+
+      const simple = actif && !parSortie;
+      if (simple !== a.microSimple) {
+        try { await brancherMicro(a, simple ? MICRO_SIMPLE : MICRO_APPEL); a.microSimple = simple; }
+        catch (e) { console.error("PochPoch (Gemini) : micro", e); }
+      }
+      if (a.ferme) return;
+      a.chacunSonTour = a.microSimple;
+      boutonHP.setAttribute("aria-pressed", String(actif));
+      boutonHP.textContent = !actif ? TEXTES.hpNon : a.chacunSonTour ? TEXTES.hpTour : TEXTES.hpOui;
+    }
+
+    let reglageHPEnCours = false;                               // évite les doubles appuis
+    boutonHP.addEventListener("click", async () => {
+      const a = appel;
+      if (!a || !a.session || reglageHPEnCours) return;
+      reglageHPEnCours = true;
+      const actif = boutonHP.getAttribute("aria-pressed") !== "true";
+      ecrireStock(HP_STOCKAGE, actif ? "1" : "");               // retenu pour les prochains appels
+      try { await reglerHautParleur(a, actif); } finally { reglageHPEnCours = false; }
+    });
+
+    // --- Garder l'écran allumé pendant l'appel ---
+    // Quand l'écran s'éteint, le téléphone met la page en sommeil et l'appel se coupe.
+    // « Wake Lock » demande au téléphone de ne pas éteindre l'écran. Le verrou saute
+    // dès qu'on quitte la page : on le redemande quand on y revient.
+    async function garderEcranAllume(a) {
+      try { a.verrouEcran = await navigator.wakeLock?.request("screen"); } catch {}
+    }
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && appel && appel.session) garderEcranAllume(appel);
+    });
+
     // --- Diagnostic : pourquoi la ligne ne s'ouvre pas ? ---
     // Quand un WebSocket est refusé, le navigateur ne dit PAS pourquoi (c'est voulu,
     // par sécurité). On pose donc la question autrement : une requête classique à
@@ -926,7 +1038,7 @@ Dès que l'appel commence, tu décroches en disant exactement : « Pochepoche, j
     // --- Le clic sur le bouton ---
     bouton.addEventListener("click", async () => {
       // Clic pendant l'appel : on raccroche
-      if (appel && appel.session) { raccrocher(); return; }
+      if (appel && appel.session) { raccrocher("Vous avez raccroché."); return; }
       if (appel) return;                                   // connexion en cours : évite les doubles clics
 
       // Pas encore de clé : on la demande d'abord
@@ -950,7 +1062,7 @@ Dès que l'appel commence, tu décroches en disant exactement : « Pochepoche, j
         //    « echoCancellation » est la plus importante : elle retire du micro la voix
         //    de PochPoch qui sort du haut-parleur, sinon il s'interromprait lui-même.
         a.flux = await navigator.mediaDevices.getUserMedia({
-          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+          audio: MICRO_APPEL,
         });
         if (a.ferme) return;
 
@@ -968,8 +1080,8 @@ Dès que l'appel commence, tu décroches en disant exactement : « Pochepoche, j
 
         a.analyseMicro = a.audio.createAnalyser();
         a.analyseMicro.fftSize = 512;
-        const micro   = a.audio.createMediaStreamSource(a.flux);
-        const capteur = new AudioWorkletNode(a.audio, "capteur");
+        const micro   = a.microSource = a.audio.createMediaStreamSource(a.flux);
+        const capteur = a.capteur     = new AudioWorkletNode(a.audio, "capteur");
         // Un nœud qui n'est relié à rien n'est pas calculé par certains navigateurs :
         // on relie donc le capteur à la sortie à travers un volume à ZÉRO
         // (on ne veut surtout pas s'entendre soi-même).
@@ -1004,8 +1116,9 @@ Dès que l'appel commence, tu décroches en disant exactement : « Pochepoche, j
           onclose: (e) => {
             a.fermeture = { code: e?.code, raison: e?.reason };
             if (!a.connecte || a.ferme) return;
-            if (!e || e.code === 1000) raccrocher("Ligne fermée par Google.");
-            else erreur("Connexion fermée" + (e.code ? " (" + e.code + ")" : "") +
+            if (!e || e.code === 1000) raccrocher(a.avisFin + "Ligne fermée par Google" +
+                                                  (e?.reason ? " : " + e.reason : "") + ".");
+            else erreur(a.avisFin + "Connexion coupée" + (e.code ? " (code " + e.code + ")" : "") +
                         (e.reason ? " : " + e.reason : ""));
           },
         };
@@ -1043,9 +1156,18 @@ Dès que l'appel commence, tu décroches en disant exactement : « Pochepoche, j
         // 6) Le micro part chez Google, par paquets de 50 ms
         capteur.port.onmessage = (e) => {
           if (a.ferme) return;
+          // « Chacun son tour » (haut-parleur, méthode B) : pendant que Pochepoche parle,
+          // et 0,4 s après, on envoie du SILENCE à la place du micro, pour qu'il ne
+          // s'entende pas lui-même. On envoie quand même quelque chose : Google a besoin
+          // d'un son continu pour repérer quand vous commencez à parler.
+          let son = e.data;
+          if (a.chacunSonTour) {
+            if (ilParle(a)) a.dernierSon = Date.now();
+            if (Date.now() - a.dernierSon < 400) son = new ArrayBuffer(son.byteLength);   // que des zéros
+          }
           try {
             session.sendRealtimeInput({
-              audio: { data: versBase64(e.data), mimeType: "audio/pcm;rate=16000" },
+              audio: { data: versBase64(son), mimeType: "audio/pcm;rate=16000" },
             });
           } catch {}
         };
@@ -1056,6 +1178,14 @@ Dès que l'appel commence, tu décroches en disant exactement : « Pochepoche, j
         redimensionnerOnde();      // le canvas vient d'apparaître : on mesure sa taille
         lancerChrono();
         animerAppel();
+        garderEcranAllume(a);
+        if (SUR_TELEPHONE) {
+          boutonHP.hidden = false;
+          boutonHP.setAttribute("aria-pressed", "false");
+          boutonHP.textContent = TEXTES.hpNon;
+          // Haut-parleur déjà choisi lors d'un appel précédent : on le remet tout de suite
+          if (lire(HP_STOCKAGE) === "1") reglerHautParleur(a, true);
+        }
 
         // 8) PochPoch doit parler en premier (comme le « premier message » d'ElevenLabs).
         //    Le modèle attend normalement qu'on lui parle : on lui envoie donc un petit
