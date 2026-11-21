@@ -14,7 +14,11 @@
      ENTIERS (une saison, une série), on choisit la qualité, et tout part
      dans une FILE D'ATTENTE que le NAS traite un fichier après l'autre ;
    • on peut fermer la page : le NAS continue. En revenant, on retrouve
-     l'avancement et les fichiers à télécharger.
+     l'avancement et les fichiers à télécharger ;
+   • les sons sont rangés sur le NAS À CÔTÉ des vidéos, dans un dossier
+     au nom de ce qu'on a coché + « - mp3 » : on coche le dossier
+     « Saison 1 » → Saison 1/Saison 1 - mp3/ ; on coche le fichier
+     « Film.mkv » → Film - mp3/ au même endroit que le fichier.
   Le même « portier » que la page MP3 vérifie le jeton (en-tête X-Jeton) :
   le jeton est donc partagé avec elle (localStorage « mp3.jeton »).
   Téléchargement : la page demande un « ticket » au NAS, puis ouvre un
@@ -28,6 +32,7 @@
               sélection de vidéos et de dossiers entiers, formats
               (origine sans perte, MP3, M4A, Opus), débit, langue de la
               piste, file d'attente avec avancement et annulation,
+              sons rangés à côté des vidéos (dossiers « … - mp3 »),
               téléchargement des sons, mise en page TABLETTE
 -->
 <html lang="fr">
@@ -243,6 +248,7 @@
       <p class="erreur" id="erreur-explorateur" hidden></p>
       <ul class="lignes" id="lignes"></ul>
       <p class="aide">Touche un dossier pour l'ouvrir, sa case pour le prendre <b>en entier</b> (toute une saison, toute une série).</p>
+      <p class="aide" id="aide-rangement"></p>
     </section>
   </div>
 
@@ -294,7 +300,7 @@
     <section class="card" id="carte-sons" hidden>
       <h2>Derniers sons</h2>
       <ul class="lignes" id="sons"></ul>
-      <p class="aide">Tous les fichiers sont aussi sur le NAS : dossier <b>docker › mp3 › bandes-son</b>.</p>
+      <p class="aide">Sur le NAS, les sons sont à côté des vidéos, dans les dossiers « … - mp3 ».</p>
     </section>
   </div>
 
@@ -468,9 +474,14 @@
   pastilles("langues", "langue", CLE_LANGUE);
 
   // Le petit texte sous le format : à quoi s'attendre (taille, durée)
+  // La fin du nom du dossier de sons (la même table que dans le service du NAS)
+  const SUFFIXES = { mp3: "mp3", m4a: "m4a", opus: "opus", origine: "audio" };
   function expliquerFormat() {
     const origine = reglages.format === "origine";
     $("bloc-debit").hidden = origine;
+    const fin = SUFFIXES[reglages.format];
+    $("aide-rangement").textContent = `Les sons seront rangés sur le NAS à côté des vidéos : dans « Saison 1 › Saison 1 - ${fin} » ` +
+      `pour un dossier coché, dans « Film - ${fin} » au même endroit pour un fichier coché.`;
     if (origine) {
       $("aide-format").textContent = "La piste est recopiée telle quelle : aucune perte, quelques secondes par film. " +
         "Le fichier garde le format du film (AC3, AAC, DTS… souvent en 5.1) : parfait pour archiver, pas toujours lisible sur un téléphone.";
@@ -715,7 +726,7 @@
     haut.append(etat);
     if (t.statut === "fini") {
       const b = el("button", "mini", "Télécharger"); b.type = "button";
-      b.addEventListener("click", () => telecharger(t.sortie, b));
+      b.addEventListener("click", () => telecharger(t.racine, t.sortie, b));
       haut.append(b);
     }
     if (t.statut === "attente" || t.statut === "en_cours") {
@@ -768,10 +779,11 @@
       const haut = el("div", "haut");
       haut.append(el("span", "nom", s.nom));
       const b = el("button", "mini", "Télécharger"); b.type = "button";
-      b.addEventListener("click", () => telecharger(s.chemin, b));
+      b.addEventListener("click", () => telecharger(s.racine, s.chemin, b));
       haut.append(b);
-      // Le dossier du fichier (Séries/Nom/Saison 1) + sa taille
-      const dossier = s.chemin.split("/").slice(0, -1).join(" › ");
+      // La bibliothèque et le dossier du fichier (Séries › Nom › Saison 1 › Saison 1 - mp3) + sa taille
+      const nomRacine = (racines.find(r => r.racine === s.racine) || {}).nom;
+      const dossier = [nomRacine, ...s.chemin.split("/").slice(0, -1)].filter(Boolean).join(" › ");
       li.append(haut, el("div", "detail", [dossier, taille(s.taille)].filter(Boolean).join(" · ")));
       return li;
     }));
@@ -780,10 +792,10 @@
   // Téléchargement en deux temps : 1) un ticket, demandé AVEC le jeton ;
   // 2) un lien ordinaire qui porte le ticket. Le navigateur télécharge
   // alors lui-même (barre de progression, reprise…), sans rien garder en mémoire.
-  async function telecharger(cheminSon, bouton) {
+  async function telecharger(racineSon, cheminSon, bouton) {
     bouton.disabled = true;
     try {
-      const { ticket } = await api("/ticket?nom=" + encodeURIComponent(cheminSon));
+      const { ticket } = await api(`/ticket?racine=${racineSon}&nom=${encodeURIComponent(cheminSon)}`);
       const lien = document.createElement("a");
       lien.href = `${SERVICE}${PREFIXE}/telecharger?t=${encodeURIComponent(ticket)}`;
       lien.download = "";                  // « télécharge, n'ouvre pas »
