@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-20T22:16+00:00",
+ "maj": "2026-11-21T13:33+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -49,6 +49,19 @@
   }
  ],
  "articles": [
+  {
+   "id": "f9f70dac6386",
+   "titre": "Acheter une télé et repartir avec, bientôt fini dans cette enseigne ? Ce qui change dans ses hypermarchés",
+   "lien": "https://www.capital.fr/conso/acheter-une-tele-et-repartir-avec-bientot-fini-dans-cette-enseigne-ce-qui-change-dans-ses-hypermarches-1532050",
+   "source": "autres",
+   "media": "Capital.fr",
+   "site": "capital.fr",
+   "date": "2026-11-21T10:55+00:00",
+   "vu_le": "2026-11-21T13:33+00:00",
+   "resume": "Carrefour a revu sa façon de vendre le gros électroménager. Le dropshipping va désormais s’étendre aux téléviseurs et aux smartphones. Mais il n’y a pas que ça qui change, dans les rayons de l’enseigne.",
+   "enrichi": "2026-11-21",
+   "image": "https://www.capital.fr/imgre/fit/~1~cap~2026~11~21~b3fb397f-dbc6-4473-8089-8dbe26f9ebdd.jpeg/1200x630/focus-point/50%2C50/acheter-une-tele-et-repartir-avec-bientot-fini-dans-cette-enseigne-ce-qui-change-dans-ses-hypermarches.jpg"
+  },
   {
    "id": "3a7cee50fb74",
    "titre": "E.Leclerc, Carrefour, Auchan : jusqu'à 20 euros d'écart sur un même panier de courses, voici l'enseigne la moins chère en novembre",
@@ -254,6 +267,19 @@
    "image": "https://lexpress-franchise.com/wp-content/uploads/2026/11/supermarche-carrefour-market-zandhoven.png"
   },
   {
+   "id": "7f8170c1a54f",
+   "titre": "À Zandhoven, un franchisé familial rouvre son Carrefour Market rénové pour ses 30 ans",
+   "lien": "https://lexpress-franchise.com/fr-be/actualites/carrefour-market-zandhoven-franchise-30-ans/",
+   "source": "autres",
+   "media": "L’Express Franchise",
+   "site": "lexpress-franchise.com",
+   "date": "2026-11-20T10:55+00:00",
+   "vu_le": "2026-11-21T13:33+00:00",
+   "resume": "À Zandhoven, une famille de franchisés rouvre son Carrefour Market pour ses 30 ans, après 12 jours de travaux, avec consignes à colis et ouverture le dimanche.",
+   "enrichi": "2026-11-21",
+   "image": "https://lexpress-franchise.com/wp-content/uploads/2026/11/supermarche-carrefour-market-zandhoven.png"
+  },
+  {
    "id": "3842873f441d",
    "titre": "Carrefour rappelle un Airfryer 6 L : le revêtement de la grille est en cause",
    "lien": "https://www.economiematin.fr/rappel-airfryer-carrefour-home-haf6l1750-26-2026",
@@ -303,6 +329,19 @@
    "resume": "Moins d'un an après avoir conclu un accord historique sur l'ouverture dominicale de ses magasins intégrés, Carrefour Belgique franchit une nouvelle étape. Selon les informations recueillies par Gondola auprès de deux sources sources syndicales distinctes, un nouvel accord vient d'être conclu avec les partenaires sociaux. Il permettra aux hypermarchés situés en zone touristique de prolonger leur…",
    "enrichi": "2026-11-20",
    "image": "https://images.gondola.be/2019-04/5r4a7977_1.jpg?fit=max&h=630&ixlib=php-4.1.0&w=1200&s=177e5ea081020f4bf18e6fca48f1086b"
+  },
+  {
+   "id": "1cb6da5e8995",
+   "titre": "Le supermarché le plus cher a changé en 2026, est-ce le vôtre ?",
+   "lien": "https://www.capital.fr/conso/le-supermarche-le-plus-cher-a-change-en-2026-est-ce-le-votre-1532005",
+   "source": "autres",
+   "media": "Capital.fr",
+   "site": "capital.fr",
+   "date": "2026-11-20T07:22+00:00",
+   "vu_le": "2026-11-21T13:33+00:00",
+   "resume": "Une nouvelle étude du site Radin Malin révèle que les écarts de prix entre les supermarchés restent importants en 2026. Après avoir comparé plus de 430 000 tarifs, elle met en évidence une évolution du classement des enseignes. Votre supermarché est-il le plus cher ?",
+   "enrichi": "2026-11-21",
+   "image": "https://www.capital.fr/imgre/fit/~1~cap~2026~11~20~ce1178ac-f81e-4854-9b9d-c90388556501.jpeg/1200x630/focus-point/50%2C50/le-supermarche-le-plus-cher-a-change-en-2026-est-ce-le-votre.jpg"
   },
   {
    "id": "c3620b4d6d83",
@@ -645,6 +684,18 @@
    "resume": "Un chiffre pour illustrer le recul du non-alimentaire dans les hypermarchés Carrefour ? En 2018, le non-al représentait 20 % du CA. Huit ans plus tard, la part est descendue à 15 %. Sans surprise, le distributeur revoit à la baisse les surfaces de rayons comme le textile, le bricolage, l’automobile, la puériculture, la musique …",
    "enrichi": "2026-11-18",
    "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/carrefour_nonal_3-1024x768.png"
+  },
+  {
+   "id": "32d242478839",
+   "titre": "« Des produits à petits prix » : l’enseigne Action ouvre un nouveau magasin dans un centre commercial de Maine-et-Loire",
+   "lien": "https://www.ouest-france.fr/economie/commerce/des-produits-a-petits-prix-lenseigne-action-ouvre-un-nouveau-magasin-dans-un-centre-commercial-de-maine-et-loire-c920db74-e32b-11f1-9a72-32f9104dab1b",
+   "source": "autres",
+   "media": "Ouest-France",
+   "site": "ouest-france.fr",
+   "date": "2026-11-18T18:00+00:00",
+   "vu_le": "2026-11-21T13:33+00:00",
+   "resume": "",
+   "enrichi": "2026-11-21"
   },
   {
    "id": "ba446285c891",
@@ -3703,43 +3754,6 @@
    "resume": "",
    "site": "lsa-conso.fr",
    "enrichi": "2026-11-11"
-  },
-  {
-   "id": "06fbcc0fe1c6",
-   "titre": "Grande distribution : les pertes des 107 hypermarchés Carrefour intégrés en France se creusent encore en 2025",
-   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/grande-distribution-les-pertes-des-107-hypermarches-carrefour-integres-en-france-se-creusent-encore-en-2025.PNP2ISVIIRFMLLKUPOZVZE6YFQ.html",
-   "source": "lsa",
-   "date": "2026-09-22T07:00+00:00",
-   "vu_le": "2026-11-11T07:16+00:00",
-   "resume": "",
-   "site": "lsa-conso.fr",
-   "enrichi": "2026-11-11"
-  },
-  {
-   "id": "20d615b6b906",
-   "titre": "Crise des carburants : le PDG de Carrefour Alexandre Bompard entrevoit un «plateau» à 2,50 euros le litre",
-   "lien": "https://www.lefigaro.fr/conjoncture/crise-des-carburants-le-pdg-de-carrefour-alexandre-bompard-entrevoit-un-plateau-a-2-50-euros-le-litre-20260922",
-   "source": "autres",
-   "media": "Le Figaro",
-   "date": "2026-09-22T07:00+00:00",
-   "vu_le": "2026-11-11T07:27+00:00",
-   "resume": "«On a la conviction qu’on est dans un moment très haut, et qu’il faudrait des choses encore plus graves pour que ça monte», a affirmé le PDG de Carrefour, au sujet des prix du carburant.",
-   "site": "lefigaro.fr",
-   "enrichi": "2026-11-11",
-   "image": "https://i.f1g.fr/media/cms/1200x630_crop/2026/09/22/4ea3fb0d5efa2c41b88b85389b08e350ac1ef47bcf10e0d1fb2154eada78abab.jpg"
-  },
-  {
-   "id": "320ee1c834b5",
-   "titre": "Inflation: \"Les fruits et légumes sont en hausse\", observe Alexandre Bompard, PDG de Carrefour",
-   "lien": "https://www.bfmtv.com/economie/video-inflation-les-fruits-et-legumes-sont-en-hausse-observe-alexandre-bompard-pdg-de-carrefour_VN-202609220880.html",
-   "source": "autres",
-   "media": "BFM",
-   "date": "2026-09-22T07:00+00:00",
-   "vu_le": "2026-11-11T07:27+00:00",
-   "resume": "VIDÉO - Alexandre Bompard, PDG de Carrefour, était l'invité de BFMTV ce mardi 22 septembre",
-   "site": "bfmtv.com",
-   "enrichi": "2026-11-11",
-   "image": "https://io-fsly-bfmtv.cdn.nextradiotv.com/76VI2aSnFitNioDYYuacNs1CvUQ=/0x0:1280x720/1280x0/images/Inflation-Les-fruits-et-legumes-sont-en-hausse-observe-Alexandre-Bompard-PDG-de-Carrefour-2352707.jpg"
   }
  ]
 }
