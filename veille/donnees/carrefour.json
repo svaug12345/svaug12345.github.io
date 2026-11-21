@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-21T13:33+00:00",
+ "maj": "2026-11-21T20:55+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -50,6 +50,44 @@
  ],
  "articles": [
   {
+   "id": "3171e2f45523",
+   "titre": "Carrefour rappelle une friteuse sans huile vendue dans toute la France pour un risque chimique",
+   "lien": "https://www.varactu.fr/carrefour-rappelle-une-friteuse-sans-huile-vendue-dans-toute-la-france-pour-un-risque-chimique/",
+   "source": "autres",
+   "media": "Var Actu",
+   "site": "varactu.fr",
+   "date": "2026-11-21T18:00+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "Carrefour rappelle un Airfryer de 6 litres vendu dans toute la France depuis avril 2026, en raison d'un défaut de revêtement présentant un risque chimique.",
+   "enrichi": "2026-11-21",
+   "image": "https://www.varactu.fr/wp-content/uploads/2026/11/airfryer.webp"
+  },
+  {
+   "id": "f0fe5cf249b3",
+   "titre": "Violences urbaines : le guichet ouvre ce samedi 21 novembre, jusqu’à 10 000 euros d’aide pour les commerçants",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/violences-urbaines-le-guichet-ouvre-ce-samedi-21-novembre-jusqua-10-000-euros-daide-pour-les-commercants.LZYLNNAZGBFLJNHCT2WKYSSMFM.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-21T14:28+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "",
+   "enrichi": "2026-11-21"
+  },
+  {
+   "id": "bdda633744a5",
+   "titre": "Atacadão ouvre deux nouveaux magasins, à Beni Khlef et Aïn Attig",
+   "lien": "https://ledesk.ma/encontinu/atacadao-ouvre-deux-nouveaux-magasins-a-beni-khlef-et-ain-attig/",
+   "source": "autres",
+   "media": "Le Desk",
+   "site": "ledesk.ma",
+   "date": "2026-11-21T13:01+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "Le groupe LabelVie, coté à la Bourse de Casablanca et franchisé de Carrefour au Maroc, continue d'étendre Atacadão. Cette enseigne de vente en gros et au",
+   "enrichi": "2026-11-21",
+   "image": "https://ledesk.ma/wp-content/uploads/2026/11/DSC03116-2.jpg-1024x683.jpeg"
+  },
+  {
    "id": "f9f70dac6386",
    "titre": "Acheter une télé et repartir avec, bientôt fini dans cette enseigne ? Ce qui change dans ses hypermarchés",
    "lien": "https://www.capital.fr/conso/acheter-une-tele-et-repartir-avec-bientot-fini-dans-cette-enseigne-ce-qui-change-dans-ses-hypermarches-1532050",
@@ -61,6 +99,18 @@
    "resume": "Carrefour a revu sa façon de vendre le gros électroménager. Le dropshipping va désormais s’étendre aux téléviseurs et aux smartphones. Mais il n’y a pas que ça qui change, dans les rayons de l’enseigne.",
    "enrichi": "2026-11-21",
    "image": "https://www.capital.fr/imgre/fit/~1~cap~2026~11~21~b3fb397f-dbc6-4473-8089-8dbe26f9ebdd.jpeg/1200x630/focus-point/50%2C50/acheter-une-tele-et-repartir-avec-bientot-fini-dans-cette-enseigne-ce-qui-change-dans-ses-hypermarches.jpg"
+  },
+  {
+   "id": "02a6702763de",
+   "titre": "Tout comprendre des ingrédients et des additifs : la lactoferrine, une protéine laitière à l’avenir prometteur",
+   "lien": "https://www.lsa-conso.fr/pgc/nouveautes-produits/tout-comprendre-des-ingredients-et-des-additifs-la-lactoferrine-une-proteine-laitiere-a-lavenir-prometteur.6WPWUJZ5ZRFKPC5XJWZRDEMFCM.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-21T09:00+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "",
+   "enrichi": "2026-11-21"
   },
   {
    "id": "3a7cee50fb74",
@@ -2649,6 +2699,18 @@
    "enrichi": "2026-11-11"
   },
   {
+   "id": "2d13b680ede8",
+   "titre": "Filière Qualité Carrefour: Carrefour renouvelle son partenariat historique avec Biofournil et consolide sa filière de pain biologique engagée",
+   "lien": "https://www.carrefour.com/fr/news/2026/biofournilrenouvellement",
+   "source": "autres",
+   "media": "Carrefour Group",
+   "site": "carrefour.com",
+   "date": "2026-11-06T08:00+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "",
+   "enrichi": "2026-11-21"
+  },
+  {
    "id": "7839186be96e",
    "titre": "Carrefour : le groupe remporte la bataille de Plouzané face à E.Leclerc et Coopérative U et conserve son hypermarché",
    "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/carrefour-le-groupe-remporte-la-bataille-de-plouzane-face-a-eleclerc-et-cooperative-u-et-conserve-son-hypermarche.Z6XE3D5NJZD35BPEGVPFNQT2HU.html",
@@ -3028,6 +3090,19 @@
    "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/10/carrefour_cherbourg.jpg"
   },
   {
+   "id": "1875d6a49d87",
+   "titre": "Match frais, un nouveau concept de supermarché va ouvrir à Thillois",
+   "lien": "https://www.lunion.fr/id836564/article/2026-10-27/match-frais-un-nouveau-concept-de-supermarche-va-ouvrir-thillois",
+   "source": "autres",
+   "media": "L'Union",
+   "site": "lunion.fr",
+   "date": "2026-10-27T07:00+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "Après une première ouverture près de Lille à l’été 2026, le deuxième magasin Match Frais de France sous ce format ouvre ses portes le mercredi 4 novembre 2026 à Thillois.",
+   "enrichi": "2026-11-21",
+   "image": "https://remeng.rosselcdn.net/sites/default/files/dpistyles_v2/ena_16_9_extra_big/2026/10/27/node_836564/15542079/public/2026/10/27/110231020.jpeg?itok=zIN8gOUd1793115823"
+  },
+  {
    "id": "b1c55064bd63",
    "titre": "[ EXCLU ] Carrefour ouvre son hyper de Gennevilliers à un shop-in-shop Boom",
    "lien": "https://www.olivierdauvers.fr/2026/10/26/exclu-carrefour-ouvre-son-hyper-de-gennevilliers-a-un-shop-in-shop-boom/",
@@ -3072,6 +3147,19 @@
    "resume": "",
    "site": "lsa-conso.fr",
    "enrichi": "2026-11-11"
+  },
+  {
+   "id": "d9e568bc963d",
+   "titre": "Les trois moteurs de Carrefour répondent présent / La marge reste freinée par Cora et l’Argentine",
+   "lien": "https://www.wansquare.com/article/45535/les-trois-moteurs-de-carrefour-repondent-present",
+   "source": "autres",
+   "media": "WanSquare",
+   "site": "wansquare.com",
+   "date": "2026-10-24T21:40+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "Cinq mois après le lancement de Carrefour 2030, le distributeur livre une première traduction financière de son nouveau plan. Port&...",
+   "enrichi": "2026-11-21",
+   "image": "https://wansquare.com/ajaxed/apis/photolex.php?src=bibli/fee4f304c4991b3228143235da535d9d.jpg&w=552&h=320"
   },
   {
    "id": "a3656be9254c",
@@ -3161,6 +3249,31 @@
    "image": "https://www.capital.fr/imgre/fit/~1~cap~2026~10~21~d0b4b84d-c296-4e44-ac43-6fc8eecfb4c1.png/1200x630/focus-point/1215%2C416/des-alcools-forts-pour-du-trafic-alexandre-bompard-carrefour-revele-ce-qui-a-ete-vole-dans-ses-50-carrefour-pilles.jpg"
   },
   {
+   "id": "00672d9d4b50",
+   "titre": "Le profit warning de Carrefour, derrière le choc des émeutes",
+   "lien": "https://www.lesechos.fr/finance-marches/le-radar-des-marches/le-profit-warning-de-carrefour-derriere-le-choc-des-emeutes-2258224",
+   "source": "autres",
+   "media": "Les Echos",
+   "site": "lesechos.fr",
+   "date": "2026-10-21T07:00+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "",
+   "enrichi": "2026-11-21"
+  },
+  {
+   "id": "73d0a4bd3a3d",
+   "titre": "Carrefour voit sa fin d'année dérailler / Les violences en France menacent ses bénéfices",
+   "lien": "https://www.wansquare.com/012-46037-carrefour-voit-sa-fin-d-annee-derailler.html",
+   "source": "autres",
+   "media": "WanSquare",
+   "site": "wansquare.com",
+   "date": "2026-10-21T07:00+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "Alors que ses ventes ont progressé au troisième trimestre, Carrefour a été contraint de revoir ses objectifs annuels apr&egr...",
+   "enrichi": "2026-11-21",
+   "image": "https://wansquare.com/ajaxed/apis/photolex.php?src=bibli/3cb9b92667c89c587af1ae85d5383e95.jpg&w=552&h=320"
+  },
+  {
    "id": "2645b19a36d3",
    "titre": "Parts de marché NielsenIQ P10 / Carrefour : le bouillon des hypers, l’envolée de la proxi !",
    "lien": "https://www.olivierdauvers.fr/2026/10/20/parts-de-marche-nielseniq-p10-carrefour-le-bouillon-des-hypers-lenvolee-de-la-proxi/",
@@ -3220,6 +3333,18 @@
    "enrichi": "2026-11-12"
   },
   {
+   "id": "a5d29ff7f61c",
+   "titre": "Suivez en direct les résultats Q3 2026",
+   "lien": "https://www.carrefour.com/fr/news/2026/resultats-hy-2026",
+   "source": "autres",
+   "media": "Carrefour Group",
+   "site": "carrefour.com",
+   "date": "2026-10-20T07:00+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "",
+   "enrichi": "2026-11-21"
+  },
+  {
    "id": "c442751d3f0b",
    "titre": "[ EXCLU ] La visite de chantier du projet \"Carrefour Frais\"",
    "lien": "https://www.olivierdauvers.fr/2026/10/19/exclu-la-visite-de-chantier-du-projet-carrefour-frais/",
@@ -3277,6 +3402,19 @@
    "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-10/43506696-70fe-4304-927d-356a45c3c3a8.jpg.webp?itok=NDR_Lr2m"
   },
   {
+   "id": "e1d486059441",
+   "titre": "« Certains vont mettre des semaines, voire des mois pour tout remettre en état » : après les pillages, la grande distribution s’inquiète du coût des dégâts",
+   "lien": "https://www.challenges.fr/entreprise/commerce-et-distribution/certains-vont-mettre-des-semaines-voire-des-mois-pour-tout-remettre-en-etat-apres-les-pillages-la-grande-distribution-sinquiete-du-cout-des-degats_646456",
+   "source": "autres",
+   "media": "Challenges",
+   "site": "challenges.fr",
+   "date": "2026-10-19T07:00+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "Pillages de supérettes, vitrines cassées… Une centaine de magasins de la grande distribution ont été la cible de casseurs. Si le montant des dégâts reste à évaluer pour chaque enseigne, la facture va « être élevée », prévient Alexandre Bompard, PDG du groupe Carrefour.",
+   "enrichi": "2026-11-21",
+   "image": "https://www.challenges.fr/_ipx/f_jpg&enlarge_true&s_1200x630/cha/static/2026-10/63306.HR_0.jpg%3FVersionId=r43Idl5J7h42Vgfjuu3fxRgVorAmrilW"
+  },
+  {
    "id": "f01358788ff6",
    "titre": "Alexandre Bompard, PDG de Carrefour, dresse le bilan des dégradations commises le 17 octobre",
    "lien": "https://www.bfmtv.com/economie/video-alexandre-bompard-pdg-de-carrefour-dresse-le-bilan-des-degradations-commises-le-17-octobre_VN-202610180240.html",
@@ -3315,6 +3453,57 @@
    "enrichi": "2026-11-12"
   },
   {
+   "id": "73f77357f2b7",
+   "titre": "\"Un sentiment de tristesse, de colère, de désarroi\" : après les violences, le PDG de Carrefour décrit \"une journée très grave pour le commerce français\"",
+   "lien": "https://www.tf1info.fr/societe/un-sentiment-de-tristesse-de-colere-de-desarroi-apres-les-violences-le-pdg-de-carrefour-decrit-une-journee-tres-grave-pour-le-commerce-francais-2470590.html",
+   "source": "autres",
+   "media": "TF1 Info",
+   "site": "tf1info.fr",
+   "date": "2026-10-18T07:00+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "[VIDÉO] À l'occasion de la mobilisation du 17 octobre, de nombreuses dégradations causées par des casseurs ont été constatées. Certains en ont profité pour pénétrer dans des commerces et les piller. Le PDG de Carrefour, Alexandre Bompard, a expliqué sur LCI qu'une cinquantaine de magasins de l'enseigne ont été touchés. - \"Un sentiment de tristesse, de colère, de désarroi\" : après les violences…",
+   "enrichi": "2026-11-21",
+   "image": "https://photos.tf1info.fr/images/1280/720/magasins-carrefour-pilles-le-pdg-du-groupe-sur-place-1-65dc08-0@1x.jpeg?overlayImage=bG9nby10ZjFpbmZvLWRlZmF1bHQucG5n&overlayWidth=18&overlayGravity=northwest&s=78c802"
+  },
+  {
+   "id": "9a9c4f199083",
+   "titre": "\"Cela se chiffrera en centaines de millions d'euros\": restaurateurs et grande distribution s'indignent de devoir \"payer la facture des violences\" du 17 octobre",
+   "lien": "https://www.bfmtv.com/economie/entreprises/ce-que-l-on-a-vecu-est-inacceptable-restaurateurs-et-grande-distribution-s-indignent-de-devoir-payer-la-facture-des-violences-du-17-octobre_AD-202610180131.html",
+   "source": "autres",
+   "media": "BFM",
+   "site": "bfmtv.com",
+   "date": "2026-10-18T07:00+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "Alexandre Bompard, le PDG du groupe Carrefour et le président de la Fédération du commerce et de la distribution (FCD), estime que les dégâts pourraient se chiffrer en \"centaines de millions d'euros\" et demande une accélération des procédures d'indemnisation. Les CCI redoutent le \"coup de trop\".",
+   "enrichi": "2026-11-21",
+   "image": "https://io-fsly-bfmtv.cdn.nextradiotv.com/WflF6i7GcF8kDtJW9VkrWWGwFlQ=/0x0:2032x1143/2032x0/images/Pillage-supermarche-17-octobre-2367410.jpg"
+  },
+  {
+   "id": "c96d6643fbff",
+   "titre": "Commerces saccagés : la facture sera «très élevée», prévient Alexandre Bompard",
+   "lien": "https://www.lavoixdunord.fr/1747420/article/2026-10-18/commerces-saccages-la-facture-sera-tres-elevee-previent-alexandre-bompard",
+   "source": "autres",
+   "media": "La Voix du Nord",
+   "site": "lavoixdunord.fr",
+   "date": "2026-10-18T07:00+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "",
+   "enrichi": "2026-11-21"
+  },
+  {
+   "id": "6291e44671c7",
+   "titre": "Commerces saccagés : les dégâts estimés à «plusieurs centaines de millions» d'euros par une fédération",
+   "lien": "https://www.europe1.fr/economie/commerces-saccages-les-degats-estimes-a-plusieurs-centaines-de-millions-deuros-par-une-federation-1160253",
+   "source": "autres",
+   "media": "Europe 1",
+   "site": "europe1.fr",
+   "date": "2026-10-18T07:00+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "Après les violences et les pillages, le temps est à la constatation des dégâts pour les commerçants partout en France. 1.500 établissements ont été directement",
+   "enrichi": "2026-11-21",
+   "image": "https://static.europe1.fr/var/europe1/storage/styles/image_750_422/public/media/image/2026/10/18/15/000_d3ma8ek_1_6ad4c9cb20631.jpg?itok=BQLbwmk1"
+  },
+  {
    "id": "ead8977a8919",
    "titre": "Grande distribution : E. Leclerc, Carrefour, Intermarché... Le positionnement prix des enseignes sur le drive en 2025 à la loupe",
    "lien": "https://www.lsa-conso.fr/secteurs/services-livraison/drive/grande-distribution-e-leclerc-carrefour-intermarche-le-positionnement-prix-des-enseignes-sur-le-drive-en-2025-a-la-loupe.MEW3HEPHEZGOVMFGFKY4THQYM4.html",
@@ -3327,6 +3516,32 @@
    "enrichi": "2026-11-12"
   },
   {
+   "id": "bf2593d75b3e",
+   "titre": "Des pillages de commerces en France ce 17 octobre condamnés par Alexandre Bompard",
+   "lien": "https://www.larevuedudigital.com/des-pillages-en-france-ce-17-octobre-condamnes-par-alexandre-bompard/",
+   "source": "autres",
+   "media": "La Revue du Digital",
+   "site": "larevuedudigital.com",
+   "date": "2026-10-17T07:00+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "La rédaction vous propose par secteur d'activité : Luxe Les recettes de LVMH pour déployer l’IA en préserv… Le futur du groupe de luxe Kering passe par la tec… Luxe : Kering s’appuiera sur l’analyse de Bain et … Banque La banque en ligne Revolut obtient sa licence banc… Crédit Agricole prêt à redévelopper ses […]",
+   "enrichi": "2026-11-21",
+   "image": "https://www.larevuedudigital.com/wp-content/uploads/2026/10/Police-1-BF2-.jpg"
+  },
+  {
+   "id": "143a278c5b82",
+   "titre": "Mobilisation du 17 octobre : la grande distribution s'indigne des pillages contre les magasins",
+   "lien": "https://www.europe1.fr/societe/mobilisation-du-17-octobre-la-grande-distribution-sindigne-des-pillages-contre-les-magasins-1158114",
+   "source": "autres",
+   "media": "Europe 1",
+   "site": "europe1.fr",
+   "date": "2026-10-17T07:00+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "Des scènes de violences ont éclaté après les mobilisations contre la vie chère dans plusieurs grandes villes de France. Des scènes de pillage ont été observées",
+   "enrichi": "2026-11-21",
+   "image": "https://static.europe1.fr/var/europe1/storage/styles/image_750_422/public/media/image/2026/10/17/22/080_hl_ngrisay_3342910_1_6ad3d7d699740.jpg?itok=qb9xO6zN"
+  },
+  {
    "id": "57022344a6d5",
    "titre": "Grande distribution : Carrefour sur tous les fronts, mais quelles sont les priorités de l’enseigne ?",
    "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/grande-distribution-carrefour-sur-tous-les-fronts-mais-quelles-sont-les-priorites-de-lenseigne.YGGVP4E4QJI4BMCDNLLHVYTSKE.html",
@@ -3336,6 +3551,19 @@
    "resume": "",
    "site": "lsa-conso.fr",
    "enrichi": "2026-11-11"
+  },
+  {
+   "id": "8b5e31edc3a6",
+   "titre": "Thierry Barbier - Président de l'AFC (Association des franchisés du groupe Carrefour)",
+   "lien": "https://www.france.tv/france-2/complement-d-enquete/8980885-thierry-barbier-president-de-l-afc-association-des-franchises-du-groupe-carrefour.html",
+   "source": "autres",
+   "media": "France TV",
+   "site": "france.tv",
+   "date": "2026-10-16T07:00+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "C’est l’enseigne de grande distribution qui a bouleversé la vie des Français ! Inventeur mondial du modèle de l’hypermarché, créateur des premières marques d...",
+   "enrichi": "2026-11-21",
+   "image": "https://medias.france.tv/ep73l2x1DPFd7kA8E-zHoge7OmA/880x0/filters:quality(85):format(jpeg)/2/4/9/405bccdc4fa6411b8919859cf1494942.jpg"
   },
   {
    "id": "8cf5f86ca72f",
@@ -3422,6 +3650,31 @@
    "resume": "Au Maroc, les enseignes Carrefour sont en plein boom, tant en termes de créations de mètres carrés que de chiffre d'affaires ou de fréquentation. Le partenaire local,",
    "enrichi": "2026-11-11",
    "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-10/8cedb5cf-65de-481c-97f9-cd77e39f5a53.jpg.webp?itok=qnRWQ56a"
+  },
+  {
+   "id": "c2f3728f9963",
+   "titre": "Une caissière du groupe Carrefour licenciée pour avoir utilisé 8 € en coupons de réduction",
+   "lien": "https://www.ouest-france.fr/leditiondusoir/2026-10-12/une-caissiere-du-groupe-carrefour-licenciee-pour-avoir-utilise-8-euro-en-coupons-de-reduction-618181ad-d9da-4455-bf74-60afbab65aa2",
+   "source": "autres",
+   "media": "Ouest-France",
+   "site": "ouest-france.fr",
+   "date": "2026-10-12T07:00+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "",
+   "enrichi": "2026-11-21"
+  },
+  {
+   "id": "a4ad585c7b7b",
+   "titre": "« Tous les distributeurs s’y intéressent », surtout Carrefour : les supérettes de proximité, la nouvelle bataille de la grande distribution",
+   "lien": "https://www.challenges.fr/entreprise/commerce-et-distribution/tous-les-distributeurs-sy-interessent-surtout-carrefour-dans-les-coulisses-de-la-nouvelle-bataille-des-distributeurs_646313",
+   "source": "autres",
+   "media": "Challenges",
+   "site": "challenges.fr",
+   "date": "2026-10-12T07:00+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "Carrefour multiplie les initiatives pour renforcer son réseau de proximité, jusqu’à convoiter les 3 000 supérettes de Codifrance. Face à lui, Intermarché, Coopérative U et Casino affûtent eux aussi leurs stratégies.",
+   "enrichi": "2026-11-21",
+   "image": "https://www.challenges.fr/_ipx/f_jpg&enlarge_true&s_1200x630/cha/static/2026-10/62845.HR_2.jpeg%3FVersionId=tVstYZ2qmbYUWnbalzWBVLa8kFjTRb2y"
   },
   {
    "id": "2150f685cf3b",
@@ -3587,6 +3840,18 @@
    "enrichi": "2026-11-11"
   },
   {
+   "id": "c701fa8c28ac",
+   "titre": "Carrefour entre en négos exclusives avec Codifrance, au risque de futures complications",
+   "lien": "https://www.lalettre.fr/fr/entreprises_grande-distribution-et-services/2026/10/05/carrefour-entre-en-negos-exclusives-avec-codifrance-au-risque-de-futures-complications,110889861-art",
+   "source": "autres",
+   "media": "La Lettre",
+   "site": "lalettre.fr",
+   "date": "2026-10-05T07:00+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "",
+   "enrichi": "2026-11-21"
+  },
+  {
    "id": "86f05a497e61",
    "titre": "J-1 pour Carrefour mobile. On en sait plus sur… “le forfait des pinces” !",
    "lien": "https://www.olivierdauvers.fr/2026/10/04/j-1-pour-carrefour-mobile-on-en-sait-plus-sur-le-forfait-des-pinces/",
@@ -3647,6 +3912,32 @@
    "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-10/91a33a87-7345-42c6-b92f-5f33b962afd9.jpg.webp?itok=fOo6uit-"
   },
   {
+   "id": "3ebec0801c2d",
+   "titre": "Caroline Dassié (groupe Carrefour) : «Pour le moment, la consommation tient bon»",
+   "lien": "https://www.strategies.fr/actualites/marques/LQ6652702C/caroline-dassie-groupe-carrefour-pour-le-moment-la-consommation-tient-bon.html",
+   "source": "autres",
+   "media": "Stratégies",
+   "site": "strategies.fr",
+   "date": "2026-10-01T07:00+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "Grande invitée du Festival Stratégies, le 23 septembre, Caroline Dassié, directrice exécutive marketing, marques propres, datas & client et directrice de l’offre de Carrefour revient sur le contexte économique actuel et les projets d’IA du distributeur.",
+   "enrichi": "2026-11-21",
+   "image": "https://www.strategies.fr/sites/default/files/styles/social_image_big/public/media/images/swyp/LQ6653843C/Caroline-Dassier-1--Edwin-Cohas-pour-StratEgies.jpg"
+  },
+  {
+   "id": "c7fa733281b9",
+   "titre": "Alexandre Bompard quitte Europe 1",
+   "lien": "https://www.parismatch.com/alexandre-bompard-quitte-europe-1-6JBgFRnhxdKzOrpElIRpIW",
+   "source": "autres",
+   "media": "Paris Match",
+   "site": "parismatch.com",
+   "date": "2026-10-01T07:00+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "",
+   "enrichi": "2026-11-21",
+   "image": "https://images.ctfassets.net/iatfclnjf6rx/5K9LTq6KhDOM6tHsCyXvC9/93b697c8e4a20f18ed7e73f93e63aa93/Alexandre-Bompard-quitte-Europe-1.jpg"
+  },
+  {
    "id": "7b0f3d26adba",
    "titre": "Prosol (Grand Frais) : deux nouveaux directeurs généraux nommés cet été, Michel Biero qui rentre au Codir, la gouvernance évolue notablement",
    "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/prosol-grand-frais-deux-nouveaux-directeurs-generaux-nommes-cet-ete-la-gouvernance-evolue-notablement.ABC6DQZ2GFFX3GRIH257TJFDCU.html",
@@ -3705,6 +3996,18 @@
    "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-09/2be71a3f-7e4c-4ea8-b307-c0fd64486303.jpg.webp?itok=x6ekkpMG"
   },
   {
+   "id": "004b29b839f7",
+   "titre": "L'Événement Carrefour met 155 millions d'euros sur la table pour s'offrir les réseaux Coccinelle et CocciMarket",
+   "lien": "https://www.lalettre.fr/fr/entreprises_grande-distribution-et-services/2026/09/29/carrefour-met-155-millions-d-euros-sur-la-table-pour-s-offrir-les-reseaux-coccinelle-et-coccimarket,110886313-eve",
+   "source": "autres",
+   "media": "La Lettre",
+   "site": "lalettre.fr",
+   "date": "2026-09-29T07:00+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "",
+   "enrichi": "2026-11-21"
+  },
+  {
    "id": "25ee7f04ced6",
    "titre": "Carrefour 2030 : que retenir du nouveau plan stratégique d’Alexandre Bompard ?",
    "lien": "https://www.republikgroup.com/articles/284765ae-b6b2-f111-a6a7-6045bd9f5987/carrefour-2030-que-retenir-du-nouveau-plan-strategique-d-alexandre-bompard-",
@@ -3754,6 +4057,19 @@
    "resume": "",
    "site": "lsa-conso.fr",
    "enrichi": "2026-11-11"
+  },
+  {
+   "id": "ce0dafd2ec76",
+   "titre": "Aides sur les prix des carburants : «C’est la preuve de l'impuissance publique dans laquelle on se trouve», déplore le PDG de Carrefour Alexandre Bompard",
+   "lien": "https://fr.finance.yahoo.com/actualites/aides-prix-carburants-c-preuve-123346647.html",
+   "source": "autres",
+   "media": "Yahoo Finance France",
+   "site": "fr.finance.yahoo.com",
+   "date": "2026-09-23T07:00+00:00",
+   "vu_le": "2026-11-21T20:55+00:00",
+   "resume": "Le PDG de Carrefour estime que l",
+   "enrichi": "2026-11-21",
+   "image": "https://s.yimg.com/lo/mysterio/api/4cd22828002d0312208d559b024db644f4be9384d84cc5f93662305965bb69fa/lightyear_networkapi/resizefill_w1200%3Bquality_80%3Bformat_webp/https%3A%2F%2Fmedia.zenfs.com%2Ffr%2Fcapital_268%2Ff410606f3b2abf31df6cbaa36b0038f8.jpg"
   }
  ]
 }
