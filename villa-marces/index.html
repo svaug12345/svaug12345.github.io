@@ -2,7 +2,7 @@
 <!--
   ============================================================
   « 7 villa Marcès » — site de présentation de l'appartement à vendre
-  Version 1.5.0 – 22/11/2026
+  Version 1.6.0 – 22/11/2026
   En ligne : https://baiji.fr/villa-marces/
   ------------------------------------------------------------
   Historique :
@@ -21,6 +21,9 @@
              et liste détaillée des pièces (surface, sol, équipements)
    • 1.5.0 : « Bientôt en vente » (pastille sur la photo d'ouverture, phrase dans le contact) ;
              plus aucune mention de « vente directe par le propriétaire »
+   • 1.6.0 : formulaire « Être prévenu de l'ouverture de la vente » (rubrique contact) :
+             envoyé au script Google « 7 villa Marcès – intéressés » (outils/villa-marces-interet.gs)
+             qui range la demande dans un Google Sheet et envoie un courriel d'alerte à Seb
 
   COMMENT C'EST FAIT (pour s'y retrouver) :
    • Une page principale autonome : HTML + CSS + JavaScript, sans outil de construction
@@ -34,7 +37,8 @@
    • La visite à 360° utilise la bibliothèque libre Pannellum (licence MIT),
      copiée dans lib/ : aucun service extérieur n'est nécessaire.
    • TOUT LE CONTENU MODIFIABLE est regroupé en bas de page, dans le <script> :
-       CONTACT (courriel, téléphone), PRIX, VIDEO_DRIVE (film), PHOTOS (galerie), SCENES (visite 360°).
+       CONTACT (courriel, téléphone), INTERET_URL (formulaire), PRIX, VIDEO_DRIVE (film),
+       PHOTOS (galerie), SCENES (visite 360°).
    • Les surfaces viennent du descriptif du bien et de l'avis de valeur de 2011 :
      elles sont INDICATIVES tant qu'un mesurage Carrez récent n'est pas reporté ici.
   ============================================================
@@ -267,6 +271,31 @@
     .contact h3 { font-size: 1.5rem; margin-bottom: 8px; }
     .contact p { opacity: .9; }
     .contact .moyens { display: grid; gap: 10px; margin-top: 16px; }
+
+    /* ---------- Formulaire « Être prévenu » (dans l'encadré vert) ---------- */
+    #interet { scroll-margin-top: 76px; }      /* le lien « Être prévenu(e) » ne doit pas finir sous la barre collée */
+    .formulaire { display: grid; gap: 14px; margin-top: 18px; }
+    .formulaire label { display: grid; gap: 6px; font-size: .92rem; font-weight: 600; }
+    .formulaire label small { font-weight: 500; opacity: .75; }
+    .formulaire input, .formulaire textarea {
+      width: 100%; font: 500 1rem var(--texte); color: var(--encre);
+      background: var(--blanc); border: 2px solid transparent; border-radius: 10px; padding: 12px 14px;
+    }
+    .formulaire textarea { resize: vertical; min-height: 90px; }
+    .formulaire input:focus, .formulaire textarea:focus { outline: none; border-color: var(--terre); }
+    .formulaire .erreur-champ { border-color: #f0a58a; }      /* champ oublié ou mal rempli */
+    .formulaire .accord { display: flex; gap: 10px; align-items: flex-start; font-weight: 500; font-size: .88rem; opacity: .95; }
+    .formulaire .accord input { width: 22px; height: 22px; flex: none; margin: 1px 0 0; accent-color: var(--terre); }
+    .formulaire .bouton { justify-self: start; }
+    .formulaire .bouton[disabled] { opacity: .6; cursor: wait; }
+    .formulaire .etat { margin: 0; font-size: .92rem; min-height: 1.4em; }
+    .formulaire .etat.erreur { color: #ffd2c2; font-weight: 600; }
+    /* Champ piège pour les robots : hors de l'écran (pas display:none, que certains robots repèrent) */
+    .formulaire .piege { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+    .merci { margin-top: 18px; background: rgba(255, 255, 255, .1); border: 1px solid rgba(255, 255, 255, .35);
+      border-radius: 12px; padding: 16px 18px; }
+    .merci b { display: block; font-family: var(--titre); font-size: 1.25rem; font-weight: 500; margin-bottom: 4px; }
+    .merci button { margin-top: 10px; background: none; border: 0; color: #fff; text-decoration: underline; font: inherit; cursor: pointer; padding: 0; opacity: .85; }
     .contact .coordonnee { font-size: 1.05rem; font-weight: 600; word-break: break-word; }
     .contact .coordonnee a { color: #fff; }
 
@@ -336,7 +365,7 @@
         <div class="actions">
           <a class="bouton" href="#visite">Visiter à 360°</a>
           <a class="bouton clair" href="#video">Voir la vidéo</a>
-          <a class="bouton clair" href="#contact">Organiser une visite</a>
+          <a class="bouton clair" href="#interet">Être prévenu(e)</a>
         </div>
       </div>
     </div>
@@ -528,9 +557,43 @@
             <div><dt>Chauffage</dt><dd>Électrique</dd></div>
             <div><dt>Prix</dt><dd id="prix">Sur demande</dd></div>
           </dl>
-          <div class="contact">
-            <h3>Organiser une visite</h3>
-            <p>L'appartement sera mis en vente très prochainement. Pour toute question ou pour convenir d'un rendez-vous :</p>
+          <div class="contact" id="interet">
+            <h3>Être prévenu de l'ouverture de la vente</h3>
+            <p>L'appartement sera mis en vente très prochainement. Laissez vos coordonnées&nbsp;: vous serez recontacté(e) dès l'ouverture de la vente, pour organiser une visite ou répondre à vos questions.</p>
+
+            <!-- Caché tant que INTERET_URL (en bas de page) est vide : le script l'affiche -->
+            <form class="formulaire" id="interet-form" novalidate hidden>
+              <label>Nom et prénom
+                <input name="nom" autocomplete="name" maxlength="120" required>
+              </label>
+              <label>Courriel
+                <input name="courriel" type="email" autocomplete="email" inputmode="email" maxlength="160" required>
+              </label>
+              <label><span>Téléphone <small>(facultatif)</small></span>
+                <input name="telephone" type="tel" autocomplete="tel" inputmode="tel" maxlength="40">
+              </label>
+              <label><span>Votre projet ou une question <small>(facultatif)</small></span>
+                <textarea name="message" rows="3" maxlength="1500"></textarea>
+              </label>
+              <!-- Champ piège : un humain ne le voit pas, un robot le remplit → demande ignorée -->
+              <div class="piege" aria-hidden="true">
+                <label>Site web <input name="site" tabindex="-1" autocomplete="off"></label>
+              </div>
+              <label class="accord">
+                <input type="checkbox" name="accord" required>
+                <span>J'accepte que ces informations soient utilisées uniquement pour me recontacter au sujet de la vente de cet appartement.</span>
+              </label>
+              <button class="bouton" type="submit" id="interet-envoyer">Je souhaite être prévenu(e)</button>
+              <p class="etat" id="interet-etat" role="status" aria-live="polite"></p>
+            </form>
+
+            <!-- Remplace le formulaire une fois la demande envoyée -->
+            <div class="merci" id="interet-merci" hidden>
+              <b>Merci, c'est noté&nbsp;!</b>
+              Vous serez recontacté(e) dès l'ouverture de la vente.
+              <br><button type="button" id="interet-encore">Inscrire une autre personne</button>
+            </div>
+
             <div class="moyens" id="moyens"></div>
           </div>
         </div>
@@ -562,7 +625,7 @@
   <script src="lib/pannellum.js"></script>
   <script>
     "use strict";
-    const VERSION = "1.5.0";
+    const VERSION = "1.6.0";
 
     // ============================================================
     // CE QU'ON PEUT MODIFIER SANS TOUCHER AU RESTE
@@ -575,6 +638,12 @@
       courriel: "",      // ex. "prenom.nom@exemple.fr"
       telephone: ""      // ex. "06 12 34 56 78"
     };
+
+    // Formulaire « Être prévenu de l'ouverture de la vente » : adresse /exec du script Google
+    // « 7 villa Marcès – intéressés » (code : outils/villa-marces-interet.gs, mode d'emploi en tête).
+    // Il range la demande dans un Google Sheet et envoie un courriel d'alerte.
+    // "" = formulaire masqué (on affiche alors « coordonnées très prochainement »).
+    const INTERET_URL = "";
 
     // Prix affiché dans la fiche ("" = « Sur demande »). Ex. "1 250 000 €"
     const PRIX = "";
@@ -793,9 +862,103 @@
       moyens.insertAdjacentHTML("beforeend",
         `<p class="coordonnee">Téléphone : <a href="tel:${numero}">${CONTACT.telephone}</a></p>`);
     }
-    if (!CONTACT.courriel && !CONTACT.telephone) {
+    if (!CONTACT.courriel && !CONTACT.telephone && !INTERET_URL) {
       moyens.insertAdjacentHTML("beforeend",
         `<p class="coordonnee">Les coordonnées seront indiquées ici très prochainement.</p>`);
+    }
+
+    // ============================================================
+    // FORMULAIRE « ÊTRE PRÉVENU DE L'OUVERTURE DE LA VENTE »
+    // ============================================================
+    // La page est statique (GitHub Pages) : elle ne sait pas envoyer de courriel.
+    // Elle transmet donc la demande au script Google (INTERET_URL), qui l'enregistre
+    // dans le Google Sheet et prévient Seb par courriel.
+    const formulaire = $("interet-form");
+    const etat = $("interet-etat");
+    const merci = $("interet-merci");
+
+    if (INTERET_URL) {
+      formulaire.hidden = false;
+      // Déjà inscrit depuis ce téléphone ? On le lui rappelle au lieu de remontrer le formulaire.
+      try {
+        if (localStorage.getItem("villa-marces.interet")) { formulaire.hidden = true; merci.hidden = false; }
+      } catch (e) { /* stockage indisponible : tant pis, on montre le formulaire */ }
+      // Arrivé par un lien « …#interet » : le navigateur a sauté AVANT que le formulaire apparaisse,
+      // la page a grandi depuis → on recale l'encadré en haut de l'écran
+      if (location.hash === "#interet") requestAnimationFrame(() => $("interet").scrollIntoView());
+    }
+
+    // « Inscrire une autre personne » : formulaire vidé et réaffiché
+    $("interet-encore").addEventListener("click", () => {
+      formulaire.reset();
+      etat.textContent = "";
+      merci.hidden = true;
+      formulaire.hidden = false;
+      formulaire.elements.nom.focus();
+    });
+
+    // Dès qu'on corrige un champ, son liseré d'erreur et le message disparaissent
+    formulaire.addEventListener("input", (ev) => {
+      ev.target.classList.remove("erreur-champ");
+      if (etat.classList.contains("erreur")) afficherEtat("");
+    });
+
+    formulaire.addEventListener("submit", async (ev) => {
+      ev.preventDefault();               // on reste sur la page : l'envoi se fait en arrière-plan
+      const champs = formulaire.elements;
+
+      // Vérifications avant l'envoi (le script les refait de son côté)
+      const nom = champs.nom.value.trim();
+      const courriel = champs.courriel.value.trim();
+      const oublis = [];
+      champs.nom.classList.toggle("erreur-champ", !nom);
+      if (!nom) oublis.push("votre nom");
+      const courrielOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(courriel);
+      champs.courriel.classList.toggle("erreur-champ", !courrielOk);
+      if (!courrielOk) oublis.push("un courriel valide");
+      if (!champs.accord.checked) oublis.push("la case d'accord");
+      if (oublis.length) {
+        afficherEtat("Il manque " + oublis.join(", ") + ".", true);
+        return;
+      }
+
+      const bouton = $("interet-envoyer");
+      bouton.disabled = true;
+      afficherEtat("Envoi en cours…");
+      try {
+        // « text/plain » : évite la vérification préalable (CORS) que Google refuse
+        const reponse = await fetch(INTERET_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            nom, courriel,
+            telephone: champs.telephone.value.trim(),
+            message: champs.message.value.trim(),
+            accord: true,
+            site: champs.site.value,                 // champ piège (vide pour un humain)
+            page: location.href
+          })
+        });
+        const resultat = await reponse.json();
+        if (!resultat.ok) throw new Error(resultat.erreur || "refus du serveur");
+
+        // C'est parti : on remplace le formulaire par le message de remerciement
+        try { localStorage.setItem("villa-marces.interet", new Date().toISOString()); } catch (e) {}
+        formulaire.hidden = true;
+        merci.hidden = false;
+        afficherEtat("");
+      } catch (err) {
+        // Message du script s'il en a donné un (ex. « Adresse de courriel incorrecte. »), sinon message général
+        const lisible = err.message && !/fetch|network|json|refus/i.test(err.message) ? err.message : "";
+        afficherEtat((lisible || "L'envoi n'a pas abouti.") + " Vérifiez votre connexion et réessayez.", true);
+      } finally {
+        bouton.disabled = false;
+      }
+    });
+
+    function afficherEtat(texte, enErreur = false) {
+      etat.textContent = texte;
+      etat.classList.toggle("erreur", enErreur);
     }
 
     $("version").textContent = "Version " + VERSION;
