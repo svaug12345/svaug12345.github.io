@@ -2,7 +2,7 @@
 <!--
   ============================================================
   « 7 villa Marcès » — site de présentation de l'appartement à vendre
-  Version 1.10.2 – 22/11/2026
+  Version 1.11.0 – 22/11/2026
   En ligne : https://baiji.fr/villa-marces/
   ------------------------------------------------------------
   Historique :
@@ -44,6 +44,10 @@
              Financier : « Certificat en cours », « DPE en cours », charges « En cours ».
    • 1.10.2 : nouvelle vidéo (Visite_7_Villa_Marces_v3.mp4 sur le Drive de Seb) : façade en
              ouverture, étage et surface mesurée de chaque pièce, cartons sans « environ ».
+   • 1.11.0 : formulaire « Être prévenu » EN SERVICE (INTERET_URL = script Google déployé) ;
+             visites.js sur les quatre pages : chaque page vue est notée dans l'onglet
+             « Visites » du même Google Sheet (script 1.2.0) ; mention « Mesure d'audience
+             anonyme » dans le pied de page.
 
   COMMENT C'EST FAIT (pour s'y retrouver) :
    • Une page principale autonome : HTML + CSS + JavaScript, sans outil de construction
@@ -93,6 +97,7 @@
 
   <!-- Compteur de visites de baiji.fr -->
   <script src="/journal.js" defer></script>
+  <script src="visites.js" defer></script>
 
   <!-- Polices : Fraunces (titres, un peu « maison de famille ») et Manrope (texte) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -651,7 +656,7 @@
   <footer>
     <div class="contenu">
       <p>Surface habitable mesurée par un diagnostiqueur en novembre 2020 ; plans et photos non contractuels. Photos de novembre 2020 et de mai 2024, panoramas de mai 2024.</p>
-      <p>Visite à 360° : bibliothèque libre Pannellum. <span id="version"></span></p>
+      <p>Visite à 360° : bibliothèque libre Pannellum. Mesure d'audience anonyme, sans cookie publicitaire. <span id="version"></span></p>
     </div>
   </footer>
 
@@ -672,7 +677,7 @@
   <script src="lib/pannellum.js"></script>
   <script>
     "use strict";
-    const VERSION = "1.10.2";
+    const VERSION = "1.11.0";
 
     // ============================================================
     // CE QU'ON PEUT MODIFIER SANS TOUCHER AU RESTE
@@ -690,7 +695,7 @@
     // « 7 villa Marcès – intéressés » (code : outils/villa-marces-interet.gs, mode d'emploi en tête).
     // Il range la demande dans un Google Sheet et envoie un courriel d'alerte.
     // "" = formulaire masqué (on affiche alors « coordonnées très prochainement »).
-    const INTERET_URL = "";
+    const INTERET_URL = "https://script.google.com/macros/s/AKfycbycaT0gT9FsfcpCPWVMN3zg8ejVwbRte_-mZTxtZ5lLM4Hl-lvjI3YK6oUczNskTufA/exec";
 
     // Prix affiché dans la fiche ("" = « Sur demande »). Ex. "1 250 000 €"
     const PRIX = "";

@@ -1,11 +1,14 @@
 /* ============================================================
    7 villa Marcès — « Être prévenu de l'ouverture de la vente »
-   Script Google Apps Script — Version 1.1.0 (22/11/2026)
+   Script Google Apps Script — Version 1.2.0 (22/11/2026)
    ------------------------------------------------------------
    Reçoit le formulaire de la page https://baiji.fr/villa-marces/#interet :
     • range chaque demande dans l'onglet « Intéressés » du Google Sheet,
     • envoie un courriel d'alerte à Seb (« Répondre » écrit directement
       à la personne intéressée).
+   Reçoit aussi les pages vues du site (villa-marces/visites.js) :
+    • une ligne par page ouverte dans l'onglet « Visites » (pas de courriel),
+    • visites de plus de 13 mois effacées automatiquement.
 
    Aucune adresse n'est écrite dans ce fichier (le dépôt est PUBLIC) :
    le courriel part vers le propriétaire du script, c'est-à-dire le compte
@@ -36,17 +39,27 @@
               et « Agence » dans le Sheet, profil dans l'objet du courriel.
               Un Sheet déjà créé en 1.0.0 : supprimer l'onglet « Intéressés »
               (il est recréé avec les bonnes colonnes) ou y insérer ces colonnes.
+    • 1.2.0 : onglet « Visites » (page, ancre, provenance, appareil, navigateur,
+              écran, langue, visiteur anonyme, première visite, moi) ; 5 000 pages
+              vues par jour au maximum ; effacement des visites de plus de 13 mois.
+              Mise à jour depuis la 1.1.0 : coller ce code, enregistrer, puis
+              « Gérer les déploiements » → crayon → « Nouvelle version ».
    ============================================================ */
 
 const ONGLET = "Intéressés";
 const ENTETES = ["Reçu le", "Profil", "Agence", "Nom", "Courriel", "Téléphone", "Commentaire", "Accord", "Page"];
 const PROFILS = { particulier: "Particulier", professionnel: "Professionnel" };
+const ONGLET_VISITES = "Visites";
+const ENTETES_VISITES = ["Date", "Page", "Ancre", "Provenance", "Appareil", "Navigateur", "Écran",
+                         "Langue", "Visiteur", "Première visite", "Moi"];
+const MAX_VISITES_PAR_JOUR = 5000;  // garde-fou contre un robot qui enverrait de fausses visites
+const MOIS_GARDES = 13;             // durée de conservation des visites
 const MAX_PAR_JOUR = 60;          // garde-fou : au-delà, on refuse (robot probable)
 const LONGUEURS = { agence: 120, nom: 120, courriel: 160, telephone: 40, message: 1500 };
 
 /* ---- Petit test depuis le navigateur : ouvrir l'adresse /exec doit afficher « ok » ---- */
 function doGet() {
-  return repondre({ ok: true, service: "villa-marces-interet", version: "1.1.0" });
+  return repondre({ ok: true, service: "villa-marces-interet", version: "1.2.0" });
 }
 
 /* ---- Le formulaire : POST (texte JSON) {profil, agence, nom, courriel, telephone, message, accord, site, page} ----
@@ -56,6 +69,9 @@ function doPost(e) {
   let d;
   try { d = JSON.parse(e.postData.contents); }
   catch (err) { return repondre({ ok: false, erreur: "requête illisible" }); }
+
+  // Page vue envoyée par visites.js : rangée à part, sans courriel
+  if (d.type === "visite") return noterVisite(d);
 
   // Champ piège : invisible pour un humain, rempli par les robots → on fait semblant d'accepter
   if (d.site) return repondre({ ok: true });
@@ -101,6 +117,42 @@ function doPost(e) {
   }
 }
 
+/* ---- Une page vue → une ligne dans l'onglet « Visites » ---- */
+function noterVisite(d) {
+  const t = (v, n) => sur(String(v || "").trim().slice(0, n));
+  const verrou = LockService.getScriptLock();
+  verrou.waitLock(10000);
+  try {
+    const props = PropertiesService.getScriptProperties();
+    const jour = Utilities.formatDate(new Date(), "Europe/Paris", "yyyy-MM-dd");
+    const nouveauJour = props.getProperty("visitesJour") !== jour;
+    const compte = nouveauJour ? 0 : Number(props.getProperty("visitesCompte") || 0);
+    if (compte >= MAX_VISITES_PAR_JOUR) return repondre({ ok: false });
+    props.setProperties({ visitesJour: jour, visitesCompte: String(compte + 1) });
+
+    const feuille = ongletVisites();
+    if (nouveauJour) purgerVisites(feuille);     // une fois par jour suffit
+    feuille.appendRow([new Date(), t(d.page, 80), t(d.ancre, 40), t(d.source, 120), t(d.appareil, 20),
+                       t(d.navigateur, 20), t(d.ecran, 20), t(d.langue, 10), t(d.visiteur, 12),
+                       d.premiere === true ? "oui" : "non", d.moi === true ? "oui" : ""]);
+    return repondre({ ok: true });
+  } finally {
+    verrou.releaseLock();
+  }
+}
+
+// Efface les visites de plus de MOIS_GARDES mois (les plus anciennes sont en haut)
+function purgerVisites(feuille) {
+  const n = feuille.getLastRow() - 1;
+  if (n < 1) return;
+  const limite = new Date();
+  limite.setMonth(limite.getMonth() - MOIS_GARDES);
+  const dates = feuille.getRange(2, 1, n, 1).getValues();
+  let vieilles = 0;
+  while (vieilles < n && dates[vieilles][0] instanceof Date && dates[vieilles][0] < limite) vieilles++;
+  if (vieilles) feuille.deleteRows(2, vieilles);
+}
+
 /* ---- Le courriel d'alerte ---- */
 function alerter(f, total) {
   const pro = f.profil === "Professionnel";
@@ -139,6 +191,7 @@ function alerter(f, total) {
 /* ---- À lancer à la main une fois (étape 3) : autorise le script et envoie un courriel de test ---- */
 function testerAlerte() {
   onglet();   // crée l'onglet tout de suite
+  ongletVisites();
   alerter({ profil: "Professionnel", agence: "Agence test", nom: "Test (à ignorer)", courriel: Session.getEffectiveUser().getEmail(),
             telephone: "06 00 00 00 00", message: "Ceci est un essai du formulaire." }, onglet().getLastRow() - 1);
 }
@@ -159,6 +212,19 @@ function onglet() {
     f = classeur.insertSheet(ONGLET);
     f.appendRow(ENTETES);
     f.getRange(1, 1, 1, ENTETES.length).setFontWeight("bold");
+    f.setFrozenRows(1);
+  }
+  return f;
+}
+
+// L'onglet « Visites », créé avec sa ligne de titres s'il n'existe pas encore
+function ongletVisites() {
+  const classeur = SpreadsheetApp.getActiveSpreadsheet();
+  let f = classeur.getSheetByName(ONGLET_VISITES);
+  if (!f) {
+    f = classeur.insertSheet(ONGLET_VISITES);
+    f.appendRow(ENTETES_VISITES);
+    f.getRange(1, 1, 1, ENTETES_VISITES.length).setFontWeight("bold");
     f.setFrozenRows(1);
   }
   return f;

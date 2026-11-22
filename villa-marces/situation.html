@@ -2,7 +2,7 @@
 <!--
   ============================================================
   « 7 villa Marcès » — page « Situation »
-  Version 1.10.2 – 22/11/2026   (même numéro que le site : voir index.html)
+  Version 1.11.0 – 22/11/2026   (même numéro que le site : voir index.html)
   En ligne : https://baiji.fr/villa-marces/situation.html
   ------------------------------------------------------------
   COMMENT C'EST FAIT : page autonome, sœur de plans.html et de finances.html.
@@ -34,6 +34,7 @@
 
   <!-- Compteur de visites de baiji.fr -->
   <script src="/journal.js" defer></script>
+  <script src="visites.js" defer></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -235,13 +236,13 @@
   <footer>
     <div class="contenu">
       <p>Temps de marche calculés sur les itinéraires piétons d'OpenStreetMap (© les contributeurs d'OpenStreetMap). Informations non contractuelles.</p>
-      <p><span id="version"></span></p>
+      <p>Mesure d'audience anonyme, sans cookie publicitaire. <span id="version"></span></p>
     </div>
   </footer>
 
   <script>
     "use strict";
-    const VERSION = "1.10.2";   // même numéro que index.html
+    const VERSION = "1.11.0";   // même numéro que index.html
     document.getElementById("version").textContent = "Version " + VERSION;
     // Même appli installable que la page principale (service worker partagé)
     if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
