@@ -137,11 +137,11 @@ def plan_3e():
     # --- Hors appartement
     p.hachures(250, 1018, 965, 1492)       # logement voisin
     p.hachures(250, 765, 480, 1005)        # cage d'escalier de l'immeuble
-    p.hachures(495, 905, 945, 1000)        # palier de l'immeuble
+    p.hachures(495, 905, 833, 1000)        # palier de l'immeuble (il s'arrête à la porte d'entrée, x ≈ 835)
     p.hachures(495, 668, 645, 880)         # ascenseur
     p.nom(570, 774, "Ascenseur", 24, GRIS, 600)
     p.nom(365, 885, "Escalier|immeuble", 24, GRIS, 600)
-    p.nom(720, 952, "Palier", 26, GRIS, 600)
+    p.nom(664, 952, "Palier", 26, GRIS, 600)
 
     # --- Pièces
     p.rect(250, 215, 382, 493, EAU)                                        # buanderie
@@ -150,7 +150,10 @@ def plan_3e():
     # Séjour + salle à manger + entrée : une seule grande pièce ouverte
     p.poly([(700, 215), (1000, 215), (1000, 480), (1095, 480), (1095, 995),
             (965, 995), (965, 850), (700, 850)], VIE)
-    p.rect(965, 880, 1095, 995, PASSAGE)                                   # entrée (teinte « passage »)
+    # Entrée : elle commence dès la porte palière (x ≈ 845) et longe le palier de l'immeuble,
+    # sous le mur du séjour ; elle s'ouvre sur le séjour par son côté droit (x 965 → 1095).
+    p.poly([(845, 905), (965, 905), (965, 880), (1095, 880), (1095, 995), (845, 995)], PASSAGE)
+    p.rect(850, 864, 958, 900, RANGE)                                      # placard de l'entrée
     p.rect(1000, 215, 1385, 480, VIE)                                      # véranda
     p.rect(1000, 215, 1385, 480, "#ffffff", extra='opacity=".35"')         # … un peu plus claire que le séjour
     p.poly([(345, 497), (660, 497), (660, 555), (430, 555), (430, 645), (345, 645)], PASSAGE)   # dégagement
@@ -182,7 +185,7 @@ def plan_3e():
     p.fenetre(740, 192, 960, 208)          # salle à manger
 
     # --- Portes
-    p.porte(945, 915, 965, 990, "h", "d")                  # porte d'entrée (palier → entrée)
+    p.porte(833, 915, 845, 990, "b", "d")                  # porte d'entrée (palier → entrée)
     p.porte(660, 500, 700, 553, "h", "d", VIE)             # dégagement → séjour
     p.porte(470, 480, 530, 497, "g", "b")                  # cuisine
     p.porte(340, 493, 382, 500, "d", "b")                  # buanderie
@@ -211,7 +214,7 @@ def plan_3e():
     p.nom(560, 602, "WC", 30)
     p.nom(343, 703, "Cellier", 30)
     p.nom(295, 572, "↑ 4ᵉ", 26)
-    p.nom(1030, 938, "Entrée", 28)
+    p.nom(985, 950, "Entrée", 30)
     p.nom(1212, 1125, "Chambre 1", 42)
     p.nom(1118, 1375, "Salle|de bains", 30)
     p.nom(1169, 1585, "Balcon", 34)
