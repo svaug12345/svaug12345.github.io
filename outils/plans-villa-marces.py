@@ -16,6 +16,34 @@ Usage :  python3 dessiner.py <dossier de sortie>
 """
 import sys
 
+# ---------- Échelle et surfaces ----------
+# Combien de pixels du scan font 1 mètre ? On le déduit des cotes écrites sur le plan
+# d'origine : buanderie 1,43 × 3,04 m, cellier 2,03 × 1,10 m, WC 2,40 m, chambre 1
+# 3,80 × 2,88 m, cage d'ascenseur 1,60 m… Elles donnent entre 87 et 94 pixels par mètre
+# selon l'endroit (le scan est un peu déformé) : on retient 91 pour le 3ᵉ et 92 pour le 4ᵉ.
+# Conséquence : les surfaces calculées ici sont des ESTIMATIONS, justes à environ 10 % près.
+# Elles ne remplacent pas un mesurage (loi Carrez) fait par un diagnostiqueur.
+ECHELLE_3E = 91
+ECHELLE_4E = 92
+
+
+def aire(points):
+    """Aire d'un polygone en pixels carrés (formule « du lacet » : on additionne les
+    produits croisés des sommets pris deux par deux, puis on divise par deux)."""
+    s = 0
+    for (x1, y1), (x2, y2) in zip(points, points[1:] + points[:1]):
+        s += x1 * y2 - x2 * y1
+    return abs(s) / 2
+
+
+def rect(x1, y1, x2, y2):
+    """Les 4 coins d'un rectangle, pour le donner à aire()."""
+    return [(x1, y1), (x2, y1), (x2, y2), (x1, y2)]
+
+
+SURFACES = []      # ce que le script a calculé : [(niveau, pièce, m²)], affiché à la fin
+
+
 # ---------- Couleurs (accordées au site : pierre, vert du bois, terre cuite) ----------
 MUR = "#2f3d38"        # murs et cloisons
 VIE = "#fbf1de"        # pièces de vie
@@ -33,10 +61,11 @@ GRIS = "#8a938f"
 class Plan:
     """Petit « crayon » qui accumule des morceaux de SVG."""
 
-    def __init__(self, largeur, hauteur, cadre):
+    def __init__(self, largeur, hauteur, cadre, niveau="", echelle=91):
         # cadre = (x, y, largeur, hauteur) de la partie utile : c'est le « viewBox » du SVG,
         # qui recadre le dessin sans changer aucune coordonnée.
         self.l, self.h, self.cadre, self.t = largeur, hauteur, cadre, []
+        self.niveau, self.echelle = niveau, echelle      # pour le calcul des surfaces
 
     def rect(self, x1, y1, x2, y2, fond, trait=None, ep=0, extra=""):
         s = f' stroke="{trait}" stroke-width="{ep}"' if trait else ""
@@ -92,6 +121,22 @@ class Plan:
                 f'<text x="{x}" y="{y0 + i * taille * 1.16:.0f}" font-size="{taille}" font-weight="{gras}" fill="{couleur}" '
                 f'text-anchor="middle" dominant-baseline="middle" {extra}>{li}</text>')
 
+    def piece(self, x, y, texte, taille, formes, taille_m2=None, en_ligne=False, extra=""):
+        """Nom d'une pièce + sa surface estimée. « formes » = liste de polygones (en pixels)
+        dont on additionne les aires. en_ligne=True : « WC · 2 m² » sur une seule ligne
+        (pour les petites pièces) ; sinon la surface est écrite sous le nom, plus petit."""
+        m2 = sum(aire(f) for f in formes) / self.echelle ** 2
+        SURFACES.append((self.niveau, texte.replace("|", " "), m2))
+        surface = f"≈ {round(m2)} m²"
+        if en_ligne:
+            self.nom(x, y, f"{texte} · {surface}", taille, extra=extra)
+            return
+        lignes = texte.count("|") + 1
+        tm = taille_m2 or round(taille * 0.68)
+        # le nom est remonté d'une demi-ligne de surface, la surface placée juste dessous
+        self.nom(x, y - tm * 0.6, texte, taille, extra=extra)
+        self.nom(x, y - tm * 0.6 + lignes * taille * 0.58 + tm * 0.75, surface, tm, "#55635d", 600, extra=extra)
+
     def marches(self, x1, y1, x2, y2, n, sens="h"):
         """Escalier : n traits parallèles (sens 'h' = marches horizontales)."""
         for i in range(1, n):
@@ -120,7 +165,7 @@ class Plan:
 # 3ᵉ ÉTAGE
 # =====================================================================
 def plan_3e():
-    p = Plan(1824, 1845, (180, 140, 1400, 1530))
+    p = Plan(1824, 1845, (180, 140, 1400, 1530), "3e", ECHELLE_3E)
 
     # --- Extérieurs : jardinières (bande à l'est + retours), terrasse, balcon
     p.rect(1400, 170, 1548, 1645, VERT, MUR, 4)            # jardinières : la bande plantée le long de la terrasse
@@ -204,19 +249,22 @@ def plan_3e():
     p.rect(257, 425, 300, 485, "#ffffff", MUR, 3, 'rx="10"')               # évier de la buanderie
 
     # --- Noms
-    p.nom(897, 640, "Séjour", 50)
+    # Séjour + salle à manger = une seule pièce : la surface est écrite une fois, sous « Séjour ».
+    # (formes : la grande partie 700→1000, puis la bande 1000→1095 le long des baies)
+    p.piece(897, 640, "Séjour", 50, [rect(700, 215, 1000, 850), rect(1000, 480, 1095, 880)], 32)
+    p.nom(897, 735, "avec la salle à manger", 24, "#55635d", 600)
     p.nom(850, 330, "Salle|à manger", 40)
-    p.nom(1195, 345, "Véranda", 44)
+    p.piece(1195, 345, "Véranda", 44, [rect(1000, 215, 1385, 480)])
     p.nom(1275, 705, "Terrasse", 46)
     p.nom(1474, 800, "Jardinières", 34, "#3f6b45", 700, 'transform="rotate(-90 1474 800)"')
-    p.nom(490, 345, "Cuisine", 36)
-    p.nom(316, 320, "Buanderie", 28, extra='transform="rotate(-90 316 320)"')
-    p.nom(560, 602, "WC", 30)
-    p.nom(343, 703, "Cellier", 30)
+    p.piece(490, 345, "Cuisine", 36, [rect(398, 215, 645, 480)])
+    p.piece(316, 325, "Buanderie", 28, [rect(250, 215, 382, 493)], 22, extra='transform="rotate(-90 316 325)"')
+    p.piece(575, 602, "WC", 26, [rect(437, 565, 655, 640)], en_ligne=True)
+    p.piece(322, 708, "Cellier", 26, [rect(250, 652, 437, 755)], 22)
     p.nom(295, 572, "↑ 4ᵉ", 26)
-    p.nom(985, 950, "Entrée", 30)
-    p.nom(1212, 1125, "Chambre 1", 42)
-    p.nom(1118, 1375, "Salle|de bains", 30)
+    p.piece(985, 950, "Entrée", 30, [[(845, 905), (965, 905), (965, 880), (1095, 880), (1095, 995), (845, 995)], rect(850, 864, 958, 900)], 22)
+    p.piece(1212, 1125, "Chambre 1", 42, [rect(1035, 1000, 1390, 1250)])   # hors penderie
+    p.piece(1118, 1375, "Salle|de bains", 30, [rect(978, 1258, 1390, 1490)], 24)
     p.nom(1169, 1585, "Balcon", 34)
     p.nom(607, 1255, "Autre logement", 40, GRIS, 600)
     return p.svg("Plan reconstitué du 3ᵉ étage — 7 villa Marcès (non contractuel)")
@@ -226,7 +274,7 @@ def plan_3e():
 # 4ᵉ ÉTAGE
 # =====================================================================
 def plan_4e():
-    p = Plan(1674, 1845, (420, 135, 1250, 1395))
+    p = Plan(1674, 1845, (420, 135, 1250, 1395), "4e", ECHELLE_4E)
 
     # --- Rappel du niveau du dessous (pointillés) et toitures
     p.rect(1297, 165, 1640, 430, "#faf7f1", GRIS, 3, 'stroke-dasharray="14 10"')     # véranda du 3ᵉ, en contrebas
@@ -288,13 +336,13 @@ def plan_4e():
     p.rect(885, 883, 925, 921, "#ffffff", MUR, 3, 'rx="10"')
 
     # --- Noms
-    p.nom(612, 345, "Chambre 2", 38)
-    p.nom(868, 345, "Chambre 3", 38)
-    p.nom(1135, 530, "Bureau", 38)
-    p.nom(1169, 730, "Chambre 4", 38)
-    p.nom(790, 604, "Palier", 32)
+    p.piece(612, 345, "Chambre 2", 38, [rect(490, 200, 735, 560)])
+    p.piece(868, 345, "Chambre 3", 38, [[(745, 200), (1060, 200), (1060, 410), (990, 410), (990, 560), (745, 560)]])
+    p.piece(1135, 545, "Bureau", 38, [[(1040, 438), (1285, 438), (1285, 495), (1350, 495), (1350, 658), (1040, 658)]])
+    p.piece(1185, 735, "Chambre 4", 36, [[(1040, 675), (1298, 675), (1298, 958), (1105, 958), (1105, 785), (1040, 785)], rect(1303, 675, 1348, 958)])
+    p.piece(790, 604, "Palier", 28, [[(655, 568), (1030, 568), (1030, 780), (1000, 780), (1000, 865), (925, 865), (925, 640), (655, 640)]], en_ligne=True)
     p.nom(572, 660, "↓ 3ᵉ", 26)
-    p.nom(912, 962, "Salle de bains", 24)
+    p.piece(912, 962, "Salle de bains", 24, [[(742, 875), (1005, 875), (1005, 995), (820, 995), (820, 1045), (742, 1045)]], 20)
     p.nom(1340, 1150, "Terrasse", 46)
     p.nom(1396, 1343, "Jardinières", 24, "#3f6b45")
     p.nom(1128, 300, "Rangement", 24, extra='transform="rotate(-90 1128 300)"')
@@ -309,3 +357,9 @@ if __name__ == "__main__":
     open(f"{dossier}/plan-3e.svg", "w").write(plan_3e())
     open(f"{dossier}/plan-4e.svg", "w").write(plan_4e())
     print("plans écrits dans", dossier)
+    # Récapitulatif des surfaces estimées (à recopier dans PLANS de plans.html si elles changent)
+    for niveau in ("3e", "4e"):
+        lignes = [(n, m) for (niv, n, m) in SURFACES if niv == niveau]
+        print(f"\n{niveau} — total des pièces mesurées : {sum(m for _, m in lignes):.1f} m²")
+        for n, m in lignes:
+            print(f"   {n:<16} {m:5.1f} m²  → ≈ {round(m)} m²")
