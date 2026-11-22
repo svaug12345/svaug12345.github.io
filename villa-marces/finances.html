@@ -2,7 +2,7 @@
 <!--
   ============================================================
   « 7 villa Marcès » — page « Financier »
-  Version 1.10.0 – 22/11/2026   (même numéro que le site : voir index.html)
+  Version 1.10.1 – 22/11/2026   (même numéro que le site : voir index.html)
   En ligne : https://baiji.fr/villa-marces/finances.html
   ------------------------------------------------------------
   COMMENT C'EST FAIT : page autonome, sœur de plans.html (mêmes couleurs, même barre).
@@ -95,7 +95,7 @@
     .carte-info li small { grid-column: 1 / -1; color: var(--encre-2); font-size: .86rem; }
     .carte-info li.total { border-top: 2px solid var(--bois); }
     .carte-info li.total b, .carte-info li.total .v { font-size: 1.05rem; }
-    .carte-info li.attente .v { color: var(--terre-fonce); font-weight: 600; white-space: normal; max-width: 16ch; }
+    .carte-info li.attente .v { color: var(--terre-fonce); font-weight: 600; }
 
     /* ---------- Photo avec sa légende ---------- */
     .photo { margin: 24px 0 0; background: var(--blanc); border: 1px solid var(--trait); border-radius: var(--rayon); overflow: hidden; }
@@ -120,7 +120,10 @@
     @media (min-width: 760px) {
       body { font-size: 18px; }
       .tete { padding-top: 64px; }
-      .cartes { grid-template-columns: 1fr 1fr; align-items: start; }
+      /* Deux COLONNES de texte (et non une grille) : chaque carte se range sous la précédente,
+         sans laisser de vide quand sa voisine est plus haute. break-inside empêche de couper une carte. */
+      .cartes { display: block; column-count: 2; column-gap: 22px; }
+      .carte-info { break-inside: avoid; margin: 0 0 22px; }
       .carte iframe { height: 440px; }
     }
   </style>
@@ -159,7 +162,7 @@
             <li><b>3ᵉ étage</b><span class="v">90,67 m²</span><small>Entrée, séjour – salle à manger, véranda, cuisine, buanderie, cellier, WC, chambre et salle de bains</small></li>
             <li><b>4ᵉ étage</b><span class="v">59,83 m²</span><small>Palier, quatre chambres, salle de bains avec WC</small></li>
             <li class="total"><b>Surface habitable</b><span class="v">150,50 m²</span></li>
-            <li class="attente"><b>Surface loi Carrez</b><span class="v">Certificat à établir pour la vente</span><small>La surface loi Carrez sera mesurée par le diagnostiqueur et figurera dans la promesse de vente.</small></li>
+            <li class="attente"><b>Surface loi Carrez</b><span class="v">Certificat en cours</span><small>La surface loi Carrez figurera dans la promesse de vente.</small></li>
           </ul>
         </section>
         <section class="carte-info">
@@ -187,8 +190,8 @@
           <ul>
             <li><b>Taxe foncière</b><span class="v">4 500 € par an</span></li>
             <li><b>Chauffage et eau chaude</b><span class="v">Individuels</span><small>Électriques : pas de charges de chauffage collectif</small></li>
-            <li class="attente"><b>Charges de copropriété</b><span class="v">Montant communiqué avec le dossier de vente</span></li>
-            <li class="attente"><b>Diagnostic de performance énergétique</b><span class="v">À établir pour la vente</span></li>
+            <li class="attente"><b>Charges de copropriété</b><span class="v">En cours</span></li>
+            <li class="attente"><b>Diagnostic de performance énergétique</b><span class="v">DPE en cours</span></li>
             <li><b>Prix</b><span class="v"><span id="prix">Sur demande</span></span></li>
           </ul>
         </section>
@@ -214,7 +217,7 @@
         <ul>
           <li>La surface habitable ne compte ni les terrasses, ni le balcon, ni l'escalier, ni les parties de moins de 1,80 m de hauteur. La véranda (11,92 m²) en fait partie.</li>
           <li>Le détail pièce par pièce figure sur la <a href="plans.html">page Plans</a>.</li>
-          <li>Les éléments encore attendus (surface loi Carrez, diagnostic de performance énergétique, charges de copropriété) seront ajoutés ici dès qu'ils seront établis.</li>
+          <li>Les éléments en cours (surface loi Carrez, diagnostic de performance énergétique, charges de copropriété) seront ajoutés ici dès qu'ils seront disponibles.</li>
         </ul>
       </div>
 
@@ -235,7 +238,7 @@
 
   <script>
     "use strict";
-    const VERSION = "1.10.0";   // même numéro que index.html
+    const VERSION = "1.10.1";   // même numéro que index.html
     document.getElementById("version").textContent = "Version " + VERSION;
     // Même appli installable que la page principale (service worker partagé)
     if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});

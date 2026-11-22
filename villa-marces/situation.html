@@ -2,7 +2,7 @@
 <!--
   ============================================================
   « 7 villa Marcès » — page « Situation »
-  Version 1.10.0 – 22/11/2026   (même numéro que le site : voir index.html)
+  Version 1.10.1 – 22/11/2026   (même numéro que le site : voir index.html)
   En ligne : https://baiji.fr/villa-marces/situation.html
   ------------------------------------------------------------
   COMMENT C'EST FAIT : page autonome, sœur de plans.html et de finances.html.
@@ -120,7 +120,10 @@
     @media (min-width: 760px) {
       body { font-size: 18px; }
       .tete { padding-top: 64px; }
-      .cartes { grid-template-columns: 1fr 1fr; align-items: start; }
+      /* Deux COLONNES de texte (et non une grille) : chaque carte se range sous la précédente,
+         sans laisser de vide quand sa voisine est plus haute. break-inside empêche de couper une carte. */
+      .cartes { display: block; column-count: 2; column-gap: 22px; }
+      .carte-info { break-inside: avoid; margin: 0 0 22px; }
       .carte iframe { height: 440px; }
     }
   </style>
@@ -238,7 +241,7 @@
 
   <script>
     "use strict";
-    const VERSION = "1.10.0";   // même numéro que index.html
+    const VERSION = "1.10.1";   // même numéro que index.html
     document.getElementById("version").textContent = "Version " + VERSION;
     // Même appli installable que la page principale (service worker partagé)
     if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
