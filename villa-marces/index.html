@@ -2,7 +2,7 @@
 <!--
   ============================================================
   « 7 villa Marcès » — site de présentation de l'appartement à vendre
-  Version 1.9.0 – 22/11/2026
+  Version 1.10.0 – 22/11/2026
   En ligne : https://baiji.fr/villa-marces/
   ------------------------------------------------------------
   Historique :
@@ -37,6 +37,9 @@
              de marche calculés vers la mairie, le bois, les écoles, les transports) ; photo de
              la façade (vues/facade.jpg) ; « immeuble en pierre de taille de 1989 » ; buanderie
              « avec grand évier et évacuation d'eau ».
+   • 1.10.0 : formulaire « Être prévenu » — choix obligatoire « Particulier » ou « Agence /
+             professionnel de l'immobilier » (+ nom de l'agence pour un professionnel),
+             champ « Commentaire ou question » ; à déployer avec le script 1.1.0.
 
   COMMENT C'EST FAIT (pour s'y retrouver) :
    • Une page principale autonome : HTML + CSS + JavaScript, sans outil de construction
@@ -301,6 +304,15 @@
     .formulaire .erreur-champ { border-color: #f0a58a; }      /* champ oublié ou mal rempli */
     .formulaire .accord { display: flex; gap: 10px; align-items: flex-start; font-weight: 500; font-size: .88rem; opacity: .95; }
     .formulaire .accord input { width: 22px; height: 22px; flex: none; margin: 1px 0 0; accent-color: var(--terre); }
+    /* « Vous êtes » : deux grosses cases à cocher côte à côte (l'une sous l'autre sur téléphone) */
+    .formulaire .profil { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: 8px; }
+    .formulaire .profil legend { font-size: .92rem; font-weight: 600; padding: 0; margin-bottom: 8px; }
+    .formulaire .choix { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+    .formulaire .choix label { display: flex; gap: 10px; align-items: center; font-weight: 500; cursor: pointer;
+      background: rgba(255, 255, 255, .1); border: 2px solid rgba(255, 255, 255, .35); border-radius: 10px; padding: 11px 14px; }
+    .formulaire .choix label:has(input:checked) { background: rgba(255, 255, 255, .2); border-color: #fff; }
+    .formulaire .choix input { width: 20px; height: 20px; flex: none; margin: 0; accent-color: var(--terre); }
+    .formulaire .profil.erreur-champ .choix label { border-color: #f0a58a; }
     .formulaire .bouton { justify-self: start; }
     .formulaire .bouton[disabled] { opacity: .6; cursor: wait; }
     .formulaire .etat { margin: 0; font-size: .92rem; min-height: 1.4em; }
@@ -583,6 +595,17 @@
 
             <!-- Caché tant que INTERET_URL (en bas de page) est vide : le script l'affiche -->
             <form class="formulaire" id="interet-form" novalidate hidden>
+              <fieldset class="profil" id="interet-profil">
+                <legend>Vous êtes</legend>
+                <div class="choix">
+                  <label><input type="radio" name="profil" value="particulier" required> Un particulier</label>
+                  <label><input type="radio" name="profil" value="professionnel"> Une agence ou un professionnel de l'immobilier</label>
+                </div>
+              </fieldset>
+              <!-- Affiché seulement si « professionnel » est coché -->
+              <label id="interet-agence" hidden>Agence ou société
+                <input name="agence" autocomplete="organization" maxlength="120">
+              </label>
               <label>Nom et prénom
                 <input name="nom" autocomplete="name" maxlength="120" required>
               </label>
@@ -592,7 +615,7 @@
               <label><span>Téléphone <small>(facultatif)</small></span>
                 <input name="telephone" type="tel" autocomplete="tel" inputmode="tel" maxlength="40">
               </label>
-              <label><span>Votre projet ou une question <small>(facultatif)</small></span>
+              <label><span>Commentaire ou question <small>(facultatif)</small></span>
                 <textarea name="message" rows="3" maxlength="1500"></textarea>
               </label>
               <!-- Champ piège : un humain ne le voit pas, un robot le remplit → demande ignorée -->
@@ -645,7 +668,7 @@
   <script src="lib/pannellum.js"></script>
   <script>
     "use strict";
-    const VERSION = "1.9.0";
+    const VERSION = "1.10.0";
 
     // ============================================================
     // CE QU'ON PEUT MODIFIER SANS TOUCHER AU RESTE
@@ -928,15 +951,21 @@
     // « Inscrire une autre personne » : formulaire vidé et réaffiché
     $("interet-encore").addEventListener("click", () => {
       formulaire.reset();
+      $("interet-agence").hidden = true;
       etat.textContent = "";
       merci.hidden = true;
       formulaire.hidden = false;
-      formulaire.elements.nom.focus();
+      formulaire.elements.profil[0].focus();
     });
 
-    // Dès qu'on corrige un champ, son liseré d'erreur et le message disparaissent
+    // Dès qu'on corrige un champ, son liseré d'erreur et le message disparaissent ;
+    // le champ « Agence ou société » n'apparaît que pour un professionnel
     formulaire.addEventListener("input", (ev) => {
       ev.target.classList.remove("erreur-champ");
+      if (ev.target.name === "profil") {
+        $("interet-profil").classList.remove("erreur-champ");
+        $("interet-agence").hidden = ev.target.value !== "professionnel";
+      }
       if (etat.classList.contains("erreur")) afficherEtat("");
     });
 
@@ -947,7 +976,10 @@
       // Vérifications avant l'envoi (le script les refait de son côté)
       const nom = champs.nom.value.trim();
       const courriel = champs.courriel.value.trim();
+      const profil = champs.profil.value;          // "particulier", "professionnel" ou "" si rien coché
       const oublis = [];
+      $("interet-profil").classList.toggle("erreur-champ", !profil);
+      if (!profil) oublis.push("votre profil (particulier ou professionnel)");
       champs.nom.classList.toggle("erreur-champ", !nom);
       if (!nom) oublis.push("votre nom");
       const courrielOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(courriel);
@@ -968,6 +1000,8 @@
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({
+            profil,
+            agence: profil === "professionnel" ? champs.agence.value.trim() : "",
             nom, courriel,
             telephone: champs.telephone.value.trim(),
             message: champs.message.value.trim(),

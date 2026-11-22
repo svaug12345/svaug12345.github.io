@@ -1,6 +1,6 @@
 /* ============================================================
    7 villa Marcès — « Être prévenu de l'ouverture de la vente »
-   Script Google Apps Script — Version 1.0.0 (22/11/2026)
+   Script Google Apps Script — Version 1.1.0 (22/11/2026)
    ------------------------------------------------------------
    Reçoit le formulaire de la page https://baiji.fr/villa-marces/#interet :
     • range chaque demande dans l'onglet « Intéressés » du Google Sheet,
@@ -31,19 +31,25 @@
    Historique :
     • 1.0.0 : enregistrement dans le Sheet + courriel d'alerte ; champ piège
               anti-robots, 60 demandes par jour au maximum, doublons ignorés
+    • 1.1.0 : profil obligatoire « Particulier » / « Professionnel » (agence ou
+              professionnel de l'immobilier) + nom de l'agence ; colonnes « Profil »
+              et « Agence » dans le Sheet, profil dans l'objet du courriel.
+              Un Sheet déjà créé en 1.0.0 : supprimer l'onglet « Intéressés »
+              (il est recréé avec les bonnes colonnes) ou y insérer ces colonnes.
    ============================================================ */
 
 const ONGLET = "Intéressés";
-const ENTETES = ["Reçu le", "Nom", "Courriel", "Téléphone", "Message", "Accord", "Page"];
+const ENTETES = ["Reçu le", "Profil", "Agence", "Nom", "Courriel", "Téléphone", "Commentaire", "Accord", "Page"];
+const PROFILS = { particulier: "Particulier", professionnel: "Professionnel" };
 const MAX_PAR_JOUR = 60;          // garde-fou : au-delà, on refuse (robot probable)
-const LONGUEURS = { nom: 120, courriel: 160, telephone: 40, message: 1500 };
+const LONGUEURS = { agence: 120, nom: 120, courriel: 160, telephone: 40, message: 1500 };
 
 /* ---- Petit test depuis le navigateur : ouvrir l'adresse /exec doit afficher « ok » ---- */
 function doGet() {
-  return repondre({ ok: true, service: "villa-marces-interet", version: "1.0.0" });
+  return repondre({ ok: true, service: "villa-marces-interet", version: "1.1.0" });
 }
 
-/* ---- Le formulaire : POST (texte JSON) {nom, courriel, telephone, message, accord, site, page} ----
+/* ---- Le formulaire : POST (texte JSON) {profil, agence, nom, courriel, telephone, message, accord, site, page} ----
    La page envoie en « text/plain » (évite une vérification CORS que Apps Script
    ne sait pas traiter) : on lit donc e.postData.contents à la main. */
 function doPost(e) {
@@ -58,7 +64,10 @@ function doPost(e) {
   const f = {};
   Object.keys(LONGUEURS).forEach(k => { f[k] = String(d[k] || "").trim().slice(0, LONGUEURS[k]); });
   f.courriel = f.courriel.toLowerCase();
+  f.profil = PROFILS[d.profil] || "";
+  if (f.profil !== "Professionnel") f.agence = "";
 
+  if (!f.profil) return repondre({ ok: false, erreur: "Merci d'indiquer si vous êtes un particulier ou un professionnel." });
   if (!f.nom) return repondre({ ok: false, erreur: "Merci d'indiquer votre nom." });
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.courriel)) return repondre({ ok: false, erreur: "Adresse de courriel incorrecte." });
   if (d.accord !== true) return repondre({ ok: false, erreur: "Merci de cocher la case d'accord." });
@@ -80,7 +89,7 @@ function doPost(e) {
     props.setProperties({ jour: jour, compte: String(compte + 1) });
 
     const feuille = onglet();
-    feuille.appendRow([new Date(), sur(f.nom), sur(f.courriel), sur(f.telephone), sur(f.message),
+    feuille.appendRow([new Date(), f.profil, sur(f.agence), sur(f.nom), sur(f.courriel), sur(f.telephone), sur(f.message),
                        "oui", sur(String(d.page || "").slice(0, 200))]);
     const total = feuille.getLastRow() - 1;     // moins la ligne des titres
 
@@ -94,12 +103,15 @@ function doPost(e) {
 
 /* ---- Le courriel d'alerte ---- */
 function alerter(f, total) {
+  const pro = f.profil === "Professionnel";
   const lignes = [
+    ["Profil", pro ? "Agence / professionnel de l'immobilier" : "Particulier"]
+  ].concat(pro ? [["Agence", f.agence || "—"]] : []).concat([
     ["Nom", f.nom],
     ["Courriel", f.courriel],
     ["Téléphone", f.telephone || "—"],
-    ["Message", f.message || "—"]
-  ];
+    ["Commentaire", f.message || "—"]
+  ]);
   const html =
     '<div style="font-family:Arial,sans-serif;font-size:15px;color:#1e2a26">' +
     '<p style="font-size:18px;margin:0 0 12px"><b>Une nouvelle personne est intéressée par le 7 villa Marcès</b></p>' +
@@ -117,7 +129,8 @@ function alerter(f, total) {
     to: destinataires(),
     replyTo: f.courriel,
     name: "7 villa Marcès",
-    subject: "🏠 7 villa Marcès : " + f.nom + " est intéressé(e)",
+    subject: "🏠 7 villa Marcès : " + f.nom + (pro ? " (professionnel" + (f.agence ? ", " + f.agence : "") + ")" : " (particulier)") +
+             " est intéressé(e)",
     body: lignes.map(([t, v]) => t + " : " + v).join("\n") + "\n\nInscrits jusqu'ici : " + total,
     htmlBody: html
   });
@@ -126,7 +139,7 @@ function alerter(f, total) {
 /* ---- À lancer à la main une fois (étape 3) : autorise le script et envoie un courriel de test ---- */
 function testerAlerte() {
   onglet();   // crée l'onglet tout de suite
-  alerter({ nom: "Test (à ignorer)", courriel: Session.getEffectiveUser().getEmail(),
+  alerter({ profil: "Professionnel", agence: "Agence test", nom: "Test (à ignorer)", courriel: Session.getEffectiveUser().getEmail(),
             telephone: "06 00 00 00 00", message: "Ceci est un essai du formulaire." }, onglet().getLastRow() - 1);
 }
 
