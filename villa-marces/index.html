@@ -2,7 +2,7 @@
 <!--
   ============================================================
   « 7 villa Marcès » — site de présentation de l'appartement à vendre
-  Version 1.7.0 – 22/11/2026
+  Version 1.8.0 – 22/11/2026
   En ligne : https://baiji.fr/villa-marces/
   ------------------------------------------------------------
   Historique :
@@ -28,13 +28,19 @@
              diagnostiqueur, novembre 2020) à la place des estimations : chiffres clés, les deux
              niveaux, fiche, terrasses (21 m² et 15,65 m²), balcon (3,74 m²) ; page « Plans » :
              surface mesurée de chaque pièce. Ce n'est pas encore le mesurage loi Carrez.
+   • 1.8.0 : 14 PHOTOS DE NOVEMBRE 2020 en tête de la galerie (vues/2020-*.jpg, légende
+             terminée par « · 2020 ») ; plus aucun « environ » sur les surfaces (valeurs
+             mesurées) ; terrasse du 3ᵉ « de plain-pied » ; WC dans la salle de bains du 4ᵉ ;
+             page « Plans » : salle de bains et balcon du 3ᵉ redessinés d'après le plan d'origine.
 
   COMMENT C'EST FAIT (pour s'y retrouver) :
    • Une page principale autonome : HTML + CSS + JavaScript, sans outil de construction
      (+ plans.html, la page des plans, construite sur le même modèle).
    • Identité propre au bien (pas la charte SV) : pierre claire, vert du bois de
      Vincennes, terre cuite des terrasses ; polices Fraunces (titres) + Manrope (texte).
-   • Les images viennent de la visite virtuelle Visuelta (mai 2024) :
+   • Les photos vues/2020-*.jpg sont des photos de novembre 2020 (appartement vide, fraîchement
+     repeint), réduites à 1600 px et débarrassées de leurs métadonnées (Python, hors dépôt).
+   • Les autres images viennent de la visite virtuelle Visuelta (mai 2024) :
        - pano/01.jpg … 17.jpg = les panoramas à 360° (réduits à 4096 × 2048 px,
          la plus grande taille acceptée par tous les téléphones) ;
        - vues/*.jpg = des « photos classiques » découpées dans ces panoramas.
@@ -378,10 +384,10 @@
     <section class="chiffres" aria-label="Le bien en quelques chiffres">
       <div class="contenu">
         <ul>
-          <li><b>150 m²</b><span>habitables, et 40 m² d'extérieurs</span></li>
+          <li><b>150,5 m²</b><span>habitables, et 40,4 m² d'extérieurs</span></li>
           <li><b>6 pièces</b><span>dont 5 chambres</span></li>
           <li><b>3ᵉ et 4ᵉ</b><span>derniers étages, ascenseur</span></li>
-          <li><b>Plein sud</b><span>terrasses, balcon et véranda</span></li>
+          <li><b>Plein sud</b><span>terrasse de plain-pied, véranda, balcon</span></li>
           <li><b>2 box</b><span>fermés, en sous-sol</span></li>
           <li><b>1 cave</b><span>de grande taille</span></li>
         </ul>
@@ -416,7 +422,7 @@
                 <li>Entrée avec penderie, ouverte sur la terrasse</li>
                 <li>Séjour – salle à manger parqueté, baies vitrées coulissantes</li>
                 <li>Véranda carrelée dans le prolongement du séjour</li>
-                <li>Terrasse de 21 m² : jardinières, pergola, store électrique</li>
+                <li>Terrasse de 21 m² de plain-pied avec le séjour et la véranda : jardinières, pergola, store électrique</li>
                 <li>Cuisine séparée, buanderie et cellier</li>
                 <li>Chambre parentale avec salle de bains (baignoire balnéo) et balcon</li>
               </ul>
@@ -429,8 +435,8 @@
               <h3>L'étage des chambres</h3>
               <ul>
                 <li>Palier desservant quatre chambres, toutes avec placards</li>
-                <li>L'une d'elles ouvre sur sa propre terrasse de près de 16 m², avec vue sur les toits</li>
-                <li>Salle de bains avec double vasque et baignoire</li>
+                <li>L'une d'elles ouvre sur sa propre terrasse de 15,65 m², avec vue sur les toits</li>
+                <li>Salle de bains avec double vasque, baignoire et WC</li>
                 <li>Grands rangements sur le palier</li>
                 <li>Parquet ou moquette selon les pièces</li>
               </ul>
@@ -465,7 +471,7 @@
       <div class="contenu">
         <p class="surtitre">Photos</p>
         <h2>Pièce par pièce</h2>
-        <p class="chapeau">Touchez une photo pour l'agrandir. L'appartement est présenté vide.</p>
+        <p class="chapeau">Touchez une photo pour l'agrandir. L'appartement est présenté vide. Les photos marquées « 2020 » datent de novembre 2020, les autres de mai 2024.</p>
         <div class="galerie" id="galerie"></div>
       </div>
     </section>
@@ -553,8 +559,9 @@
             <div><dt>Étages</dt><dd>3ᵉ et 4ᵉ (derniers), ascenseur</dd></div>
             <div><dt>Surface habitable</dt><dd>150,50 m² (mesurée en 2020)</dd></div>
             <div><dt>Chambres</dt><dd>5</dd></div>
-            <div><dt>Salles de bains</dt><dd>2</dd></div>
-            <div><dt>Extérieurs</dt><dd>2 terrasses (21 et 15,65 m²), balcon (3,74 m²), véranda</dd></div>
+            <div><dt>Salles de bains</dt><dd>2 (celle du 4ᵉ avec WC)</dd></div>
+            <div><dt>WC</dt><dd>2 (un séparé au 3ᵉ, un dans la salle de bains du 4ᵉ)</dd></div>
+            <div><dt>Extérieurs</dt><dd>Terrasse de plain-pied de 21 m² au 3ᵉ, terrasse de 15,65 m² au 4ᵉ, balcon de 3,74 m², véranda</dd></div>
             <div><dt>Stationnement</dt><dd>Double box fermé</dd></div>
             <div><dt>Cave</dt><dd>Oui</dd></div>
             <div><dt>Immeuble</dt><dd>1989, 7 logements</dd></div>
@@ -607,7 +614,7 @@
 
   <footer>
     <div class="contenu">
-      <p>Surfaces indicatives, issues du descriptif du bien ; plans et photos non contractuels. Photos et panoramas réalisés en mai 2024.</p>
+      <p>Surface habitable mesurée par un diagnostiqueur en novembre 2020 ; plans et photos non contractuels. Photos de novembre 2020 et de mai 2024, panoramas de mai 2024.</p>
       <p>Visite à 360° : bibliothèque libre Pannellum. <span id="version"></span></p>
     </div>
   </footer>
@@ -629,7 +636,7 @@
   <script src="lib/pannellum.js"></script>
   <script>
     "use strict";
-    const VERSION = "1.7.0";
+    const VERSION = "1.8.0";
 
     // ============================================================
     // CE QU'ON PEUT MODIFIER SANS TOUCHER AU RESTE
@@ -658,8 +665,24 @@
     // "" = la rubrique Vidéo (et ses liens) est masquée.
     const VIDEO_DRIVE = "1khcbuKLLvWwFhR6SxBagqn8ATgFO9W-l";
 
-    // Photos de la galerie, dans l'ordre d'affichage : [fichier dans vues/, légende]
+    // Photos de la galerie, dans l'ordre d'affichage : [fichier dans vues/, légende, largeur, hauteur]
+    // (largeur et hauteur en pixels ; sans elles : 1600 × 1000, la taille des vues tirées des panoramas).
+    // D'abord les photos de novembre 2020 (légende terminée par « · 2020 »), puis celles de mai 2024.
     const PHOTOS = [
+      ["2020-sejour",           "Le séjour · 2020",                              1600, 1100],
+      ["2020-terrasse",         "La terrasse de plain-pied · 2020",              1600, 1200],
+      ["2020-sejour-entree",    "Le séjour, côté entrée · 2020",                 1600, 1306],
+      ["2020-cuisine",          "La cuisine · 2020",                             1600, 1354],
+      ["2020-chambre1",         "La chambre parentale · 2020",                   1000, 1600],
+      ["2020-sdb1",             "Salle de bains de la chambre parentale · 2020", 1200, 1600],
+      ["2020-chambre-nord-est", "Chambre de l'étage · 2020",                     1600, 1389],
+      ["2020-chambre-sud-est",  "Chambre de l'étage · 2020",                     1073, 1600],
+      ["2020-bureau",           "Deux chambres de l'étage · 2020",               1200, 1600],
+      ["2020-palier",           "Le palier de l'étage et ses rangements · 2020", 1200, 1600],
+      ["2020-sdb2",             "Salle de bains de l'étage · 2020",              1600, 969],
+      ["2020-cellier",          "Le cellier · 2020",                             998, 1600],
+      ["2020-degagement",       "L'entrée et le dégagement · 2020",              1200, 1600],
+      ["2020-box",              "Le double box · 2020",                          1600, 1200],
       ["terrasse-large",    "La terrasse, la véranda et la pergola"],
       ["sejour-terrasse",   "Le séjour, ouvert sur la véranda"],
       ["sejour",            "Le séjour côté salle à manger"],
@@ -727,11 +750,11 @@
     // la photo en grand.
     // ============================================================
     const galerie = $("galerie");
-    PHOTOS.forEach(([fichier, legende], numero) => {
+    PHOTOS.forEach(([fichier, legende, largeur = 1600, hauteur = 1000], numero) => {
       const bouton = document.createElement("button");
       bouton.type = "button";
       bouton.innerHTML =
-        `<img src="vues/${fichier}.jpg" alt="${legende}" width="1600" height="1000" loading="lazy">` +
+        `<img src="vues/${fichier}.jpg" alt="${legende}" width="${largeur}" height="${hauteur}" loading="lazy">` +
         `<span class="legende">${legende}</span>`;
       bouton.addEventListener("click", () => agrandir(numero));
       galerie.append(bouton);

@@ -185,22 +185,22 @@ class Plan:
 # 3ᵉ ÉTAGE
 # =====================================================================
 def plan_3e():
-    p = Plan(1824, 1845, (180, 140, 1400, 1530), "3e", ECHELLE_3E)
+    p = Plan(1824, 1845, (180, 140, 1400, 1490), "3e", ECHELLE_3E)
 
     # --- Extérieurs : jardinières (bande à l'est + retours), terrasse, balcon
-    p.rect(1400, 170, 1548, 1645, VERT, MUR, 4)            # jardinières : la bande plantée le long de la terrasse
+    p.rect(1400, 170, 1548, 1600, VERT, MUR, 4)            # jardinières : la bande plantée le long de la terrasse
     p.rect(1150, 500, 1400, 925, DEHORS)                   # terrasse
-    p.rect(1000, 1530, 1338, 1640, DEHORS, MUR, 4)         # balcon de la chambre 1
-    p.rect(262, 1530, 1000, 1640, "url(#hachures)", GRIS, 3)   # balcon du logement voisin
+    p.rect(1000, 1487, 1338, 1597, DEHORS, MUR, 4)         # balcon de la salle de bains (relevé sur le scan : y 1490 → 1595)
+    p.rect(262, 1487, 1000, 1597, "url(#hachures)", GRIS, 3)   # balcon du logement voisin
 
     # --- Emprise des murs (foncé)
     p.rect(215, 185, 1400, 500, MUR)       # rangée du haut : buanderie, cuisine, salle à manger, véranda
     p.rect(215, 500, 1150, 1010, MUR)      # escaliers, WC, cellier, ascenseur, palier, séjour
-    p.rect(215, 1010, 965, 1530, MUR)      # logement voisin (hachuré plus bas)
-    p.rect(965, 925, 1418, 1530, MUR)      # entrée, chambre 1, salle de bains
+    p.rect(215, 1010, 965, 1487, MUR)      # logement voisin (hachuré plus bas)
+    p.rect(965, 925, 1418, 1487, MUR)      # entrée, chambre 1, salle de bains
 
     # --- Hors appartement
-    p.hachures(250, 1018, 965, 1492)       # logement voisin
+    p.hachures(250, 1018, 965, 1449)       # logement voisin
     p.hachures(250, 765, 480, 1005)        # cage d'escalier de l'immeuble
     p.hachures(495, 905, 833, 1000)        # palier de l'immeuble (il s'arrête à la porte d'entrée, x ≈ 835)
     p.hachures(495, 668, 645, 880)         # ascenseur
@@ -227,9 +227,12 @@ def plan_3e():
     p.rect(437, 565, 655, 640, EAU)                                        # WC
     p.rect(250, 652, 437, 755, RANGE)                                      # cellier
     p.rect(1035, 1000, 1390, 1250, NUIT)                                   # chambre 1
-    p.rect(1035, 1258, 1390, 1490, EAU)                                    # salle de bains
+    p.rect(1035, 1258, 1390, 1442, EAU)                                    # salle de bains (4,40 m de large sur le plan)
+    p.rect(1138, 1258, 1182, 1292, MUR)                                    # … ses gaines techniques (croix sur le plan)
+    p.rect(1328, 1258, 1390, 1300, MUR)
+    p.rect(1328, 1388, 1390, 1442, MUR)
     p.rect(978, 1005, 1028, 1250, RANGE)                                   # penderie de la chambre
-    p.rect(978, 1258, 1028, 1490, EAU)                                     # meuble-vasque de la salle de bains
+    p.rect(978, 1258, 1028, 1442, EAU)                                     # meuble-vasque de la salle de bains
 
     # --- Poteaux / pans de mur entre salle à manger, véranda et terrasse
     p.rect(985, 185, 1008, 250, MUR)
@@ -243,8 +246,9 @@ def plan_3e():
     p.fenetre(1108, 505, 1136, 920)        # baies coulissantes du séjour sur la terrasse
     p.fenetre(1160, 940, 1380, 962)        # fenêtre de la chambre 1 sur la terrasse
     p.fenetre(1396, 1040, 1412, 1210)      # chambre 1, côté est
-    p.fenetre(1396, 1300, 1412, 1440)      # salle de bains, côté est
-    p.fenetre(1060, 1498, 1360, 1522)      # baie de la salle de bains / balcon
+    p.fenetre(1396, 1305, 1412, 1385)      # salle de bains, côté est
+    p.fenetre(1045, 1452, 1100, 1476)      # salle de bains → balcon
+    p.fenetre(1200, 1452, 1275, 1476)
     p.fenetre(270, 192, 370, 208)          # buanderie
     p.fenetre(430, 192, 610, 208)          # cuisine
     p.fenetre(740, 192, 960, 208)          # salle à manger
@@ -261,7 +265,7 @@ def plan_3e():
 
     # --- Équipements (simplifiés)
     p.rect(1205, 1268, 1280, 1420, "#ffffff", MUR, 3, 'rx="14"')           # baignoire
-    p.rect(985, 1395, 1021, 1460, "#ffffff", MUR, 3, 'rx="8"')             # vasque
+    p.rect(985, 1340, 1021, 1408, "#ffffff", MUR, 3, 'rx="8"')             # vasque
     p.rect(445, 580, 500, 625, "#ffffff", MUR, 3, 'rx="16"')          # cuvette des WC
     p.rect(580, 225, 635, 460, "#ffffff", MUR, 3)                          # plan de travail de la cuisine
     p.rect(588, 270, 627, 320, EAU, MUR, 2)                                # plaques
@@ -284,9 +288,9 @@ def plan_3e():
     p.nom(295, 572, "↑ 4ᵉ", 26)
     p.piece(985, 950, "Entrée", 30, [[(845, 905), (965, 905), (965, 880), (1095, 880), (1095, 995), (845, 995)], rect(850, 864, 958, 900)], 22, mesure=5.79)
     p.piece(1212, 1125, "Chambre 1", 42, [rect(1035, 1000, 1390, 1250)], mesure=12.25)
-    p.piece(1118, 1375, "Salle|de bains", 30, [rect(978, 1258, 1390, 1490)], 24, mesure=6.57)   # dessinée trop grande : à reprendre
-    p.piece(1169, 1585, "Balcon", 28, [], en_ligne=True, mesure=3.74)
-    p.nom(607, 1255, "Autre logement", 40, GRIS, 600)
+    p.piece(1112, 1362, "Salle|de bains", 28, [rect(978, 1258, 1390, 1442)], 22, mesure=6.57)   # dessin ≈ 9 m² : gaines et podium de la baignoire non déduits
+    p.piece(1169, 1543, "Balcon", 28, [], en_ligne=True, mesure=3.74)
+    p.nom(607, 1235, "Autre logement", 40, GRIS, 600)
     return p.svg("Plan reconstitué du 3ᵉ étage — 7 villa Marcès (non contractuel)")
 
 
@@ -362,7 +366,7 @@ def plan_4e():
     p.piece(1185, 735, "Chambre 4", 36, [[(1040, 675), (1298, 675), (1298, 958), (1105, 958), (1105, 785), (1040, 785)], rect(1303, 675, 1348, 958)], mesure=12.07)   # « Chambre 5 » de l'attestation
     p.piece(790, 604, "Palier", 28, [[(655, 568), (1030, 568), (1030, 780), (1000, 780), (1000, 865), (925, 865), (925, 640), (655, 640)]], en_ligne=True, mesure=8.02)
     p.nom(572, 660, "↓ 3ᵉ", 26)
-    p.piece(912, 962, "Salle de bains", 24, [[(742, 875), (1005, 875), (1005, 995), (820, 995), (820, 1045), (742, 1045)]], 20, mesure=6.09)
+    p.piece(905, 958, "Salle de bains|avec WC", 20, [[(742, 875), (1005, 875), (1005, 995), (820, 995), (820, 1045), (742, 1045)]], 18, mesure=6.09)
     p.piece(1340, 1150, "Terrasse", 46, [], mesure=15.65)
     p.nom(1396, 1343, "Jardinières", 24, "#3f6b45")
     p.nom(1128, 300, "Rangement", 24, extra='transform="rotate(-90 1128 300)"')
