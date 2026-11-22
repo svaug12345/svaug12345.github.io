@@ -2,7 +2,7 @@
 <!--
   ============================================================
   « 7 villa Marcès » — site de présentation de l'appartement à vendre
-  Version 1.1.0 – 22/11/2026
+  Version 1.2.0 – 22/11/2026
   En ligne : https://baiji.fr/villa-marces/
   ------------------------------------------------------------
   Historique :
@@ -11,9 +11,12 @@
              installable (PWA) ; compteur de visites (/journal.js)
    • 1.1.0 : rubrique « Vidéo » — le film de la visite (fichier du Drive de Seb,
              partagé « toute personne disposant du lien », lu par le lecteur Google Drive)
+   • 1.2.0 : page « Plans » (plans.html, page à part) — les plans des 3ᵉ et 4ᵉ étages,
+             agrandissables ; lien dans le menu et bouton sous « Deux niveaux, deux ambiances »
 
   COMMENT C'EST FAIT (pour s'y retrouver) :
-   • Une seule page autonome : HTML + CSS + JavaScript, sans outil de construction.
+   • Une page principale autonome : HTML + CSS + JavaScript, sans outil de construction
+     (+ plans.html, la page des plans, construite sur le même modèle).
    • Identité propre au bien (pas la charte SV) : pierre claire, vert du bois de
      Vincennes, terre cuite des terrasses ; polices Fraunces (titres) + Manrope (texte).
    • Les images viennent de la visite virtuelle Visuelta (mai 2024) :
@@ -174,6 +177,7 @@
     .niveau li::before { content: ""; position: absolute; left: 4px; top: 18px; width: 9px; height: 9px; border-radius: 50%; background: var(--terre); }
     .annexes { margin-top: 20px; background: var(--pierre-2); border-radius: var(--rayon); padding: 20px 22px; }
     .annexes p { margin: 0; }
+    .vers-plans { margin: 20px 0 0; }
 
     /* ---------- Vidéo ---------- */
     /* Cadre au format 16/9 : l'iframe du lecteur le remplit entièrement */
@@ -298,6 +302,7 @@
       <a class="nom" href="#haut">7 villa Marcès</a>
       <nav aria-label="Rubriques">
         <a href="#appartement">L'appartement</a>
+        <a href="plans.html">Plans</a>   <!-- page à part : plans.html -->
         <a href="#video">Vidéo</a>
         <a href="#photos">Photos</a>
         <a href="#visite">Visite 360°</a>
@@ -390,6 +395,8 @@
         <div class="annexes">
           <p><strong>En sous-sol :</strong> deux parkings fermés d'environ 14 m² chacun (double box) au premier niveau, et une grande cave au second. L'immeuble dispose d'un ascenseur, d'un local à vélos et d'une entrée sécurisée.</p>
         </div>
+        <!-- Lien vers la page des plans (plans.html) -->
+        <p class="vers-plans"><a class="bouton contour" href="plans.html">Voir les plans des deux niveaux</a></p>
       </div>
     </section>
 
@@ -543,7 +550,7 @@
   <script src="lib/pannellum.js"></script>
   <script>
     "use strict";
-    const VERSION = "1.1.0";
+    const VERSION = "1.2.0";
 
     // ============================================================
     // CE QU'ON PEUT MODIFIER SANS TOUCHER AU RESTE

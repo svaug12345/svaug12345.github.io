@@ -1,0 +1,362 @@
+<!doctype html>
+<!--
+  ============================================================
+  « 7 villa Marcès » — page « Plans » (les plans des deux niveaux)
+  Version 1.2.0 – 22/11/2026   (même numéro que le site : voir index.html)
+  En ligne : https://baiji.fr/villa-marces/plans.html
+  ------------------------------------------------------------
+  COMMENT C'EST FAIT (pour s'y retrouver) :
+   • Page autonome, sœur de index.html : mêmes couleurs, mêmes polices, même barre.
+     Les styles communs sont RECOPIÉS ici (pas de fichier CSS partagé : chaque
+     page du site reste lisible toute seule). Si on change une couleur dans
+     index.html, la changer ici aussi (bloc « :root »).
+   • Les plans viennent du PDF « 7 Villa MARCES - Plans 3 et 4 étages.pdf »
+     (Drive de Seb) : deux pages scannées À L'ENVERS, que l'on a remises à
+     l'endroit, recadrées sur le dessin et agrandies ×1,5 (en Python, hors dépôt)
+       - plans/plan-3e.jpg = 3ᵉ étage ;  plans/plan-4e.jpg = 4ᵉ étage.
+   • TOUT LE CONTENU MODIFIABLE est dans la liste PLANS, en bas de page :
+     un bloc par niveau (image, titre, pièces). La page fabrique les cartes.
+   • Toucher un plan l'ouvre en grand dans un <dialog> (fenêtre par-dessus la
+     page) où l'on peut zoomer avec les boutons + et −, ou en pinçant.
+  ============================================================
+-->
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Plans · 7 villa Marcès, Saint-Mandé</title>
+  <!-- Même appli installable que la page principale (manifeste et icônes partagés) -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <link rel="icon" href="icones/icone-192.png" type="image/png">
+  <meta name="theme-color" content="#24483f">
+  <meta name="description" content="Les plans du duplex du 7 villa Marcès à Saint-Mandé : 3ᵉ étage (pièces de vie, terrasse, véranda) et 4ᵉ étage (chambres).">
+  <meta property="og:title" content="Plans · 7 villa Marcès, Saint-Mandé">
+  <meta property="og:description" content="Les plans des deux niveaux du duplex-terrasse.">
+  <meta property="og:image" content="https://baiji.fr/villa-marces/vues/terrasse-facade.jpg">
+  <meta property="og:type" content="website">
+  <!-- Comme le reste de baiji.fr : pas dans les moteurs de recherche -->
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Compteur de visites de baiji.fr -->
+  <script src="/journal.js" defer></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================
+       COULEURS ET RÉGLAGES COMMUNS — identiques à index.html
+       ========================================================== */
+    :root {
+      --pierre: #f6f2ea;      /* fond : la pierre claire de la façade */
+      --pierre-2: #ece5d8;    /* fond des encadrés */
+      --encre: #1e2a26;       /* texte */
+      --encre-2: #55635d;     /* texte secondaire */
+      --bois: #24483f;        /* vert profond (le bois de Vincennes) */
+      --bois-clair: #dfe9e3;
+      --terre: #b4603c;       /* terre cuite des terrasses : boutons, accents */
+      --terre-fonce: #964c2d;
+      --trait: #d9d0c0;       /* filets et bordures */
+      --blanc: #fffdf9;
+      --rayon: 14px;
+      --large: 1120px;
+      --titre: "Fraunces", Georgia, serif;
+      --texte: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--pierre); color: var(--encre);
+      font-family: var(--texte); font-size: 17px; line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    img { display: block; max-width: 100%; height: auto; }
+    a { color: var(--terre-fonce); }
+    h1, h2 { font-family: var(--titre); font-weight: 500; line-height: 1.15; margin: 0; text-wrap: balance; }
+    h1 { font-size: clamp(2rem, 6vw, 3.2rem); }
+    h2 { font-size: 1.45rem; }
+    p { margin: 0 0 1em; text-wrap: pretty; }
+    .contenu { max-width: var(--large); margin: 0 auto; padding: 0 20px; }
+    .surtitre {
+      font-size: .78rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
+      color: var(--terre-fonce); margin: 0 0 10px;
+    }
+    .chapeau { color: var(--encre-2); max-width: 62ch; margin-top: 14px; }
+    :focus-visible { outline: 3px solid var(--terre); outline-offset: 2px; }
+
+    /* ---------- Barre de navigation (la même que sur la page principale) ---------- */
+    .barre {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(246, 242, 234, .9); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--trait);
+    }
+    .barre .contenu { display: flex; align-items: center; gap: 16px; height: 56px; }
+    .barre .nom { font-family: var(--titre); font-size: 1.1rem; font-weight: 600; color: var(--bois); text-decoration: none; white-space: nowrap; }
+    .barre nav { margin-left: auto; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+    .barre nav::-webkit-scrollbar { display: none; }
+    .barre nav a {
+      font-size: .9rem; font-weight: 600; color: var(--encre); text-decoration: none;
+      padding: 8px 10px; border-radius: 8px; white-space: nowrap;
+    }
+    .barre nav a:hover { background: var(--pierre-2); }
+    /* aria-current="page" = « vous êtes ici » (lu aussi par les lecteurs d'écran) */
+    .barre nav a[aria-current="page"] { background: var(--bois); color: #fff; }
+
+    /* ---------- Boutons ---------- */
+    .bouton {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      min-height: 48px; padding: 12px 22px; border-radius: 999px; border: 0; cursor: pointer;
+      background: var(--terre); color: #fff; font: 700 1rem var(--texte); text-decoration: none;
+      transition: background .15s;
+    }
+    .bouton:hover { background: var(--terre-fonce); }
+    .bouton.contour { background: transparent; color: var(--bois); border: 1.5px solid var(--bois); }
+    .bouton.contour:hover { background: var(--bois-clair); }
+
+    /* ---------- En-tête de la page ---------- */
+    .tete { padding: 44px 0 8px; }
+
+    /* ---------- Les plans : une carte par niveau ---------- */
+    .plans { display: grid; gap: 22px; padding: 24px 0 8px; }
+    .plan { background: var(--blanc); border: 1px solid var(--trait); border-radius: var(--rayon); overflow: hidden; }
+    /* Le dessin est un vrai <button> : il marche au doigt, à la souris et au clavier */
+    .plan .dessin { display: block; width: 100%; padding: 10px; border: 0; background: #fff; cursor: zoom-in; position: relative; }
+    .plan .dessin img { width: 100%; }
+    .plan .dessin span {
+      position: absolute; right: 12px; bottom: 12px; padding: 7px 12px; border-radius: 999px;
+      background: var(--bois); color: #fff; font: 700 .82rem var(--texte);
+    }
+    .plan .corps { padding: 20px 22px 22px; border-top: 1px solid var(--trait); }
+    .plan .etage { font-size: .78rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--encre-2); margin: 0 0 4px; }
+    /* Liste des pièces en « étiquettes » qui passent à la ligne toutes seules */
+    .plan ul { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+    .plan li { padding: 6px 12px; border-radius: 999px; background: var(--pierre-2); font-size: .92rem; font-weight: 600; }
+    .plan .note { margin: 14px 0 0; font-size: .92rem; color: var(--encre-2); }
+
+    /* ---------- Bon à savoir + liens de fin de page ---------- */
+    .lecture { margin: 16px 0 0; background: var(--pierre-2); border-radius: var(--rayon); padding: 20px 22px; }
+    .lecture h2 { font-size: 1.2rem; margin-bottom: 8px; }
+    .lecture ul { margin: 0; padding-left: 20px; }
+    .lecture li { margin: 4px 0; }
+    .suite { display: flex; flex-wrap: wrap; gap: 12px; padding: 28px 0 48px; }
+
+    footer { padding: 28px 0 40px; border-top: 1px solid var(--trait); color: var(--encre-2); font-size: .85rem; }
+    footer p { margin: 0 0 6px; }
+
+    /* ---------- Plan en grand (<dialog>) ---------- */
+    dialog.grand { border: 0; padding: 0; background: #fff; color: var(--encre); width: 100vw; height: 100dvh; max-width: none; max-height: none; }
+    dialog.grand::backdrop { background: #fff; }
+    .grand .cadre { height: 100%; display: flex; flex-direction: column; }
+    /* La « fenêtre » : quand le plan zoomé dépasse, on le fait défiler au doigt dans les deux sens.
+       touch-action laisse aussi le pincement du navigateur fonctionner. */
+    .grand .fenetre { flex: 1; min-height: 0; overflow: auto; touch-action: pan-x pan-y pinch-zoom; -webkit-overflow-scrolling: touch; }
+    .grand .fenetre img { max-width: none; margin: 0 auto; }   /* la largeur est posée par le script (zoom) */
+    .grand .bas {
+      display: flex; align-items: center; gap: 10px; border-top: 1px solid var(--trait); background: var(--pierre);
+      padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+    }
+    .grand .bas p { margin: 0; flex: 1; font-weight: 600; font-size: .95rem; }
+    .grand button {
+      min-width: 48px; min-height: 48px; border-radius: 50%; border: 1.5px solid var(--bois);
+      background: transparent; color: var(--bois); font: 700 1.3rem var(--texte); cursor: pointer;
+    }
+    .grand button:disabled { opacity: .35; cursor: default; }
+    .grand .fermer { background: var(--bois); color: #fff; }
+
+    /* ==========================================================
+       TABLETTE ET ORDINATEUR : les deux niveaux côte à côte
+       (le téléphone, < 760 px, garde la mise en page ci-dessus)
+       ========================================================== */
+    @media (min-width: 760px) {
+      body { font-size: 18px; }
+      .tete { padding-top: 64px; }
+      .plans { grid-template-columns: 1fr 1fr; align-items: start; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= Barre de navigation ================= -->
+  <!-- Les liens renvoient aux rubriques de la page principale (« ./#photos » = index.html, rubrique Photos) -->
+  <header class="barre">
+    <div class="contenu">
+      <a class="nom" href="./">7 villa Marcès</a>
+      <nav aria-label="Rubriques">
+        <a href="./#appartement">L'appartement</a>
+        <a href="plans.html" aria-current="page">Plans</a>
+        <a href="./#video">Vidéo</a>
+        <a href="./#photos">Photos</a>
+        <a href="./#visite">Visite 360°</a>
+        <a href="./#situation">Situation</a>
+        <a href="./#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="contenu">
+      <div class="tete">
+        <p class="surtitre">Plans</p>
+        <h1>Les deux niveaux, pièce par pièce</h1>
+        <p class="chapeau">Le duplex occupe les 3ᵉ et 4ᵉ étages, reliés par un escalier intérieur. Touchez un plan pour l'agrandir et zoomer.</p>
+      </div>
+
+      <!-- Les cartes des plans sont fabriquées par le script (liste PLANS) -->
+      <div class="plans" id="plans"></div>
+
+      <div class="lecture">
+        <h2>Pour lire les plans</h2>
+        <ul>
+          <li>Les cotes sont en mètres ; « HP » indique la hauteur sous plafond (2,50 m dans le séjour).</li>
+          <li>Les zones hachurées ne font pas partie de l'appartement.</li>
+          <li>Plans d'origine, non contractuels : l'aménagement a pu évoluer depuis.</li>
+        </ul>
+      </div>
+
+      <div class="suite">
+        <a class="bouton" href="./#visite">Visiter à 360°</a>
+        <a class="bouton contour" href="./#photos">Voir les photos</a>
+        <a class="bouton contour" href="./#contact">Organiser une visite</a>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="contenu">
+      <p>Plans non contractuels, issus des documents d'origine de l'appartement. Surfaces et cotes indicatives.</p>
+      <p><span id="version"></span></p>
+    </div>
+  </footer>
+
+  <!-- Plan affiché en grand -->
+  <dialog class="grand" id="grand" aria-label="Plan agrandi">
+    <div class="cadre">
+      <div class="fenetre" id="fenetre"><img id="grand-image" src="" alt=""></div>
+      <div class="bas">
+        <button id="moins" type="button" aria-label="Réduire">−</button>
+        <button id="plus" type="button" aria-label="Agrandir">+</button>
+        <p id="grand-titre"></p>
+        <button class="fermer" id="fermer" type="button" aria-label="Fermer">✕</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    "use strict";
+    const VERSION = "1.2.0";   // même numéro que index.html
+
+    // ============================================================
+    // CE QU'ON PEUT MODIFIER SANS TOUCHER AU RESTE
+    // ------------------------------------------------------------
+    // Un bloc par niveau :
+    //   image   : fichier dans plans/ ; largeur / hauteur : sa taille en pixels
+    //             (le navigateur réserve la bonne place avant de l'avoir téléchargée) ;
+    //   etage, titre : textes de la carte ;
+    //   pieces  : les pièces écrites sur le plan ;
+    //   note    : petite précision sous la liste ("" = rien).
+    // ============================================================
+    const PLANS = [
+      {
+        image: "plan-3e.jpg", largeur: 1824, hauteur: 1845,
+        etage: "3ᵉ étage",
+        titre: "Les pièces de vie",
+        description: "Plan du 3ᵉ étage : séjour et salle à manger ouverts sur la véranda et la terrasse, cuisine, buanderie, cellier, chambre avec salle de bains.",
+        pieces: ["Entrée", "Séjour", "Salle à manger", "Véranda", "Terrasse et jardinières", "Cuisine", "Buanderie", "Cellier", "WC", "Chambre 1", "Salle de bains", "Balcon", "Escalier vers le 4ᵉ"],
+        note: "La chambre 1 et sa salle de bains forment la suite parentale, ouverte sur le balcon."
+      },
+      {
+        image: "plan-4e.jpg", largeur: 1674, hauteur: 1845,
+        etage: "4ᵉ étage",
+        titre: "L'étage des chambres",
+        description: "Plan du 4ᵉ étage : palier, chambres 2, 3 et 4, bureau, salle de bains et terrasse.",
+        pieces: ["Palier", "Chambre 2", "Chambre 3", "Chambre 4", "Bureau", "Salle de bains", "Terrasse et jardinières"],
+        note: "Le « bureau » du plan sert de chambre. À droite, le plan rappelle la véranda et la terrasse du 3ᵉ, situées en contrebas."
+      }
+    ];
+
+    // Petit raccourci : document.getElementById en plus court
+    const $ = (id) => document.getElementById(id);
+
+    // ============================================================
+    // LES CARTES
+    // ------------------------------------------------------------
+    // Pour chaque niveau de PLANS on fabrique une carte : le dessin
+    // (dans un bouton, pour l'ouvrir en grand) puis la liste des pièces.
+    // ============================================================
+    PLANS.forEach((plan, numero) => {
+      const carte = document.createElement("article");
+      carte.className = "plan";
+      carte.innerHTML =
+        `<button class="dessin" type="button" aria-label="Agrandir le plan du ${plan.etage}">` +
+          // Le 1er plan est chargé tout de suite, le suivant seulement à l'approche (loading="lazy")
+          `<img src="plans/${plan.image}" alt="${plan.description}" width="${plan.largeur}" height="${plan.hauteur}"${numero ? ' loading="lazy"' : ""}>` +
+          `<span>Agrandir</span>` +
+        `</button>` +
+        `<div class="corps">` +
+          `<p class="etage">${plan.etage}</p>` +
+          `<h2>${plan.titre}</h2>` +
+          `<ul>${plan.pieces.map((piece) => `<li>${piece}</li>`).join("")}</ul>` +
+          (plan.note ? `<p class="note">${plan.note}</p>` : "") +
+        `</div>`;
+      carte.querySelector(".dessin").addEventListener("click", () => ouvrir(numero));
+      $("plans").append(carte);
+    });
+
+    // ============================================================
+    // LE PLAN EN GRAND, AVEC ZOOM
+    // ------------------------------------------------------------
+    // Le zoom est très simple : on change la LARGEUR de l'image, en
+    // pourcentage de la fenêtre (100 % = tout le plan visible en largeur,
+    // 200 % = deux fois plus grand, on fait alors défiler au doigt).
+    // ============================================================
+    const ZOOMS = [100, 150, 200, 300];   // les crans du zoom, en %
+    let cran = 0;                         // numéro du cran en cours dans ZOOMS
+
+    function reglerZoom(nouveauCran) {
+      const fenetre = $("fenetre");
+      // On note quel point du plan est au CENTRE de l'écran (en proportion, de 0 à 1)
+      // pour le retrouver au même endroit après le changement de taille.
+      const cx = (fenetre.scrollLeft + fenetre.clientWidth / 2) / fenetre.scrollWidth;
+      const cy = (fenetre.scrollTop + fenetre.clientHeight / 2) / fenetre.scrollHeight;
+      cran = Math.max(0, Math.min(ZOOMS.length - 1, nouveauCran));   // on reste entre le premier et le dernier cran
+      $("grand-image").style.width = ZOOMS[cran] + "%";
+      fenetre.scrollLeft = cx * fenetre.scrollWidth - fenetre.clientWidth / 2;
+      fenetre.scrollTop = cy * fenetre.scrollHeight - fenetre.clientHeight / 2;
+      // Boutons grisés quand on est au bout
+      $("moins").disabled = cran === 0;
+      $("plus").disabled = cran === ZOOMS.length - 1;
+    }
+
+    function ouvrir(numero) {
+      const plan = PLANS[numero];
+      $("grand-image").src = `plans/${plan.image}`;
+      $("grand-image").alt = plan.description;
+      $("grand-titre").textContent = `${plan.etage} · ${plan.titre}`;
+      $("grand").showModal();   // showModal = par-dessus la page ; la touche Échap ferme
+      reglerZoom(0);
+      $("fenetre").scrollTo(0, 0);
+      // Le bouton « retour » du téléphone doit fermer le plan, pas quitter la page :
+      // on ajoute une étape à l'historique, que « retour » défera (voir popstate plus bas).
+      history.pushState({ plan: true }, "");
+    }
+
+    $("plus").addEventListener("click", () => reglerZoom(cran + 1));
+    $("moins").addEventListener("click", () => reglerZoom(cran - 1));
+    // Double appui (ou double clic) sur le plan : zoom avant, puis retour au plan entier
+    $("grand-image").addEventListener("dblclick", () => reglerZoom(cran < 2 ? 2 : 0));
+    // La croix « défait » l'étape d'historique, ce qui déclenche popstate → fermeture
+    $("fermer").addEventListener("click", () => history.back());
+    window.addEventListener("popstate", () => { if ($("grand").open) $("grand").close(); });
+    // Fermé avec Échap : le dialog se ferme tout seul, il reste à retirer notre étape d'historique
+    $("grand").addEventListener("cancel", () => history.back());
+
+    $("version").textContent = "Version " + VERSION;
+
+    // ---- Page installable : même service worker que la page principale (sw.js, même dossier) ----
+    if ("serviceWorker" in navigator && location.protocol === "https:") {
+      navigator.serviceWorker.register("sw.js");
+    }
+  </script>
+</body>
+</html>
