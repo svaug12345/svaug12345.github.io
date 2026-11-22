@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Bande-son — le son des films et des séries du NAS
-  Version 1.0.1
+  Version 1.1.0
   ------------------------------------------------------------
   Comment ça marche :
    • cette page (baiji.fr, hébergée sur GitHub Pages) ne fait PAS le travail :
@@ -37,6 +37,10 @@
    • v1.0.1 : file d'attente et « Derniers sons » rangés dans l'ordre
               alphabétique (dossier, puis nom ; « Épisode 2 » avant
               « Épisode 10 ») au lieu de « le plus récent d'abord »
+   • v1.1.0 : blocs repliables (toucher le titre ; choix mémorisé, aperçu
+              du contenu quand le bloc est replié) ; réglages par défaut
+              MP3 128 anglais ; bouton « en tête » sur un fichier en
+              attente pour le faire passer en premier (service v1.1.0)
 -->
 <html lang="fr">
 <head>
@@ -121,6 +125,19 @@
     }
     input:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
 
+    /* ----- Blocs repliables -----
+       Le titre de chaque bloc est un bouton (.tete). Replié, le bloc porte la
+       classe « replie » : tout ce qui n'est pas le titre est caché, et un
+       petit aperçu du contenu (.apercu) apparaît à côté du titre. */
+    .card > h2 { display: flex; }
+    .tete { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; text-align: left; font-size: 15px; font-weight: 800; margin: -6px 0; padding: 6px 0; }
+    .tete .titre { white-space: nowrap; }
+    .tete .apercu { flex: 1; min-width: 0; font-size: 12px; font-weight: 600; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; visibility: hidden; }
+    .tete svg { width: 18px; height: 18px; flex: none; color: var(--muted); transition: transform .2s; }
+    .card.replie > :not(h2) { display: none !important; }
+    .card.replie .apercu { visibility: visible; }
+    .card.replie .tete svg { transform: rotate(-90deg); }   /* le chevron pointe vers le côté */
+
     /* Boutons : capitales espacées (charte SV) */
     .btn {
       display: inline-flex; align-items: center; justify-content: center; gap: 8px;
@@ -183,6 +200,7 @@
     .etat.rate { color: var(--bad); }
     .croix { width: 32px; height: 32px; flex: none; border-radius: 9px; display: grid; place-items: center; color: var(--muted); margin-right: -6px; }
     .croix svg { width: 16px; height: 16px; }
+    .etat.tete-file { color: var(--teal); }
     .barre { height: 8px; border-radius: 999px; background: var(--track); overflow: hidden; }
     .barre > div { height: 100%; width: 0; background: var(--teal); border-radius: 999px; transition: width .6s; }
     .boutons { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -241,7 +259,8 @@
 
   <div class="colonne">
     <!-- ===== L'explorateur : les dossiers du NAS ===== -->
-    <section class="card" id="carte-explorateur">
+    <section class="card" id="carte-explorateur" data-repli="explorateur">
+      <h2><button class="tete" type="button" aria-expanded="true"><span class="titre">Films et séries</span><span class="apercu" id="apercu-explorateur"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></h2>
       <!-- Les bibliothèques (Séries, Films…) : remplies par le NAS -->
       <div class="choix" id="racines"></div>
       <div class="titre-carte">
@@ -257,7 +276,8 @@
 
   <div class="colonne">
     <!-- ===== Les réglages : format, qualité, langue ===== -->
-    <section class="card" id="carte-reglages">
+    <section class="card" id="carte-reglages" data-repli="reglages">
+      <h2><button class="tete" type="button" aria-expanded="true"><span class="titre">Réglages</span><span class="apercu" id="apercu-reglages"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></h2>
       <span class="label">Format</span>
       <div class="choix" id="formats">
         <button type="button" data-v="mp3">MP3</button>
@@ -285,23 +305,21 @@
     </section>
 
     <!-- ===== La file d'attente ===== -->
-    <section class="card" id="carte-file" hidden>
-      <div class="titre-carte">
-        <h2>File d'attente</h2>
-        <div class="boutons">
-          <button class="mini" type="button" id="vider" hidden>Effacer les terminés</button>
-          <button class="mini" type="button" id="tout-annuler" hidden>Tout annuler</button>
-        </div>
-      </div>
+    <section class="card" id="carte-file" data-repli="file" hidden>
+      <h2><button class="tete" type="button" aria-expanded="true"><span class="titre">File d'attente</span><span class="apercu" id="apercu-file"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></h2>
       <div class="resume" id="resume"></div>
+      <div class="boutons">
+        <button class="mini" type="button" id="vider" hidden>Effacer les terminés</button>
+        <button class="mini" type="button" id="tout-annuler" hidden>Tout annuler</button>
+      </div>
       <ul class="lignes" id="travaux"></ul>
       <button class="mini" type="button" id="voir-tout" hidden style="align-self:center"></button>
-      <p class="aide">Tu peux fermer la page : le NAS continue tout seul.</p>
+      <p class="aide">Tu peux fermer la page : le NAS continue tout seul. La flèche ⤒ fait passer un fichier en tête de file.</p>
     </section>
 
     <!-- ===== Les sons déjà extraits ===== -->
-    <section class="card" id="carte-sons" hidden>
-      <h2>Derniers sons</h2>
+    <section class="card" id="carte-sons" data-repli="sons" hidden>
+      <h2><button class="tete" type="button" aria-expanded="true"><span class="titre">Derniers sons</span><span class="apercu" id="apercu-sons"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></h2>
       <ul class="lignes" id="sons"></ul>
       <p class="aide">Sur le NAS, les sons sont à côté des vidéos, dans les dossiers « … - mp3 ».</p>
     </section>
@@ -327,7 +345,7 @@
   /* =====================================================================
      RÉGLAGES
      ===================================================================== */
-  const VERSION = "1.0.1";
+  const VERSION = "1.1.0";
   // Adresse du service du NAS. « ?service=… » dans l'adresse permet d'en
   // essayer un autre (ex. ?service=http://192.168.1.161:8095 à la maison).
   const SERVICE = (new URLSearchParams(location.search).get("service") || "https://mp3.baiji.fr").replace(/\/+$/, "");
@@ -337,6 +355,13 @@
   const CLE_DEBIT = "bande.debit";
   const CLE_LANGUE = "bande.langue";
   const CLE_RACINE = "bande.racine";      // dernière bibliothèque ouverte
+  const CLE_REPLIS = "bande.replis";      // les blocs repliés : {file: true, sons: true…}
+  const CLE_DEFAUTS = "bande.defauts";    // n° des réglages par défaut déjà appliqués sur cet appareil
+  // Les réglages de départ. Pour en changer plus tard : modifier DEFAUTS et
+  // augmenter LOT_DEFAUTS de 1 — chaque appareil repartira une fois des
+  // nouveaux réglages, puis retiendra de nouveau les choix faits à la main.
+  const DEFAUTS = { format: "mp3", debit: "128", langue: "en" };
+  const LOT_DEFAUTS = "2";
   const PAUSE_ACTIVE = 2000;              // ms entre deux nouvelles quand le NAS travaille
   const PAUSE_CALME = 20000;              // … et quand la file est vide
   const NB_VISIBLES = 8;                  // travaux montrés avant « Voir tout »
@@ -352,6 +377,7 @@
     fleche: '<path d="m9 18 6-6-6-6"/>',
     coche: '<path d="M20 6 9 17l-5-5"/>',
     croix: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+    enTete: '<path d="M5 3h14"/><path d="m18 13-6-6-6 6"/><path d="M12 7v14"/>',
   };
   const svg = (nom, classe = "") => `<svg viewBox="0 0 24 24" class="${classe}" aria-hidden="true">${PICTOS[nom]}</svg>`;
 
@@ -457,12 +483,18 @@
   /* =====================================================================
      LES RÉGLAGES (format, débit, langue) — des groupes de pastilles
      ===================================================================== */
+  // Nouveaux réglages par défaut (v1.1.0 : MP3 128 anglais) : on oublie UNE fois
+  // les anciens choix de cet appareil, sinon ils masqueraient les nouveaux.
+  if (lire(CLE_DEFAUTS) !== LOT_DEFAUTS) {
+    [CLE_FORMAT, CLE_DEBIT, CLE_LANGUE].forEach(cle => ecrire(cle, ""));
+    ecrire(CLE_DEFAUTS, LOT_DEFAUTS);
+  }
   const reglages = {
-    format: lire(CLE_FORMAT) || "mp3",
-    debit: lire(CLE_DEBIT) || "192",
+    format: lire(CLE_FORMAT) || DEFAUTS.format,
+    debit: lire(CLE_DEBIT) || DEFAUTS.debit,
     // La langue est rangée « fr », « en » ou « - » (= piste par défaut du fichier).
-    // Rien de rangé = jamais choisi : on part sur le français.
-    langue: { "": "fr", "-": "" }[lire(CLE_LANGUE)] ?? lire(CLE_LANGUE),
+    // Rien de rangé = jamais choisi : on prend celle de DEFAUTS.
+    langue: { "": DEFAUTS.langue, "-": "" }[lire(CLE_LANGUE)] ?? lire(CLE_LANGUE),
   };
 
   // Branche un groupe de pastilles sur une valeur de « reglages »
@@ -487,6 +519,9 @@
   function expliquerFormat() {
     const origine = reglages.format === "origine";
     $("bloc-debit").hidden = origine;
+    // L'aperçu affiché quand le bloc « Réglages » est replié : « MP3 128 · anglais »
+    $("apercu-reglages").textContent = (origine ? "Origine" : `${reglages.format.toUpperCase()} ${reglages.debit}`) +
+      " · " + { fr: "français", en: "anglais", "": "piste par défaut" }[reglages.langue];
     const fin = SUFFIXES[reglages.format];
     $("aide-rangement").textContent = `Les sons seront rangés sur le NAS à côté des vidéos : dans « Saison 1 › Saison 1 - ${fin} » ` +
       `pour un dossier coché, dans « Film - ${fin} » au même endroit pour un fichier coché.`;
@@ -583,6 +618,7 @@
       elements.push(bouton(m, morceaux.slice(0, i + 1).join("/")));
     });
     $("fil").replaceChildren(...elements);
+    $("apercu-explorateur").textContent = [nomRacine, ...morceaux].join(" › ");
   }
 
   function dessinerLignes() {
@@ -711,14 +747,18 @@
     if (finis) morceaux.push(`<b>${finis}</b> terminé${finis > 1 ? "s" : ""}`);
     if (rates) morceaux.push(`<b>${rates}</b> en échec`);
     $("resume").innerHTML = morceaux.join(" · ") || "Rien en cours.";
+    $("apercu-file").textContent = $("resume").textContent;      // le même résumé, bloc replié
     $("tout-annuler").hidden = attente + enCours < 2;
     $("vider").hidden = travaux.length === attente + enCours;
 
-    // Ordre d'affichage : celui qui tourne, puis l'attente, puis les terminés ;
-    // dans chaque groupe, l'ordre alphabétique (dossier, puis nom du fichier).
+    // Ordre d'affichage : celui qui tourne, puis l'attente, puis les terminés.
+    // Dans l'attente : d'abord les fichiers passés « en tête » (le dernier
+    // demandé en premier, comme les traitera le NAS), puis l'ordre alphabétique
+    // (dossier, puis nom du fichier) — qui sert aussi pour les terminés.
     const rang = { en_cours: 0, attente: 1 };
     const cleTri = t => t.dossier + "/" + t.nom;
     const tries = [...travaux].sort((a, b) => (rang[a.statut] ?? 2) - (rang[b.statut] ?? 2)
+      || (a.statut === "attente" ? (b.priorite || 0) - (a.priorite || 0) : 0)
       || ALPHA.compare(cleTri(a), cleTri(b)));
     const montres = toutMontrer ? tries : tries.slice(0, NB_VISIBLES);
     $("travaux").replaceChildren(...montres.map(ligneTravail));
@@ -730,7 +770,9 @@
     const li = el("li", "travail");
     const haut = el("div", "haut");
     haut.append(el("span", "nom", t.nom));
-    const etat = el("span", "etat", t.statut === "en_cours" ? `${Math.round(t.pct || 0)} %` : LIBELLES[t.statut]);
+    const enTete = t.statut === "attente" && t.priorite > 0;      // passé en tête de file
+    const etat = el("span", "etat", t.statut === "en_cours" ? `${Math.round(t.pct || 0)} %` : enTete ? "en tête" : LIBELLES[t.statut]);
+    if (enTete) etat.classList.add("tete-file");
     if (t.statut === "fini") etat.classList.add("fini");
     if (t.statut === "erreur") etat.classList.add("rate");
     haut.append(etat);
@@ -738,6 +780,15 @@
       const b = el("button", "mini", "Télécharger"); b.type = "button";
       b.addEventListener("click", () => telecharger(t.racine, t.sortie, b));
       haut.append(b);
+    }
+    if (t.statut === "attente") {
+      // « En tête de file » : le NAS le prendra dès que le fichier en cours sera fini
+      const h = el("button", "croix"); h.type = "button";
+      h.setAttribute("aria-label", "Passer en tête de file : " + t.nom);
+      h.title = "Passer en tête de file";
+      h.innerHTML = svg("enTete");
+      h.addEventListener("click", async () => { try { await poster("/priorite", { id: t.id }); suivre(); } catch (err) { signaler(err); } });
+      haut.append(h);
     }
     if (t.statut === "attente" || t.statut === "en_cours") {
       const x = el("button", "croix"); x.type = "button";
@@ -784,6 +835,7 @@
     let sons;
     try { sons = await api("/sorties"); } catch { return; }
     $("carte-sons").hidden = sons.length === 0;
+    $("apercu-sons").textContent = `${sons.length} fichier${sons.length > 1 ? "s" : ""}`;
     // Le NAS envoie les 30 derniers sons, du plus récent au plus ancien :
     // on les range par bibliothèque, puis par ordre alphabétique du chemin.
     sons.sort((a, b) => a.racine - b.racine || ALPHA.compare(a.chemin, b.chemin));
@@ -817,6 +869,27 @@
     } catch (err) { signaler(err); }
     bouton.disabled = false;
   }
+
+  /* =====================================================================
+     BLOCS REPLIABLES
+     Toucher le titre d'un bloc le replie ou le déplie. Le choix est gardé
+     sur l'appareil (localStorage), bloc par bloc.
+     ===================================================================== */
+  let replis = {};
+  try { replis = JSON.parse(lire(CLE_REPLIS) || "{}") || {}; } catch {}
+  document.querySelectorAll(".card[data-repli]").forEach(carte => {
+    const nom = carte.dataset.repli, bouton = carte.querySelector(".tete");
+    const appliquer = () => {
+      carte.classList.toggle("replie", !!replis[nom]);
+      bouton.setAttribute("aria-expanded", !replis[nom]);       // pour les lecteurs d'écran
+    };
+    bouton.addEventListener("click", () => {
+      replis[nom] = !replis[nom];
+      ecrire(CLE_REPLIS, JSON.stringify(replis));
+      appliquer();
+    });
+    appliquer();
+  });
 
   /* =====================================================================
      DÉMARRAGE
