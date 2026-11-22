@@ -2,7 +2,7 @@
 <!--
   ============================================================
   « 7 villa Marcès » — page « Plans » (les plans des deux niveaux)
-  Version 1.6.0 – 22/11/2026   (même numéro que le site : voir index.html)
+  Version 1.7.0 – 22/11/2026   (même numéro que le site : voir index.html)
   En ligne : https://baiji.fr/villa-marces/plans.html
   ------------------------------------------------------------
   COMMENT C'EST FAIT (pour s'y retrouver) :
@@ -263,7 +263,7 @@
         <h2>Pour lire les plans</h2>
         <ul>
           <li>Le plan redessiné reprend le plan d'origine en le simplifiant (murs, portes, équipements) : en cas de doute, c'est le plan d'origine qui fait référence.</li>
-          <li>Les surfaces par pièce (« ≈ ») sont estimées d'après le plan, à 10 % près environ. Ce n'est pas un mesurage loi Carrez.</li>
+          <li>Les surfaces par pièce viennent du mesurage de la surface habitable fait par un diagnostiqueur en novembre 2020 : 150,50 m² au total (90,67 m² au 3ᵉ, 59,83 m² au 4ᵉ). Le mesurage loi Carrez sera établi pour la vente.</li>
           <li>Sur le plan d'origine, les cotes sont en mètres ; « HP » indique la hauteur sous plafond (2,50 m dans le séjour).</li>
           <li>Les zones hachurées ne font pas partie de l'appartement.</li>
           <li>Plans non contractuels : l'aménagement a pu évoluer depuis.</li>
@@ -280,7 +280,7 @@
 
   <footer>
     <div class="contenu">
-      <p>Plans non contractuels : plans d'origine de l'appartement, et plans redessinés d'après eux. Surfaces et cotes indicatives.</p>
+      <p>Plans non contractuels : plans d'origine de l'appartement, et plans redessinés d'après eux. Surfaces mesurées en 2020, cotes indicatives.</p>
       <p><span id="version"></span></p>
     </div>
   </footer>
@@ -301,7 +301,7 @@
 
   <script>
     "use strict";
-    const VERSION = "1.6.0";   // même numéro que index.html
+    const VERSION = "1.7.0";   // même numéro que index.html
 
     // ============================================================
     // CE QU'ON PEUT MODIFIER SANS TOUCHER AU RESTE
@@ -312,9 +312,10 @@
     //             (largeur et hauteur en pixels : le navigateur réserve la bonne place
     //             avant d'avoir téléchargé l'image, la page ne « saute » pas) ;
     //   etage, titre : textes de la carte ;
-    //   pieces  : une ligne par pièce : [nom, surface estimée, infos] — surface ou infos
-    //             peuvent être "" (rien). Les surfaces viennent du script
-    //             outils/plans-villa-marces.py (il les affiche quand on le lance) ;
+    //   pieces  : une ligne par pièce : [nom, surface mesurée, infos] — surface ou infos
+    //             peuvent être "" (rien). Les surfaces sont celles de l'attestation de
+    //             surface habitable de novembre 2020 (les mêmes que dans le script
+    //             outils/plans-villa-marces.py, paramètre « mesure ») ;
     //             les infos du 3ᵉ viennent du descriptif du bien ;
     //   note    : petite précision sous la liste ("" = rien).
     // ============================================================
@@ -326,17 +327,18 @@
         titre: "Les pièces de vie",
         description: "Plan du 3ᵉ étage : séjour et salle à manger ouverts sur la véranda et la terrasse, cuisine, buanderie, cellier, chambre avec salle de bains.",
         pieces: [
-          ["Entrée",                  "≈ 4 m²",  "Placard"],
-          ["Séjour – salle à manger", "≈ 28 m²", "Parquet · baies coulissantes sur la terrasse · hauteur sous plafond 2,50 m"],
-          ["Véranda",                 "≈ 12 m²", "Carrelage · dans le prolongement de la salle à manger"],
-          ["Cuisine",                 "≈ 8 m²",  "Carrelage · hotte à évacuation extérieure"],
-          ["Buanderie",               "≈ 4 m²",  "Carrelage · grand évier, évacuation sèche-linge"],
-          ["Cellier",                 "≈ 2 m²",  "Rayonnages"],
-          ["WC",                      "≈ 2 m²",  "Avec lave-mains"],
-          ["Chambre 1",               "≈ 11 m²", "Moquette · penderie en plus de cette surface"],
-          ["Salle de bains",          "≈ 12 m²", "Carrelage · baignoire balnéo"],
-          ["Terrasse et jardinières", "",        "Carrelage · store électrique, arrosage automatique"],
-          ["Balcon",                  "",        "Le long de la salle de bains"],
+          ["Entrée",                  "5,79 m²",  "Placard"],
+          ["Séjour – salle à manger", "30,65 m²", "Parquet · baies coulissantes sur la terrasse · hauteur sous plafond 2,50 m"],
+          ["Véranda",                 "11,92 m²", "Carrelage · dans le prolongement de la salle à manger"],
+          ["Cuisine",                 "8,54 m²",  "Carrelage · hotte à évacuation extérieure"],
+          ["Buanderie",               "5,50 m²",  "Carrelage · grand évier, évacuation sèche-linge"],
+          ["Cellier",                 "2,69 m²",  "Rayonnages · et 1,82 m² de rangement bas sous l'escalier"],
+          ["Dégagement",              "4,84 m²",  "Dessert la cuisine, la buanderie, le WC et le cellier"],
+          ["WC",                      "1,92 m²",  "Avec lave-mains"],
+          ["Chambre 1",               "12,25 m²", "Moquette · penderie"],
+          ["Salle de bains",          "6,57 m²",  "Carrelage · baignoire balnéo"],
+          ["Terrasse",                "21,00 m²", "Carrelage · jardinières, store électrique, arrosage automatique"],
+          ["Balcon",                  "3,74 m²",  "Le long de la salle de bains"],
           ["Escalier vers le 4ᵉ",     "",        ""]
         ],
         note: "La chambre 1 et sa salle de bains forment la suite parentale ; le balcon longe la salle de bains."
@@ -348,13 +350,14 @@
         titre: "L'étage des chambres",
         description: "Plan du 4ᵉ étage : palier, chambres 2, 3 et 4, bureau, salle de bains et terrasse.",
         pieces: [
-          ["Palier",                  "≈ 6 m²",  "Arrivée de l'escalier"],
-          ["Chambre 2",               "≈ 10 m²", "Placard compris"],
-          ["Chambre 3",               "≈ 12 m²", "Placards compris · en partie sous la pente du toit"],
-          ["Bureau",                  "≈ 8 m²",  "Fenêtre de toit · accès à un rangement sous pente (hauteur 1,78 m)"],
-          ["Chambre 4",               "≈ 9 m²",  "Placard compris · ouvre sur la terrasse"],
-          ["Salle de bains",          "≈ 4 m²",  "Baignoire, double vasque"],
-          ["Terrasse et jardinières", "",        "Vue sur les toits"]
+          ["Palier",                  "8,02 m²",  "Arrivée de l'escalier"],
+          ["Chambre 2",               "11,10 m²", "Placard"],
+          ["Chambre 3",               "13,05 m²", "Placards · en partie sous la pente du toit"],
+          ["Bureau",                  "8,55 m²",  "Fenêtre de toit · accès au rangement sous pente"],
+          ["Rangement sous pente",    "0,95 m²",  "Et 3,75 m² sous 1,80 m de hauteur"],
+          ["Chambre 4",               "12,07 m²", "Placard · ouvre sur la terrasse"],
+          ["Salle de bains",          "6,09 m²",  "Baignoire, double vasque"],
+          ["Terrasse",                "15,65 m²", "Jardinière · vue sur les toits"]
         ],
         note: "Le « bureau » du plan sert de chambre. La chambre 4 ouvre sur la terrasse. À droite, le plan rappelle la véranda et la terrasse du 3ᵉ, situées en contrebas."
       }
@@ -392,7 +395,7 @@
       $("voir-dessin").setAttribute("aria-pressed", dessin ? "true" : "false");
       $("voir-scan").setAttribute("aria-pressed", dessin ? "false" : "true");
       $("choix-note").textContent = dessin
-        ? "Plan redessiné d'après le plan d'origine, avec la surface estimée de chaque pièce."
+        ? "Plan redessiné d'après le plan d'origine, avec la surface mesurée de chaque pièce."
         : "Le plan d'origine de l'appartement, tel qu'il a été scanné.";
       $("legende").hidden = !dessin;
       // Chaque carte porte son numéro dans data-numero (voir plus bas)

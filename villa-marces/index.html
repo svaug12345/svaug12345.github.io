@@ -2,7 +2,7 @@
 <!--
   ============================================================
   « 7 villa Marcès » — site de présentation de l'appartement à vendre
-  Version 1.6.0 – 22/11/2026
+  Version 1.7.0 – 22/11/2026
   En ligne : https://baiji.fr/villa-marces/
   ------------------------------------------------------------
   Historique :
@@ -24,6 +24,10 @@
    • 1.6.0 : formulaire « Être prévenu de l'ouverture de la vente » (rubrique contact) :
              envoyé au script Google « 7 villa Marcès – intéressés » (outils/villa-marces-interet.gs)
              qui range la demande dans un Google Sheet et envoie un courriel d'alerte à Seb
+   • 1.7.0 : SURFACES MESURÉES — 150,50 m² habitables (attestation de surface habitable d'un
+             diagnostiqueur, novembre 2020) à la place des estimations : chiffres clés, les deux
+             niveaux, fiche, terrasses (21 m² et 15,65 m²), balcon (3,74 m²) ; page « Plans » :
+             surface mesurée de chaque pièce. Ce n'est pas encore le mesurage loi Carrez.
 
   COMMENT C'EST FAIT (pour s'y retrouver) :
    • Une page principale autonome : HTML + CSS + JavaScript, sans outil de construction
@@ -374,7 +378,7 @@
     <section class="chiffres" aria-label="Le bien en quelques chiffres">
       <div class="contenu">
         <ul>
-          <li><b>≈ 129 m²</b><span>habitables (≈ 150 m² au sol)</span></li>
+          <li><b>150 m²</b><span>habitables, et 40 m² d'extérieurs</span></li>
           <li><b>6 pièces</b><span>dont 5 chambres</span></li>
           <li><b>3ᵉ et 4ᵉ</b><span>derniers étages, ascenseur</span></li>
           <li><b>Plein sud</b><span>terrasses, balcon et véranda</span></li>
@@ -406,13 +410,13 @@
           <article class="niveau">
             <img src="vues/veranda.jpg" alt="La véranda vitrée, avec vue sur les immeubles voisins" width="1600" height="1000" loading="lazy">
             <div class="corps">
-              <p class="etage">3ᵉ étage · environ 92 m² au sol</p>
+              <p class="etage">3ᵉ étage · 90,7 m² habitables</p>
               <h3>Les pièces de vie, de plain-pied sur la terrasse</h3>
               <ul>
                 <li>Entrée avec penderie, ouverte sur la terrasse</li>
                 <li>Séjour – salle à manger parqueté, baies vitrées coulissantes</li>
                 <li>Véranda carrelée dans le prolongement du séjour</li>
-                <li>Terrasse d'environ 23 m² : jardinières, pergola, store électrique</li>
+                <li>Terrasse de 21 m² : jardinières, pergola, store électrique</li>
                 <li>Cuisine séparée, buanderie et cellier</li>
                 <li>Chambre parentale avec salle de bains (baignoire balnéo) et balcon</li>
               </ul>
@@ -421,11 +425,11 @@
           <article class="niveau">
             <img src="vues/chambre5.jpg" alt="Une chambre de l'étage, parquetée, avec baie vitrée sur sa terrasse" width="1600" height="1000" loading="lazy">
             <div class="corps">
-              <p class="etage">4ᵉ étage · environ 58 m² au sol</p>
+              <p class="etage">4ᵉ étage · 59,8 m² habitables</p>
               <h3>L'étage des chambres</h3>
               <ul>
                 <li>Palier desservant quatre chambres, toutes avec placards</li>
-                <li>L'une d'elles ouvre sur sa propre terrasse d'environ 11 m², avec vue sur les toits</li>
+                <li>L'une d'elles ouvre sur sa propre terrasse de près de 16 m², avec vue sur les toits</li>
                 <li>Salle de bains avec double vasque et baignoire</li>
                 <li>Grands rangements sur le palier</li>
                 <li>Parquet ou moquette selon les pièces</li>
@@ -434,7 +438,7 @@
           </article>
         </div>
         <div class="annexes">
-          <p><strong>En sous-sol :</strong> deux parkings fermés d'environ 14 m² chacun (double box) au premier niveau, et une grande cave au second. L'immeuble dispose d'un ascenseur, d'un local à vélos et d'une entrée sécurisée.</p>
+          <p><strong>En sous-sol :</strong> un double box fermé (deux places) au premier niveau, et une grande cave au second. L'immeuble dispose d'un ascenseur, d'un local à vélos et d'une entrée sécurisée.</p>
         </div>
         <!-- Lien vers la page des plans (plans.html) -->
         <p class="vers-plans"><a class="bouton contour" href="plans.html">Voir les plans des deux niveaux</a></p>
@@ -547,10 +551,10 @@
             <div><dt>Type</dt><dd>Appartement en duplex, 6 pièces</dd></div>
             <div><dt>Adresse</dt><dd>7 villa Marcès, 94160 Saint-Mandé</dd></div>
             <div><dt>Étages</dt><dd>3ᵉ et 4ᵉ (derniers), ascenseur</dd></div>
-            <div><dt>Surface habitable</dt><dd>≈ 129 m² (à confirmer)</dd></div>
+            <div><dt>Surface habitable</dt><dd>150,50 m² (mesurée en 2020)</dd></div>
             <div><dt>Chambres</dt><dd>5</dd></div>
             <div><dt>Salles de bains</dt><dd>2</dd></div>
-            <div><dt>Extérieurs</dt><dd>2 terrasses, balcon, véranda</dd></div>
+            <div><dt>Extérieurs</dt><dd>2 terrasses (21 et 15,65 m²), balcon (3,74 m²), véranda</dd></div>
             <div><dt>Stationnement</dt><dd>Double box fermé</dd></div>
             <div><dt>Cave</dt><dd>Oui</dd></div>
             <div><dt>Immeuble</dt><dd>1989, 7 logements</dd></div>
@@ -625,7 +629,7 @@
   <script src="lib/pannellum.js"></script>
   <script>
     "use strict";
-    const VERSION = "1.6.0";
+    const VERSION = "1.7.0";
 
     // ============================================================
     // CE QU'ON PEUT MODIFIER SANS TOUCHER AU RESTE

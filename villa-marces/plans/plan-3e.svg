@@ -91,29 +91,30 @@
 <rect x="588" y="345" width="39" height="85" fill="#dcebf1" stroke="#2f3d38" stroke-width="2" rx="6"/>
 <rect x="257" y="425" width="43" height="60" fill="#ffffff" stroke="#2f3d38" stroke-width="3" rx="10"/>
 <text x="897" y="621" font-size="50" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Séjour</text>
-<text x="897" y="674" font-size="32" font-weight="600" fill="#55635d" text-anchor="middle" dominant-baseline="middle" >≈ 28 m²</text>
+<text x="897" y="674" font-size="32" font-weight="600" fill="#55635d" text-anchor="middle" dominant-baseline="middle" >30,65 m²</text>
 <text x="897" y="735" font-size="24" font-weight="600" fill="#55635d" text-anchor="middle" dominant-baseline="middle" >avec la salle à manger</text>
 <text x="850" y="307" font-size="40" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Salle</text>
 <text x="850" y="353" font-size="40" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >à manger</text>
 <text x="1195" y="327" font-size="44" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Véranda</text>
-<text x="1195" y="375" font-size="30" font-weight="600" fill="#55635d" text-anchor="middle" dominant-baseline="middle" >≈ 12 m²</text>
-<text x="1275" y="705" font-size="46" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Terrasse</text>
+<text x="1195" y="375" font-size="30" font-weight="600" fill="#55635d" text-anchor="middle" dominant-baseline="middle" >11,92 m²</text>
+<text x="1275" y="686" font-size="46" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Terrasse</text>
+<text x="1275" y="736" font-size="31" font-weight="600" fill="#55635d" text-anchor="middle" dominant-baseline="middle" >21,00 m²</text>
 <text x="1474" y="800" font-size="34" font-weight="700" fill="#3f6b45" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 1474 800)">Jardinières</text>
 <text x="490" y="331" font-size="36" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Cuisine</text>
-<text x="490" y="369" font-size="24" font-weight="600" fill="#55635d" text-anchor="middle" dominant-baseline="middle" >≈ 8 m²</text>
+<text x="490" y="369" font-size="24" font-weight="600" fill="#55635d" text-anchor="middle" dominant-baseline="middle" >8,54 m²</text>
 <text x="316" y="312" font-size="28" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 316 325)">Buanderie</text>
-<text x="316" y="345" font-size="22" font-weight="600" fill="#55635d" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 316 325)">≈ 4 m²</text>
-<text x="575" y="602" font-size="26" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >WC · ≈ 2 m²</text>
+<text x="316" y="345" font-size="22" font-weight="600" fill="#55635d" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 316 325)">5,50 m²</text>
+<text x="578" y="602" font-size="22" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >WC · 1,92 m²</text>
 <text x="322" y="695" font-size="26" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Cellier</text>
-<text x="322" y="726" font-size="22" font-weight="600" fill="#55635d" text-anchor="middle" dominant-baseline="middle" >≈ 2 m²</text>
+<text x="322" y="726" font-size="22" font-weight="600" fill="#55635d" text-anchor="middle" dominant-baseline="middle" >2,69 m²</text>
 <text x="295" y="572" font-size="26" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >↑ 4ᵉ</text>
 <text x="985" y="937" font-size="30" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Entrée</text>
-<text x="985" y="971" font-size="22" font-weight="600" fill="#55635d" text-anchor="middle" dominant-baseline="middle" >≈ 4 m²</text>
+<text x="985" y="971" font-size="22" font-weight="600" fill="#55635d" text-anchor="middle" dominant-baseline="middle" >5,79 m²</text>
 <text x="1212" y="1108" font-size="42" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Chambre 1</text>
-<text x="1212" y="1154" font-size="29" font-weight="600" fill="#55635d" text-anchor="middle" dominant-baseline="middle" >≈ 11 m²</text>
+<text x="1212" y="1154" font-size="29" font-weight="600" fill="#55635d" text-anchor="middle" dominant-baseline="middle" >12,25 m²</text>
 <text x="1118" y="1343" font-size="30" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Salle</text>
 <text x="1118" y="1378" font-size="30" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >de bains</text>
-<text x="1118" y="1413" font-size="24" font-weight="600" fill="#55635d" text-anchor="middle" dominant-baseline="middle" >≈ 12 m²</text>
-<text x="1169" y="1585" font-size="34" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Balcon</text>
+<text x="1118" y="1413" font-size="24" font-weight="600" fill="#55635d" text-anchor="middle" dominant-baseline="middle" >6,57 m²</text>
+<text x="1169" y="1585" font-size="28" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Balcon · 3,74 m²</text>
 <text x="607" y="1255" font-size="40" font-weight="600" fill="#8a938f" text-anchor="middle" dominant-baseline="middle" >Autre logement</text>
 </svg>

@@ -21,8 +21,17 @@ import sys
 # d'origine : buanderie 1,43 × 3,04 m, cellier 2,03 × 1,10 m, WC 2,40 m, chambre 1
 # 3,80 × 2,88 m, cage d'ascenseur 1,60 m… Elles donnent entre 87 et 94 pixels par mètre
 # selon l'endroit (le scan est un peu déformé) : on retient 91 pour le 3ᵉ et 92 pour le 4ᵉ.
-# Conséquence : les surfaces calculées ici sont des ESTIMATIONS, justes à environ 10 % près.
-# Elles ne remplacent pas un mesurage (loi Carrez) fait par un diagnostiqueur.
+# Conséquence : les surfaces calculées ici sont des ESTIMATIONS, justes à environ 10 % près
+# (et jusqu'à 30 à 50 % trop basses pour certaines pièces du 4ᵉ : le dessin est approximatif).
+#
+# Depuis la v1.7.0 du site, ce qui est ÉCRIT sur les plans est la surface MESURÉE de chaque
+# pièce (attestation de surface habitable d'un diagnostiqueur, 18/11/2020 : 150,50 m² au
+# total, 90,67 au 3ᵉ et 59,83 au 4ᵉ), donnée par le paramètre « mesure » de piece().
+# Sans « mesure », piece() écrit encore l'estimation « ≈ 12 m² ». Le calcul sur le dessin ne
+# sert plus qu'au récapitulatif de contrôle affiché à la fin (estimé / mesuré).
+# Correspondance des noms : « Bureau » du plan = « Chambre 4 » de l'attestation ;
+# « Chambre 4 » du plan (celle de la terrasse) = « Chambre 5 » ; « Cellier » = « Dressing »
+# du 3ᵉ ; « Buanderie » = idem. Ce n'est pas un mesurage loi Carrez.
 ECHELLE_3E = 91
 ECHELLE_4E = 92
 
@@ -41,7 +50,16 @@ def rect(x1, y1, x2, y2):
     return [(x1, y1), (x2, y1), (x2, y2), (x1, y2)]
 
 
-SURFACES = []      # ce que le script a calculé : [(niveau, pièce, m²)], affiché à la fin
+SURFACES = []      # [(niveau, pièce, m² estimés sur le dessin, m² mesurés ou None)], affiché à la fin
+
+
+def m_txt(m):
+    return "—" if m is None else m2_fr(m)
+
+
+def m2_fr(valeur):
+    """12.25 → « 12,25 m² » (virgule française, deux décimales comme sur l'attestation)."""
+    return f"{valeur:.2f}".replace(".", ",") + " m²"
 
 
 # ---------- Couleurs (accordées au site : pierre, vert du bois, terre cuite) ----------
@@ -121,13 +139,15 @@ class Plan:
                 f'<text x="{x}" y="{y0 + i * taille * 1.16:.0f}" font-size="{taille}" font-weight="{gras}" fill="{couleur}" '
                 f'text-anchor="middle" dominant-baseline="middle" {extra}>{li}</text>')
 
-    def piece(self, x, y, texte, taille, formes, taille_m2=None, en_ligne=False, extra=""):
-        """Nom d'une pièce + sa surface estimée. « formes » = liste de polygones (en pixels)
-        dont on additionne les aires. en_ligne=True : « WC · 2 m² » sur une seule ligne
+    def piece(self, x, y, texte, taille, formes, taille_m2=None, en_ligne=False, extra="", mesure=None):
+        """Nom d'une pièce + sa surface. « mesure » = surface mesurée en m² (attestation de
+        2020) : c'est elle qu'on écrit. Sans mesure, on écrit l'estimation « ≈ 12 m² » tirée
+        de « formes » = liste de polygones (en pixels) dont on additionne les aires ([] pour
+        une terrasse : rien à estimer). en_ligne=True : « WC · 1,92 m² » sur une seule ligne
         (pour les petites pièces) ; sinon la surface est écrite sous le nom, plus petit."""
         m2 = sum(aire(f) for f in formes) / self.echelle ** 2
-        SURFACES.append((self.niveau, texte.replace("|", " "), m2))
-        surface = f"≈ {round(m2)} m²"
+        SURFACES.append((self.niveau, texte.replace("|", " "), m2, mesure))
+        surface = m2_fr(mesure) if mesure is not None else f"≈ {round(m2)} m²"
         if en_ligne:
             self.nom(x, y, f"{texte} · {surface}", taille, extra=extra)
             return
@@ -251,21 +271,21 @@ def plan_3e():
     # --- Noms
     # Séjour + salle à manger = une seule pièce : la surface est écrite une fois, sous « Séjour ».
     # (formes : la grande partie 700→1000, puis la bande 1000→1095 le long des baies)
-    p.piece(897, 640, "Séjour", 50, [rect(700, 215, 1000, 850), rect(1000, 480, 1095, 880)], 32)
+    p.piece(897, 640, "Séjour", 50, [rect(700, 215, 1000, 850), rect(1000, 480, 1095, 880)], 32, mesure=30.65)
     p.nom(897, 735, "avec la salle à manger", 24, "#55635d", 600)
     p.nom(850, 330, "Salle|à manger", 40)
-    p.piece(1195, 345, "Véranda", 44, [rect(1000, 215, 1385, 480)])
-    p.nom(1275, 705, "Terrasse", 46)
+    p.piece(1195, 345, "Véranda", 44, [rect(1000, 215, 1385, 480)], mesure=11.92)
+    p.piece(1275, 705, "Terrasse", 46, [], mesure=21.00)
     p.nom(1474, 800, "Jardinières", 34, "#3f6b45", 700, 'transform="rotate(-90 1474 800)"')
-    p.piece(490, 345, "Cuisine", 36, [rect(398, 215, 645, 480)])
-    p.piece(316, 325, "Buanderie", 28, [rect(250, 215, 382, 493)], 22, extra='transform="rotate(-90 316 325)"')
-    p.piece(575, 602, "WC", 26, [rect(437, 565, 655, 640)], en_ligne=True)
-    p.piece(322, 708, "Cellier", 26, [rect(250, 652, 437, 755)], 22)
+    p.piece(490, 345, "Cuisine", 36, [rect(398, 215, 645, 480)], mesure=8.54)
+    p.piece(316, 325, "Buanderie", 28, [rect(250, 215, 382, 493)], 22, extra='transform="rotate(-90 316 325)"', mesure=5.50)
+    p.piece(578, 602, "WC", 22, [rect(437, 565, 655, 640)], en_ligne=True, mesure=1.92)
+    p.piece(322, 708, "Cellier", 26, [rect(250, 652, 437, 755)], 22, mesure=2.69)
     p.nom(295, 572, "↑ 4ᵉ", 26)
-    p.piece(985, 950, "Entrée", 30, [[(845, 905), (965, 905), (965, 880), (1095, 880), (1095, 995), (845, 995)], rect(850, 864, 958, 900)], 22)
-    p.piece(1212, 1125, "Chambre 1", 42, [rect(1035, 1000, 1390, 1250)])   # hors penderie
-    p.piece(1118, 1375, "Salle|de bains", 30, [rect(978, 1258, 1390, 1490)], 24)
-    p.nom(1169, 1585, "Balcon", 34)
+    p.piece(985, 950, "Entrée", 30, [[(845, 905), (965, 905), (965, 880), (1095, 880), (1095, 995), (845, 995)], rect(850, 864, 958, 900)], 22, mesure=5.79)
+    p.piece(1212, 1125, "Chambre 1", 42, [rect(1035, 1000, 1390, 1250)], mesure=12.25)
+    p.piece(1118, 1375, "Salle|de bains", 30, [rect(978, 1258, 1390, 1490)], 24, mesure=6.57)   # dessinée trop grande : à reprendre
+    p.piece(1169, 1585, "Balcon", 28, [], en_ligne=True, mesure=3.74)
     p.nom(607, 1255, "Autre logement", 40, GRIS, 600)
     return p.svg("Plan reconstitué du 3ᵉ étage — 7 villa Marcès (non contractuel)")
 
@@ -336,14 +356,14 @@ def plan_4e():
     p.rect(885, 883, 925, 921, "#ffffff", MUR, 3, 'rx="10"')
 
     # --- Noms
-    p.piece(612, 345, "Chambre 2", 38, [rect(490, 200, 735, 560)])
-    p.piece(868, 345, "Chambre 3", 38, [[(745, 200), (1060, 200), (1060, 410), (990, 410), (990, 560), (745, 560)]])
-    p.piece(1135, 545, "Bureau", 38, [[(1040, 438), (1285, 438), (1285, 495), (1350, 495), (1350, 658), (1040, 658)]])
-    p.piece(1185, 735, "Chambre 4", 36, [[(1040, 675), (1298, 675), (1298, 958), (1105, 958), (1105, 785), (1040, 785)], rect(1303, 675, 1348, 958)])
-    p.piece(790, 604, "Palier", 28, [[(655, 568), (1030, 568), (1030, 780), (1000, 780), (1000, 865), (925, 865), (925, 640), (655, 640)]], en_ligne=True)
+    p.piece(612, 345, "Chambre 2", 38, [rect(490, 200, 735, 560)], mesure=11.10)
+    p.piece(868, 345, "Chambre 3", 38, [[(745, 200), (1060, 200), (1060, 410), (990, 410), (990, 560), (745, 560)]], mesure=13.05)
+    p.piece(1135, 545, "Bureau", 38, [[(1040, 438), (1285, 438), (1285, 495), (1350, 495), (1350, 658), (1040, 658)]], mesure=8.55)     # « Chambre 4 » de l'attestation
+    p.piece(1185, 735, "Chambre 4", 36, [[(1040, 675), (1298, 675), (1298, 958), (1105, 958), (1105, 785), (1040, 785)], rect(1303, 675, 1348, 958)], mesure=12.07)   # « Chambre 5 » de l'attestation
+    p.piece(790, 604, "Palier", 28, [[(655, 568), (1030, 568), (1030, 780), (1000, 780), (1000, 865), (925, 865), (925, 640), (655, 640)]], en_ligne=True, mesure=8.02)
     p.nom(572, 660, "↓ 3ᵉ", 26)
-    p.piece(912, 962, "Salle de bains", 24, [[(742, 875), (1005, 875), (1005, 995), (820, 995), (820, 1045), (742, 1045)]], 20)
-    p.nom(1340, 1150, "Terrasse", 46)
+    p.piece(912, 962, "Salle de bains", 24, [[(742, 875), (1005, 875), (1005, 995), (820, 995), (820, 1045), (742, 1045)]], 20, mesure=6.09)
+    p.piece(1340, 1150, "Terrasse", 46, [], mesure=15.65)
     p.nom(1396, 1343, "Jardinières", 24, "#3f6b45")
     p.nom(1128, 300, "Rangement", 24, extra='transform="rotate(-90 1128 300)"')
     p.nom(1468, 298, "Véranda du 3ᵉ|(en contrebas)", 26, GRIS, 600)
@@ -354,12 +374,13 @@ def plan_4e():
 
 if __name__ == "__main__":
     dossier = sys.argv[1]
-    open(f"{dossier}/plan-3e.svg", "w").write(plan_3e())
-    open(f"{dossier}/plan-4e.svg", "w").write(plan_4e())
+    # encoding et newline imposés : le résultat est le même sous Windows, macOS et Linux
+    open(f"{dossier}/plan-3e.svg", "w", encoding="utf-8", newline="\n").write(plan_3e())
+    open(f"{dossier}/plan-4e.svg", "w", encoding="utf-8", newline="\n").write(plan_4e())
     print("plans écrits dans", dossier)
-    # Récapitulatif des surfaces estimées (à recopier dans PLANS de plans.html si elles changent)
+    # Récapitulatif de contrôle : surface estimée sur le dessin / surface mesurée (attestation)
     for niveau in ("3e", "4e"):
-        lignes = [(n, m) for (niv, n, m) in SURFACES if niv == niveau]
-        print(f"\n{niveau} — total des pièces mesurées : {sum(m for _, m in lignes):.1f} m²")
-        for n, m in lignes:
-            print(f"   {n:<16} {m:5.1f} m²  → ≈ {round(m)} m²")
+        lignes = [(n, e, m) for (niv, n, e, m) in SURFACES if niv == niveau]
+        print(f"\n{niveau} — dessin {sum(e for _, e, _ in lignes):.1f} m², mesuré {sum(m or 0 for _, _, m in lignes):.2f} m²")
+        for n, e, m in lignes:
+            print(f"   {n:<16} dessin {e:5.1f} m²   mesuré {m_txt(m)}")
