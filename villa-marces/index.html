@@ -2,7 +2,7 @@
 <!--
   ============================================================
   « 7 villa Marcès » — site de présentation de l'appartement à vendre
-  Version 1.8.0 – 22/11/2026
+  Version 1.9.0 – 22/11/2026
   En ligne : https://baiji.fr/villa-marces/
   ------------------------------------------------------------
   Historique :
@@ -32,6 +32,11 @@
              terminée par « · 2020 ») ; plus aucun « environ » sur les surfaces (valeurs
              mesurées) ; terrasse du 3ᵉ « de plain-pied » ; WC dans la salle de bains du 4ᵉ ;
              page « Plans » : salle de bains et balcon du 3ᵉ redessinés d'après le plan d'origine.
+   • 1.9.0 : deux pages à part — « Financier » (finances.html : surfaces, espaces en plus,
+             box, cave, taxe foncière, copropriété) et « Situation » (situation.html : temps
+             de marche calculés vers la mairie, le bois, les écoles, les transports) ; photo de
+             la façade (vues/facade.jpg) ; « immeuble en pierre de taille de 1989 » ; buanderie
+             « avec grand évier et évacuation d'eau ».
 
   COMMENT C'EST FAIT (pour s'y retrouver) :
    • Une page principale autonome : HTML + CSS + JavaScript, sans outil de construction
@@ -356,7 +361,8 @@
         <a href="#video">Vidéo</a>
         <a href="#photos">Photos</a>
         <a href="#visite">Visite 360°</a>
-        <a href="#situation">Situation</a>
+        <a href="situation.html">Situation</a>   <!-- page à part : situation.html -->
+        <a href="finances.html">Financier</a>   <!-- page à part : finances.html -->
         <a href="#contact">Contact</a>
       </nav>
     </div>
@@ -400,7 +406,7 @@
         <div>
           <p class="surtitre">En quelques mots</p>
           <h2>Une maison sur le toit, pensée par un architecte</h2>
-          <p class="chapeau">Au sommet d'une petite copropriété de sept logements achevée en 1989, cet appartement d'architecte occupe les deux derniers niveaux. On y vit comme dans une maison : les pièces de jour s'ouvrent de plain-pied sur une terrasse arborée, la véranda prolonge le séjour toute l'année, et l'étage réunit les chambres au calme.</p>
+          <p class="chapeau">Au sommet d'un immeuble en pierre de taille de 1989, petite copropriété de sept logements, cet appartement d'architecte occupe les deux derniers niveaux. On y vit comme dans une maison : les pièces de jour s'ouvrent de plain-pied sur une terrasse arborée, la véranda prolonge le séjour toute l'année, et l'étage réunit les chambres au calme.</p>
           <p class="chapeau">Orienté ouest, sud et est, il reçoit la lumière du matin au soir. Les nombreux rangements intégrés, le double box et la cave en font un vrai appartement familial.</p>
         </div>
         <img src="vues/sejour-terrasse.jpg" alt="Le séjour parqueté ouvert sur la véranda et la terrasse" width="1600" height="1000" loading="lazy">
@@ -423,7 +429,7 @@
                 <li>Séjour – salle à manger parqueté, baies vitrées coulissantes</li>
                 <li>Véranda carrelée dans le prolongement du séjour</li>
                 <li>Terrasse de 21 m² de plain-pied avec le séjour et la véranda : jardinières, pergola, store électrique</li>
-                <li>Cuisine séparée, buanderie et cellier</li>
+                <li>Cuisine séparée, buanderie avec grand évier et évacuation d'eau, cellier</li>
                 <li>Chambre parentale avec salle de bains (baignoire balnéo) et balcon</li>
               </ul>
             </div>
@@ -511,11 +517,12 @@
         <h2>Saint-Mandé, entre Paris et le bois</h2>
         <p class="chapeau">La villa Marcès est une petite voie résidentielle du quartier de l'église, au cœur de Saint-Mandé : une commune recherchée, limitrophe du 12ᵉ arrondissement et de Vincennes, adossée au bois de Vincennes. L'environnement est calme, les commerces de l'avenue du Général-de-Gaulle sont tout proches.</p>
         <ul class="acces">
-          <li><b>Métro ligne 1 · Saint-Mandé</b><span>À environ 1 km (une quinzaine de minutes à pied). Ligne directe vers Gare de Lyon, Châtelet, Charles-de-Gaulle – Étoile et La Défense.</span></li>
-          <li><b>Bois de Vincennes</b><span>Le lac de Saint-Mandé, le zoo et les allées du bois bordent la commune : promenades, vélo et jeux pour les enfants.</span></li>
+          <li><b>Métro ligne 1 · Saint-Mandé</b><span>À 14 minutes à pied (1 028 m). Ligne directe vers Gare de Lyon, Châtelet, Charles-de-Gaulle – Étoile et La Défense. Tramway T3a à 11 minutes.</span></li>
+          <li><b>Bois de Vincennes</b><span>Le lac de Saint-Mandé est à 10 minutes à pied, la coulée verte René-Dumont à 6 minutes : promenades, vélo et jeux pour les enfants.</span></li>
           <li><b>En voiture</b><span>Boulevard périphérique par la porte de Vincennes. Deux box fermés dans l'immeuble.</span></li>
-          <li><b>Au quotidien</b><span>Commerces de bouche, marchés, écoles et services de centre-ville, dans une commune à taille humaine.</span></li>
+          <li><b>Au quotidien</b><span>Mairie à 10 minutes à pied, école maternelle à 6 minutes, collège à 9 minutes ; commerces de bouche, marché et services de centre-ville.</span></li>
         </ul>
+        <p class="vers-plans"><a class="bouton contour" href="situation.html">Tous les temps de trajet à pied</a></p>
         <div class="carte">
           <!-- Carte Google intégrée : elle n'est téléchargée que lorsqu'on arrive à sa hauteur (loading="lazy") -->
           <iframe title="Plan : 7 villa Marcès, Saint-Mandé" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
@@ -531,7 +538,7 @@
         <p class="surtitre">Prestations</p>
         <h2>Le confort au quotidien</h2>
         <ul>
-          <li>Façade en pierre de taille</li>
+          <li>Immeuble en pierre de taille de 1989</li>
           <li>Volets roulants électriques</li>
           <li>Store électrique sur la terrasse</li>
           <li>Arrosage automatique des jardinières</li>
@@ -540,7 +547,7 @@
           <li>Placards et penderies dans chaque pièce</li>
           <li>Baignoire balnéothérapie</li>
           <li>Hotte à évacuation extérieure</li>
-          <li>Buanderie avec grand évier et évacuation sèche-linge</li>
+          <li>Buanderie avec grand évier et évacuation d'eau</li>
           <li>Précâblage hi-fi et antenne satellite</li>
           <li>Visiophone, digicode, ascenseur</li>
         </ul>
@@ -564,10 +571,12 @@
             <div><dt>Extérieurs</dt><dd>Terrasse de plain-pied de 21 m² au 3ᵉ, terrasse de 15,65 m² au 4ᵉ, balcon de 3,74 m², véranda</dd></div>
             <div><dt>Stationnement</dt><dd>Double box fermé</dd></div>
             <div><dt>Cave</dt><dd>Oui</dd></div>
-            <div><dt>Immeuble</dt><dd>1989, 7 logements</dd></div>
+            <div><dt>Immeuble</dt><dd>Pierre de taille, 1989, 7 logements</dd></div>
+            <div><dt>Taxe foncière</dt><dd>4 500 € par an</dd></div>
             <div><dt>Chauffage</dt><dd>Électrique</dd></div>
             <div><dt>Prix</dt><dd id="prix">Sur demande</dd></div>
           </dl>
+          <p class="vers-plans" style="grid-column: 1 / -1; order: 1; margin-top: 0"><a class="bouton contour" href="finances.html">Tous les chiffres du bien</a></p>
           <div class="contact" id="interet">
             <h3>Être prévenu de l'ouverture de la vente</h3>
             <p>L'appartement sera mis en vente très prochainement. Laissez vos coordonnées&nbsp;: vous serez recontacté(e) dès l'ouverture de la vente, pour organiser une visite ou répondre à vos questions.</p>
@@ -636,7 +645,7 @@
   <script src="lib/pannellum.js"></script>
   <script>
     "use strict";
-    const VERSION = "1.8.0";
+    const VERSION = "1.9.0";
 
     // ============================================================
     // CE QU'ON PEUT MODIFIER SANS TOUCHER AU RESTE
@@ -671,6 +680,7 @@
     const PHOTOS = [
       ["2020-sejour",           "Le séjour · 2020",                              1600, 1100],
       ["2020-terrasse",         "La terrasse de plain-pied · 2020",              1600, 1200],
+      ["facade",                "L'immeuble, côté villa Marcès · © Google 2022", 1113, 1038],
       ["2020-sejour-entree",    "Le séjour, côté entrée · 2020",                 1600, 1306],
       ["2020-cuisine",          "La cuisine · 2020",                             1600, 1354],
       ["2020-chambre1",         "La chambre parentale · 2020",                   1000, 1600],

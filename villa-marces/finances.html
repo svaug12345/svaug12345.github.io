@@ -1,0 +1,244 @@
+<!doctype html>
+<!--
+  ============================================================
+  « 7 villa Marcès » — page « Financier »
+  Version 1.9.0 – 22/11/2026   (même numéro que le site : voir index.html)
+  En ligne : https://baiji.fr/villa-marces/finances.html
+  ------------------------------------------------------------
+  COMMENT C'EST FAIT : page autonome, sœur de plans.html (mêmes couleurs, même barre).
+  Tout est écrit en dur dans le HTML : une carte (<section class="carte-info">) par thème,
+  une ligne <li> par chiffre (libellé à gauche, valeur à droite, précision dessous).
+  class="attente" = élément pas encore connu ; class="total" = ligne de total.
+  SOURCES : surfaces = attestation de surface habitable du 18/11/2020 (document privé) ;
+  taxe foncière = montant donné par Seb ; cave = cotes du plan de la copropriété.
+  RÈGLE : uniquement des valeurs mesurées ou certaines, jamais de « environ ».
+  À COMPLÉTER : surface loi Carrez, DPE, charges de copropriété, prix.
+  ============================================================
+-->
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Financier · 7 villa Marcès, Saint-Mandé</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <link rel="icon" href="icones/icone-192.png" type="image/png">
+  <meta name="theme-color" content="#24483f">
+  <meta name="description" content="Les chiffres du duplex du 7 villa Marcès à Saint-Mandé : 150,50 m² habitables, terrasses, double box, cave, taxe foncière.">
+  <meta property="og:title" content="Financier · 7 villa Marcès, Saint-Mandé">
+  <meta property="og:description" content="Les chiffres du duplex du 7 villa Marcès à Saint-Mandé : 150,50 m² habitables, terrasses, double box, cave, taxe foncière.">
+  <meta property="og:image" content="https://baiji.fr/villa-marces/vues/terrasse-facade.jpg">
+  <meta property="og:type" content="website">
+  <!-- Comme le reste de baiji.fr : pas dans les moteurs de recherche -->
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Compteur de visites de baiji.fr -->
+  <script src="/journal.js" defer></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================
+       COULEURS ET RÉGLAGES COMMUNS — identiques à index.html
+       (styles RECOPIÉS, pas de fichier CSS partagé : si on change une
+       couleur dans index.html, la changer ici aussi)
+       ========================================================== */
+    :root {
+      --pierre: #f6f2ea; --pierre-2: #ece5d8; --encre: #1e2a26; --encre-2: #55635d;
+      --bois: #24483f; --bois-clair: #dfe9e3; --terre: #b4603c; --terre-fonce: #964c2d;
+      --trait: #d9d0c0; --blanc: #fffdf9; --rayon: 14px; --large: 1120px;
+      --titre: "Fraunces", Georgia, serif;
+      --texte: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--pierre); color: var(--encre); font-family: var(--texte); font-size: 17px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    img { display: block; max-width: 100%; height: auto; }
+    a { color: var(--terre-fonce); }
+    h1, h2 { font-family: var(--titre); font-weight: 500; line-height: 1.15; margin: 0; text-wrap: balance; }
+    h1 { font-size: clamp(2rem, 6vw, 3.2rem); }
+    h2 { font-size: 1.45rem; }
+    p { margin: 0 0 1em; text-wrap: pretty; }
+    .contenu { max-width: var(--large); margin: 0 auto; padding: 0 20px; }
+    .surtitre { font-size: .78rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--terre-fonce); margin: 0 0 10px; }
+    .chapeau { color: var(--encre-2); max-width: 62ch; margin-top: 14px; }
+    :focus-visible { outline: 3px solid var(--terre); outline-offset: 2px; }
+
+    /* ---------- Barre de navigation (la même que sur la page principale) ---------- */
+    .barre { position: sticky; top: 0; z-index: 20; background: rgba(246, 242, 234, .9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--trait); }
+    .barre .contenu { display: flex; align-items: center; gap: 16px; height: 56px; }
+    .barre .nom { font-family: var(--titre); font-size: 1.1rem; font-weight: 600; color: var(--bois); text-decoration: none; white-space: nowrap; }
+    .barre nav { margin-left: auto; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+    .barre nav::-webkit-scrollbar { display: none; }
+    .barre nav a { font-size: .9rem; font-weight: 600; color: var(--encre); text-decoration: none; padding: 8px 10px; border-radius: 8px; white-space: nowrap; }
+    .barre nav a:hover { background: var(--pierre-2); }
+    .barre nav a[aria-current="page"] { background: var(--bois); color: #fff; }
+
+    /* ---------- Boutons ---------- */
+    .bouton { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 12px 22px; border-radius: 999px; border: 0; cursor: pointer; background: var(--terre); color: #fff; font: 700 1rem var(--texte); text-decoration: none; transition: background .15s; }
+    .bouton:hover { background: var(--terre-fonce); }
+    .bouton.contour { background: transparent; color: var(--bois); border: 1.5px solid var(--bois); }
+    .bouton.contour:hover { background: var(--bois-clair); }
+
+    .tete { padding: 44px 0 8px; }
+
+    /* ---------- Les cartes : un titre et une liste de lignes « libellé … valeur » ---------- */
+    .cartes { display: grid; gap: 22px; padding: 24px 0 8px; }
+    .carte-info { background: var(--blanc); border: 1px solid var(--trait); border-radius: var(--rayon); padding: 20px 22px 22px; }
+    .carte-info > p { color: var(--encre-2); font-size: .95rem; margin: 6px 0 0; }
+    /* « grid » avec 2 colonnes : 1fr = toute la place restante pour le libellé, auto = la largeur de la valeur */
+    .carte-info ul { list-style: none; margin: 14px 0 0; padding: 0; }
+    .carte-info li { display: grid; grid-template-columns: 1fr auto; gap: 0 12px; padding: 9px 0; border-top: 1px solid var(--trait); font-size: .97rem; }
+    .carte-info li b { font-weight: 600; }
+    .carte-info li .v { font-weight: 700; color: var(--bois); white-space: nowrap; text-align: right; }
+    .carte-info li small { grid-column: 1 / -1; color: var(--encre-2); font-size: .86rem; }
+    .carte-info li.total { border-top: 2px solid var(--bois); }
+    .carte-info li.total b, .carte-info li.total .v { font-size: 1.05rem; }
+    .carte-info li.attente .v { color: var(--terre-fonce); font-weight: 600; white-space: normal; max-width: 16ch; }
+
+    /* ---------- Photo avec sa légende ---------- */
+    .photo { margin: 24px 0 0; background: var(--blanc); border: 1px solid var(--trait); border-radius: var(--rayon); overflow: hidden; }
+    .photo img { width: 100%; max-height: 560px; object-fit: cover; }
+    .photo figcaption { padding: 10px 16px; font-size: .88rem; color: var(--encre-2); }
+
+    /* ---------- Carte Google ---------- */
+    .carte { margin-top: 24px; border-radius: var(--rayon); overflow: hidden; border: 1px solid var(--trait); background: var(--pierre-2); }
+    .carte iframe { display: block; width: 100%; height: 360px; border: 0; }
+    .carte p { margin: 0; padding: 12px 16px; font-size: .92rem; }
+
+    /* ---------- Bon à savoir + liens de fin de page ---------- */
+    .lecture { margin: 16px 0 0; background: var(--pierre-2); border-radius: var(--rayon); padding: 20px 22px; }
+    .lecture h2 { font-size: 1.2rem; margin-bottom: 8px; }
+    .lecture ul { margin: 0; padding-left: 20px; }
+    .lecture li { margin: 4px 0; }
+    .suite { display: flex; flex-wrap: wrap; gap: 12px; padding: 28px 0 48px; }
+    footer { padding: 28px 0 40px; border-top: 1px solid var(--trait); color: var(--encre-2); font-size: .85rem; }
+    footer p { margin: 0 0 6px; }
+
+    /* TABLETTE ET ORDINATEUR : les cartes côte à côte (le téléphone, < 760 px, les empile) */
+    @media (min-width: 760px) {
+      body { font-size: 18px; }
+      .tete { padding-top: 64px; }
+      .cartes { grid-template-columns: 1fr 1fr; align-items: start; }
+      .carte iframe { height: 440px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= Barre de navigation (la même sur toutes les pages) ================= -->
+  <header class="barre">
+    <div class="contenu">
+      <a class="nom" href="./">7 villa Marcès</a>
+      <nav aria-label="Rubriques">
+        <a href="./#appartement">L'appartement</a>
+        <a href="plans.html">Plans</a>
+        <a href="./#video">Vidéo</a>
+        <a href="./#photos">Photos</a>
+        <a href="./#visite">Visite 360°</a>
+        <a href="situation.html">Situation</a>
+        <a href="finances.html" aria-current="page">Financier</a>
+        <a href="./#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="contenu">
+      <div class="tete">
+        <p class="surtitre">Financier</p>
+        <h1>Le bien en chiffres</h1>
+        <p class="chapeau">Surfaces mesurées, espaces en plus de la surface habitable, stationnement, charges et fiscalité : les chiffres utiles pour comparer.</p>
+      </div>
+      <div class="cartes">
+        <section class="carte-info">
+          <h2>Surface habitable</h2>
+          <p>Mesurée pièce par pièce par un diagnostiqueur le 18 novembre 2020.</p>
+          <ul>
+            <li><b>3ᵉ étage</b><span class="v">90,67 m²</span><small>Entrée, séjour – salle à manger, véranda, cuisine, buanderie, cellier, WC, chambre et salle de bains</small></li>
+            <li><b>4ᵉ étage</b><span class="v">59,83 m²</span><small>Palier, quatre chambres, salle de bains avec WC</small></li>
+            <li class="total"><b>Surface habitable</b><span class="v">150,50 m²</span></li>
+            <li class="attente"><b>Surface loi Carrez</b><span class="v">Certificat à établir pour la vente</span><small>La surface loi Carrez sera mesurée par le diagnostiqueur et figurera dans la promesse de vente.</small></li>
+          </ul>
+        </section>
+        <section class="carte-info">
+          <h2>Espaces en plus de la surface habitable</h2>
+          <p>Relevés lors du même mesurage : ils ne sont pas comptés dans les 150,50 m².</p>
+          <ul>
+            <li><b>Terrasse du 3ᵉ, de plain-pied</b><span class="v">21,00 m²</span><small>Dans le prolongement du séjour et de la véranda</small></li>
+            <li><b>Terrasse du 4ᵉ</b><span class="v">15,65 m²</span><small>Desservie par une chambre</small></li>
+            <li><b>Balcon du 3ᵉ</b><span class="v">3,74 m²</span><small>Le long de la salle de bains</small></li>
+            <li><b>Escalier intérieur</b><span class="v">5,92 m²</span></li>
+            <li><b>Rangements de moins de 1,80 m de hauteur</b><span class="v">6,52 m²</span><small>Sous l'escalier (1,82 m²) et sous la pente du toit (3,75 m² et 0,95 m²)</small></li>
+            <li class="total"><b>Total hors surface habitable</b><span class="v">52,83 m²</span><small>Dont 40,39 m² de terrasses et balcon</small></li>
+          </ul>
+        </section>
+        <section class="carte-info">
+          <h2>Stationnement et cave</h2>
+          <p>Vendus avec l'appartement.</p>
+          <ul>
+            <li><b>Double box fermé</b><span class="v">2 places</span><small>Au 1ᵉʳ sous-sol, accès par l'ascenseur</small></li>
+            <li><b>Cave</b><span class="v">18,20 m²</span><small>Au 2ᵉ sous-sol (3,50 m × 5,20 m sur le plan de la copropriété)</small></li>
+          </ul>
+        </section>
+        <section class="carte-info">
+          <h2>Charges et fiscalité</h2>
+          <ul>
+            <li><b>Taxe foncière</b><span class="v">4 500 € par an</span></li>
+            <li><b>Chauffage et eau chaude</b><span class="v">Individuels</span><small>Électriques : pas de charges de chauffage collectif</small></li>
+            <li class="attente"><b>Charges de copropriété</b><span class="v">Montant communiqué avec le dossier de vente</span></li>
+            <li class="attente"><b>Diagnostic de performance énergétique</b><span class="v">À établir pour la vente</span></li>
+            <li><b>Prix</b><span class="v"><span id="prix">Sur demande</span></span></li>
+          </ul>
+        </section>
+        <section class="carte-info">
+          <h2>La copropriété</h2>
+          <ul>
+            <li><b>Immeuble</b><span class="v">1989</span><small>Pierre de taille, 3 étages et combles, deux niveaux de sous-sol</small></li>
+            <li><b>Logements</b><span class="v">7</span><small>Petite copropriété</small></li>
+            <li><b>Quote-part de l'appartement</b><span class="v">209 / 1 000</span><small>Tantièmes des charges générales</small></li>
+            <li><b>Ascenseur</b><span class="v">Oui</span><small>Dessert les étages et les deux sous-sols</small></li>
+            <li><b>Fibre optique</b><span class="v">Oui</span><small>Immeuble raccordé</small></li>
+          </ul>
+        </section>
+      </div>
+
+      <figure class="photo">
+        <img src="vues/facade.jpg" alt="La façade en pierre de taille du 7 villa Marcès, avec son entrée et les jardinières du dernier étage" width="1113" height="1038" loading="lazy">
+        <figcaption>L'immeuble, côté villa Marcès : l'appartement occupe les deux derniers niveaux. Image © Google, 2022.</figcaption>
+      </figure>
+
+      <div class="lecture">
+        <h2>Pour lire ces chiffres</h2>
+        <ul>
+          <li>La surface habitable ne compte ni les terrasses, ni le balcon, ni l'escalier, ni les parties de moins de 1,80 m de hauteur. La véranda (11,92 m²) en fait partie.</li>
+          <li>Le détail pièce par pièce figure sur la <a href="plans.html">page Plans</a>.</li>
+          <li>Les éléments encore attendus (surface loi Carrez, diagnostic de performance énergétique, charges de copropriété) seront ajoutés ici dès qu'ils seront établis.</li>
+        </ul>
+      </div>
+
+      <div class="suite">
+        <a class="bouton" href="./#interet">Être prévenu(e)</a>
+        <a class="bouton contour" href="plans.html">Voir les plans</a>
+        <a class="bouton contour" href="situation.html">Voir la situation</a>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="contenu">
+      <p>Surfaces issues du mesurage de la surface habitable de novembre 2020. Informations non contractuelles, à confirmer par le dossier de vente.</p>
+      <p><span id="version"></span></p>
+    </div>
+  </footer>
+
+  <script>
+    "use strict";
+    const VERSION = "1.9.0";   // même numéro que index.html
+    document.getElementById("version").textContent = "Version " + VERSION;
+    // Même appli installable que la page principale (service worker partagé)
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+  </script>
+</body>
+</html>
