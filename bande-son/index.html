@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Bande-son — le son des films et des séries du NAS
-  Version 1.3.0
+  Version 1.4.0
   ------------------------------------------------------------
   Comment ça marche :
    • cette page (baiji.fr, hébergée sur GitHub Pages) ne fait PAS le travail :
@@ -50,6 +50,8 @@
               plusieurs fichiers traités en même temps (réglage « En même
               temps » 1 à 4, service v1.3.0), temps restant calculé en
               conséquence
+   • v1.4.0 : bouton « Vider la liste » dans « Derniers sons » (la liste
+              seulement : les fichiers restent sur le NAS, service v1.4.0)
 -->
 <html lang="fr">
 <head>
@@ -344,8 +346,11 @@
     <!-- ===== Les sons déjà extraits ===== -->
     <section class="card" id="carte-sons" data-repli="sons" hidden>
       <h2><button class="tete" type="button" aria-expanded="true"><span class="titre">Derniers sons</span><span class="apercu" id="apercu-sons"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></h2>
+      <div class="boutons">
+        <button class="mini" type="button" id="vider-sons">Vider la liste</button>
+      </div>
       <ul class="lignes" id="sons"></ul>
-      <p class="aide">Sur le NAS, les sons sont à côté des vidéos, dans les dossiers « … - mp3 ».</p>
+      <p class="aide">« Vider la liste » n'efface aucun fichier : sur le NAS, les sons restent à côté des vidéos, dans les dossiers « … - mp3 ».</p>
     </section>
   </div>
 
@@ -369,7 +374,7 @@
   /* =====================================================================
      RÉGLAGES
      ===================================================================== */
-  const VERSION = "1.3.0";
+  const VERSION = "1.4.0";
   // Adresse du service du NAS. « ?service=… » dans l'adresse permet d'en
   // essayer un autre (ex. ?service=http://192.168.1.161:8095 à la maison).
   const SERVICE = (new URLSearchParams(location.search).get("service") || "https://mp3.baiji.fr").replace(/\/+$/, "");
@@ -974,6 +979,15 @@
       return li;
     }));
   }
+
+  // « Vider la liste » : le NAS oublie la liste des derniers sons (pas les fichiers)
+  $("vider-sons").addEventListener("click", async () => {
+    try {
+      await poster("/sorties/vider");
+      toast("Liste vidée (les fichiers restent sur le NAS)");
+      chargerSons();
+    } catch (err) { signaler(err); }
+  });
 
   // Téléchargement en deux temps : 1) un ticket, demandé AVEC le jeton ;
   // 2) un lien ordinaire qui porte le ticket. Le navigateur télécharge
