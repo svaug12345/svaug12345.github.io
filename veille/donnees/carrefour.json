@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-21T20:55+00:00",
+ "maj": "2026-11-22T13:26+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -49,6 +49,31 @@
   }
  ],
  "articles": [
+  {
+   "id": "ed3141f72a4c",
+   "titre": "« Allez sans rancune ! » Découvrez le discours de Serge Papin, ministre des PME, du Commerce, de l’Artisanat, du Tourisme et du Pouvoir d’achat, devant la grande distribution",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/allez-sans-rancune-decouvrez-le-discours-de-serge-papin-ministre-des-pme-du-commerce-de-lartisanat-du-tourisme-et-du-pouvoir-dachat-devant-la-grande-distribution.5YPG7IQPFFE4JPQMMBMFNCETUI.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-22T10:25+00:00",
+   "vu_le": "2026-11-22T13:26+00:00",
+   "resume": "",
+   "enrichi": "2026-11-22"
+  },
+  {
+   "id": "39c9bec5e397",
+   "titre": "[ ÉTUDE ] Qui sont les nouveaux clients du drive ?",
+   "lien": "https://www.olivierdauvers.fr/2026/11/22/etude-qui-sont-les-nouveaux-clients-du-drive/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-22T06:04+00:00",
+   "vu_le": "2026-11-22T13:26+00:00",
+   "resume": "Ce n’est pas parce que le taux de pénétration du drive ne progresse plus qu’il n’y a pas de renouvellement de la clientèle. Selon Worldpanel, 32,5 % des foyers français sont clients du drive (sans compter la livraison à domicile). Ce chiffre progresse à peine de 0,2 point en un an, mais il y a …",
+   "enrichi": "2026-11-22",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/clients-drive-Mise-en-page-1-scaled.png"
+  },
   {
    "id": "3171e2f45523",
    "titre": "Carrefour rappelle une friteuse sans huile vendue dans toute la France pour un risque chimique",
@@ -4045,31 +4070,6 @@
    "resume": "Ça ne peut pas être qu’un hasard… Un nouveau type de meuble débarque actuellement chez Carrefour, dans la foulée du nouveau concept beauté (que j’avais révélé l’an dernier, ici à Rambouillet). Et ce mobilier, qui a la vocation “d’aspirer” depuis l’allée centrale, ressemble trait pour trait à Normal. Évidemment pas un hasard ! Il y …",
    "enrichi": "2026-11-12",
    "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/09/Projet5-Mise-en-page-1-1024x767.png"
-  },
-  {
-   "id": "fa1f35215d2d",
-   "titre": "Grande distribution : Auchan décroche, Carrefour et Casino sous pression en cette fin d’été [Parts de marché Worldpanel]",
-   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/grande-distribution-auchan-decroche-carrefour-et-casino-sous-pression-en-cette-fin-dete-parts-de-marche-worldpanel.IOSQ22CZKNEOZJB34OEOMK2PYY.html",
-   "source": "lsa",
-   "media": "LSA conso",
-   "date": "2026-09-23T07:00+00:00",
-   "vu_le": "2026-11-11T07:27+00:00",
-   "resume": "",
-   "site": "lsa-conso.fr",
-   "enrichi": "2026-11-11"
-  },
-  {
-   "id": "ce0dafd2ec76",
-   "titre": "Aides sur les prix des carburants : «C’est la preuve de l'impuissance publique dans laquelle on se trouve», déplore le PDG de Carrefour Alexandre Bompard",
-   "lien": "https://fr.finance.yahoo.com/actualites/aides-prix-carburants-c-preuve-123346647.html",
-   "source": "autres",
-   "media": "Yahoo Finance France",
-   "site": "fr.finance.yahoo.com",
-   "date": "2026-09-23T07:00+00:00",
-   "vu_le": "2026-11-21T20:55+00:00",
-   "resume": "Le PDG de Carrefour estime que l",
-   "enrichi": "2026-11-21",
-   "image": "https://s.yimg.com/lo/mysterio/api/4cd22828002d0312208d559b024db644f4be9384d84cc5f93662305965bb69fa/lightyear_networkapi/resizefill_w1200%3Bquality_80%3Bformat_webp/https%3A%2F%2Fmedia.zenfs.com%2Ffr%2Fcapital_268%2Ff410606f3b2abf31df6cbaa36b0038f8.jpg"
   }
  ]
 }
