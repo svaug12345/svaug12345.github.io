@@ -2,7 +2,7 @@
 <!--
   ============================================================
   « 7 villa Marcès » — site de présentation de l'appartement à vendre
-  Version 1.10.1 – 22/11/2026
+  Version 1.10.2 – 22/11/2026
   En ligne : https://baiji.fr/villa-marces/
   ------------------------------------------------------------
   Historique :
@@ -42,6 +42,8 @@
              champ « Commentaire ou question » ; à déployer avec le script 1.1.0.
    • 1.10.1 : pages Financier et Situation — cartes rangées en deux colonnes sans vide ;
              Financier : « Certificat en cours », « DPE en cours », charges « En cours ».
+   • 1.10.2 : nouvelle vidéo (Visite_7_Villa_Marces_v3.mp4 sur le Drive de Seb) : façade en
+             ouverture, étage et surface mesurée de chaque pièce, cartons sans « environ ».
 
   COMMENT C'EST FAIT (pour s'y retrouver) :
    • Une page principale autonome : HTML + CSS + JavaScript, sans outil de construction
@@ -670,7 +672,7 @@
   <script src="lib/pannellum.js"></script>
   <script>
     "use strict";
-    const VERSION = "1.10.1";
+    const VERSION = "1.10.2";
 
     // ============================================================
     // CE QU'ON PEUT MODIFIER SANS TOUCHER AU RESTE
@@ -697,7 +699,7 @@
     // entre « /d/ » et « /view » dans son lien de partage). Le fichier doit rester partagé
     // « toute personne disposant du lien », sinon les visiteurs verront une demande d'accès.
     // "" = la rubrique Vidéo (et ses liens) est masquée.
-    const VIDEO_DRIVE = "1khcbuKLLvWwFhR6SxBagqn8ATgFO9W-l";
+    const VIDEO_DRIVE = "1oMgbEknSBu6EEuoXKIoq6qsEwSppaXj9";
 
     // Photos de la galerie, dans l'ordre d'affichage : [fichier dans vues/, légende, largeur, hauteur]
     // (largeur et hauteur en pixels ; sans elles : 1600 × 1000, la taille des vues tirées des panoramas).
