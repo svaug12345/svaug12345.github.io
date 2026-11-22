@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Bande-son — le son des films et des séries du NAS
-  Version 1.1.0
+  Version 1.2.0
   ------------------------------------------------------------
   Comment ça marche :
    • cette page (baiji.fr, hébergée sur GitHub Pages) ne fait PAS le travail :
@@ -41,6 +41,11 @@
               du contenu quand le bloc est replié) ; réglages par défaut
               MP3 128 anglais ; bouton « en tête » sur un fichier en
               attente pour le faire passer en premier (service v1.1.0)
+   • v1.2.0 : avancement global de la file (barre, « 4 / 12 ») et temps
+              restant estimé (fichier en cours, file entière, heure de
+              fin) ; la file s'affiche dans l'ordre où le NAS la traite :
+              chaque ajout est rangé par ordre alphabétique et va en fin
+              de file (service v1.2.0)
 -->
 <html lang="fr">
 <head>
@@ -201,6 +206,7 @@
     .croix { width: 32px; height: 32px; flex: none; border-radius: 9px; display: grid; place-items: center; color: var(--muted); margin-right: -6px; }
     .croix svg { width: 16px; height: 16px; }
     .etat.tete-file { color: var(--teal); }
+    #avancement { display: flex; flex-direction: column; gap: 6px; }
     .barre { height: 8px; border-radius: 999px; background: var(--track); overflow: hidden; }
     .barre > div { height: 100%; width: 0; background: var(--teal); border-radius: 999px; transition: width .6s; }
     .boutons { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -308,6 +314,11 @@
     <section class="card" id="carte-file" data-repli="file" hidden>
       <h2><button class="tete" type="button" aria-expanded="true"><span class="titre">File d'attente</span><span class="apercu" id="apercu-file"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></h2>
       <div class="resume" id="resume"></div>
+      <!-- Avancement de toute la file + temps restant estimé -->
+      <div id="avancement" hidden>
+        <div class="barre"><div id="barre-file"></div></div>
+        <div class="resume" id="temps-restant"></div>
+      </div>
       <div class="boutons">
         <button class="mini" type="button" id="vider" hidden>Effacer les terminés</button>
         <button class="mini" type="button" id="tout-annuler" hidden>Tout annuler</button>
@@ -345,7 +356,7 @@
   /* =====================================================================
      RÉGLAGES
      ===================================================================== */
-  const VERSION = "1.1.0";
+  const VERSION = "1.2.0";
   // Adresse du service du NAS. « ?service=… » dans l'adresse permet d'en
   // essayer un autre (ex. ?service=http://192.168.1.161:8095 à la maison).
   const SERVICE = (new URLSearchParams(location.search).get("service") || "https://mp3.baiji.fr").replace(/\/+$/, "");
@@ -722,9 +733,11 @@
     clearTimeout(minuteurSuivi);
     let actifs = 0;
     try {
-      const { travaux } = await api("/file");
+      const { travaux, maintenant } = await api("/file");
       actifs = travaux.filter(t => t.statut === "attente" || t.statut === "en_cours").length;
-      dessinerFile(travaux);
+      // « maintenant » = l'heure du NAS (en secondes). Un ancien service ne
+      // l'envoie pas : on prend alors l'heure du téléphone.
+      dessinerFile(travaux, maintenant || Date.now() / 1000);
       const finis = travaux.filter(t => t.statut === "fini").length;
       if (finis !== finisConnus) { finisConnus = finis; chargerSons(); }
     } catch (err) {
@@ -735,7 +748,41 @@
   // Retour sur l'onglet : des nouvelles tout de suite
   document.addEventListener("visibilitychange", () => { if (!document.hidden && lire(CLE_JETON)) suivre(); });
 
-  function dessinerFile(travaux) {
+  // 95 → « 2 min », 4000 → « 1 h 07 » (durées en secondes)
+  function duree(secondes) {
+    if (secondes < 60) return "moins d'une minute";
+    const minutes = Math.round(secondes / 60);
+    if (minutes < 60) return minutes + " min";
+    return `${Math.floor(minutes / 60)} h ${String(minutes % 60).padStart(2, "0")}`;
+  }
+
+  /* Le temps restant, estimé à partir de ce que le NAS vient de faire :
+      • fichier en cours : s'il a fait 40 % en 60 s, il reste 60 × 60 / 40 = 90 s ;
+      • fichiers en attente : on compte pour chacun la durée moyenne des
+        10 derniers fichiers terminés (ou, s'il n'y en a pas encore, la durée
+        totale prévue pour le fichier en cours).
+     C'est une ESTIMATION : un film dure plus qu'un épisode. Renvoie
+     {courant, total} en secondes (null = pas encore assez d'éléments). */
+  function estimer(travaux, maintenant) {
+    const courant = travaux.find(t => t.statut === "en_cours");
+    const nbAttente = travaux.filter(t => t.statut === "attente").length;
+    let resteCourant = null, totalCourant = null;
+    if (courant && courant.debut && courant.pct >= 1 && maintenant - courant.debut >= 3) {
+      const ecoule = maintenant - courant.debut;
+      totalCourant = ecoule * 100 / courant.pct;
+      resteCourant = Math.max(0, totalCourant - ecoule);
+    }
+    const durees = travaux.filter(t => t.statut === "fini" && t.debut && t.fin > t.debut)
+      .sort((a, b) => b.fin - a.fin).slice(0, 10).map(t => t.fin - t.debut);
+    const moyenne = durees.length ? durees.reduce((a, b) => a + b, 0) / durees.length : totalCourant;
+    let total = null;
+    if (nbAttente === 0) total = resteCourant;
+    else if (moyenne != null) total = (resteCourant ?? (courant ? moyenne : 0)) + nbAttente * moyenne;
+    return { courant: resteCourant, total };
+  }
+  let resteCourant = null;                 // temps restant du fichier en cours (affiché sur sa ligne)
+
+  function dessinerFile(travaux, maintenant) {
     $("carte-file").hidden = travaux.length === 0;
     if (!travaux.length) return;
     const compte = statut => travaux.filter(t => t.statut === statut).length;
@@ -747,19 +794,44 @@
     if (finis) morceaux.push(`<b>${finis}</b> terminé${finis > 1 ? "s" : ""}`);
     if (rates) morceaux.push(`<b>${rates}</b> en échec`);
     $("resume").innerHTML = morceaux.join(" · ") || "Rien en cours.";
-    $("apercu-file").textContent = $("resume").textContent;      // le même résumé, bloc replié
+    // --- Avancement global : barre + temps restant ---
+    const estimation = estimer(travaux, maintenant);
+    resteCourant = estimation.courant;
+    const actifsFile = attente + enCours;
+    $("avancement").hidden = actifsFile === 0;
+    let texteTemps = "";
+    if (actifsFile) {
+      // Part déjà faite : les fichiers terminés + la fraction du fichier en cours
+      const courant = travaux.find(t => t.statut === "en_cours");
+      const totalFichiers = finis + actifsFile;
+      const fait = finis + (courant ? (courant.pct || 0) / 100 : 0);
+      $("barre-file").style.width = (fait / totalFichiers * 100) + "%";
+      texteTemps = `Fichier <b>${Math.min(finis + 1, totalFichiers)}</b> / <b>${totalFichiers}</b>`;
+      if (estimation.total != null) {
+        // L'heure de fin : maintenant (horloge du téléphone) + le temps restant
+        const fin = new Date(Date.now() + estimation.total * 1000);
+        const heure = `${fin.getHours()} h ${String(fin.getMinutes()).padStart(2, "0")}`;
+        texteTemps += ` · reste environ <b>${duree(estimation.total)}</b> (fin vers ${heure})`;
+      } else texteTemps += " · temps restant : calcul en cours…";
+    }
+    $("temps-restant").innerHTML = texteTemps;
+    // Bloc replié : le résumé, suivi du temps restant
+    $("apercu-file").textContent = $("resume").textContent +
+      (estimation.total != null && actifsFile ? ` · reste ${duree(estimation.total)}` : "");
     $("tout-annuler").hidden = attente + enCours < 2;
     $("vider").hidden = travaux.length === attente + enCours;
 
-    // Ordre d'affichage : celui qui tourne, puis l'attente, puis les terminés.
-    // Dans l'attente : d'abord les fichiers passés « en tête » (le dernier
-    // demandé en premier, comme les traitera le NAS), puis l'ordre alphabétique
-    // (dossier, puis nom du fichier) — qui sert aussi pour les terminés.
+    // Ordre d'affichage = l'ordre où le NAS TRAITE la file :
+    //  1) le fichier en cours ;
+    //  2) l'attente : d'abord les fichiers passés « en tête » (le dernier demandé
+    //     en premier), puis l'ordre de la file du NAS — chaque ajout y est rangé
+    //     par ordre alphabétique, et un nouvel ajout va à la fin ;
+    //  3) les terminés, dans l'ordre où ils ont été traités.
     const rang = { en_cours: 0, attente: 1 };
-    const cleTri = t => t.dossier + "/" + t.nom;
+    travaux.forEach((t, i) => { t.position = i; });          // la place dans la file du NAS
     const tries = [...travaux].sort((a, b) => (rang[a.statut] ?? 2) - (rang[b.statut] ?? 2)
-      || (a.statut === "attente" ? (b.priorite || 0) - (a.priorite || 0) : 0)
-      || ALPHA.compare(cleTri(a), cleTri(b)));
+      || (a.statut === "attente" ? (b.priorite || 0) - (a.priorite || 0) : (a.fin || 0) - (b.fin || 0))
+      || a.position - b.position);
     const montres = toutMontrer ? tries : tries.slice(0, NB_VISIBLES);
     $("travaux").replaceChildren(...montres.map(ligneTravail));
     $("voir-tout").hidden = toutMontrer || tries.length <= NB_VISIBLES;
@@ -807,7 +879,9 @@
     if (t.statut === "erreur") li.append(el("div", "detail erreur", t.erreur));
     else {
       const format = t.format === "origine" ? "origine" : `${t.format.toUpperCase()} ${t.debit}`;
-      const details = [t.dossier !== "." && t.dossier, format, t.piste, t.statut === "fini" && taille(t.taille)];
+      const details = [t.dossier !== "." && t.dossier, format, t.piste, t.statut === "fini" && taille(t.taille),
+                       // Le fichier en cours : son temps restant estimé
+                       t.statut === "en_cours" && resteCourant != null && "encore " + duree(resteCourant)];
       li.append(el("div", "detail", details.filter(Boolean).join(" · ")));
     }
     return li;
