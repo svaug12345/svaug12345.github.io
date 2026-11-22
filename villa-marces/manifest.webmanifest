@@ -1,0 +1,39 @@
+{
+  "name": "7 villa Marcès",
+  "short_name": "Villa Marcès",
+  "description": "Duplex-terrasse à vendre à Saint-Mandé : photos, visite à 360° et situation",
+  "id": "/villa-marces/",
+  "start_url": "/villa-marces/",
+  "scope": "/villa-marces/",
+  "display": "standalone",
+  "background_color": "#f6f2ea",
+  "theme_color": "#24483f",
+  "lang": "fr",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "icones/icone-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icones/icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icones/icone-masquable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icones/icone-masquable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

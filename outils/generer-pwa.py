@@ -147,6 +147,10 @@ PAGES = [
          desc="Six scénettes de classe à faire observer aux tuteurs et stagiaires",
          picto="wind", tuile="#0A0A2E", trait="#ffffff",
          fond="#0A0A2E", theme="#0A0A2E"),
+    dict(dossier="villa-marces", nom="7 villa Marcès", court="Villa Marcès",
+         desc="Duplex-terrasse à vendre à Saint-Mandé : photos, visite à 360° et situation",
+         picto="building-2", tuile="#24483f", trait="#ffffff",   # couleurs du site (vert du bois)
+         fond="#f6f2ea", theme="#24483f"),
     dict(dossier="famille", nom="Vaugoude's Family", court="Famille",
          desc="Météo, tâches des enfants et batteries des voitures",
          picto="house", tuile="#0f7c7b", trait="#ffffff",
