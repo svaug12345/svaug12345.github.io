@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="180 140 1400 1530" width="1400" height="1530" font-family="Manrope, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+<title>Plan reconstitué du 3ᵉ étage — 7 villa Marcès (non contractuel)</title>
+<defs><pattern id="hachures" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="18" height="18" fill="#eceae4"/><line x1="0" y1="0" x2="0" y2="18" stroke="#c9c6bd" stroke-width="7"/></pattern><pattern id="toit" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="#efe9df"/><line x1="0" y1="8" x2="16" y2="8" stroke="#d6cdbd" stroke-width="3"/></pattern></defs>
+<rect width="1824" height="1845" fill="#ffffff"/>
+<rect x="1400" y="170" width="148" height="1475" fill="#c5dcc0" stroke="#2f3d38" stroke-width="4" />
+<rect x="1150" y="500" width="250" height="425" fill="#f1d7c6" />
+<rect x="1000" y="1530" width="338" height="110" fill="#f1d7c6" stroke="#2f3d38" stroke-width="4" />
+<rect x="262" y="1530" width="738" height="110" fill="url(#hachures)" stroke="#8a938f" stroke-width="3" />
+<rect x="215" y="185" width="1185" height="315" fill="#2f3d38" />
+<rect x="215" y="500" width="935" height="510" fill="#2f3d38" />
+<rect x="215" y="1010" width="750" height="520" fill="#2f3d38" />
+<rect x="965" y="925" width="453" height="605" fill="#2f3d38" />
+<rect x="250" y="1018" width="715" height="474" fill="url(#hachures)" />
+<rect x="250" y="765" width="230" height="240" fill="url(#hachures)" />
+<rect x="495" y="905" width="450" height="95" fill="url(#hachures)" />
+<rect x="495" y="668" width="150" height="212" fill="url(#hachures)" />
+<text x="570" y="774" font-size="24" font-weight="600" fill="#8a938f" text-anchor="middle" dominant-baseline="middle" >Ascenseur</text>
+<text x="365" y="871" font-size="24" font-weight="600" fill="#8a938f" text-anchor="middle" dominant-baseline="middle" >Escalier</text>
+<text x="365" y="899" font-size="24" font-weight="600" fill="#8a938f" text-anchor="middle" dominant-baseline="middle" >immeuble</text>
+<text x="720" y="952" font-size="26" font-weight="600" fill="#8a938f" text-anchor="middle" dominant-baseline="middle" >Palier</text>
+<rect x="250" y="215" width="132" height="278" fill="#dcebf1" />
+<rect x="398" y="215" width="247" height="265" fill="#dcebf1" />
+<rect x="655" y="250" width="40" height="228" fill="#e4d8c3" />
+<polygon points="700,215 1000,215 1000,480 1095,480 1095,995 965,995 965,850 700,850" fill="#fbf1de" />
+<rect x="965" y="880" width="130" height="115" fill="#f3ece0" />
+<rect x="1000" y="215" width="385" height="265" fill="#fbf1de" />
+<rect x="1000" y="215" width="385" height="265" fill="#ffffff" opacity=".35"/>
+<polygon points="345,497 660,497 660,555 430,555 430,645 345,645" fill="#f3ece0" />
+<rect x="250" y="500" width="90" height="145" fill="#f3ece0" />
+<line x1="250" y1="516.1111111111111" x2="340" y2="516.1111111111111" stroke="#8a938f" stroke-width="2" />
+<line x1="250" y1="532.2222222222222" x2="340" y2="532.2222222222222" stroke="#8a938f" stroke-width="2" />
+<line x1="250" y1="548.3333333333334" x2="340" y2="548.3333333333334" stroke="#8a938f" stroke-width="2" />
+<line x1="250" y1="564.4444444444445" x2="340" y2="564.4444444444445" stroke="#8a938f" stroke-width="2" />
+<line x1="250" y1="580.5555555555555" x2="340" y2="580.5555555555555" stroke="#8a938f" stroke-width="2" />
+<line x1="250" y1="596.6666666666666" x2="340" y2="596.6666666666666" stroke="#8a938f" stroke-width="2" />
+<line x1="250" y1="612.7777777777778" x2="340" y2="612.7777777777778" stroke="#8a938f" stroke-width="2" />
+<line x1="250" y1="628.8888888888889" x2="340" y2="628.8888888888889" stroke="#8a938f" stroke-width="2" />
+<rect x="437" y="565" width="218" height="75" fill="#dcebf1" />
+<rect x="250" y="652" width="187" height="103" fill="#e4d8c3" />
+<rect x="1035" y="1000" width="355" height="250" fill="#e6efe6" />
+<rect x="1035" y="1258" width="355" height="232" fill="#dcebf1" />
+<rect x="978" y="1005" width="50" height="245" fill="#e4d8c3" />
+<rect x="978" y="1258" width="50" height="232" fill="#dcebf1" />
+<rect x="985" y="185" width="23" height="65" fill="#2f3d38" />
+<rect x="980" y="400" width="120" height="80" fill="#2f3d38" />
+<rect x="1085" y="470" width="65" height="30" fill="#2f3d38" />
+<rect x="1012" y="190" width="373" height="20" fill="#ffffff" />
+<rect x="1012" y="190" width="373" height="20" fill="#7fb3c8" opacity=".75"/>
+<rect x="1385" y="190" width="13" height="290" fill="#ffffff" />
+<rect x="1385" y="190" width="13" height="290" fill="#7fb3c8" opacity=".75"/>
+<rect x="1150" y="478" width="235" height="12" fill="#ffffff" />
+<rect x="1150" y="478" width="235" height="12" fill="#7fb3c8" opacity=".75"/>
+<rect x="1108" y="505" width="28" height="415" fill="#ffffff" />
+<rect x="1108" y="505" width="28" height="415" fill="#7fb3c8" opacity=".75"/>
+<rect x="1160" y="940" width="220" height="22" fill="#ffffff" />
+<rect x="1160" y="940" width="220" height="22" fill="#7fb3c8" opacity=".75"/>
+<rect x="1396" y="1040" width="16" height="170" fill="#ffffff" />
+<rect x="1396" y="1040" width="16" height="170" fill="#7fb3c8" opacity=".75"/>
+<rect x="1396" y="1300" width="16" height="140" fill="#ffffff" />
+<rect x="1396" y="1300" width="16" height="140" fill="#7fb3c8" opacity=".75"/>
+<rect x="1060" y="1498" width="300" height="24" fill="#ffffff" />
+<rect x="1060" y="1498" width="300" height="24" fill="#7fb3c8" opacity=".75"/>
+<rect x="270" y="192" width="100" height="16" fill="#ffffff" />
+<rect x="270" y="192" width="100" height="16" fill="#7fb3c8" opacity=".75"/>
+<rect x="430" y="192" width="180" height="16" fill="#ffffff" />
+<rect x="430" y="192" width="180" height="16" fill="#7fb3c8" opacity=".75"/>
+<rect x="740" y="192" width="220" height="16" fill="#ffffff" />
+<rect x="740" y="192" width="220" height="16" fill="#7fb3c8" opacity=".75"/>
+<rect x="945" y="915" width="20" height="75" fill="#f3ece0" />
+<path d="M965,915 L1040,915 A75,75 0 0 1 965,990" fill="none" stroke="#1e2a26" stroke-width="2.5"/>
+<rect x="660" y="500" width="40" height="53" fill="#fbf1de" />
+<path d="M700,500 L753,500 A53,53 0 0 1 700,553" fill="none" stroke="#1e2a26" stroke-width="2.5"/>
+<rect x="470" y="480" width="60" height="17" fill="#f3ece0" />
+<path d="M470,497 L470,557 A60,60 0 0 0 530,497" fill="none" stroke="#1e2a26" stroke-width="2.5"/>
+<rect x="340" y="493" width="42" height="7" fill="#f3ece0" />
+<path d="M382,500 L382,542 A42,42 0 0 1 340,500" fill="none" stroke="#1e2a26" stroke-width="2.5"/>
+<rect x="430" y="575" width="7" height="55" fill="#f3ece0" />
+<path d="M430,575 L375,575 A55,55 0 0 0 430,630" fill="none" stroke="#1e2a26" stroke-width="2.5"/>
+<rect x="350" y="645" width="70" height="7" fill="#e4d8c3" />
+<path d="M350,652 L350,722 A70,70 0 0 0 420,652" fill="none" stroke="#1e2a26" stroke-width="2.5"/>
+<rect x="1035" y="995" width="60" height="5" fill="#e6efe6" />
+<path d="M1095,1000 L1095,1060 A60,60 0 0 1 1035,1000" fill="none" stroke="#1e2a26" stroke-width="2.5"/>
+<rect x="1040" y="1250" width="60" height="8" fill="#dcebf1" />
+<path d="M1040,1258 L1040,1318 A60,60 0 0 0 1100,1258" fill="none" stroke="#1e2a26" stroke-width="2.5"/>
+<rect x="1205" y="1268" width="75" height="152" fill="#ffffff" stroke="#2f3d38" stroke-width="3" rx="14"/>
+<rect x="985" y="1395" width="36" height="65" fill="#ffffff" stroke="#2f3d38" stroke-width="3" rx="8"/>
+<rect x="445" y="580" width="55" height="45" fill="#ffffff" stroke="#2f3d38" stroke-width="3" rx="16"/>
+<rect x="580" y="225" width="55" height="235" fill="#ffffff" stroke="#2f3d38" stroke-width="3" />
+<rect x="588" y="270" width="39" height="50" fill="#dcebf1" stroke="#2f3d38" stroke-width="2" />
+<rect x="588" y="345" width="39" height="85" fill="#dcebf1" stroke="#2f3d38" stroke-width="2" rx="6"/>
+<rect x="257" y="425" width="43" height="60" fill="#ffffff" stroke="#2f3d38" stroke-width="3" rx="10"/>
+<text x="897" y="640" font-size="50" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Séjour</text>
+<text x="850" y="307" font-size="40" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Salle</text>
+<text x="850" y="353" font-size="40" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >à manger</text>
+<text x="1195" y="345" font-size="44" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Véranda</text>
+<text x="1275" y="705" font-size="46" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Terrasse</text>
+<text x="1474" y="800" font-size="34" font-weight="700" fill="#3f6b45" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 1474 800)">Jardinières</text>
+<text x="490" y="345" font-size="36" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Cuisine</text>
+<text x="316" y="320" font-size="28" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 316 320)">Buanderie</text>
+<text x="560" y="602" font-size="30" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >WC</text>
+<text x="343" y="703" font-size="30" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Cellier</text>
+<text x="295" y="572" font-size="26" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >↑ 4ᵉ</text>
+<text x="1030" y="938" font-size="28" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Entrée</text>
+<text x="1212" y="1125" font-size="42" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Chambre 1</text>
+<text x="1118" y="1358" font-size="30" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Salle</text>
+<text x="1118" y="1392" font-size="30" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >de bains</text>
+<text x="1169" y="1585" font-size="34" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Balcon</text>
+<text x="607" y="1255" font-size="40" font-weight="600" fill="#8a938f" text-anchor="middle" dominant-baseline="middle" >Autre logement</text>
+</svg>

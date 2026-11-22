@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="420 135 1250 1395" width="1250" height="1395" font-family="Manrope, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+<title>Plan reconstitué du 4ᵉ étage — 7 villa Marcès (non contractuel)</title>
+<defs><pattern id="hachures" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="18" height="18" fill="#eceae4"/><line x1="0" y1="0" x2="0" y2="18" stroke="#c9c6bd" stroke-width="7"/></pattern><pattern id="toit" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="#efe9df"/><line x1="0" y1="8" x2="16" y2="8" stroke="#d6cdbd" stroke-width="3"/></pattern></defs>
+<rect width="1674" height="1845" fill="#ffffff"/>
+<rect x="1297" y="165" width="343" height="265" fill="#faf7f1" stroke="#8a938f" stroke-width="3" stroke-dasharray="14 10"/>
+<rect x="1377" y="430" width="263" height="530" fill="#faf7f1" stroke="#8a938f" stroke-width="3" stroke-dasharray="14 10"/>
+<rect x="1170" y="170" width="127" height="255" fill="url(#toit)" stroke="#8a938f" stroke-width="3" />
+<rect x="450" y="1310" width="1110" height="190" fill="url(#toit)" stroke="#8a938f" stroke-width="3" />
+<rect x="1045" y="985" width="73" height="360" fill="url(#toit)" stroke="#8a938f" stroke-width="3" />
+<rect x="1118" y="985" width="444" height="380" fill="#f1d7c6" stroke="#2f3d38" stroke-width="5" />
+<rect x="1235" y="1325" width="323" height="36" fill="#c5dcc0" stroke="#2f3d38" stroke-width="3" />
+<rect x="450" y="180" width="720" height="395" fill="#2f3d38" />
+<rect x="450" y="420" width="925" height="565" fill="#2f3d38" />
+<rect x="450" y="985" width="600" height="327" fill="#2f3d38" />
+<rect x="490" y="765" width="252" height="540" fill="url(#hachures)" />
+<rect x="742" y="1052" width="303" height="253" fill="url(#hachures)" />
+<rect x="655" y="648" width="90" height="117" fill="url(#hachures)" />
+<rect x="755" y="655" width="150" height="195" fill="url(#hachures)" />
+<text x="830" y="752" font-size="24" font-weight="600" fill="#8a938f" text-anchor="middle" dominant-baseline="middle" >Ascenseur</text>
+<rect x="490" y="200" width="245" height="360" fill="#e6efe6" />
+<rect x="495" y="487" width="155" height="71" fill="#e4d8c3" />
+<polygon points="745,200 1060,200 1060,410 990,410 990,560 745,560" fill="#e6efe6" />
+<rect x="997" y="204" width="61" height="204" fill="#e4d8c3" />
+<rect x="850" y="507" width="138" height="51" fill="#e4d8c3" />
+<rect x="1090" y="195" width="75" height="235" fill="#e4d8c3" />
+<polygon points="655,568 1030,568 1030,780 1000,780 1000,865 925,865 925,640 655,640" fill="#f3ece0" />
+<rect x="495" y="568" width="155" height="187" fill="#f3ece0" />
+<line x1="495" y1="586.7" x2="650" y2="586.7" stroke="#8a938f" stroke-width="2" />
+<line x1="495" y1="605.4" x2="650" y2="605.4" stroke="#8a938f" stroke-width="2" />
+<line x1="495" y1="624.1" x2="650" y2="624.1" stroke="#8a938f" stroke-width="2" />
+<line x1="495" y1="642.8" x2="650" y2="642.8" stroke="#8a938f" stroke-width="2" />
+<line x1="495" y1="661.5" x2="650" y2="661.5" stroke="#8a938f" stroke-width="2" />
+<line x1="495" y1="680.2" x2="650" y2="680.2" stroke="#8a938f" stroke-width="2" />
+<line x1="495" y1="698.9" x2="650" y2="698.9" stroke="#8a938f" stroke-width="2" />
+<line x1="495" y1="717.6" x2="650" y2="717.6" stroke="#8a938f" stroke-width="2" />
+<line x1="495" y1="736.3" x2="650" y2="736.3" stroke="#8a938f" stroke-width="2" />
+<polygon points="1040,438 1285,438 1285,495 1350,495 1350,658 1040,658" fill="#e6efe6" />
+<polygon points="1040,675 1298,675 1298,958 1105,958 1105,785 1040,785" fill="#e6efe6" />
+<rect x="1303" y="675" width="45" height="283" fill="#e4d8c3" />
+<polygon points="742,875 1005,875 1005,995 820,995 820,1045 742,1045" fill="#dcebf1" />
+<rect x="520" y="184" width="180" height="14" fill="#ffffff" />
+<rect x="520" y="184" width="180" height="14" fill="#7fb3c8" opacity=".75"/>
+<rect x="775" y="184" width="185" height="14" fill="#ffffff" />
+<rect x="775" y="184" width="185" height="14" fill="#7fb3c8" opacity=".75"/>
+<rect x="1125" y="964" width="165" height="18" fill="#ffffff" />
+<rect x="1125" y="964" width="165" height="18" fill="#7fb3c8" opacity=".75"/>
+<rect x="1354" y="520" width="17" height="120" fill="#ffffff" />
+<rect x="1354" y="520" width="17" height="120" fill="#7fb3c8" opacity=".75"/>
+<rect x="1235" y="555" width="100" height="85" fill="none" stroke="#8a938f" stroke-width="3" stroke-dasharray="10 8"/>
+<rect x="660" y="560" width="75" height="8" fill="#e6efe6" />
+<path d="M735,560 L735,485 A75,75 0 0 0 660,560" fill="none" stroke="#1e2a26" stroke-width="2.5"/>
+<rect x="745" y="560" width="75" height="8" fill="#e6efe6" />
+<path d="M745,560 L745,485 A75,75 0 0 1 820,560" fill="none" stroke="#1e2a26" stroke-width="2.5"/>
+<rect x="1030" y="575" width="10" height="65" fill="#e6efe6" />
+<path d="M1040,575 L1105,575 A65,65 0 0 1 1040,640" fill="none" stroke="#1e2a26" stroke-width="2.5"/>
+<rect x="1030" y="690" width="10" height="70" fill="#e6efe6" />
+<path d="M1040,690 L1110,690 A70,70 0 0 1 1040,760" fill="none" stroke="#1e2a26" stroke-width="2.5"/>
+<rect x="1100" y="430" width="50" height="8" fill="#e4d8c3" />
+<path d="M1100,438 L1100,488 A50,50 0 0 0 1150,438" fill="none" stroke="#1e2a26" stroke-width="2.5"/>
+<rect x="930" y="865" width="65" height="10" fill="#dcebf1" />
+<path d="M995,875 L995,940 A65,65 0 0 1 930,875" fill="none" stroke="#1e2a26" stroke-width="2.5"/>
+<rect x="650" y="575" width="5" height="60" fill="#f3ece0" />
+<rect x="748" y="885" width="64" height="153" fill="#ffffff" stroke="#2f3d38" stroke-width="3" rx="14"/>
+<rect x="835" y="883" width="40" height="38" fill="#ffffff" stroke="#2f3d38" stroke-width="3" rx="10"/>
+<rect x="885" y="883" width="40" height="38" fill="#ffffff" stroke="#2f3d38" stroke-width="3" rx="10"/>
+<text x="612" y="345" font-size="38" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Chambre 2</text>
+<text x="868" y="345" font-size="38" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Chambre 3</text>
+<text x="1135" y="530" font-size="38" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Bureau</text>
+<text x="1169" y="730" font-size="38" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Chambre 4</text>
+<text x="790" y="604" font-size="32" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Palier</text>
+<text x="572" y="660" font-size="26" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >↓ 3ᵉ</text>
+<text x="912" y="962" font-size="24" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Salle de bains</text>
+<text x="1340" y="1150" font-size="46" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Terrasse</text>
+<text x="1396" y="1343" font-size="24" font-weight="700" fill="#3f6b45" text-anchor="middle" dominant-baseline="middle" >Jardinières</text>
+<text x="1128" y="300" font-size="24" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 1128 300)">Rangement</text>
+<text x="1468" y="283" font-size="26" font-weight="600" fill="#8a938f" text-anchor="middle" dominant-baseline="middle" >Véranda du 3ᵉ</text>
+<text x="1468" y="313" font-size="26" font-weight="600" fill="#8a938f" text-anchor="middle" dominant-baseline="middle" >(en contrebas)</text>
+<text x="1508" y="670" font-size="26" font-weight="600" fill="#8a938f" text-anchor="middle" dominant-baseline="middle" >Terrasse</text>
+<text x="1508" y="700" font-size="26" font-weight="600" fill="#8a938f" text-anchor="middle" dominant-baseline="middle" >du 3ᵉ</text>
+<text x="1508" y="730" font-size="26" font-weight="600" fill="#8a938f" text-anchor="middle" dominant-baseline="middle" >(en contrebas)</text>
+<text x="1000" y="1405" font-size="30" font-weight="600" fill="#8a938f" text-anchor="middle" dominant-baseline="middle" >Toiture</text>
+</svg>

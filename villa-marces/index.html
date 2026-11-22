@@ -2,7 +2,7 @@
 <!--
   ============================================================
   « 7 villa Marcès » — site de présentation de l'appartement à vendre
-  Version 1.2.0 – 22/11/2026
+  Version 1.3.0 – 22/11/2026
   En ligne : https://baiji.fr/villa-marces/
   ------------------------------------------------------------
   Historique :
@@ -13,6 +13,8 @@
              partagé « toute personne disposant du lien », lu par le lecteur Google Drive)
    • 1.2.0 : page « Plans » (plans.html, page à part) — les plans des 3ᵉ et 4ᵉ étages,
              agrandissables ; lien dans le menu et bouton sous « Deux niveaux, deux ambiances »
+   • 1.3.0 : page « Plans » — plans REDESSINÉS (SVG, plus lisibles que les scans), avec
+             un bouton pour revenir au plan d'origine (rien ne change sur cette page-ci)
 
   COMMENT C'EST FAIT (pour s'y retrouver) :
    • Une page principale autonome : HTML + CSS + JavaScript, sans outil de construction
@@ -550,7 +552,7 @@
   <script src="lib/pannellum.js"></script>
   <script>
     "use strict";
-    const VERSION = "1.2.0";
+    const VERSION = "1.3.0";
 
     // ============================================================
     // CE QU'ON PEUT MODIFIER SANS TOUCHER AU RESTE

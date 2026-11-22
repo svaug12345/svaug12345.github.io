@@ -2,7 +2,7 @@
 <!--
   ============================================================
   « 7 villa Marcès » — page « Plans » (les plans des deux niveaux)
-  Version 1.2.0 – 22/11/2026   (même numéro que le site : voir index.html)
+  Version 1.3.0 – 22/11/2026   (même numéro que le site : voir index.html)
   En ligne : https://baiji.fr/villa-marces/plans.html
   ------------------------------------------------------------
   COMMENT C'EST FAIT (pour s'y retrouver) :
@@ -14,8 +14,15 @@
      (Drive de Seb) : deux pages scannées À L'ENVERS, que l'on a remises à
      l'endroit, recadrées sur le dessin et agrandies ×1,5 (en Python, hors dépôt)
        - plans/plan-3e.jpg = 3ᵉ étage ;  plans/plan-4e.jpg = 4ᵉ étage.
+   • Depuis la v1.3.0, chaque niveau a aussi un PLAN REDESSINÉ, plus lisible que le scan :
+       - plans/plan-3e.svg et plans/plan-4e.svg, des dessins vectoriels (SVG = du texte qui
+         décrit des formes : net à tous les zooms, et très léger) ;
+       - ils sont FABRIQUÉS par outils/plans-villa-marces.py (pièces, murs, portes, noms) :
+         pour corriger une pièce, modifier ce script puis le relancer, pas le SVG ;
+       - deux boutons « Plan redessiné » / « Plan d'origine » basculent de l'un à l'autre
+         (choix gardé dans le navigateur : localStorage « villa-marces.plan »).
    • TOUT LE CONTENU MODIFIABLE est dans la liste PLANS, en bas de page :
-     un bloc par niveau (image, titre, pièces). La page fabrique les cartes.
+     un bloc par niveau (dessin, scan, titre, pièces). La page fabrique les cartes.
    • Toucher un plan l'ouvre en grand dans un <dialog> (fenêtre par-dessus la
      page) où l'on peut zoomer avec les boutons + et −, ou en pinçant.
   ============================================================
@@ -73,6 +80,7 @@
     }
     img { display: block; max-width: 100%; height: auto; }
     a { color: var(--terre-fonce); }
+    [hidden] { display: none !important; }   /* indispensable : la légende est en « flex », qui l'emporterait sur hidden */
     h1, h2 { font-family: var(--titre); font-weight: 500; line-height: 1.15; margin: 0; text-wrap: balance; }
     h1 { font-size: clamp(2rem, 6vw, 3.2rem); }
     h2 { font-size: 1.45rem; }
@@ -116,6 +124,22 @@
 
     /* ---------- En-tête de la page ---------- */
     .tete { padding: 44px 0 8px; }
+
+    /* ---------- Choix de l'affichage : plan redessiné ou plan d'origine ---------- */
+    /* Deux boutons collés l'un à l'autre, façon interrupteur ; celui qui est choisi est en vert. */
+    .choix { display: inline-flex; margin-top: 8px; padding: 4px; border-radius: 999px; background: var(--pierre-2); border: 1px solid var(--trait); }
+    .choix button {
+      min-height: 44px; padding: 8px 18px; border: 0; border-radius: 999px; cursor: pointer;
+      background: transparent; color: var(--encre); font: 700 .92rem var(--texte);
+    }
+    .choix button[aria-pressed="true"] { background: var(--bois); color: #fff; }
+    .choix-note { margin: 10px 0 0; font-size: .92rem; color: var(--encre-2); max-width: 62ch; }
+
+    /* ---------- Légende des couleurs (plan redessiné seulement) ---------- */
+    .legende { list-style: none; margin: 18px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: .88rem; font-weight: 600; }
+    .legende li { display: flex; align-items: center; gap: 7px; }
+    /* La pastille prend sa couleur dans la variable --c posée sur chaque ligne */
+    .legende i { width: 18px; height: 18px; border-radius: 5px; background: var(--c); border: 1px solid rgba(30, 42, 38, .25); }
 
     /* ---------- Les plans : une carte par niveau ---------- */
     .plans { display: grid; gap: 22px; padding: 24px 0 8px; }
@@ -163,6 +187,8 @@
     }
     .grand button:disabled { opacity: .35; cursor: default; }
     .grand .fermer { background: var(--bois); color: #fff; }
+    /* Bouton « Origine / Redessiné » de la vue agrandie : une pilule, pas un rond */
+    .grand .bascule { border-radius: 999px; padding: 0 14px; font-size: .85rem; }
 
     /* ==========================================================
        TABLETTE ET ORDINATEUR : les deux niveaux côte à côte
@@ -200,6 +226,24 @@
         <p class="surtitre">Plans</p>
         <h1>Les deux niveaux, pièce par pièce</h1>
         <p class="chapeau">Le duplex occupe les 3ᵉ et 4ᵉ étages, reliés par un escalier intérieur. Touchez un plan pour l'agrandir et zoomer.</p>
+
+        <!-- Choix de l'affichage. aria-pressed dit lequel des deux est choisi (mis à jour par le script). -->
+        <div class="choix" role="group" aria-label="Affichage des plans">
+          <button type="button" id="voir-dessin" aria-pressed="true">Plan redessiné</button>
+          <button type="button" id="voir-scan" aria-pressed="false">Plan d'origine</button>
+        </div>
+        <p class="choix-note" id="choix-note"></p>
+
+        <!-- Légende des couleurs du plan redessiné (cachée quand on regarde le plan d'origine) -->
+        <ul class="legende" id="legende">
+          <li><i style="--c:#fbf1de"></i>Pièces de vie</li>
+          <li><i style="--c:#e6efe6"></i>Chambres</li>
+          <li><i style="--c:#dcebf1"></i>Pièces d'eau</li>
+          <li><i style="--c:#e4d8c3"></i>Rangements</li>
+          <li><i style="--c:#f1d7c6"></i>Terrasses, balcon</li>
+          <li><i style="--c:#7fb3c8"></i>Vitrages</li>
+          <li><i style="--c:#dcd9d1"></i>Hors appartement</li>
+        </ul>
       </div>
 
       <!-- Les cartes des plans sont fabriquées par le script (liste PLANS) -->
@@ -208,9 +252,10 @@
       <div class="lecture">
         <h2>Pour lire les plans</h2>
         <ul>
-          <li>Les cotes sont en mètres ; « HP » indique la hauteur sous plafond (2,50 m dans le séjour).</li>
+          <li>Le plan redessiné reprend le plan d'origine en le simplifiant (murs, portes, équipements) : en cas de doute, c'est le plan d'origine qui fait référence.</li>
+          <li>Sur le plan d'origine, les cotes sont en mètres ; « HP » indique la hauteur sous plafond (2,50 m dans le séjour).</li>
           <li>Les zones hachurées ne font pas partie de l'appartement.</li>
-          <li>Plans d'origine, non contractuels : l'aménagement a pu évoluer depuis.</li>
+          <li>Plans non contractuels : l'aménagement a pu évoluer depuis.</li>
         </ul>
       </div>
 
@@ -224,7 +269,7 @@
 
   <footer>
     <div class="contenu">
-      <p>Plans non contractuels, issus des documents d'origine de l'appartement. Surfaces et cotes indicatives.</p>
+      <p>Plans non contractuels : plans d'origine de l'appartement, et plans redessinés d'après eux. Surfaces et cotes indicatives.</p>
       <p><span id="version"></span></p>
     </div>
   </footer>
@@ -236,6 +281,7 @@
       <div class="bas">
         <button id="moins" type="button" aria-label="Réduire">−</button>
         <button id="plus" type="button" aria-label="Agrandir">+</button>
+        <button class="bascule" id="bascule" type="button"></button>   <!-- texte posé par le script -->
         <p id="grand-titre"></p>
         <button class="fermer" id="fermer" type="button" aria-label="Fermer">✕</button>
       </div>
@@ -244,39 +290,83 @@
 
   <script>
     "use strict";
-    const VERSION = "1.2.0";   // même numéro que index.html
+    const VERSION = "1.3.0";   // même numéro que index.html
 
     // ============================================================
     // CE QU'ON PEUT MODIFIER SANS TOUCHER AU RESTE
     // ------------------------------------------------------------
     // Un bloc par niveau :
-    //   image   : fichier dans plans/ ; largeur / hauteur : sa taille en pixels
-    //             (le navigateur réserve la bonne place avant de l'avoir téléchargée) ;
+    //   dessin  : le plan REDESSINÉ  [fichier dans plans/, largeur, hauteur] ;
+    //   scan    : le plan D'ORIGINE  [fichier dans plans/, largeur, hauteur] ;
+    //             (largeur et hauteur en pixels : le navigateur réserve la bonne place
+    //             avant d'avoir téléchargé l'image, la page ne « saute » pas) ;
     //   etage, titre : textes de la carte ;
     //   pieces  : les pièces écrites sur le plan ;
     //   note    : petite précision sous la liste ("" = rien).
     // ============================================================
     const PLANS = [
       {
-        image: "plan-3e.jpg", largeur: 1824, hauteur: 1845,
+        dessin: ["plan-3e.svg", 1400, 1530],
+        scan:   ["plan-3e.jpg", 1824, 1845],
         etage: "3ᵉ étage",
         titre: "Les pièces de vie",
         description: "Plan du 3ᵉ étage : séjour et salle à manger ouverts sur la véranda et la terrasse, cuisine, buanderie, cellier, chambre avec salle de bains.",
         pieces: ["Entrée", "Séjour", "Salle à manger", "Véranda", "Terrasse et jardinières", "Cuisine", "Buanderie", "Cellier", "WC", "Chambre 1", "Salle de bains", "Balcon", "Escalier vers le 4ᵉ"],
-        note: "La chambre 1 et sa salle de bains forment la suite parentale, ouverte sur le balcon."
+        note: "La chambre 1 et sa salle de bains forment la suite parentale ; le balcon longe la salle de bains."
       },
       {
-        image: "plan-4e.jpg", largeur: 1674, hauteur: 1845,
+        dessin: ["plan-4e.svg", 1250, 1395],
+        scan:   ["plan-4e.jpg", 1674, 1845],
         etage: "4ᵉ étage",
         titre: "L'étage des chambres",
         description: "Plan du 4ᵉ étage : palier, chambres 2, 3 et 4, bureau, salle de bains et terrasse.",
         pieces: ["Palier", "Chambre 2", "Chambre 3", "Chambre 4", "Bureau", "Salle de bains", "Terrasse et jardinières"],
-        note: "Le « bureau » du plan sert de chambre. À droite, le plan rappelle la véranda et la terrasse du 3ᵉ, situées en contrebas."
+        note: "Le « bureau » du plan sert de chambre. La chambre 4 ouvre sur la terrasse. À droite, le plan rappelle la véranda et la terrasse du 3ᵉ, situées en contrebas."
       }
     ];
 
     // Petit raccourci : document.getElementById en plus court
     const $ = (id) => document.getElementById(id);
+
+    // ============================================================
+    // PLAN REDESSINÉ OU PLAN D'ORIGINE ?
+    // ------------------------------------------------------------
+    // « mode » vaut "dessin" ou "scan". C'est aussi le nom de la
+    // propriété à lire dans PLANS : plan[mode] donne [fichier, largeur, hauteur].
+    // Le choix est gardé dans le navigateur (localStorage) pour la prochaine visite ;
+    // try/catch : en navigation privée, localStorage peut refuser — on s'en passe alors.
+    // ============================================================
+    let mode = "dessin";
+    try { if (localStorage.getItem("villa-marces.plan") === "scan") mode = "scan"; } catch (e) {}
+
+    // Règle une balise <img> sur le plan n° « numero », dans le mode en cours
+    function poserImage(img, numero) {
+      const plan = PLANS[numero];
+      const [fichier, largeur, hauteur] = plan[mode];
+      img.src = `plans/${fichier}`;
+      img.width = largeur;
+      img.height = hauteur;
+      img.alt = (mode === "dessin" ? "Plan redessiné. " : "Plan d'origine. ") + plan.description;
+    }
+
+    // Change de mode et met tout l'écran d'accord : boutons, cartes, légende, vue agrandie
+    function choisirMode(nouveau) {
+      mode = nouveau;
+      try { localStorage.setItem("villa-marces.plan", mode); } catch (e) {}
+      const dessin = mode === "dessin";
+      $("voir-dessin").setAttribute("aria-pressed", dessin ? "true" : "false");
+      $("voir-scan").setAttribute("aria-pressed", dessin ? "false" : "true");
+      $("choix-note").textContent = dessin
+        ? "Plan redessiné d'après le plan d'origine, pour être plus lisible."
+        : "Le plan d'origine de l'appartement, tel qu'il a été scanné.";
+      $("legende").hidden = !dessin;
+      // Chaque carte porte son numéro dans data-numero (voir plus bas)
+      document.querySelectorAll("#plans .dessin img").forEach((img) => poserImage(img, Number(img.dataset.numero)));
+      // Dans la vue agrandie, le bouton propose l'AUTRE affichage
+      $("bascule").textContent = dessin ? "Origine" : "Redessiné";
+      $("bascule").setAttribute("aria-label", dessin ? "Voir le plan d'origine" : "Voir le plan redessiné");
+      if ($("grand").open) { poserImage($("grand-image"), planOuvert); reglerZoom(0); }
+    }
 
     // ============================================================
     // LES CARTES
@@ -289,8 +379,9 @@
       carte.className = "plan";
       carte.innerHTML =
         `<button class="dessin" type="button" aria-label="Agrandir le plan du ${plan.etage}">` +
-          // Le 1er plan est chargé tout de suite, le suivant seulement à l'approche (loading="lazy")
-          `<img src="plans/${plan.image}" alt="${plan.description}" width="${plan.largeur}" height="${plan.hauteur}"${numero ? ' loading="lazy"' : ""}>` +
+          // L'image est vide pour l'instant : choisirMode() (en bas) y pose le bon fichier.
+          // data-numero = numéro du niveau dans PLANS, pour le retrouver ensuite.
+          `<img data-numero="${numero}" alt="">` +
           `<span>Agrandir</span>` +
         `</button>` +
         `<div class="corps">` +
@@ -312,6 +403,7 @@
     // ============================================================
     const ZOOMS = [100, 150, 200, 300];   // les crans du zoom, en %
     let cran = 0;                         // numéro du cran en cours dans ZOOMS
+    let planOuvert = 0;                   // numéro (dans PLANS) du plan affiché en grand
 
     function reglerZoom(nouveauCran) {
       const fenetre = $("fenetre");
@@ -330,8 +422,8 @@
 
     function ouvrir(numero) {
       const plan = PLANS[numero];
-      $("grand-image").src = `plans/${plan.image}`;
-      $("grand-image").alt = plan.description;
+      planOuvert = numero;
+      poserImage($("grand-image"), numero);
       $("grand-titre").textContent = `${plan.etage} · ${plan.titre}`;
       $("grand").showModal();   // showModal = par-dessus la page ; la touche Échap ferme
       reglerZoom(0);
@@ -350,6 +442,13 @@
     window.addEventListener("popstate", () => { if ($("grand").open) $("grand").close(); });
     // Fermé avec Échap : le dialog se ferme tout seul, il reste à retirer notre étape d'historique
     $("grand").addEventListener("cancel", () => history.back());
+
+    // Les boutons de choix (en haut de page, et dans la vue agrandie)
+    $("voir-dessin").addEventListener("click", () => choisirMode("dessin"));
+    $("voir-scan").addEventListener("click", () => choisirMode("scan"));
+    $("bascule").addEventListener("click", () => choisirMode(mode === "dessin" ? "scan" : "dessin"));
+    // Premier affichage : on applique le mode de départ (c'est lui qui remplit les images)
+    choisirMode(mode);
 
     $("version").textContent = "Version " + VERSION;
 
