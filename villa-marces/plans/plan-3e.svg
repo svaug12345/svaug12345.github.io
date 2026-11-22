@@ -2,7 +2,7 @@
 <title>Plan reconstitué du 3ᵉ étage — 7 villa Marcès (non contractuel)</title>
 <defs><pattern id="hachures" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="18" height="18" fill="#eceae4"/><line x1="0" y1="0" x2="0" y2="18" stroke="#c9c6bd" stroke-width="7"/></pattern><pattern id="toit" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="#efe9df"/><line x1="0" y1="8" x2="16" y2="8" stroke="#d6cdbd" stroke-width="3"/></pattern></defs>
 <rect width="1824" height="1845" fill="#ffffff"/>
-<rect x="1400" y="170" width="148" height="1430" fill="#c5dcc0" stroke="#2f3d38" stroke-width="4" />
+<rect x="1400" y="170" width="148" height="1430" fill="#e6c3ac" stroke="#2f3d38" stroke-width="4" />
 <rect x="1150" y="500" width="250" height="425" fill="#f1d7c6" />
 <rect x="1000" y="1487" width="338" height="110" fill="#f1d7c6" stroke="#2f3d38" stroke-width="4" />
 <rect x="262" y="1487" width="738" height="110" fill="url(#hachures)" stroke="#8a938f" stroke-width="3" />
@@ -104,7 +104,7 @@
 <text x="1195" y="375" font-size="30" font-weight="600" fill="#55635d" text-anchor="middle" dominant-baseline="middle" >11,92 m²</text>
 <text x="1275" y="686" font-size="46" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Terrasse</text>
 <text x="1275" y="736" font-size="31" font-weight="600" fill="#55635d" text-anchor="middle" dominant-baseline="middle" >21,00 m²</text>
-<text x="1474" y="800" font-size="34" font-weight="700" fill="#3f6b45" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 1474 800)">Jardinières</text>
+<text x="1474" y="800" font-size="34" font-weight="700" fill="#8a5238" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 1474 800)">Jardinières</text>
 <text x="490" y="331" font-size="36" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Cuisine</text>
 <text x="490" y="369" font-size="24" font-weight="600" fill="#55635d" text-anchor="middle" dominant-baseline="middle" >8,54 m²</text>
 <text x="316" y="312" font-size="28" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 316 325)">Buanderie</text>

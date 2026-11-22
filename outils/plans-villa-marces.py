@@ -70,7 +70,7 @@ EAU = "#dcebf1"        # cuisine, salles de bains, WC, buanderie
 PASSAGE = "#f3ece0"    # entrée, dégagements, palier, escalier
 RANGE = "#e4d8c3"      # placards, cellier, rangements
 DEHORS = "#f1d7c6"     # terrasses, balcon
-VERT = "#c5dcc0"       # jardinières
+VERT = "#e6c3ac"       # jardinières (terre cuite un peu plus soutenue que les terrasses)
 VITRE = "#7fb3c8"      # fenêtres et baies vitrées
 ENCRE = "#1e2a26"
 GRIS = "#8a938f"
@@ -280,7 +280,7 @@ def plan_3e():
     p.nom(850, 330, "Salle|à manger", 40)
     p.piece(1195, 345, "Véranda", 44, [rect(1000, 215, 1385, 480)], mesure=11.92)
     p.piece(1275, 705, "Terrasse", 46, [], mesure=21.00)
-    p.nom(1474, 800, "Jardinières", 34, "#3f6b45", 700, 'transform="rotate(-90 1474 800)"')
+    p.nom(1474, 800, "Jardinières", 34, "#8a5238", 700, 'transform="rotate(-90 1474 800)"')
     p.piece(490, 345, "Cuisine", 36, [rect(398, 215, 645, 480)], mesure=8.54)
     p.piece(316, 325, "Buanderie", 28, [rect(250, 215, 382, 493)], 22, extra='transform="rotate(-90 316 325)"', mesure=5.50)
     p.piece(578, 602, "WC", 22, [rect(437, 565, 655, 640)], en_ligne=True, mesure=1.92)
@@ -368,7 +368,7 @@ def plan_4e():
     p.nom(572, 660, "↓ 3ᵉ", 26)
     p.piece(905, 958, "Salle de bains|avec WC", 20, [[(742, 875), (1005, 875), (1005, 995), (820, 995), (820, 1045), (742, 1045)]], 18, mesure=6.09)
     p.piece(1340, 1150, "Terrasse", 46, [], mesure=15.65)
-    p.nom(1396, 1343, "Jardinières", 24, "#3f6b45")
+    p.nom(1396, 1343, "Jardinières", 24, "#8a5238")
     p.nom(1128, 300, "Rangement", 24, extra='transform="rotate(-90 1128 300)"')
     p.nom(1468, 298, "Véranda du 3ᵉ|(en contrebas)", 26, GRIS, 600)
     p.nom(1508, 700, "Terrasse|du 3ᵉ|(en contrebas)", 26, GRIS, 600)

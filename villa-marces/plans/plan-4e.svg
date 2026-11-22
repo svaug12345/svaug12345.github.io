@@ -8,7 +8,7 @@
 <rect x="450" y="1310" width="1110" height="190" fill="url(#toit)" stroke="#8a938f" stroke-width="3" />
 <rect x="1045" y="985" width="73" height="360" fill="url(#toit)" stroke="#8a938f" stroke-width="3" />
 <rect x="1118" y="985" width="444" height="380" fill="#f1d7c6" stroke="#2f3d38" stroke-width="5" />
-<rect x="1235" y="1325" width="323" height="36" fill="#c5dcc0" stroke="#2f3d38" stroke-width="3" />
+<rect x="1235" y="1325" width="323" height="36" fill="#e6c3ac" stroke="#2f3d38" stroke-width="3" />
 <rect x="450" y="180" width="720" height="395" fill="#2f3d38" />
 <rect x="450" y="420" width="925" height="565" fill="#2f3d38" />
 <rect x="450" y="985" width="600" height="327" fill="#2f3d38" />
@@ -78,7 +78,7 @@
 <text x="905" y="984" font-size="18" font-weight="600" fill="#55635d" text-anchor="middle" dominant-baseline="middle" >6,09 m²</text>
 <text x="1340" y="1131" font-size="46" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" >Terrasse</text>
 <text x="1340" y="1181" font-size="31" font-weight="600" fill="#55635d" text-anchor="middle" dominant-baseline="middle" >15,65 m²</text>
-<text x="1396" y="1343" font-size="24" font-weight="700" fill="#3f6b45" text-anchor="middle" dominant-baseline="middle" >Jardinières</text>
+<text x="1396" y="1343" font-size="24" font-weight="700" fill="#8a5238" text-anchor="middle" dominant-baseline="middle" >Jardinières</text>
 <text x="1128" y="300" font-size="24" font-weight="700" fill="#1e2a26" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 1128 300)">Rangement</text>
 <text x="1468" y="283" font-size="26" font-weight="600" fill="#8a938f" text-anchor="middle" dominant-baseline="middle" >Véranda du 3ᵉ</text>
 <text x="1468" y="313" font-size="26" font-weight="600" fill="#8a938f" text-anchor="middle" dominant-baseline="middle" >(en contrebas)</text>
