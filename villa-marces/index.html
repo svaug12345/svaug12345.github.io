@@ -2,13 +2,15 @@
 <!--
   ============================================================
   « 7 villa Marcès » — site de présentation de l'appartement à vendre
-  Version 1.0.0 – 22/11/2026
+  Version 1.1.0 – 22/11/2026
   En ligne : https://baiji.fr/villa-marces/
   ------------------------------------------------------------
   Historique :
    • 1.0.0 : première version — présentation, chiffres clés, les deux niveaux,
              galerie de photos, visite à 360° (17 panoramas), situation, contact ;
              installable (PWA) ; compteur de visites (/journal.js)
+   • 1.1.0 : rubrique « Vidéo » — le film de la visite (fichier du Drive de Seb,
+             partagé « toute personne disposant du lien », lu par le lecteur Google Drive)
 
   COMMENT C'EST FAIT (pour s'y retrouver) :
    • Une seule page autonome : HTML + CSS + JavaScript, sans outil de construction.
@@ -21,7 +23,7 @@
    • La visite à 360° utilise la bibliothèque libre Pannellum (licence MIT),
      copiée dans lib/ : aucun service extérieur n'est nécessaire.
    • TOUT LE CONTENU MODIFIABLE est regroupé en bas de page, dans le <script> :
-       CONTACT (courriel, téléphone), PRIX, PHOTOS (galerie), SCENES (visite 360°).
+       CONTACT (courriel, téléphone), PRIX, VIDEO_DRIVE (film), PHOTOS (galerie), SCENES (visite 360°).
    • Les surfaces viennent du descriptif du bien et de l'avis de valeur de 2011 :
      elles sont INDICATIVES tant qu'un mesurage Carrez récent n'est pas reporté ici.
   ============================================================
@@ -173,6 +175,12 @@
     .annexes { margin-top: 20px; background: var(--pierre-2); border-radius: var(--rayon); padding: 20px 22px; }
     .annexes p { margin: 0; }
 
+    /* ---------- Vidéo ---------- */
+    /* Cadre au format 16/9 : l'iframe du lecteur le remplit entièrement */
+    .film { margin-top: 26px; border-radius: var(--rayon); overflow: hidden; background: #111; aspect-ratio: 16 / 9; }
+    .film iframe { display: block; width: 100%; height: 100%; border: 0; }
+    .film-lien { margin: 12px 0 0; font-size: .92rem; color: var(--encre-2); }
+
     /* ---------- Galerie ---------- */
     .galerie { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 28px; }
     .galerie button { padding: 0; border: 0; background: var(--pierre-2); border-radius: 10px; overflow: hidden; cursor: zoom-in; position: relative; }
@@ -290,6 +298,7 @@
       <a class="nom" href="#haut">7 villa Marcès</a>
       <nav aria-label="Rubriques">
         <a href="#appartement">L'appartement</a>
+        <a href="#video">Vidéo</a>
         <a href="#photos">Photos</a>
         <a href="#visite">Visite 360°</a>
         <a href="#situation">Situation</a>
@@ -309,6 +318,7 @@
         <p class="accroche">Six pièces sur deux niveaux, cinq chambres, une véranda et des terrasses plein sud, dans une voie calme à deux pas de Paris et du bois de Vincennes.</p>
         <div class="actions">
           <a class="bouton" href="#visite">Visiter à 360°</a>
+          <a class="bouton clair" href="#video">Voir la vidéo</a>
           <a class="bouton clair" href="#contact">Organiser une visite</a>
         </div>
       </div>
@@ -380,6 +390,21 @@
         <div class="annexes">
           <p><strong>En sous-sol :</strong> deux parkings fermés d'environ 14 m² chacun (double box) au premier niveau, et une grande cave au second. L'immeuble dispose d'un ascenseur, d'un local à vélos et d'une entrée sécurisée.</p>
         </div>
+      </div>
+    </section>
+
+    <!-- ================= Vidéo ================= -->
+    <section id="video" style="padding-top:0">
+      <div class="contenu">
+        <p class="surtitre">Vidéo</p>
+        <h2>La visite en film</h2>
+        <p class="chapeau">Parcourez l'appartement en vidéo, de l'entrée aux terrasses.</p>
+        <!-- Le film est rangé dans Google Drive (trop lourd pour le dépôt du site) : on affiche
+             le lecteur de Drive dans une iframe. L'adresse est posée par le script (VIDEO_DRIVE). -->
+        <div class="film">
+          <iframe id="film" title="Vidéo de visite du 7 villa Marcès" loading="lazy" allow="fullscreen; autoplay" allowfullscreen></iframe>
+        </div>
+        <p class="film-lien">La vidéo ne s'affiche pas ? <a id="film-lien" href="#" target="_blank" rel="noopener">L'ouvrir dans Google Drive</a></p>
       </div>
     </section>
 
@@ -518,7 +543,7 @@
   <script src="lib/pannellum.js"></script>
   <script>
     "use strict";
-    const VERSION = "1.0.0";
+    const VERSION = "1.1.0";
 
     // ============================================================
     // CE QU'ON PEUT MODIFIER SANS TOUCHER AU RESTE
@@ -534,6 +559,12 @@
 
     // Prix affiché dans la fiche ("" = « Sur demande »). Ex. "1 250 000 €"
     const PRIX = "";
+
+    // Film de la visite : identifiant du fichier dans Google Drive (la suite de lettres
+    // entre « /d/ » et « /view » dans son lien de partage). Le fichier doit rester partagé
+    // « toute personne disposant du lien », sinon les visiteurs verront une demande d'accès.
+    // "" = la rubrique Vidéo (et ses liens) est masquée.
+    const VIDEO_DRIVE = "1khcbuKLLvWwFhR6SxBagqn8ATgFO9W-l";
 
     // Photos de la galerie, dans l'ordre d'affichage : [fichier dans vues/, légende]
     const PHOTOS = [
@@ -581,6 +612,20 @@
 
     // Petit raccourci : document.getElementById en plus court
     const $ = (id) => document.getElementById(id);
+
+    // ============================================================
+    // VIDÉO
+    // ------------------------------------------------------------
+    // « /preview » = le lecteur seul, fait pour être intégré dans une
+    // autre page ; « /view » = la page Drive complète (lien de secours).
+    // ============================================================
+    if (VIDEO_DRIVE) {
+      $("film").src = `https://drive.google.com/file/d/${VIDEO_DRIVE}/preview`;
+      $("film-lien").href = `https://drive.google.com/file/d/${VIDEO_DRIVE}/view`;
+    } else {
+      $("video").hidden = true;
+      document.querySelectorAll('a[href="#video"]').forEach((lien) => { lien.hidden = true; });
+    }
 
     // ============================================================
     // GALERIE DE PHOTOS
