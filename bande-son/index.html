@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Bande-son — le son des films et des séries du NAS
-  Version 1.2.0
+  Version 1.3.0
   ------------------------------------------------------------
   Comment ça marche :
    • cette page (baiji.fr, hébergée sur GitHub Pages) ne fait PAS le travail :
@@ -46,6 +46,10 @@
               fin) ; la file s'affiche dans l'ordre où le NAS la traite :
               chaque ajout est rangé par ordre alphabétique et va en fin
               de file (service v1.2.0)
+   • v1.3.0 : bloc « Réglages » en premier ; blocs repliés par défaut ;
+              plusieurs fichiers traités en même temps (réglage « En même
+              temps » 1 à 4, service v1.3.0), temps restant calculé en
+              conséquence
 -->
 <html lang="fr">
 <head>
@@ -264,23 +268,6 @@
   </section>
 
   <div class="colonne">
-    <!-- ===== L'explorateur : les dossiers du NAS ===== -->
-    <section class="card" id="carte-explorateur" data-repli="explorateur">
-      <h2><button class="tete" type="button" aria-expanded="true"><span class="titre">Films et séries</span><span class="apercu" id="apercu-explorateur"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></h2>
-      <!-- Les bibliothèques (Séries, Films…) : remplies par le NAS -->
-      <div class="choix" id="racines"></div>
-      <div class="titre-carte">
-        <nav class="fil" id="fil" aria-label="Dossier affiché"></nav>
-        <button class="mini" type="button" id="tout-cocher" hidden>Tout cocher</button>
-      </div>
-      <p class="erreur" id="erreur-explorateur" hidden></p>
-      <ul class="lignes" id="lignes"></ul>
-      <p class="aide">Touche un dossier pour l'ouvrir, sa case pour le prendre <b>en entier</b> (toute une saison, toute une série).</p>
-      <p class="aide" id="aide-rangement"></p>
-    </section>
-  </div>
-
-  <div class="colonne">
     <!-- ===== Les réglages : format, qualité, langue ===== -->
     <section class="card" id="carte-reglages" data-repli="reglages">
       <h2><button class="tete" type="button" aria-expanded="true"><span class="titre">Réglages</span><span class="apercu" id="apercu-reglages"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></h2>
@@ -308,8 +295,34 @@
         <button type="button" data-v="">Par défaut</button>
       </div>
       <p class="aide">Si la langue demandée n'existe pas dans un fichier, le NAS prend sa piste par défaut.</p>
+      <!-- Combien de fichiers le NAS traite à la fois (réglage gardé sur le NAS, pas sur l'appareil) -->
+      <span class="label">Fichiers traités en même temps</span>
+      <div class="choix chiffres" id="paralleles">
+        <button type="button" data-v="1">1</button>
+        <button type="button" data-v="2">2</button>
+        <button type="button" data-v="3">3</button>
+        <button type="button" data-v="4">4</button>
+      </div>
+      <p class="aide">Plus il y en a, plus la file avance vite. Le NAS a 4 cœurs : à 4, Plex peut ralentir pendant le traitement ; à 1, le NAS reste tranquille.</p>
     </section>
 
+    <!-- ===== L'explorateur : les dossiers du NAS ===== -->
+    <section class="card" id="carte-explorateur" data-repli="explorateur">
+      <h2><button class="tete" type="button" aria-expanded="true"><span class="titre">Films et séries</span><span class="apercu" id="apercu-explorateur"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></h2>
+      <!-- Les bibliothèques (Séries, Films…) : remplies par le NAS -->
+      <div class="choix" id="racines"></div>
+      <div class="titre-carte">
+        <nav class="fil" id="fil" aria-label="Dossier affiché"></nav>
+        <button class="mini" type="button" id="tout-cocher" hidden>Tout cocher</button>
+      </div>
+      <p class="erreur" id="erreur-explorateur" hidden></p>
+      <ul class="lignes" id="lignes"></ul>
+      <p class="aide">Touche un dossier pour l'ouvrir, sa case pour le prendre <b>en entier</b> (toute une saison, toute une série).</p>
+      <p class="aide" id="aide-rangement"></p>
+    </section>
+  </div>
+
+  <div class="colonne">
     <!-- ===== La file d'attente ===== -->
     <section class="card" id="carte-file" data-repli="file" hidden>
       <h2><button class="tete" type="button" aria-expanded="true"><span class="titre">File d'attente</span><span class="apercu" id="apercu-file"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></h2>
@@ -356,7 +369,7 @@
   /* =====================================================================
      RÉGLAGES
      ===================================================================== */
-  const VERSION = "1.2.0";
+  const VERSION = "1.3.0";
   // Adresse du service du NAS. « ?service=… » dans l'adresse permet d'en
   // essayer un autre (ex. ?service=http://192.168.1.161:8095 à la maison).
   const SERVICE = (new URLSearchParams(location.search).get("service") || "https://mp3.baiji.fr").replace(/\/+$/, "");
@@ -366,7 +379,7 @@
   const CLE_DEBIT = "bande.debit";
   const CLE_LANGUE = "bande.langue";
   const CLE_RACINE = "bande.racine";      // dernière bibliothèque ouverte
-  const CLE_REPLIS = "bande.replis";      // les blocs repliés : {file: true, sons: true…}
+  const CLE_OUVERTS = "bande.ouverts";    // les blocs DÉPLIÉS : {file: true…} (tout est replié par défaut)
   const CLE_DEFAUTS = "bande.defauts";    // n° des réglages par défaut déjà appliqués sur cet appareil
   // Les réglages de départ. Pour en changer plus tard : modifier DEFAUTS et
   // augmenter LOT_DEFAUTS de 1 — chaque appareil repartira une fois des
@@ -527,12 +540,16 @@
   // Le petit texte sous le format : à quoi s'attendre (taille, durée)
   // La fin du nom du dossier de sons (la même table que dans le service du NAS)
   const SUFFIXES = { mp3: "mp3", m4a: "m4a", opus: "opus", origine: "audio" };
+  // Le nombre de fichiers traités en même temps, tel que le NAS l'a annoncé (null = pas encore su).
+  // Déclaré ICI, avant expliquerFormat() qui s'en sert dès le chargement de la page.
+  let parallelesConnu = null;
   function expliquerFormat() {
     const origine = reglages.format === "origine";
     $("bloc-debit").hidden = origine;
     // L'aperçu affiché quand le bloc « Réglages » est replié : « MP3 128 · anglais »
     $("apercu-reglages").textContent = (origine ? "Origine" : `${reglages.format.toUpperCase()} ${reglages.debit}`) +
-      " · " + { fr: "français", en: "anglais", "": "piste par défaut" }[reglages.langue];
+      " · " + { fr: "français", en: "anglais", "": "piste par défaut" }[reglages.langue] +
+      (parallelesConnu ? ` · ${parallelesConnu} à la fois` : "");
     const fin = SUFFIXES[reglages.format];
     $("aide-rangement").textContent = `Les sons seront rangés sur le NAS à côté des vidéos : dans « Saison 1 › Saison 1 - ${fin} » ` +
       `pour un dossier coché, dans « Film - ${fin} » au même endroit pour un fichier coché.`;
@@ -548,6 +565,27 @@
     $("aide-format").textContent = `${noms[reglages.format]} En stéréo, environ ${moParHeure} Mo par heure. Comptez 1 à 3 min de travail par film.`;
   }
   expliquerFormat();
+
+  // « Fichiers traités en même temps » : ce réglage-là vit sur le NAS (il vaut
+  // pour tous les appareils). La page l'apprend à chaque relevé de la file.
+  function peindreParalleles(n) {
+    if (!n) { $("paralleles").querySelectorAll("button").forEach(b => { b.disabled = true; }); return; }   // ancien service
+    parallelesConnu = n;
+    $("paralleles").querySelectorAll("button").forEach(b => {
+      b.disabled = false;
+      b.setAttribute("aria-pressed", Number(b.dataset.v) === n);
+    });
+    expliquerFormat();                     // l'aperçu du bloc replié reprend ce nombre
+  }
+  $("paralleles").addEventListener("click", async e => {
+    const bouton = e.target.closest("button");
+    if (!bouton) return;
+    try {
+      const rep = await poster("/paralleles", { n: Number(bouton.dataset.v) });
+      peindreParalleles(rep.paralleles);
+      suivre();
+    } catch (err) { signaler(err); }
+  });
 
   /* =====================================================================
      L'EXPLORATEUR
@@ -733,11 +771,12 @@
     clearTimeout(minuteurSuivi);
     let actifs = 0;
     try {
-      const { travaux, maintenant } = await api("/file");
+      const { travaux, maintenant, paralleles } = await api("/file");
+      peindreParalleles(paralleles);
       actifs = travaux.filter(t => t.statut === "attente" || t.statut === "en_cours").length;
       // « maintenant » = l'heure du NAS (en secondes). Un ancien service ne
       // l'envoie pas : on prend alors l'heure du téléphone.
-      dessinerFile(travaux, maintenant || Date.now() / 1000);
+      dessinerFile(travaux, maintenant || Date.now() / 1000, paralleles || 1);
       const finis = travaux.filter(t => t.statut === "fini").length;
       if (finis !== finisConnus) { finisConnus = finis; chargerSons(); }
     } catch (err) {
@@ -757,32 +796,44 @@
   }
 
   /* Le temps restant, estimé à partir de ce que le NAS vient de faire :
-      • fichier en cours : s'il a fait 40 % en 60 s, il reste 60 × 60 / 40 = 90 s ;
-      • fichiers en attente : on compte pour chacun la durée moyenne des
-        10 derniers fichiers terminés (ou, s'il n'y en a pas encore, la durée
-        totale prévue pour le fichier en cours).
-     C'est une ESTIMATION : un film dure plus qu'un épisode. Renvoie
-     {courant, total} en secondes (null = pas encore assez d'éléments). */
-  function estimer(travaux, maintenant) {
-    const courant = travaux.find(t => t.statut === "en_cours");
+      • un fichier en cours : s'il a fait 40 % en 60 s, il reste 60 × 60 / 40 = 90 s ;
+      • un fichier en attente : on compte la durée moyenne des 10 derniers
+        fichiers terminés (ou, s'il n'y en a pas encore, la durée totale
+        prévue pour les fichiers en cours) ;
+      • le NAS traite plusieurs fichiers à la fois : le travail restant
+        (en cours + en attente) est donc divisé par ce nombre.
+     C'est une ESTIMATION : un film dure plus qu'un épisode. */
+  let heureNas = 0;                        // l'heure du NAS au dernier relevé (secondes)
+
+  // Temps restant d'UN fichier en cours ({reste, total} en secondes), ou null si trop tôt pour le dire
+  function resteDe(t) {
+    if (t.statut !== "en_cours" || !t.debut || !(t.pct >= 1) || heureNas - t.debut < 3) return null;
+    const ecoule = heureNas - t.debut, total = ecoule * 100 / t.pct;
+    return { reste: Math.max(0, total - ecoule), total };
+  }
+
+  // Temps restant de TOUTE la file, en secondes (null = pas encore assez d'éléments)
+  function estimer(travaux, paralleles) {
+    const courants = travaux.filter(t => t.statut === "en_cours");
     const nbAttente = travaux.filter(t => t.statut === "attente").length;
-    let resteCourant = null, totalCourant = null;
-    if (courant && courant.debut && courant.pct >= 1 && maintenant - courant.debut >= 3) {
-      const ecoule = maintenant - courant.debut;
-      totalCourant = ecoule * 100 / courant.pct;
-      resteCourant = Math.max(0, totalCourant - ecoule);
-    }
+    const restes = courants.map(resteDe);
+    const connus = restes.filter(Boolean);
+    // Durée d'un fichier : la moyenne des derniers terminés, sinon celle prévue pour ceux en cours
     const durees = travaux.filter(t => t.statut === "fini" && t.debut && t.fin > t.debut)
       .sort((a, b) => b.fin - a.fin).slice(0, 10).map(t => t.fin - t.debut);
-    const moyenne = durees.length ? durees.reduce((a, b) => a + b, 0) / durees.length : totalCourant;
-    let total = null;
-    if (nbAttente === 0) total = resteCourant;
-    else if (moyenne != null) total = (resteCourant ?? (courant ? moyenne : 0)) + nbAttente * moyenne;
-    return { courant: resteCourant, total };
+    const moyenne = liste => liste.reduce((a, b) => a + b, 0) / liste.length;
+    const unFichier = durees.length ? moyenne(durees) : connus.length ? moyenne(connus.map(r => r.total)) : null;
+    if (unFichier == null) return null;
+    // Le travail restant, comme si un seul fichier était traité à la fois…
+    const travail = restes.reduce((somme, r) => somme + (r ? r.reste : unFichier), 0) + nbAttente * unFichier;
+    // … divisé par le nombre de fichiers traités en même temps. Et jamais moins
+    // que le plus long des fichiers en cours.
+    const plusLong = Math.max(0, ...connus.map(r => r.reste));
+    return Math.max(plusLong, travail / Math.max(1, Math.min(paralleles, courants.length + nbAttente)));
   }
-  let resteCourant = null;                 // temps restant du fichier en cours (affiché sur sa ligne)
 
-  function dessinerFile(travaux, maintenant) {
+  function dessinerFile(travaux, maintenant, paralleles) {
+    heureNas = maintenant;
     $("carte-file").hidden = travaux.length === 0;
     if (!travaux.length) return;
     const compte = statut => travaux.filter(t => t.statut === statut).length;
@@ -795,31 +846,27 @@
     if (rates) morceaux.push(`<b>${rates}</b> en échec`);
     $("resume").innerHTML = morceaux.join(" · ") || "Rien en cours.";
     // --- Avancement global : barre + temps restant ---
-    const estimation = estimer(travaux, maintenant);
-    resteCourant = estimation.courant;
+    const restant = estimer(travaux, paralleles);
     const actifsFile = attente + enCours;
     $("avancement").hidden = actifsFile === 0;
     let texteTemps = "";
     if (actifsFile) {
-      // Part déjà faite : les fichiers terminés + la fraction du fichier en cours
-      const courant = travaux.find(t => t.statut === "en_cours");
+      // Part déjà faite : les fichiers terminés + la fraction de chaque fichier en cours
       const totalFichiers = finis + actifsFile;
-      const fait = finis + (courant ? (courant.pct || 0) / 100 : 0);
+      const fait = finis + travaux.filter(t => t.statut === "en_cours").reduce((somme, t) => somme + (t.pct || 0) / 100, 0);
       $("barre-file").style.width = (fait / totalFichiers * 100) + "%";
-      texteTemps = `Fichier <b>${Math.min(finis + 1, totalFichiers)}</b> / <b>${totalFichiers}</b>`;
-      if (estimation.total != null) {
+      texteTemps = `<b>${finis}</b> / <b>${totalFichiers}</b> terminé${finis > 1 ? "s" : ""}`;
+      if (restant != null) {
         // L'heure de fin : maintenant (horloge du téléphone) + le temps restant
-        const fin = new Date(Date.now() + estimation.total * 1000);
+        const fin = new Date(Date.now() + restant * 1000);
         const heure = `${fin.getHours()} h ${String(fin.getMinutes()).padStart(2, "0")}`;
-        texteTemps += ` · reste environ <b>${duree(estimation.total)}</b> (fin vers ${heure})`;
+        texteTemps += ` · reste environ <b>${duree(restant)}</b> (fin vers ${heure})`;
       } else texteTemps += " · temps restant : calcul en cours…";
     }
     $("temps-restant").innerHTML = texteTemps;
     // Bloc replié : le résumé, suivi du temps restant
     $("apercu-file").textContent = $("resume").textContent +
-      (estimation.total != null && actifsFile ? ` · reste ${duree(estimation.total)}` : "");
-    $("tout-annuler").hidden = attente + enCours < 2;
-    $("vider").hidden = travaux.length === attente + enCours;
+      (restant != null && actifsFile ? ` · reste ${duree(restant)}` : "");
 
     // Ordre d'affichage = l'ordre où le NAS TRAITE la file :
     //  1) le fichier en cours ;
@@ -881,7 +928,7 @@
       const format = t.format === "origine" ? "origine" : `${t.format.toUpperCase()} ${t.debit}`;
       const details = [t.dossier !== "." && t.dossier, format, t.piste, t.statut === "fini" && taille(t.taille),
                        // Le fichier en cours : son temps restant estimé
-                       t.statut === "en_cours" && resteCourant != null && "encore " + duree(resteCourant)];
+                       resteDe(t) && "encore " + duree(resteDe(t).reste)];
       li.append(el("div", "detail", details.filter(Boolean).join(" · ")));
     }
     return li;
@@ -946,20 +993,20 @@
 
   /* =====================================================================
      BLOCS REPLIABLES
-     Toucher le titre d'un bloc le replie ou le déplie. Le choix est gardé
-     sur l'appareil (localStorage), bloc par bloc.
+     Toucher le titre d'un bloc le déplie ou le replie. Tous sont repliés
+     au départ ; le choix est ensuite gardé sur l'appareil, bloc par bloc.
      ===================================================================== */
-  let replis = {};
-  try { replis = JSON.parse(lire(CLE_REPLIS) || "{}") || {}; } catch {}
+  let ouverts = {};
+  try { ouverts = JSON.parse(lire(CLE_OUVERTS) || "{}") || {}; } catch {}
   document.querySelectorAll(".card[data-repli]").forEach(carte => {
     const nom = carte.dataset.repli, bouton = carte.querySelector(".tete");
     const appliquer = () => {
-      carte.classList.toggle("replie", !!replis[nom]);
-      bouton.setAttribute("aria-expanded", !replis[nom]);       // pour les lecteurs d'écran
+      carte.classList.toggle("replie", !ouverts[nom]);          // pas noté « ouvert » = replié
+      bouton.setAttribute("aria-expanded", !!ouverts[nom]);     // pour les lecteurs d'écran
     };
     bouton.addEventListener("click", () => {
-      replis[nom] = !replis[nom];
-      ecrire(CLE_REPLIS, JSON.stringify(replis));
+      ouverts[nom] = !ouverts[nom];
+      ecrire(CLE_OUVERTS, JSON.stringify(ouverts));
       appliquer();
     });
     appliquer();
