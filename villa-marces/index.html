@@ -2,7 +2,7 @@
 <!--
   ============================================================
   « 7 villa Marcès » — site de présentation de l'appartement à vendre
-  Version 1.4.0 – 22/11/2026
+  Version 1.5.0 – 22/11/2026
   En ligne : https://baiji.fr/villa-marces/
   ------------------------------------------------------------
   Historique :
@@ -19,6 +19,8 @@
              le palier (elle était dessinée trop petite), avec son placard
    • 1.4.0 : page « Plans » — surface estimée de chaque pièce sur les plans redessinés,
              et liste détaillée des pièces (surface, sol, équipements)
+   • 1.5.0 : « Bientôt en vente » (pastille sur la photo d'ouverture, phrase dans le contact) ;
+             plus aucune mention de « vente directe par le propriétaire »
 
   COMMENT C'EST FAIT (pour s'y retrouver) :
    • Une page principale autonome : HTML + CSS + JavaScript, sans outil de construction
@@ -53,7 +55,7 @@
   <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
   <link rel="icon" href="icones/icone-192.png" type="image/png">
   <meta name="theme-color" content="#24483f">
-  <meta name="description" content="À vendre à Saint-Mandé : duplex de 6 pièces au dernier étage, terrasses plein sud, véranda, 5 chambres, double box et cave. Photos, visite à 360° et situation.">
+  <meta name="description" content="Bientôt en vente à Saint-Mandé : duplex de 6 pièces au dernier étage, terrasses plein sud, véranda, 5 chambres, double box et cave. Photos, visite à 360° et situation.">
   <!-- Aperçu affiché quand on partage le lien (WhatsApp, SMS, courriel…) -->
   <meta property="og:title" content="7 villa Marcès · Duplex-terrasse à Saint-Mandé">
   <meta property="og:description" content="6 pièces au dernier étage, terrasses plein sud, véranda, 5 chambres, double box. Photos et visite à 360°.">
@@ -155,6 +157,9 @@
     /* Voile sombre en bas de la photo pour que le texte blanc reste lisible */
     .ouverture::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(20, 28, 25, .88) 0%, rgba(20, 28, 25, .35) 55%, rgba(20, 28, 25, .1) 100%); }
     .ouverture .contenu { position: relative; z-index: 1; width: 100%; padding-top: 120px; padding-bottom: 40px; }
+    /* Pastille « Bientôt en vente » : terre cuite, posée au-dessus du lieu */
+    .ouverture .annonce { display: inline-block; background: #b4603c; color: #fff; font-size: .78rem; font-weight: 700;
+      letter-spacing: .14em; text-transform: uppercase; padding: 7px 14px; border-radius: 999px; margin: 0 0 14px; }
     .ouverture .lieu { font-size: .8rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; margin: 0 0 12px; opacity: .9; }
     .ouverture h1 { font-size: clamp(2.2rem, 7vw, 4.2rem); max-width: 16ch; }
     .ouverture .accroche { font-size: 1.1rem; max-width: 52ch; margin: 16px 0 24px; opacity: .95; }
@@ -324,7 +329,8 @@
     <div class="ouverture">
       <img src="vues/terrasse-facade.jpg" alt="La terrasse du séjour à la tombée du jour, baies vitrées éclairées et store déployé" width="1600" height="1000" fetchpriority="high">
       <div class="contenu">
-        <p class="lieu">À vendre · Saint-Mandé (94160)</p>
+        <p class="annonce">Bientôt en vente</p>
+        <p class="lieu">Saint-Mandé (94160)</p>
         <h1>Un duplex-terrasse au dernier étage</h1>
         <p class="accroche">Six pièces sur deux niveaux, cinq chambres, une véranda et des terrasses plein sud, dans une voie calme à deux pas de Paris et du bois de Vincennes.</p>
         <div class="actions">
@@ -524,7 +530,7 @@
           </dl>
           <div class="contact">
             <h3>Organiser une visite</h3>
-            <p>Vente directe par le propriétaire. Pour toute question ou pour convenir d'un rendez-vous :</p>
+            <p>L'appartement sera mis en vente très prochainement. Pour toute question ou pour convenir d'un rendez-vous :</p>
             <div class="moyens" id="moyens"></div>
           </div>
         </div>
@@ -556,7 +562,7 @@
   <script src="lib/pannellum.js"></script>
   <script>
     "use strict";
-    const VERSION = "1.4.0";
+    const VERSION = "1.5.0";
 
     // ============================================================
     // CE QU'ON PEUT MODIFIER SANS TOUCHER AU RESTE
