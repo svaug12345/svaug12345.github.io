@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-22T13:26+00:00",
+ "maj": "2026-11-22T21:06+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -49,6 +49,18 @@
   }
  ],
  "articles": [
+  {
+   "id": "226abb1629ac",
+   "titre": "ChatGPT, Gemini, Claude… 54 % des utilisateurs ont déjà changé de marque après une recommandation IA, selon une étude Havas",
+   "lien": "https://www.lsa-conso.fr/metiers/digital-tech/chatgpt-gemini-claude-54-des-utilisateurs-ont-deja-change-de-marque-apres-une-recommandation-ia-selon-une-etude-havas.VKQ5TIRUDREUJIX3QEVKX7F6E4.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-22T16:43+00:00",
+   "vu_le": "2026-11-22T21:06+00:00",
+   "resume": "",
+   "enrichi": "2026-11-22"
+  },
   {
    "id": "ed3141f72a4c",
    "titre": "« Allez sans rancune ! » Découvrez le discours de Serge Papin, ministre des PME, du Commerce, de l’Artisanat, du Tourisme et du Pouvoir d’achat, devant la grande distribution",
