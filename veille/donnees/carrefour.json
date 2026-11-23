@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-22T21:06+00:00",
+ "maj": "2026-11-23T16:09+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -49,6 +49,80 @@
   }
  ],
  "articles": [
+  {
+   "id": "52e20193e005",
+   "titre": "Alexandre de Palmas : \" Nous n'excluons pas d'aller au-delà de 100 Carrefour Référent d'ici 2030 \"",
+   "lien": "https://www.lineaires.com/la-distribution/alexandre-de-palmas-nous-n-excluons-pas-d-aller-au-dela-de-100-carrefour-referent-d",
+   "source": "lineaires",
+   "media": "Lineaires",
+   "site": "lineaires.com",
+   "date": "2026-11-23T14:59+00:00",
+   "vu_le": "2026-11-23T16:09+00:00",
+   "resume": "Directeur exécutif France de Carrefour, Alexandre de Palmas revient en détails pour Linéaires sur les principales annonces du groupe lors de son point du 17 novembre",
+   "enrichi": "2026-11-23",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/111d48ee-094a-41fa-8ee2-45ff312bbe2e.jpg.webp?itok=u9BPCMon"
+  },
+  {
+   "id": "e949609dccac",
+   "titre": "Choose France : Cdiscount veut attirer sur sa marketplace les vendeurs qui produisent en France",
+   "lien": "https://www.lsa-conso.fr/e-commerce/cdiscount/choose-france-cdiscount-veut-attirer-sur-sa-marketplace-les-vendeurs-qui-produisent-en-france.JLEOIU7CQZFYNDMQJDT6RHG4GQ.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-23T14:08+00:00",
+   "vu_le": "2026-11-23T16:09+00:00",
+   "resume": "",
+   "enrichi": "2026-11-23"
+  },
+  {
+   "id": "41e37c608398",
+   "titre": "Immobilier commercial : les nouvelles voies pour doper la croissance et la rentabilité",
+   "lien": "https://www.lsa-conso.fr/immobilier-commercial/immobilier-commercial-les-nouvelles-voies-pour-doper-la-croissance-et-la-rentabilite.M3RON7YIP5OCTFW2HKKSYLPKZI.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-23T13:06+00:00",
+   "vu_le": "2026-11-23T16:09+00:00",
+   "resume": "",
+   "enrichi": "2026-11-23"
+  },
+  {
+   "id": "8546b83a34ab",
+   "titre": "Un « risque chimique » : cet airfryer vendu chez Carrefour est dangereux, vous pouvez vous faire rembourser",
+   "lien": "https://www.ouest-france.fr/economie/consommation/rappel-produit/un-risque-chimique-cet-airfryer-vendu-chez-carrefour-est-dangereux-vous-pouvez-vous-faire-rembourser-e1a8e658-e72e-11f1-b9ed-164c427aef07",
+   "source": "autres",
+   "media": "Ouest-France",
+   "site": "ouest-france.fr",
+   "date": "2026-11-23T11:38+00:00",
+   "vu_le": "2026-11-23T16:09+00:00",
+   "resume": "",
+   "enrichi": "2026-11-23"
+  },
+  {
+   "id": "c5001d5febf5",
+   "titre": "Perrigny-lès-Dijon. Stratégie, projets : un nouveau directeur et un autre modèle pour l’hypermarché Carrefour",
+   "lien": "https://www.bienpublic.com/economie/2026/11/23/strategie-projets-un-nouveau-directeur-et-un-autre-modele-pour-l-hypermarche-carrefour",
+   "source": "autres",
+   "media": "Le Bien Public",
+   "site": "bienpublic.com",
+   "date": "2026-11-23T11:00+00:00",
+   "vu_le": "2026-11-23T16:09+00:00",
+   "resume": "Après celui de la Toison d’Or l’an dernier, le groupe Catrix a repris début octobre l’hypermarché Carrefour Dijon-Perrigny pour l’exploiter en ...",
+   "enrichi": "2026-11-23",
+   "image": "https://cdn-s-www.bienpublic.com/images/10C2F574-5887-4A4A-9F86-55218370295D/FB1200/photo-1795370491.jpg"
+  },
+  {
+   "id": "cc753bfeccef",
+   "titre": "Carrefour : les franchisés frondeurs de l’AFC auraient trouvé un fournisseur alternatif à Codifrance après son rachat",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour-les-franchises-frondeurs-de-lafc-auraient-trouve-un-fournisseur-alternatif-a-codifrance-apres-son-rachat.Y5YFOMESAZHTPG27PECN7ZDUMY.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-23T10:26+00:00",
+   "vu_le": "2026-11-23T16:09+00:00",
+   "resume": "",
+   "enrichi": "2026-11-23"
+  },
   {
    "id": "226abb1629ac",
    "titre": "ChatGPT, Gemini, Claude… 54 % des utilisateurs ont déjà changé de marque après une recommandation IA, selon une étude Havas",
@@ -2986,6 +3060,30 @@
    "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/b14b9bdd-516e-44ef-8975-a0a9cea45a74.jpg.webp?itok=fSFFmUPO"
   },
   {
+   "id": "47bca50ecc13",
+   "titre": "E-commerce : la fréquentation des sites de E.Leclerc, Lidl et Carrefour progresse, mais l’audience de Temu, Shein, AliExpress chute au T3 2026",
+   "lien": "https://www.lsa-conso.fr/e-commerce/e-commerce-la-frequentation-des-sites-de-eleclerc-lidl-et-carrefour-progresse-mais-laudience-de-temu-shein-aliexpress-chute-au-t3-2026.4Q3ELYIHENEUNCEEX47IBGTVVY.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-03T08:00+00:00",
+   "vu_le": "2026-11-23T16:09+00:00",
+   "resume": "",
+   "enrichi": "2026-11-23"
+  },
+  {
+   "id": "0661a000540e",
+   "titre": "Carrefour, Delhaize, Colruyt... Après la France, une nouvelle cyberattaque cible les frigos de près de 70 supermarchés européens",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour-delhaize-colruyt-apres-la-france-une-nouvelle-cyberattaque-cible-les-frigos-de-pres-de-70-supermarches-europeens.ZDRKKIC2GVBCTBYQY2JKQPBJMI.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-03T08:00+00:00",
+   "vu_le": "2026-11-23T16:09+00:00",
+   "resume": "",
+   "enrichi": "2026-11-23"
+  },
+  {
    "id": "3d602f2962b9",
    "titre": "Carrefour-Cora : derrière le rachat, une bataille judiciaire à plus de 100 millions d’euros",
    "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour-cora-derriere-le-rachat-une-bataille-judiciaire-a-plus-de-100-millions-deuros.X6GZCKW5FZCPHCR7EO3JAIHWJY.html",
@@ -3079,6 +3177,18 @@
    "image": "https://lessentieldeleco.fr/wp-content/uploads/2026/11/Portrait-professionnel-en-costume-bleu-marine-scaled-1.jpg"
   },
   {
+   "id": "cbf9435e8117",
+   "titre": "Grande distribution : le groupe GBH, franchisé Carrefour en outre-mer, affronte la vie chère en Martinique",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/grande-distribution-le-groupe-gbh-franchise-carrefour-en-outre-mer-affronte-la-vie-chere-en-martinique.XN52XMJXKNEHJID7PCA5IILRNM.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-02T08:00+00:00",
+   "vu_le": "2026-11-23T16:09+00:00",
+   "resume": "",
+   "enrichi": "2026-11-23"
+  },
+  {
    "id": "01d4e1d8c642",
    "titre": "La MINUTE RETAIL : Le choix, jusqu’où ? Exemple chez Carrefour…",
    "lien": "https://www.olivierdauvers.fr/2026/10/30/la-minute-retail-le-choix-jusquou-exemple-chez-carrefour/",
@@ -3103,6 +3213,18 @@
    "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/10/Mise-en-page-1_Page-1-17-scaled.png"
   },
   {
+   "id": "2b0de4e4e00c",
+   "titre": "L’entreprise Vusion, qui déploie ses solutions chez Carrefour et Walmart, se renforce sur le retail media en magasin avec l’acquisition d’In-Store Media",
+   "lien": "https://www.lsa-conso.fr/metiers/digital-tech/lentreprise-vusion-qui-deploie-ses-solutions-chez-carrefour-et-walmart-se-renforce-sur-le-retail-media-en-magasin-avec-lacquisition-din-store-media.BH7UYMYI4FGFDKPKQ4BIC2OJCI.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-10-30T07:00+00:00",
+   "vu_le": "2026-11-23T16:09+00:00",
+   "resume": "",
+   "enrichi": "2026-11-23"
+  },
+  {
    "id": "59f71bf8d634",
    "titre": "Toc toc, y’a quelqu’un chez Carrefour ?",
    "lien": "https://www.olivierdauvers.fr/2026/10/28/toc-toc-ya-quelquun-chez-carrefour-4/",
@@ -3113,6 +3235,30 @@
    "site": "olivierdauvers.fr",
    "enrichi": "2026-11-11",
    "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/10/OD-Toc-toc-Carrefour-Evry-Boites-x-100-1024x603.png"
+  },
+  {
+   "id": "64ea79861a31",
+   "titre": "Grande distribution : Carrefour, Intermarché, E. Leclerc... Surveillance par l’IA, jusqu’où les enseignes peuvent-elles aller ?",
+   "lien": "https://www.lsa-conso.fr/metiers/intelligence-artificielle/grande-distribution-carrefour-intermarche-e-leclerc-surveillance-par-lia-jusquou-les-enseignes-peuvent-elles-aller.5ZFVAYUE2ZO6RHDVE7PXFPBWZY.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-10-28T07:00+00:00",
+   "vu_le": "2026-11-23T16:09+00:00",
+   "resume": "",
+   "enrichi": "2026-11-23"
+  },
+  {
+   "id": "c3c3f9d1e619",
+   "titre": "Carrefour, Lidl, E.Leclerc, Monoprix... Comment la grande distribution se mobilise du 6 au 8 novembre pour la collecte nationale des Banques Alimentaires",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/lidl-eleclerc-monoprix-comment-la-grande-distribution-se-mobilise-du-6-au-8-novembre-pour-la-collecte-nationale-des-banques-alimentaires.OC2J7YUMHNFF7EBIC2YTMYUY4E.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-10-28T07:00+00:00",
+   "vu_le": "2026-11-23T16:09+00:00",
+   "resume": "",
+   "enrichi": "2026-11-23"
   },
   {
    "id": "c13e8eaa3838",
@@ -3184,6 +3330,18 @@
    "resume": "",
    "site": "lsa-conso.fr",
    "enrichi": "2026-11-11"
+  },
+  {
+   "id": "37391effdede",
+   "titre": "JouéClub, King Jouet, Carrefour, Cdiscount et désormais Auchan : Top Chronoël, l’opération promotionnelle de la filière du jouet, revient en force",
+   "lien": "https://www.lsa-conso.fr/distributeurs-non-alimentaires/jeux-et-jouets/joueclub-king-jouet-carrefour-cdiscount-et-desormais-auchan-top-chronoel-loperation-promotionnelle-de-la-filiere-du-jouet-revient-en-force.WJNMUTY44ZHOZMTFMOLXBRLYSQ.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-10-25T07:00+00:00",
+   "vu_le": "2026-11-23T16:09+00:00",
+   "resume": "",
+   "enrichi": "2026-11-23"
   },
   {
    "id": "d9e568bc963d",
@@ -3820,6 +3978,18 @@
    "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-10/741ff29d-411d-4a03-9726-3ed94f3d9f74.jpg.webp?itok=eU59XSYo"
   },
   {
+   "id": "3b55927dd40e",
+   "titre": "Grande distribution : E.Leclerc, Intermarché, Carrefour... Découvrez les parts de marché sur le drive des enseignes alimentaires",
+   "lien": "https://www.lsa-conso.fr/secteurs/services-livraison/drive/grande-distribution-eleclerc-intermarche-carrefour-decouvrez-les-parts-de-marche-sur-le-drive-des-enseignes-alimentaires.MZ66WZJH6NF5TAQKO7YSERXJWY.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-10-08T07:00+00:00",
+   "vu_le": "2026-11-23T16:09+00:00",
+   "resume": "",
+   "enrichi": "2026-11-23"
+  },
+  {
    "id": "36ef22324228",
    "titre": "Des casiers Carrefour City en gare : ça se tente, mais…",
    "lien": "https://www.olivierdauvers.fr/2026/10/07/des-casiers-carrefour-city-en-gare-ca-se-tente-mais/",
@@ -4069,19 +4239,6 @@
    "resume": "Les enseignes adhérentes à la Fédération du commerce et de la distribution ont élu Alexandre Bompard, PDG du groupe Carrefour, à la présidence de la FCD. Il succède à François Bouriez, administrateur du groupe Louis Delhaize.",
    "enrichi": "2026-11-16",
    "image": "https://cdn.inwink.com/a37e7b3a-3c11-444e-8684-39edf2ad3de3/65b980fd-092a-413b-a7c0-07490dc90276"
-  },
-  {
-   "id": "a92711cce654",
-   "titre": "[ MERCHANDISING ] Beauté : Carrefour singe Normal",
-   "lien": "https://www.olivierdauvers.fr/2026/09/24/merchandising-beaute-carrefour-singe-normal/",
-   "source": "dauvers",
-   "media": "Olivier Dauvers",
-   "site": "olivierdauvers.fr",
-   "date": "2026-09-24T07:00+00:00",
-   "vu_le": "2026-11-12T13:51+00:00",
-   "resume": "Ça ne peut pas être qu’un hasard… Un nouveau type de meuble débarque actuellement chez Carrefour, dans la foulée du nouveau concept beauté (que j’avais révélé l’an dernier, ici à Rambouillet). Et ce mobilier, qui a la vocation “d’aspirer” depuis l’allée centrale, ressemble trait pour trait à Normal. Évidemment pas un hasard ! Il y …",
-   "enrichi": "2026-11-12",
-   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/09/Projet5-Mise-en-page-1-1024x767.png"
   }
  ]
 }
