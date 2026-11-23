@@ -2,7 +2,7 @@
 <!--
   ============================================================
   « 7 villa Marcès » — page « Financier »
-  Version 1.11.1 – 22/11/2026   (même numéro que le site : voir index.html)
+  Version 1.12.0 – 23/11/2026   (même numéro que le site : voir index.html)
   En ligne : https://baiji.fr/villa-marces/finances.html
   ------------------------------------------------------------
   COMMENT C'EST FAIT : page autonome, sœur de plans.html (mêmes couleurs, même barre).
@@ -10,9 +10,10 @@
   une ligne <li> par chiffre (libellé à gauche, valeur à droite, précision dessous).
   class="attente" = élément pas encore connu ; class="total" = ligne de total.
   SOURCES : surfaces = attestation de surface habitable du 18/11/2020 (document privé) ;
-  taxe foncière = montant donné par Seb ; cave = cotes du plan de la copropriété.
+  taxe foncière = montant donné par Seb ; cave = cotes du plan de la copropriété ;
+  carte « Diagnostics » = rapport Sodiag du 18/11/2020 (document privé), marqué « À renouveler ».
   RÈGLE : uniquement des valeurs mesurées ou certaines, jamais de « environ ».
-  À COMPLÉTER : surface loi Carrez, DPE, charges de copropriété, prix.
+  À COMPLÉTER : surface loi Carrez, nouveaux diagnostics, charges de copropriété, prix.
   ============================================================
 -->
 <html lang="fr">
@@ -192,8 +193,19 @@
             <li><b>Taxe foncière</b><span class="v">4 500 € par an</span></li>
             <li><b>Chauffage et eau chaude</b><span class="v">Individuels</span><small>Électriques : pas de charges de chauffage collectif</small></li>
             <li class="attente"><b>Charges de copropriété</b><span class="v">En cours</span></li>
-            <li class="attente"><b>Diagnostic de performance énergétique</b><span class="v">DPE en cours</span></li>
             <li><b>Prix</b><span class="v"><span id="prix">Sur demande</span></span></li>
+          </ul>
+        </section>
+        <!-- Diagnostics : résultats du rapport du 18/11/2020 (document privé, ne pas le publier).
+             Ils ne valent plus pour une vente : chaque ligne porte la mention « À renouveler »
+             (class="attente"). Remplacer par les nouveaux résultats quand ils seront faits. -->
+        <section class="carte-info">
+          <h2>Diagnostics</h2>
+          <p>Résultats des diagnostics de novembre 2020. Ils seront tous renouvelés pour la vente.</p>
+          <ul>
+            <li class="attente"><b>Performance énergétique (DPE)</b><span class="v">À renouveler</span><small>2020 : classe D (175 kWh/m²/an), émissions classe B (9 kg CO₂/m²/an). Ancienne méthode de calcul, plus valable aujourd'hui.</small></li>
+            <li class="attente"><b>Installation électrique</b><span class="v">À renouveler</span><small>2020 : aucune anomalie, protection différentielle 30 mA sur toute l'installation</small></li>
+            <li class="attente"><b>Amiante (parties privatives)</b><span class="v">À renouveler</span><small>2020 : aucun matériau contenant de l'amiante repéré</small></li>
           </ul>
         </section>
         <section class="carte-info">
@@ -218,7 +230,7 @@
         <ul>
           <li>La surface habitable ne compte ni les terrasses, ni le balcon, ni l'escalier, ni les parties de moins de 1,80 m de hauteur. La véranda (11,92 m²) en fait partie.</li>
           <li>Le détail pièce par pièce figure sur la <a href="plans.html">page Plans</a>.</li>
-          <li>Les éléments en cours (surface loi Carrez, diagnostic de performance énergétique, charges de copropriété) seront ajoutés ici dès qu'ils seront disponibles.</li>
+          <li>Les éléments en cours (surface loi Carrez, nouveaux diagnostics, charges de copropriété) seront ajoutés ici dès qu'ils seront disponibles.</li>
         </ul>
       </div>
 
@@ -239,7 +251,7 @@
 
   <script>
     "use strict";
-    const VERSION = "1.11.1";   // même numéro que index.html
+    const VERSION = "1.12.0";   // même numéro que index.html
     document.getElementById("version").textContent = "Version " + VERSION;
     // Même appli installable que la page principale (service worker partagé)
     if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
