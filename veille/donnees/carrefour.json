@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-24T03:22+00:00",
+ "maj": "2026-11-24T15:58+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -49,6 +49,81 @@
   }
  ],
  "articles": [
+  {
+   "id": "a748954922ca",
+   "titre": "Carrefour lance Gus Mia, son concept de restauration façon IKEA dès novembre",
+   "lien": "https://mcetv.ouest-france.fr/2026/carrefour-gus-mia-restauration-inspiree-ikea/",
+   "source": "autres",
+   "media": "MCE TV",
+   "site": "mcetv.ouest-france.fr",
+   "date": "2026-11-24T12:01+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": "Carrefour teste Gus Mia, un format de restauration rapide inspiré d'IKEA, dès novembre à Toulouse. Menu, prix, ouverture : ce qu'on sait, selon aufeminin.com.",
+   "enrichi": "2026-11-24",
+   "image": "https://media-mcetv.ouest-france.fr/wp-content/uploads/2026/07/generique-ikea.jpg"
+  },
+  {
+   "id": "efaf3f45445d",
+   "titre": "Carrefour fait gagner à 1645 enfants un jouet de leur liste au Père Noël, voici comment le vôtre peut tenter sa chance",
+   "lien": "https://www.magicmaman.com/carrefour-fait-gagner-a-1645-enfants-un-jouet-de-leur-liste-au-pere-noel-voici-comment-le-votre-peut-tenter-sa-chance,3787944.asp",
+   "source": "autres",
+   "media": "Magicmaman",
+   "site": "magicmaman.com",
+   "date": "2026-11-24T11:32+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": "Jusqu'au 2 décembre 2026, les enfants peuvent essayer de gagner un jouet qui les fait rêver pour Noël grâce à un concours Carrefour. Magasins participants, conditions... On fait le point sur le règlement.",
+   "enrichi": "2026-11-24",
+   "image": "https://cache.magicmaman.com/data/photo/w1200_h630_ci/20j/carrefour-gagner-jouet-lettre-pere-noel.jpg"
+  },
+  {
+   "id": "15c8fb4ae7e4",
+   "titre": "Le Carrefour Express de Nationalestraat rouvre ses portes, et son franchisé anversais passe au concept 4.0",
+   "lien": "https://lexpress-franchise.com/fr-be/actualites/carrefour-express-anvers-nationalestraat-express-4-0/",
+   "source": "autres",
+   "media": "L’Express Franchise",
+   "site": "lexpress-franchise.com",
+   "date": "2026-11-24T10:20+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": "À Anvers, le franchisé Fayz Afzal rouvre son Carrefour Express de la Nationalestraat en concept 4.0, avec un stand de nouilles et un froid au CO2 plus économe.",
+   "enrichi": "2026-11-24",
+   "image": "https://lexpress-franchise.com/wp-content/uploads/2026/11/facade-magasin-carrefour-express.png"
+  },
+  {
+   "id": "1b1e9013f190",
+   "titre": "Surgelés : l’enseigne Écomiam mise sur la massification des achats pour redresser sa rentabilité",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/surgeles-lenseigne-ecomiam-mise-sur-la-massification-des-achats-pour-redresser-sa-rentabilite.DZ4N3VY7LJCYLBAP7T6GHWM5F4.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-24T09:38+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": "",
+   "enrichi": "2026-11-24"
+  },
+  {
+   "id": "849c90f54435",
+   "titre": "Maël-Carhaix. Des travaux de sécurisation pour le carrefour de l’Enseigne",
+   "lien": "https://www.ouest-france.fr/bretagne/mael-carhaix-22340/mael-carhaix-des-travaux-de-securisation-pour-le-carrefour-de-lenseigne-311ca61a-0660-47bd-8465-bd18ef240c99",
+   "source": "autres",
+   "media": "Ouest-France",
+   "site": "ouest-france.fr",
+   "date": "2026-11-24T05:16+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": "",
+   "enrichi": "2026-11-24"
+  },
+  {
+   "id": "35e2a5dc8d7d",
+   "titre": "Hypermarchés Carrefour : deux victoires en justice pour le groupe qui en disent long sur les tensions de la location-gérance",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour/hypermarches-carrefour-deux-victoires-en-justice-pour-le-groupe-qui-en-disent-long-sur-les-tensions-de-la-location-gerance.MQS6GXT3V5CCDCCPICIXIQYGP4.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-24T04:55+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": "",
+   "enrichi": "2026-11-24"
+  },
   {
    "id": "25b535fd6e0d",
    "titre": "Carrefour lance un nouveau concept de restauration rapide inspiré d’Ikea",
@@ -3250,6 +3325,32 @@
    "enrichi": "2026-11-23"
   },
   {
+   "id": "310d1a785c13",
+   "titre": "L'UE dénonce \"des cyberattaques répétées extrêmement préoccupantes\" après une nouvelle panne de réfrigérateurs dans des supermarchés de plusieurs Etats membres",
+   "lien": "https://www.franceinfo.fr/internet/securite-sur-internet/cyberattaques/des-refrigerateurs-affectes-par-une-cyberattaque-dans-des-magasins-carrefour-en-belgique-des-incidents-signales-dans-d-autres-enseignes_8264036.html",
+   "source": "autres",
+   "media": "franceinfo",
+   "site": "franceinfo.fr",
+   "date": "2026-11-02T08:00+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": "Une attaque similaire avait touché la France mi-octobre. \"Il s'agit d'une tentative délibérée de perturber notre chaîne d'approvisionnement alimentaire et de saper la confiance des consommateurs\", a réagi le commissaire européen à l'Agriculture.",
+   "enrichi": "2026-11-24",
+   "image": "https://www.franceinfo.fr/pictures/jbt-8P8X2qCkOdrrAxNZTbqajSw/0x224:4300x2642/1500x843/2026/11/02/6ae882c6c3d2c728334025.jpg"
+  },
+  {
+   "id": "d5a1455a7efb",
+   "titre": "Une nouvelle cyberattaque contre les réfrigérateurs des supermarchés ? Des magasins Carrefour et Intermarché ciblés en Europe",
+   "lien": "https://www.midilibre.fr/2026/11/02/une-nouvelle-cyberattaque-contre-les-refrigerateurs-des-supermarches-des-magasins-carrefour-et-intermarche-cibles-en-belgique-13632208.php",
+   "source": "autres",
+   "media": "Midi Libre",
+   "site": "midilibre.fr",
+   "date": "2026-11-02T08:00+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": "Des magasins Intermarché, Colruyt et Carrefour en Belgique ont été victimes d’une cyberattaque dans la nuit du dimanche 1er au lundi 2 novembre, provoquant une hausse anormale des températures de leurs installations...",
+   "enrichi": "2026-11-24",
+   "image": "https://images.midilibre.fr/api/v1/images/view/6ae87d00221b7e1ffa0549f0/hd/image.jpg?v=1"
+  },
+  {
    "id": "01d4e1d8c642",
    "titre": "La MINUTE RETAIL : Le choix, jusqu’où ? Exemple chez Carrefour…",
    "lien": "https://www.olivierdauvers.fr/2026/10/30/la-minute-retail-le-choix-jusquou-exemple-chez-carrefour/",
@@ -3284,6 +3385,43 @@
    "vu_le": "2026-11-23T16:09+00:00",
    "resume": "",
    "enrichi": "2026-11-23"
+  },
+  {
+   "id": "11d1efefe48e",
+   "titre": "Pourquoi l’hypermarché Carrefour du centre-ville de Cherbourg a été vendu pour 1 € symbolique",
+   "lien": "https://www.ouest-france.fr/normandie/cherbourg-en-cotentin-50100/pourquoi-lhypermarche-carrefour-du-centre-ville-de-cherbourg-a-ete-vendu-pour-1-euros-symbolique-3bbab23a-d43c-11f1-bce4-49c6ba196371",
+   "source": "autres",
+   "media": "Ouest-France",
+   "site": "ouest-france.fr",
+   "date": "2026-10-30T07:00+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": "",
+   "enrichi": "2026-11-24"
+  },
+  {
+   "id": "071cd56a0902",
+   "titre": "Près de Brest, cet hypermarché restera un Carrefour, malgré les convoitises d’E. Leclerc et de la Coopérative U",
+   "lien": "https://www.letelegramme.fr/finistere/plouzane-29280/pres-de-brest-cet-hypermarche-restera-un-carrefour-malgre-les-convoitises-de-leclerc-et-de-la-cooperative-u-7149315.php",
+   "source": "autres",
+   "media": "Le Télégramme",
+   "site": "letelegramme.fr",
+   "date": "2026-10-30T07:00+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": "",
+   "enrichi": "2026-11-24"
+  },
+  {
+   "id": "4d87a63da55b",
+   "titre": "Un individu encagoulé et armé braque seul un supermarché Carrefour près de Grenoble",
+   "lien": "https://actu.fr/auvergne-rhone-alpes/saint-martin-d-heres_38421/un-individu-encagoule-et-arme-braque-seul-un-supermarche-carrefour-pres-de-grenoble_64988567.html",
+   "source": "autres",
+   "media": "Actu.fr",
+   "site": "actu.fr",
+   "date": "2026-10-29T07:00+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": "Un homme a braqué deux caissières du Carrefour Market de Saint-Martin-d'Hères, près de Grenoble, mercredi 28 octobre. Il a été interpellé avec, sur lui, la somme d'argent dérobée.",
+   "enrichi": "2026-11-24",
+   "image": "https://static.actu.fr/uploads/2026/10/carrefour-market-saint-martin-dheres.png"
   },
   {
    "id": "59f71bf8d634",
@@ -3671,6 +3809,19 @@
    "image": "https://www.challenges.fr/_ipx/f_jpg&enlarge_true&s_1200x630/cha/static/2026-10/63306.HR_0.jpg%3FVersionId=r43Idl5J7h42Vgfjuu3fxRgVorAmrilW"
   },
   {
+   "id": "e449b74739bf",
+   "titre": "Manifestations du 17 octobre : pourquoi autant de magasins de proximité Carrefour ont-ils été pillés et saccagés par les casseurs",
+   "lien": "https://www.ladepeche.fr/2026/10/19/manifestations-du-17-octobre-pourquoi-autant-de-magasins-de-proximite-carrefour-ont-ils-ete-pilles-et-saccages-par-les-casseurs-13608600.php",
+   "source": "autres",
+   "media": "ladepeche.fr",
+   "site": "ladepeche.fr",
+   "date": "2026-10-19T07:00+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": "Parmi les nombreuses cibles des vandales, samedi 17 octobre, des magasins de proximité Carrefour à Paris et dans les grandes métropoles régionales, pillés et parfois saccagés.",
+   "enrichi": "2026-11-24",
+   "image": "https://images.ladepeche.fr/api/v1/images/view/6ad55c85c31168d7de0fcaf0/hd/image.jpg?v=1"
+  },
+  {
    "id": "f01358788ff6",
    "titre": "Alexandre Bompard, PDG de Carrefour, dresse le bilan des dégradations commises le 17 octobre",
    "lien": "https://www.bfmtv.com/economie/video-alexandre-bompard-pdg-de-carrefour-dresse-le-bilan-des-degradations-commises-le-17-octobre_VN-202610180240.html",
@@ -3861,6 +4012,58 @@
    "image": "https://www.franceinfo.fr/pictures/Mz_0n_uZBNXPiPl7Nop7LShclFw/0x292:5607x3445/1500x843/2026/10/14/6acfe1bd06121702433719.jpg"
   },
   {
+   "id": "05d2048cc493",
+   "titre": "Ventes fantômes, promotions... des magasins Carrefour accusés de détourner des centaines de milliers d'euros",
+   "lien": "https://actu.orange.fr/france/ventes-fantomes-promotions-des-magasins-carrefour-accuses-de-detourner-des-centaines-de-milliers-d-euros-6medias-CNT000002sSoIb.html",
+   "source": "autres",
+   "media": "Orange Actualités",
+   "site": "actu.orange.fr",
+   "date": "2026-10-15T07:00+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": "Des ventes fictives auraient permis à certains gérants de magasins Carrefour de récupérer illégalement des remises financées par les fournisseurs. Un reportage de Complément d’enquête révèle l’ampleur supposée du phénomène.",
+   "enrichi": "2026-11-24",
+   "image": "https://proxymedia.woopic.com/api/v1/images/2275%2Factu%2Farticles6medias%2F150%2Fbab%2F725fa11ce42d087ffd4c916c54%2Fcarrefourmarket-1.jpg?format=1200x630&facedetect=1&quality=85"
+  },
+  {
+   "id": "5d8b8106d6a4",
+   "titre": "VIDEO. Des rats qui se baladent dans les rayons d'un hypermarché Carrefour : images exclusives dans \"Complément d'enquête\"",
+   "lien": "https://www.franceinfo.fr/replay-magazine/france-2/complement-d-enquete/video-des-rats-qui-se-baladent-dans-les-rayons-d-un-hypermarche-carrefour-images-exclusives-dans-complement-d-enquete_8237374.html",
+   "source": "autres",
+   "media": "franceinfo",
+   "site": "franceinfo.fr",
+   "date": "2026-10-14T07:00+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": "Pour sauver ses hypermarchés face à la crise qu'il traverse, Carrefour en a confié près de la moitié à des sous-traitants, les locataires-gérants chargés de redresser les comptes, mais à quel prix ? Dégradations des conditions de travail ? Economies au détriment de l'hygiène ? Un journaliste de \"Complément d'enquête\" s'est fait embaucher dans un hypermarché de l'enseigne dirigé par l'un de ces…",
+   "enrichi": "2026-11-24",
+   "image": "https://www.franceinfo.fr/pictures/GAavbERggS1tBpGipKDE9KPORY8/0x0:1920x1080/1500x843/2026/10/14/6acfd5b39ba7d528731763.jpg"
+  },
+  {
+   "id": "c7df7d116944",
+   "titre": "Cyberattaque contre des frigos connectés de supermarchés : « Des systèmes de réfrigération exposés sur Internet », alertent des experts en cybersécurité",
+   "lien": "https://www.publicsenat.fr/actualites/politique/cyberattaque-contre-des-frigos-connectes-de-supermarches-des-systemes-de-refrigeration-exposes-sur-internet-alertent-des-experts-en-cybersecurite",
+   "source": "autres",
+   "media": "Public Sénat",
+   "site": "publicsenat.fr",
+   "date": "2026-10-13T07:00+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": "300 magasins Intermarché/Netto, plusieurs du groupement E. Leclerc, 80 supermarchés Carrefour, 80 magasins U et une trentaine de Monoprix ont été touchés par une cyberattaque d’ampleur. Les hackers ont ciblé les systèmes de régulation frigorifique à distance du fabricant danois Danfoss. La vulnérabilité du logiciel avait pourtant déjà été repérée il y a quelques années par des experts en…",
+   "enrichi": "2026-11-24",
+   "image": "https://www.publicsenat.fr/app/uploads/2026/10/SIPA_01294526_000044-1200x630.jpg"
+  },
+  {
+   "id": "c45cb1dfa20c",
+   "titre": "Des centaines de réfrigérateurs et congélateurs ciblés, un second fabricant concerné... Ce que l'on sait des cyberattaques qui ont visé Carrefour, Intermarché, Leclerc ou Monoprix",
+   "lien": "https://www.humanite.fr/social-et-economie/cyberattaque/cyberattaque-carrefour-intermarche-monoprix-des-centaines-de-refrigerateurs-et-congelateurs-de-la-grande-distribution-cibles",
+   "source": "autres",
+   "media": "L'Humanité",
+   "site": "humanite.fr",
+   "date": "2026-10-12T13:19+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": "Plusieurs supermarchés sont depuis dimanche victimes de cyberattaques visant leurs installations frigorifiques. Après le fabricant danois Danfoss, c'est au tour de l'italien Dixell d'êtr...",
+   "enrichi": "2026-11-24",
+   "image": "https://www.humanite.fr/wp-content/uploads/2026/10/iStock-1416618595.jpg"
+  },
+  {
    "id": "38f31bf8bf8e",
    "titre": "[ CONCEPT ] Rideau pour Carrefour Occasion !",
    "lien": "https://www.olivierdauvers.fr/2026/10/12/concept-rideau-pour-carrefour-occasion/",
@@ -3933,6 +4136,19 @@
    "image": "https://www.challenges.fr/_ipx/f_jpg&enlarge_true&s_1200x630/cha/static/2026-10/62845.HR_2.jpeg%3FVersionId=tVstYZ2qmbYUWnbalzWBVLa8kFjTRb2y"
   },
   {
+   "id": "d08030a6a635",
+   "titre": "En Isère, une pétition contre des pièges à colle vendus en supermarché",
+   "lien": "https://www.20minutes.fr/societe/4252869-20261011-isere-carrefour-market-soupconne-vendre-pieges-colle-enseigne-conteste-faits",
+   "source": "autres",
+   "media": "20 Minutes",
+   "site": "20minutes.fr",
+   "date": "2026-10-11T07:00+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": "Une cliente dénonce la présence de pièges à colle dans un supermarché isérois. Selon « Actu Grenoble», Carrefour assure pourtant avoir interdit ces produits depuis 2025",
+   "enrichi": "2026-11-24",
+   "image": "https://img.20mn.fr/JOFQy07DRKW16x45HLuK5Ck/1444x920_le-logo-de-carrefour-l-une-des-principales-chaines-de-distribution-en-france-represente-l-identite-visuelle-de-l-enseigne-presente-dans-de-nombreux-pays-benayacheadil-sipa-33829-credit-adil-benayache-sipa-2512091429"
+  },
+  {
    "id": "2150f685cf3b",
    "titre": "Carrefour/Colruyt, Lidl ouvre désormais à 8 heures, entrepôts XXL Amazon et Zalando... Les cinq infos à retenir dans la grande conso’ cette semaine",
    "lien": "https://www.lsa-conso.fr/secteurs/commerce/carrefourcolruyt-lidl-ouvre-desormais-a-8-heures-entrepots-xxl-amazon-et-zalando-les-cinq-infos-a-retenir-dans-la-grande-conso-cette-semaine.NMLOCF5KIZHAHCFXQEUOWMWRTY.html",
@@ -3966,6 +4182,31 @@
    "site": "lineaires.com",
    "enrichi": "2026-11-11",
    "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-10/43506696-70fe-4304-927d-356a45c3c3a8.jpg.webp?itok=NDR_Lr2m"
+  },
+  {
+   "id": "30e034766308",
+   "titre": "Carrefour cède 35 magasins à Atrato et GIC pour 290 millions d’euros",
+   "lien": "https://www.decideurs-immo.com/operations-immo/65393-carrefour-cede-35-magasins-a-atrato-et-gic-pour-290-millions-d-euros.html",
+   "source": "autres",
+   "media": "DECIDEURS IMMO",
+   "site": "decideurs-immo.com",
+   "date": "2026-10-09T07:00+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": "Le distributeur poursuit la valorisation de son patrimoine avec la vente d’un portefeuille de supermarchés et d’hypermarchés français et espagnols à une coentreprise réunissant un gestionnaire britan...",
+   "enrichi": "2026-11-24",
+   "image": "https://www.decideurs-immo.com/images/carrefour_espagne_bis_decideurs.jpg"
+  },
+  {
+   "id": "ac2757397347",
+   "titre": "Un gain de 290 millions d'euros : pourquoi Carrefour réalise une opération immobilière de cession-bail « exceptionnelle",
+   "lien": "https://www.lesechos.fr/industrie-services/conso-distribution/carrefour-realise-une-operation-immobiliere-de-cession-bail-exceptionnelle-2256151",
+   "source": "autres",
+   "media": "Les Echos",
+   "site": "lesechos.fr",
+   "date": "2026-10-09T07:00+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": "",
+   "enrichi": "2026-11-24"
   },
   {
    "id": "1f1c20672c78",
@@ -4051,6 +4292,30 @@
    "enrichi": "2026-11-23"
   },
   {
+   "id": "3e47d3e764d9",
+   "titre": "Carrefour annonce une opération immobilière de cession-bail (Sale & Leaseback) portant sur 35 magasins en France et en Espagne",
+   "lien": "https://www.carrefour.com/fr/news/2026/carrefour-annonce-une-operation-immobiliere-de-cession-bail-sale-leaseback-portant-sur-35",
+   "source": "autres",
+   "media": "Carrefour Group",
+   "site": "carrefour.com",
+   "date": "2026-10-08T07:00+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": "",
+   "enrichi": "2026-11-24"
+  },
+  {
+   "id": "c51c38a7e781",
+   "titre": "Carrefour cède les murs de 35 magasins pour 290 millions d'euros",
+   "lien": "https://www.boursedirect.fr/en/news/category/actualites-financieres/carrefour-cede-les-murs-de-35-magasins-pour-290-millions-d-euros-zone-bourse-efd4893e682c4d2e2be99df53ac905be26275994",
+   "source": "autres",
+   "media": "Bourse Direct",
+   "site": "boursedirect.fr",
+   "date": "2026-10-08T07:00+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": "",
+   "enrichi": "2026-11-24"
+  },
+  {
    "id": "36ef22324228",
    "titre": "Des casiers Carrefour City en gare : ça se tente, mais…",
    "lien": "https://www.olivierdauvers.fr/2026/10/07/des-casiers-carrefour-city-en-gare-ca-se-tente-mais/",
@@ -4083,6 +4348,39 @@
    "resume": "",
    "site": "lsa-conso.fr",
    "enrichi": "2026-11-11"
+  },
+  {
+   "id": "be05e8aba1f7",
+   "titre": "Carrefour veut reconquérir le non-alimentaire, format par format",
+   "lien": "https://news.google.com/rss/articles/CBMiugFBVV95cUxNTjZuWUIzZURDT1BrZGtwVmUwaGdJVEtBZmE1YXpwbTlrSjMxQ0FwWG9hYnRKbFdGdHBUM0tBQmM2UlNxVXlKb1hmLXRodHpja015cThnSWtXZUNLUU9qUS1SOHYwVkVJeVNFWWZ6cmJHMEZzZzV4eWNQTmNhR0Mza3lkalFyQjJLWlQ1YUhra3AwUFV2WDNIVlVYZ1ZibUJqczh1U3EyX1JOV081YWxOS2JxbUlWaDJLN2c?oc=5",
+   "source": "autres",
+   "media": "Je Bosse en Grande Distribution",
+   "site": "jebosseengrandedistribution.fr",
+   "date": "2026-10-07T07:00+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": ""
+  },
+  {
+   "id": "21878a368be9",
+   "titre": "Forfaits de supermarché : Carrefour revient à 6,90 €, Auchan riposte à 5,99 €",
+   "lien": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxOTVBUMkJSWllXNlJrVE5PbHRJYkpGaEFiSHJ1QXVEQnJEdlFpalNkWUJxcTczWl9NS3NXTXA5OC15WnlJd0trX19iSDZWYWJsaVFCNnpDNmZkTTJBc050OWlaNF9iOUZSN194U21yeG55anJoRkZKMk92NDdFUU9mVE00TW9SOXBOaUg2TndnMW5RSC1xQTB0dU5YY2hYODZNYmFuTW9ta0dIdw?oc=5",
+   "source": "autres",
+   "media": "JeChange",
+   "site": "jechange.fr",
+   "date": "2026-10-07T07:00+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": ""
+  },
+  {
+   "id": "6f38eb9c6545",
+   "titre": "Votre supérette de quartier bientôt remplacé par un magasin Carrefour ? Les CocciMarket dans le viseur de l'enseigne",
+   "lien": "https://news.google.com/rss/articles/CBMipAJBVV95cUxQajRiVFNFM3RYbElURFRHMUxwWkFfeUxYNldTRGd5MkZOakpXNWtUdml2eDZHUEE5X0RTQnF6U1h6UmNpd1MwX2J4RmFhODhiUnc4ZGVkcFQ1SC1wNTBleGNMMExackN4d3N3ZlNQeG9ndU1SMEMwTElHWEhfelFFNTFBM1VTNk1nQWxxQ3NjTjcxYWlkbERqaHpiVkxXNFM1ejRZX1hjOGVTN0dxOGFGZkZydHdQckwwZTB2YzVmbnFtZFZSdU5tcEM4YTdZZWNrUFBmYVdiYzluR2pWSHBSVi1YaEF4MDZuM21xOXRXT0JoYzZCWEtyNVJkZ3FJVEdwdWYybWh2Ykh2WFY2TEhmNVNPdkxYTEpfV2hMTl82b0VTOHdp?oc=5",
+   "source": "autres",
+   "media": "Boursorama",
+   "site": "boursorama.com",
+   "date": "2026-10-06T07:00+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": ""
   },
   {
    "id": "09d6496f8f0e",
@@ -4120,6 +4418,17 @@
    "enrichi": "2026-11-21"
   },
   {
+   "id": "e58916afe969",
+   "titre": "Votre Coccinelle ou CocciMarket bientôt remplacé par un Carrefour? Ce que ce projet de rachat changerait pour vous",
+   "lien": "https://news.google.com/rss/articles/CBMiogJBVV95cUxNaGpFWWE1M25zc0RtTWMxTHZENngwRjVNTkVMa1BUajZzSjUyckNhVEN4QUtjUFJjbi1SdEFOV1IwRGl5d2Uzb0xxaDloR2t5WGZ0SVcyUTlsWS1PMjdkSXlVMXZmNWd5eW9aZ2RBc0VNcHl4WUFka2hhcDVyanFaXzNxcGV3aDZUNXhOSWxYLXdsbUthVEZtVGFKcWktX3puQ213WmhRbHo1bHJ1OS1hcEFueE92dHVoTDdEeU5JcHJaeG5neTl5UGpqcmxvdDU5aXd4bHBpMEFJQ19CZ0U3Q3FlYVJjbGpGRzRCV2daZjAwTUJ6WDd5VV9jOUd3WmFOT0s5Uko4dXMxN2V0UnYwNVhLX1VQQ19xeTRnNHpCalh3dw?oc=5",
+   "source": "autres",
+   "media": "RMC",
+   "site": "rmc.bfmtv.com",
+   "date": "2026-10-05T07:00+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": ""
+  },
+  {
    "id": "86f05a497e61",
    "titre": "J-1 pour Carrefour mobile. On en sait plus sur… “le forfait des pinces” !",
    "lien": "https://www.olivierdauvers.fr/2026/10/04/j-1-pour-carrefour-mobile-on-en-sait-plus-sur-le-forfait-des-pinces/",
@@ -4154,6 +4463,17 @@
    "vu_le": "2026-11-14T12:17+00:00",
    "resume": "",
    "enrichi": "2026-11-14"
+  },
+  {
+   "id": "1b3210c28ebf",
+   "titre": "Grande distribution 2025 : quels gagnants et perdants du secteur ?",
+   "lien": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxNZFN5V2lOc3pOcE9qWDBTd0gyUm1PUDNDZ1pKeE1VSXZBbmdiR3FJVXF3aFJHV05lT3VwSkxXNldTYjk4V2NEN2FqVzlzbGoxTDN4YnhvdEpMd3poZTU5WkxyNVcyYnpIUGJKcFB0R0o4YktOUEptTGxxZHF4dWxFTWZFODd5aDRUaEVJOE1HX2t2U2R2WDlDZEtBbm5TbHRnbHBBbG03WmY2MFJGQ0RZN2pBeG1kX2dLRmRiUE83SEl1QkFMVW1jQ3Jrc1hpWGZPOUh3MnVB?oc=5",
+   "source": "autres",
+   "media": "www.republikgroup.com",
+   "site": "republikgroup.com",
+   "date": "2026-10-04T02:50+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": ""
   },
   {
    "id": "f58b60389534",
@@ -4204,6 +4524,28 @@
    "resume": "",
    "enrichi": "2026-11-21",
    "image": "https://images.ctfassets.net/iatfclnjf6rx/5K9LTq6KhDOM6tHsCyXvC9/93b697c8e4a20f18ed7e73f93e63aa93/Alexandre-Bompard-quitte-Europe-1.jpg"
+  },
+  {
+   "id": "8e63511c5c75",
+   "titre": "Leclerc, Carrefour... L'enseigne de vêtements thermiques Damart arrive en supermarchés, avec des produits en dessous de 20 euros",
+   "lien": "https://news.google.com/rss/articles/CBMikgJBVV95cUxPaHlmcy1JZElmTTg4ZG9vM2h2STJlVGRWeFl6OEpVLWM4bTFTazlxcVZhZWFORnJRMXpMQWVvWWNkWFgtbDJ6bE82empCMVB3M3NlRENIMFNIM2VMamw0a2txOG1fdmR3MXBnRVJkZVlDUUVNYzJLVUk2N2dRNE92QlBkRTQyUElXZkxTalNZOWJEenNaOVdneGlyQ2VCSklySDI5eGVwNVc3TDhPSHpuUGMxT2dKeEJzRHU5ZHNaREk4RVYxSEo0QnpMOUZpQUNyME1IZVRHVVJ5Z0ZBM2wxel9NNFBsWVVTVnlOc1ViNWdXeDA1QlZ2TFctWEoweXFtWExWWXU1T3pweWhLd1Nkbnln?oc=5",
+   "source": "autres",
+   "media": "RMC",
+   "site": "rmc.bfmtv.com",
+   "date": "2026-10-01T07:00+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": ""
+  },
+  {
+   "id": "c4c96fc1d923",
+   "titre": "L'hypermarché Carrefour d'Antibes épinglé pour l'utilisation de pièges à colle dans ses locaux",
+   "lien": "https://news.google.com/rss/articles/CBMiogJBVV95cUxPYjg1Y3RLa0FoR2JYY3dTdC1heG5TbnZ2SFBabXlKdXU4ZFhuOG1UM3FyQ2NWU09yMVlucW5iT0JENG1YcE9URi1Gem1sSUd5eXlLMDZyT2lCamw3WE14NkVTZnprNHUwRnRodXZCUmp1LUNYTkduU3h4YUpEWmxoVkI0MGczSVdTUGhFQ0EzbjNQUmhoSUpEUF93bWxUenhTYTJYczJHNzdkN1gtb2M4UTJ4N1lqYWd6VU1xaGEtQW5kcHFoQWM2eHFUSGV4c1pqekZabXczcXRhblF4bmtxSDFIUTJoSW1IOWtyZUNpOGlQX3A0TjRqd3phUDNSMzdUNnpuenQ4TzhhTFIyLVl5WVNDVDU4NzFvNzFYT2lpRERYQQ?oc=5",
+   "source": "autres",
+   "media": "France 3 Régions",
+   "site": "france3-regions.franceinfo.fr",
+   "date": "2026-10-01T07:00+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": ""
   },
   {
    "id": "7b0f3d26adba",
@@ -4274,6 +4616,28 @@
    "vu_le": "2026-11-21T20:55+00:00",
    "resume": "",
    "enrichi": "2026-11-21"
+  },
+  {
+   "id": "fe691d26271e",
+   "titre": "Carrefour veut racheter le distributeur Codifrance (Coccimarket, Coccinelle) pour 155 millions d'euros (presse",
+   "lien": "https://news.google.com/rss/articles/CBMikgJBVV95cUxQZUV3cGswbWoxUWNxaC01Q1JJekloSmxGMFRMcFJoXzFPQ2RIaFdyRGpRYUZMbVNsVFc3Q3RKRW9Cajl3a3F2MGItb2k5QlNleXVZSFhOUnBJalF2M2R0V2kwYTZ3UjBVNjlUZmowS1JuRGFNdXg1OHFKWWpPX2FLenJMcFZraEZfZWpjdXQtYTFORTRQLXpyWHB4ZTVSSWRBMEg2d21LTjlJMS1mUFRXOUFOa2tibzZPYTRJN2lrblRySS1MMWxKam9LRHdtTEdsUWZCSzNIdnpBQTM2ckN3YnFhYy1GeDBBZ0gxX24zVHh3Tm1TMFJoX0RmUi1HWmNweTBqVWd4c0prUnBHX2dESXJn0gGXAkFVX3lxTE5aUVpGRnRUeFBNcThFZnd0bi0zVExfNnhUb2lJdDFwTXR6VHd1TEtKXy11MWpmU1NZRnM3dkQ0VGpzaGNVNTU5TGNoTzhYcnFIOEN3MWlfUTcwMkZuVEV2bko2LTZKbS1oZ2NrQXpteWZGdTkweFlYWXd4ZkNucTRHbU14cl96M2VfeWx3OEJPZ3VjcndlQ2NzOHF6d19RTE56ZE85V1ptUzR4eWFld3hHZGloOENVQ1FxRmVTblIwZVZyRkI2eUpBY0NfQ1NEeUlpdXhDTE5BcFFUZnRJY1pTWnJLUXhBTFpwUGJsTzdFTHlkTV9TVHYyY1hUNmdLWnNpZDBIZHNYb0ZpVXVyXzB3VTJ6VVp2UQ?oc=5",
+   "source": "autres",
+   "media": "Boursorama",
+   "site": "boursorama.com",
+   "date": "2026-09-29T07:00+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": ""
+  },
+  {
+   "id": "cc97148ee1ba",
+   "titre": "Les 8 plus grands hypermarchés de France en 2026",
+   "lien": "https://news.google.com/rss/articles/CBMipgFBVV95cUxQUzJKeVZROFlVdDJELUhSTmh2dDdzVzVwX3V3RXVHMzlYWEZwQThBa2NXX3VHYk1IZjZtdjhDT28zdzZKRFFLVlZWYUI5cU9lY3VqMW5PblNScGhiR0lWVnNCYXJEVzVHQmltR21CQ0RhV2dLU0gwckl3ZDAwNFIwYzl6dTRLaGZ6bGJKV2lKOTBNckJVUEhKYnE5NmgyQWxvWTdHU3J3?oc=5",
+   "source": "autres",
+   "media": "Je Bosse en Grande Distribution",
+   "site": "jebosseengrandedistribution.fr",
+   "date": "2026-09-28T07:00+00:00",
+   "vu_le": "2026-11-24T15:58+00:00",
+   "resume": ""
   },
   {
    "id": "25ee7f04ced6",
