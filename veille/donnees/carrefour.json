@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-23T16:09+00:00",
+ "maj": "2026-11-24T03:22+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -49,6 +49,42 @@
   }
  ],
  "articles": [
+  {
+   "id": "25b535fd6e0d",
+   "titre": "Carrefour lance un nouveau concept de restauration rapide inspiré d’Ikea",
+   "lien": "https://www.femina.fr/cuisine/tendances-cuisine/carrefour-lance-un-nouveau-concept-de-restauration-rapide-inspire-d-ikea",
+   "source": "autres",
+   "media": "femina.fr",
+   "site": "femina.fr",
+   "date": "2026-11-23T18:00+00:00",
+   "vu_le": "2026-11-24T03:22+00:00",
+   "resume": "",
+   "enrichi": "2026-11-24"
+  },
+  {
+   "id": "e607c7c2f57b",
+   "titre": "Top Chronoël s’invite dans les habitudes des Français et signe une édition 2026 record",
+   "lien": "https://www.lsa-conso.fr/la-revue-du-jouet/top-chronoel-sinvite-dans-les-habitudes-des-francais-et-signe-une-edition-2026-record.ECLRCW74DVDCVKSOG3FF72YLLA.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-23T17:02+00:00",
+   "vu_le": "2026-11-24T03:22+00:00",
+   "resume": "",
+   "enrichi": "2026-11-24"
+  },
+  {
+   "id": "711029435ffb",
+   "titre": "Coopérative U et Schiever achèvent un rapprochement de 18 mois qui débouche sur 120 magasins et 200 000 m² supplémentaires",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/cooperative-u/cooperative-u-et-schiever-achevent-un-rapprochement-de-18-mois-qui-debouche-sur-120-magasins-et-200-000-m-supplementaires.UPEVJ4T2WZDDRJV6ITKMU7EDYU.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-23T15:58+00:00",
+   "vu_le": "2026-11-24T03:22+00:00",
+   "resume": "",
+   "enrichi": "2026-11-24"
+  },
   {
    "id": "52e20193e005",
    "titre": "Alexandre de Palmas : \" Nous n'excluons pas d'aller au-delà de 100 Carrefour Référent d'ici 2030 \"",
@@ -2760,6 +2796,19 @@
    "enrichi": "2026-11-11"
   },
   {
+   "id": "2ac53de634c6",
+   "titre": "Re.Snack s’attaque au pop-corn, version salée ou sucrée",
+   "lien": "https://www.lineaires.com/les-produits/resnack-s-attaque-au-pop-corn-version-salee-ou-sucree",
+   "source": "lineaires",
+   "media": "Lineaires",
+   "site": "lineaires.com",
+   "date": "2026-11-06T14:29+00:00",
+   "vu_le": "2026-11-24T03:22+00:00",
+   "resume": "Après lesbarbes à papa sans sucre Nuage, place aux pop-corn pour Re.Snack. La jeune entreprise, basée près de Dijon, se lance en effet sur une nouvelle catégorie du",
+   "enrichi": "2026-11-24",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/af758569-b2dc-4ada-9f7c-1c7721aae8ee.jpg.webp?itok=8bk4T18K"
+  },
+  {
    "id": "20c733a29e2c",
    "titre": "Précarité alimentaire : 1700 magasins Carrefour mobilisés",
    "lien": "https://presseagence.fr/paris-precarite-alimentaire-carrefour-mobilise-1700-magasins-pour-la-collecte-des-banques-alimentaires/",
@@ -2976,6 +3025,18 @@
    "resume": "",
    "site": "lsa-conso.fr",
    "enrichi": "2026-11-11"
+  },
+  {
+   "id": "1b8705efb418",
+   "titre": "Plus de 2 millions de canettes vendues en 2026 : le premier bilan de la marque de boissons Embrace vendue chez Franprix, Monoprix ou encore Carrefour City",
+   "lien": "https://www.lsa-conso.fr/agro-industriel/boissons-et-liquides/plus-de-2-millions-de-canettes-vendues-en-2026-le-premier-bilan-de-la-marque-de-boissons-embrace-vendue-chez-franprix-monoprix-ou-encore-carrefour-city.AI2WJTV7IBGPFONSSFKTTHVVX4.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-04T08:30+00:00",
+   "vu_le": "2026-11-24T03:22+00:00",
+   "resume": "",
+   "enrichi": "2026-11-24"
   },
   {
    "id": "42fe9cbff3a5",
