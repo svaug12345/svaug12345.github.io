@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<!--
+  Mes projets — suivi des projets et des idées de projets
+  Version 1.0.0
+  ------------------------------------------------------------
+  Trois vues (contrôle en haut) :
+   • En cours  : les projets actifs, rangés par statut (à finaliser, en cours,
+                 à commencer, en pause), P1 d'abord ;
+   • Idées     : les idées notées en vitesse (champ « Noter une idée »),
+                 avec un bouton « Lancer » qui les passe en « À commencer » ;
+   • Terminés  : les projets finis (« archivé » = en production, terminé,
+                 pas abandonné).
+  Filtres par catégorie (Pro / Perso / Louise) et recherche.
+  Toucher un projet = sa fiche (nom, catégorie, statut, priorité, notes, lien).
+
+  Données : comme « On mange quoi ? », dans un Google Sheet via le script
+  « Mes projets » (code : outils/projets.gs, adresse /exec dans PROJETS_URL
+  plus bas). Sans script, tout marche mais reste dans l'appareil.
+  ⚠️ Le dépôt est PUBLIC : ne pas écrire de vraies données dans ce fichier
+  (seulement la liste de départ, PROJETS_DE_DEPART, volontairement sobre).
+
+  Historique :
+   • v1.0.0 : première version (vues En cours / Idées / Terminés, fiche,
+              filtres, recherche, export texte, synchro Google Sheet,
+              bloc TABLETTE, installable)
+-->
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Mes projets</title>
+  <meta name="description" content="Suivi des projets et des idées de projets.">
+
+  <!-- Page perso : pas dans les moteurs de recherche -->
+  <meta name="robots" content="noindex">
+
+  <!--
+    PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »).
+    Fichiers fabriqués par outils/generer-pwa.py :
+     • manifest.webmanifest : nom, couleurs, icônes de l'appli ;
+     • icones/ : les icônes (apple-touch-icon = celle des iPhone) ;
+     • sw.js : le service worker, enregistré en bas de page.
+  -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <link rel="icon" href="icones/icone-192.png">
+  <meta name="theme-color" content="#0f7c7b">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+  <script src="/journal.js" defer></script>
+
+  <!-- Polices de la charte SV : Manrope (texte) + JetBrains Mono (petites étiquettes) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+
+  <style>
+    /* =========================================================
+       1. COULEURS ET POLICES (variables CSS)
+       ========================================================= */
+    :root {
+      --bg: #f3f6f6;
+      --card: #ffffff;
+      --ink: #12302f;
+      --muted: #5b7574;
+      --line: #dbe6e5;
+      --teal: #0f7c7b;
+      --teal-deep: #0b4f55;
+      --teal-soft: #e2f0ef;
+      --on-teal: #ffffff;
+      --danger: #c2413a;
+      /* Une couleur par statut (bande à gauche des cartes, pastilles) */
+      --s-idee: #8a6fd1;
+      --s-finaliser: #d1501a;
+      --s-cours: #0f7c7b;
+      --s-commencer: #2f6fb5;
+      --s-pause: #9a8f7a;
+      --s-fini: #2f8f4e;
+      --sans: "Manrope", "Segoe UI", system-ui, sans-serif;
+      --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", monospace;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1a1a;
+        --card: #142424;
+        --ink: #e3efee;
+        --muted: #93abaa;
+        --line: #24393a;
+        --teal: #3fb4ae;
+        --teal-deep: #0b4f55;
+        --teal-soft: #173332;
+        --on-teal: #062222;
+        --s-idee: #a993e6;
+        --s-finaliser: #f08a52;
+        --s-cours: #3fb4ae;
+        --s-commencer: #6ea6e6;
+        --s-pause: #b3a990;
+        --s-fini: #5cc07c;
+      }
+    }
+
+    /* =========================================================
+       2. BASE
+       ========================================================= */
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }   /* indispensable : certains blocs sont en flex */
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+    }
+    button, input, textarea, select { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    .page {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: calc(16px + env(safe-area-inset-top)) 16px calc(110px + env(safe-area-inset-bottom));
+    }
+    .label {                       /* petites étiquettes en capitales espacées (charte SV) */
+      font-family: var(--mono);
+      font-size: .68rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+    }
+
+    /* =========================================================
+       3. EN-TÊTE ET COMPTEURS
+       ========================================================= */
+    header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    header h1 { margin: 0; font-size: 1.6rem; font-weight: 800; letter-spacing: -.02em; flex: 1; }
+    .icone-btn {
+      width: 40px; height: 40px; border-radius: 12px;
+      border: 1px solid var(--line); background: var(--card);
+      display: grid; place-items: center;
+    }
+    .icone-btn svg { width: 20px; height: 20px; }
+    svg.ico { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .compteurs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+    .compteur {
+      background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+      padding: 10px 8px; text-align: center;
+    }
+    .compteur b { display: block; font-size: 1.35rem; font-weight: 800; line-height: 1.1; }
+    .compteur span { font-size: .72rem; color: var(--muted); }
+
+    /* Contrôle segmenté En cours / Idées / Terminés */
+    .segments {
+      display: flex; background: var(--card); border: 1px solid var(--line);
+      border-radius: 14px; padding: 4px; gap: 4px; margin-bottom: 10px;
+    }
+    .segments button {
+      flex: 1; border: 0; background: none; border-radius: 10px; padding: 9px 4px;
+      font-weight: 700; font-size: .9rem; color: var(--muted);
+    }
+    .segments button[aria-pressed="true"] { background: var(--teal); color: var(--on-teal); }
+    .segments small { font-weight: 600; opacity: .8; margin-left: 3px; }
+
+    /* Pastilles de filtre (catégories) */
+    .filtres { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; margin-bottom: 10px; scrollbar-width: none; }
+    .filtres::-webkit-scrollbar { display: none; }
+    .pastille {
+      flex: none; border: 1px solid var(--line); background: var(--card);
+      border-radius: 999px; padding: 6px 12px; font-size: .85rem; font-weight: 600;
+    }
+    .pastille[aria-pressed="true"] { border-color: var(--teal); background: var(--teal-soft); color: var(--teal); }
+
+    .recherche {
+      width: 100%; border: 1px solid var(--line); background: var(--card);
+      border-radius: 12px; padding: 10px 12px; margin-bottom: 14px; outline: none;
+    }
+    .recherche:focus { border-color: var(--teal); }
+
+    /* Saisie rapide d'une idée */
+    .vite { display: flex; gap: 8px; margin-bottom: 14px; }
+    .vite input {
+      flex: 1; min-width: 0; border: 1px dashed var(--s-idee); background: var(--card);
+      border-radius: 12px; padding: 11px 12px; outline: none;
+    }
+    .vite button {
+      border: 0; border-radius: 12px; padding: 0 16px; background: var(--s-idee); color: #fff;
+      font-weight: 800; font-size: .78rem; letter-spacing: .08em; text-transform: uppercase;
+    }
+
+    /* =========================================================
+       4. GROUPES ET CARTES
+       ========================================================= */
+    .groupe { margin-bottom: 18px; }
+    .groupe h2 {
+      display: flex; align-items: center; gap: 8px;
+      margin: 0 2px 8px; font-size: .74rem; font-family: var(--mono);
+      text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 500;
+    }
+    .point { width: 9px; height: 9px; border-radius: 50%; background: var(--c); flex: none; }
+    .liste { display: grid; gap: 8px; }
+
+    .carte {
+      position: relative; display: flex; gap: 10px; align-items: flex-start;
+      width: 100%; text-align: left;
+      background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+      padding: 11px 12px 11px 16px; overflow: hidden;
+    }
+    .carte::before {               /* bande de couleur du statut, à gauche */
+      content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--c);
+    }
+    .carte .corps { flex: 1; min-width: 0; }
+    .carte .nom { font-weight: 700; font-size: .98rem; }
+    .carte .meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; align-items: center; }
+    .carte .note {
+      margin-top: 5px; font-size: .84rem; color: var(--muted);
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .tag {
+      font-family: var(--mono); font-size: .64rem; text-transform: uppercase; letter-spacing: .08em;
+      border-radius: 6px; padding: 2px 6px; background: var(--teal-soft); color: var(--teal);
+    }
+    .tag.p1 { background: var(--danger); color: #fff; }
+    .tag.p2 { background: #e8a33d; color: #2b1a00; }
+    .tag.p3 { background: var(--line); color: var(--muted); }
+    .tag.statut { background: transparent; border: 1px solid var(--c); color: var(--c); }
+    .quand { font-size: .72rem; color: var(--muted); }
+    .lancer {
+      flex: none; align-self: center; border: 1px solid var(--s-idee); color: var(--s-idee);
+      background: none; border-radius: 10px; padding: 6px 10px; font-weight: 700; font-size: .78rem;
+    }
+
+    .vide { text-align: center; color: var(--muted); padding: 30px 10px; }
+    .vide b { display: block; color: var(--ink); font-size: 1.05rem; margin-bottom: 4px; }
+
+    /* Bouton flottant « + » */
+    .fab {
+      position: fixed; right: 18px; bottom: calc(18px + env(safe-area-inset-bottom));
+      width: 58px; height: 58px; border-radius: 18px; border: 0;
+      background: var(--teal); color: var(--on-teal);
+      box-shadow: 0 8px 22px rgba(15, 124, 123, .35);
+      display: grid; place-items: center; z-index: 5;
+    }
+    .fab svg { width: 28px; height: 28px; }
+
+    /* Pied de page */
+    footer { text-align: center; margin-top: 26px; font-size: .8rem; color: var(--muted); }
+    footer button { border: 0; background: none; color: var(--teal); font-weight: 700; padding: 4px 6px; }
+    #etat-synchro.ok { color: var(--s-fini); }
+    #etat-synchro.err { color: var(--danger); }
+
+    /* =========================================================
+       5. FICHES (<dialog>) — montent du bas sur téléphone
+       ========================================================= */
+    dialog {
+      border: 0; padding: 0; margin: auto auto 0; width: 100%; max-width: 560px;
+      max-height: 92vh; border-radius: 20px 20px 0 0;
+      background: var(--card); color: var(--ink);
+    }
+    dialog::backdrop { background: rgba(5, 20, 20, .45); }
+    .fiche { padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); }
+    .fiche h3 { margin: 0 0 14px; font-size: 1.15rem; }
+    .champ { margin-bottom: 14px; }
+    .champ > .label { display: block; margin-bottom: 6px; }
+    .champ input[type=text], .champ input[type=url], .champ textarea, .champ input[type=password] {
+      width: 100%; border: 1px solid var(--line); background: var(--bg);
+      border-radius: 10px; padding: 10px 12px; outline: none;
+    }
+    .champ input:focus, .champ textarea:focus { border-color: var(--teal); }
+    .champ textarea { min-height: 96px; resize: vertical; }
+    .choix { display: flex; flex-wrap: wrap; gap: 6px; }
+    .choix button {
+      border: 1px solid var(--line); background: var(--bg); border-radius: 999px;
+      padding: 7px 12px; font-size: .85rem; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .choix button[aria-pressed="true"] { border-color: var(--c, var(--teal)); background: var(--c, var(--teal)); color: #fff; }
+    .choix button[aria-pressed="true"] .point { background: #fff; }
+    .ligne-lien { display: flex; gap: 8px; }
+    .ligne-lien input { flex: 1; min-width: 0; }
+    .ligne-lien a {
+      flex: none; display: grid; place-items: center; padding: 0 12px; border-radius: 10px;
+      border: 1px solid var(--line); color: var(--teal); text-decoration: none; font-weight: 700; font-size: .85rem;
+    }
+    .actions { display: flex; gap: 8px; margin-top: 18px; }
+    .btn {
+      border: 0; border-radius: 12px; padding: 12px 16px; font-weight: 800;
+      font-size: .78rem; letter-spacing: .08em; text-transform: uppercase;
+    }
+    .btn.plein { background: var(--teal); color: var(--on-teal); flex: 1; }
+    .btn.leger { background: var(--bg); border: 1px solid var(--line); }
+    .btn.rouge { background: none; color: var(--danger); border: 1px solid var(--danger); }
+    .dates { font-size: .75rem; color: var(--muted); margin-top: 10px; }
+    .aide { font-size: .85rem; color: var(--muted); margin: 0 0 12px; }
+
+    /* Message « Annuler » en bas */
+    #toast {
+      position: fixed; left: 50%; transform: translateX(-50%);
+      bottom: calc(90px + env(safe-area-inset-bottom)); z-index: 20;
+      background: var(--ink); color: var(--bg); border-radius: 12px;
+      padding: 10px 14px; display: flex; gap: 14px; align-items: center;
+      max-width: calc(100% - 32px); font-size: .9rem;
+    }
+    #toast button { border: 0; background: none; color: var(--teal-soft); font-weight: 800; text-transform: uppercase; letter-spacing: .06em; font-size: .78rem; }
+
+    /* =========================================================
+       6. TABLETTE (≥ 760 px) — le téléphone ne change pas
+       ========================================================= */
+    @media (min-width: 760px) {
+      .page { max-width: 1180px; padding-left: 28px; padding-right: 28px; }
+      .barre { display: grid; grid-template-columns: auto 1fr 280px; gap: 12px; align-items: center; margin-bottom: 14px; }
+      .barre .segments, .barre .filtres, .barre .recherche { margin-bottom: 0; }
+      .segments { min-width: 360px; }
+      .compteurs { grid-template-columns: repeat(4, minmax(0, 170px)); }
+      .liste { grid-template-columns: repeat(2, 1fr); }
+      dialog { margin: auto; border-radius: 20px; }
+    }
+    @media (min-width: 1100px) {
+      .liste { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>Mes projets</h1>
+    <button class="icone-btn" id="btn-export" aria-label="Exporter la liste" title="Exporter la liste (texte)">
+      <svg class="ico" viewBox="0 0 24 24"><path d="M12 2v13"/><path d="m16 6-4-4-4 4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg>
+    </button>
+  </header>
+
+  <!-- 4 compteurs remplis par afficher() -->
+  <div class="compteurs" id="compteurs"></div>
+
+  <div class="barre">
+    <div class="segments" role="group" aria-label="Vue">
+      <button data-vue="actifs">En cours<small id="n-actifs"></small></button>
+      <button data-vue="idees">Idées<small id="n-idees"></small></button>
+      <button data-vue="finis">Terminés<small id="n-finis"></small></button>
+    </div>
+    <div class="filtres" id="filtres" role="group" aria-label="Catégorie"></div>
+    <input class="recherche" id="recherche" type="search" placeholder="Chercher un projet…" autocomplete="off">
+  </div>
+
+  <!-- Saisie rapide : seulement dans la vue Idées -->
+  <form class="vite" id="vite" hidden>
+    <input id="vite-texte" type="text" placeholder="Noter une idée…" autocomplete="off" enterkeyhint="done">
+    <button type="submit">Noter</button>
+  </form>
+
+  <main id="contenu"></main>
+
+  <footer>
+    <span id="etat-synchro">Enregistré sur cet appareil</span> ·
+    <button id="btn-synchro">Synchro</button> · v<span id="version"></span>
+  </footer>
+</div>
+
+<button class="fab" id="fab" aria-label="Nouveau projet">
+  <svg class="ico" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+</button>
+
+<!-- Fiche d'un projet (création et modification) -->
+<dialog id="fiche">
+  <form class="fiche" id="form-fiche" method="dialog">
+    <h3 id="fiche-titre">Projet</h3>
+    <div class="champ">
+      <span class="label">Nom</span>
+      <input type="text" id="f-nom" required autocomplete="off">
+    </div>
+    <div class="champ">
+      <span class="label">Catégorie</span>
+      <div class="choix" id="f-cat"></div>
+    </div>
+    <div class="champ">
+      <span class="label">Statut</span>
+      <div class="choix" id="f-statut"></div>
+    </div>
+    <div class="champ">
+      <span class="label">Priorité</span>
+      <div class="choix" id="f-prio"></div>
+    </div>
+    <div class="champ">
+      <span class="label">Notes (prochaine étape, idées, liens…)</span>
+      <textarea id="f-note"></textarea>
+    </div>
+    <div class="champ">
+      <span class="label">Lien (page baiji, dépôt GitHub…)</span>
+      <div class="ligne-lien">
+        <input type="url" id="f-lien" placeholder="https://… ou /repas/" autocomplete="off">
+        <a id="f-ouvrir" target="_blank" rel="noopener">Ouvrir</a>
+      </div>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn rouge" id="f-suppr">Supprimer</button>
+      <button type="button" class="btn leger" id="f-fermer">Fermer</button>
+      <button type="submit" class="btn plein" id="f-ok">Enregistrer</button>
+    </div>
+    <div class="dates" id="f-dates"></div>
+  </form>
+</dialog>
+
+<!-- Réglage de la synchro (clé du script Google) -->
+<dialog id="synchro">
+  <form class="fiche" id="form-synchro" method="dialog">
+    <h3>Synchro téléphone ↔ PC</h3>
+    <p class="aide" id="synchro-aide"></p>
+    <div class="champ" id="synchro-champ">
+      <span class="label">Clé</span>
+      <input type="password" id="s-cle" autocomplete="off">
+    </div>
+    <div class="actions">
+      <button type="button" class="btn leger" id="s-fermer">Fermer</button>
+      <button type="submit" class="btn plein" id="s-ok">Enregistrer</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" hidden role="status"><span id="toast-texte"></span><button id="toast-annuler">Annuler</button></div>
+
+<script>
+/* ==============================================================
+   MES PROJETS — le code
+   Tout l'état tient dans un objet « etat », enregistré d'un bloc
+   (dans le téléphone, et dans le Google Sheet si la synchro est branchée).
+   ============================================================== */
+const VERSION = "1.0.0";
+
+/* ---------- 1. RÉGLAGES ----------
+   Adresse /exec du script Google « Mes projets » (code dans outils/projets.gs).
+   Vide = pas de synchro : les données restent dans l'appareil. */
+const PROJETS_URL = "";
+const CLE_LOCALE = "projets.cle";     // la clé, gardée dans l'appareil
+const CACHE_LOCAL = "projets.etat";   // dernière copie des données (marche hors ligne)
+const VUE_LOCALE = "projets.vue";     // dernière vue et catégorie choisies
+
+/* Les catégories. « c » = couleur de la pastille (variables CSS). */
+const CATEGORIES = [
+  { id: "pro",    nom: "Pro" },
+  { id: "perso",  nom: "Perso" },
+  { id: "louise", nom: "Louise" },
+];
+
+/* Les statuts, dans l'ordre d'affichage de la vue « En cours ».
+   « vue » = dans quelle vue le projet apparaît. */
+const STATUTS = [
+  { id: "a-finaliser", nom: "À finaliser", c: "var(--s-finaliser)", vue: "actifs" },
+  { id: "en-cours",    nom: "En cours",    c: "var(--s-cours)",     vue: "actifs" },
+  { id: "a-commencer", nom: "À commencer", c: "var(--s-commencer)", vue: "actifs" },
+  { id: "en-pause",    nom: "En pause",    c: "var(--s-pause)",     vue: "actifs" },
+  { id: "idee",        nom: "Idée",        c: "var(--s-idee)",      vue: "idees" },
+  { id: "termine",     nom: "Terminé",     c: "var(--s-fini)",      vue: "finis" },
+];
+const STATUT = Object.fromEntries(STATUTS.map(s => [s.id, s]));
+const PRIORITES = ["P1", "P2", "P3", ""];   // "" = pas de priorité
+
+/* Liste de départ, mise une seule fois dans un état vide (voir normaliser()).
+   Format court : [nom, catégorie, statut, priorité, lien]. Volontairement
+   sans détail : ce fichier est public. Les notes s'ajoutent dans l'appli. */
+const PROJETS_DE_DEPART = [
+  // Pro
+  ["Club Acheteur (modules de formation)", "pro", "en-cours", "P1", ""],
+  ["New PPM", "pro", "en-cours", "P1", ""],
+  ["Intranet NTP", "pro", "en-cours", "P1", ""],
+  ["Risque cyber fournisseurs", "pro", "en-cours", "P1", ""],
+  ["Magasin virtuel", "pro", "en-cours", "P1", "/magasin-3d/"],
+  ["Démo négociation entre agents", "pro", "a-commencer", "P1", "/table-negociation/"],
+  ["Accompagnement fournisseurs Ariba", "pro", "en-cours", "P2", "/assistant-fournisseurs/"],
+  ["Assistant Nexus", "pro", "en-cours", "P2", "/assistant-nexus/"],
+  ["Veille Carrefour", "pro", "en-cours", "P2", "/veille/"],
+  ["Automatisation Ariba", "pro", "a-commencer", "P2", ""],
+  ["Speed Dating Nexus", "pro", "termine", "", ""],
+  ["Gems Gemini (IA achats)", "pro", "termine", "", ""],
+  ["Formation négociation raisonnée", "pro", "termine", "", ""],
+  ["Plan projet DANM 2027", "pro", "termine", "", ""],
+  ["Outil roadmap digitale", "pro", "termine", "", ""],
+  ["Remplacement d'un SaaS", "pro", "termine", "", ""],
+  ["Veille indices", "pro", "termine", "", ""],
+  ["VMS conseil", "pro", "termine", "", ""],
+  ["PochPoch", "pro", "termine", "", "/pochpoch/"],
+  // Perso
+  ["On mange quoi ? (repas)", "perso", "en-cours", "P1", "/repas/"],
+  ["Sonar radar", "perso", "en-cours", "P1", ""],
+  ["Bomber Woman (Switch)", "perso", "en-cours", "P1", ""],
+  ["Quiz'Vacances", "perso", "en-cours", "P1", ""],
+  ["Organisation des dépôts GitHub", "perso", "a-commencer", "P1", ""],
+  ["Sécurisation de l'accès à baiji.fr", "perso", "a-commencer", "P1", ""],
+  ["Appli IA pour Nanon", "perso", "en-cours", "P2", ""],
+  ["Cartable (devoirs)", "perso", "en-cours", "P2", "/cartable/"],
+  ["Électronique ESP32 / Raspberry Pi", "perso", "en-cours", "P2", ""],
+  ["En Route ! (jeux voiture)", "perso", "en-cours", "P2", ""],
+  ["Lecteur PDF", "perso", "a-commencer", "P2", ""],
+  ["Métadonnées photo", "perso", "a-commencer", "P2", ""],
+  ["Code de la route", "perso", "termine", "", "/code/"],
+  ["Dashboard famille", "perso", "termine", "", "/famille/"],
+  ["Démarrage Auto (TV)", "perso", "termine", "", ""],
+  ["Mes Révisions", "perso", "termine", "", ""],
+  ["Agent Double (Undercover)", "perso", "termine", "", ""],
+  ["Allô Sébastien ? (Monique)", "perso", "termine", "", "/monique/"],
+  ["Petite Souris", "perso", "termine", "", "/petite-souris/"],
+  ["Négo avec Papa", "perso", "termine", "", "/nego-papa/"],
+  ["Le Grand Verdict", "perso", "termine", "", "/fils-prefere/"],
+  ["SOS Amitié", "perso", "termine", "", "/sos-amitie/"],
+  ["Foot & Chats", "perso", "termine", "", "/foot-chats/"],
+  ["Location (Lucie)", "perso", "termine", "", "/location/"],
+  ["KAM Sébastien Company", "perso", "termine", "", ""],
+  ["Jarvis", "perso", "termine", "", ""],
+  ["Station d'affichage", "perso", "termine", "", ""],
+  ["Lecteur QR", "perso", "termine", "", "/QR/"],
+  ["Pressoir", "perso", "termine", "", "/pressoir/"],
+  ["MP3", "perso", "termine", "", "/mp3/"],
+  ["Place nette", "perso", "termine", "", "/disque/"],
+  ["Médiathèque", "perso", "termine", "", "/mediatheque/"],
+  ["Police Gabou / Paraphe", "perso", "termine", "", "/paraphe/"],
+  ["Marque SV", "perso", "termine", "", ""],
+  ["Site de Juju (TAC Vélo)", "perso", "termine", "", "https://tac-velo.fr/"],
+  ["Jeux RG35XX", "perso", "termine", "", ""],
+  ["Unknown Waters", "perso", "termine", "", ""],
+  ["Géocaching", "perso", "termine", "", ""],
+  ["Épuration des eaux", "perso", "termine", "", "/epuration/"],
+  ["Activité freelance PME", "perso", "termine", "", ""],
+  ["mirobol.fr", "perso", "termine", "", ""],
+  ["Vacances de février 2027", "perso", "termine", "", ""],
+  ["Séjour Center Parcs", "perso", "termine", "", ""],
+  // Louise
+  ["Entretien tuteur", "louise", "en-cours", "P2", "/entretien-tuteur/"],
+  ["FART", "louise", "en-cours", "P2", "/fart/"],
+  ["GitHub et nom de domaine pour Louise", "louise", "a-commencer", "P2", ""],
+];
+
+let etat = null;                 // les données affichées : { projets: {id: {...}}, depart: 1 }
+let vue = "actifs";              // actifs | idees | finis
+let categorie = "";              // "" = toutes
+let recherche = "";
+let ouvert = null;               // id du projet ouvert dans la fiche (null = nouveau)
+let brouillon = null;            // copie modifiée dans la fiche, avant « Enregistrer »
+
+/* ---------- 2. PETITS OUTILS ---------- */
+const $ = id => document.getElementById(id);
+// Texte sans accents ni majuscules, pour chercher « epuration » et trouver « Épuration »
+const simple = t => (t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/œ/g, "oe");
+// Identifiant unique d'un projet (lettres du nom + morceau aléatoire)
+const nouvelId = nom => (simple(nom).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 30) || "projet")
+                        + "-" + Math.random().toString(36).slice(2, 6);
+const aujourdhui = () => new Date().toISOString().slice(0, 10);
+// Échappe le texte avant de le mettre dans du HTML (sinon un « < » casserait la page)
+const html = t => String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// « il y a 3 jours », « aujourd'hui »… à partir d'une date AAAA-MM-JJ
+function depuis(date) {
+  if (!date) return "";
+  const jours = Math.round((new Date(aujourdhui()) - new Date(date)) / 86400000);
+  if (jours <= 0) return "aujourd'hui";
+  if (jours === 1) return "hier";
+  if (jours < 31) return "il y a " + jours + " j";
+  if (jours < 365) return "il y a " + Math.round(jours / 30) + " mois";
+  return "il y a " + Math.round(jours / 365) + " an" + (jours >= 730 ? "s" : "");
+}
+
+/* ---------- 3. STOCKAGE (même principe que « On mange quoi ? ») ----------
+   • Copie locale (localStorage) : affichage immédiat et hors ligne.
+   • Script Google : la version commune au téléphone et au PC. Chaque action
+     relit d'abord le serveur, rejoue SA modification dessus, puis renvoie
+     le tout (voir modifier()) : on n'écrase pas ce qu'un autre appareil
+     vient d'ajouter. */
+function lireCle() { try { return localStorage.getItem(CLE_LOCALE) || ""; } catch { return ""; } }
+function garderCle(c) { try { localStorage.setItem(CLE_LOCALE, c); } catch {} }
+function lireCache() { try { return JSON.parse(localStorage.getItem(CACHE_LOCAL)); } catch { return null; } }
+function garderCache() { try { localStorage.setItem(CACHE_LOCAL, JSON.stringify(etat)); } catch {} }
+
+const partage = () => PROJETS_URL !== "" && lireCle() !== "";
+
+async function chargerServeur() {
+  const r = await fetch(PROJETS_URL + "?cle=" + encodeURIComponent(lireCle()), { cache: "no-store" });
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.erreur || "erreur");
+  return j.etat;   // objet, ou null si le Sheet est encore vide
+}
+// « text/plain » évite la requête de vérification CORS que Apps Script ne sait pas traiter
+async function envoyerServeur(e) {
+  const r = await fetch(PROJETS_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ cle: lireCle(), etat: e }),
+  });
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.erreur || "erreur");
+}
+
+/* Complète un état vide ou incomplet. La liste de départ n'est ajoutée
+   qu'une fois (champ « depart ») : un projet supprimé ne revient pas. */
+function normaliser(e) {
+  e = e && typeof e === "object" ? e : {};
+  e.projets = e.projets || {};
+  if (!e.depart) {
+    const jour = aujourdhui();
+    for (const [nom, cat, statut, prio, lien] of PROJETS_DE_DEPART) {
+      e.projets[nouvelId(nom)] = { nom, cat, statut, prio, note: "", lien, cree: jour, maj: jour };
+    }
+    e.depart = 1;
+  }
+  return e;
+}
+
+function etatSynchro(texte, classe) {
+  const el = $("etat-synchro");
+  el.textContent = texte;
+  el.className = classe || "";
+}
+
+/* modifier(fn) : LA fonction par laquelle passent toutes les actions. */
+async function modifier(fn) {
+  fn(etat);
+  garderCache();
+  afficher();
+  if (!partage()) return;
+  try {
+    etatSynchro("Enregistrement…", "");
+    const frais = normaliser(await chargerServeur());
+    fn(frais);
+    await envoyerServeur(frais);
+    etat = frais;
+    garderCache();
+    afficher();
+    etatSynchro("Synchronisé", "ok");
+  } catch (err) {
+    etatSynchro("Hors ligne : modification gardée ici", "err");
+  }
+}
+
+// Relit la version commune (au démarrage et au retour sur l'appli)
+async function actualiser() {
+  if (!partage()) {
+    etatSynchro(PROJETS_URL ? "Synchro : clé à saisir" : "Enregistré sur cet appareil", "");
+    return;
+  }
+  try {
+    const distant = await chargerServeur();
+    if (distant) {
+      etat = normaliser(distant);
+    } else {
+      // Sheet encore vide : on y envoie ce qu'on a dans l'appareil
+      await envoyerServeur(etat);
+    }
+    garderCache();
+    afficher();
+    etatSynchro("Synchronisé", "ok");
+  } catch (err) {
+    const mauvaiseCle = String(err.message).includes("clé");
+    etatSynchro(mauvaiseCle ? "Clé incorrecte" : "Hors ligne : dernière version connue", "err");
+  }
+}
+
+/* ---------- 4. AFFICHAGE ---------- */
+
+// Les projets qui passent le filtre de catégorie et la recherche
+function projetsFiltres() {
+  const mots = simple(recherche).split(/\s+/).filter(Boolean);
+  return Object.entries(etat.projets)
+    .map(([id, p]) => ({ id, ...p }))
+    .filter(p => !categorie || p.cat === categorie)
+    .filter(p => {
+      const texte = simple(p.nom + " " + p.note + " " + (STATUT[p.statut] || {}).nom);
+      return mots.every(m => texte.includes(m));   // chaque mot tapé doit apparaître
+    });
+}
+
+// Tri : P1 avant P2 avant P3 avant « sans priorité », puis par nom
+const rangPrio = p => (p.prio ? PRIORITES.indexOf(p.prio) : 9);
+function trier(liste) {
+  return liste.sort((a, b) => rangPrio(a) - rangPrio(b) || a.nom.localeCompare(b.nom, "fr"));
+}
+
+function carteHTML(p, avecStatut) {
+  const s = STATUT[p.statut] || STATUT["en-cours"];
+  const cat = CATEGORIES.find(c => c.id === p.cat);
+  return `<button class="carte" data-id="${html(p.id)}" style="--c:${s.c}">
+    <div class="corps">
+      <div class="nom">${html(p.nom)}</div>
+      <div class="meta">
+        ${p.prio ? `<span class="tag ${p.prio.toLowerCase()}">${p.prio}</span>` : ""}
+        ${avecStatut ? `<span class="tag statut">${s.nom}</span>` : ""}
+        ${!categorie && cat ? `<span class="tag">${cat.nom}</span>` : ""}
+        ${p.lien ? `<span class="tag">lien</span>` : ""}
+        <span class="quand">${depuis(p.maj)}</span>
+      </div>
+      ${p.note ? `<div class="note">${html(p.note)}</div>` : ""}
+    </div>
+    ${p.statut === "idee" ? `<span class="lancer" data-lancer="${html(p.id)}" role="button">Lancer ▸</span>` : ""}
+  </button>`;
+}
+
+function afficher() {
+  const tous = Object.values(etat.projets).filter(p => !categorie || p.cat === categorie);
+  const nb = v => tous.filter(p => (STATUT[p.statut] || {}).vue === v).length;
+
+  // Compteurs (selon la catégorie choisie, sans la recherche)
+  const enCours = tous.filter(p => p.statut === "en-cours" || p.statut === "a-finaliser").length;
+  const p1 = tous.filter(p => p.prio === "P1" && (STATUT[p.statut] || {}).vue === "actifs").length;
+  $("compteurs").innerHTML = [
+    [enCours, "en cours"], [p1, "P1 actifs"], [nb("idees"), "idées"], [nb("finis"), "terminés"],
+  ].map(([n, t]) => `<div class="compteur"><b>${n}</b><span>${t}</span></div>`).join("");
+
+  $("n-actifs").textContent = nb("actifs");
+  $("n-idees").textContent = nb("idees");
+  $("n-finis").textContent = nb("finis");
+  document.querySelectorAll(".segments button").forEach(b => b.setAttribute("aria-pressed", b.dataset.vue === vue));
+
+  // Pastilles de catégorie, avec le nombre de projets de la vue
+  const dansVue = Object.values(etat.projets).filter(p => (STATUT[p.statut] || {}).vue === vue);
+  $("filtres").innerHTML = [{ id: "", nom: "Tout" }, ...CATEGORIES].map(c => {
+    const n = dansVue.filter(p => !c.id || p.cat === c.id).length;
+    return `<button class="pastille" data-cat="${c.id}" aria-pressed="${categorie === c.id}">${c.nom} ${n}</button>`;
+  }).join("");
+
+  $("vite").hidden = vue !== "idees";
+
+  // Contenu de la vue
+  const liste = projetsFiltres().filter(p => (STATUT[p.statut] || {}).vue === vue);
+  let h = "";
+  if (vue === "actifs") {
+    // Un groupe par statut actif, dans l'ordre de STATUTS
+    for (const s of STATUTS.filter(s => s.vue === "actifs")) {
+      const groupe = trier(liste.filter(p => p.statut === s.id));
+      if (!groupe.length) continue;
+      h += `<section class="groupe"><h2><span class="point" style="--c:${s.c}"></span>${s.nom} · ${groupe.length}</h2>
+            <div class="liste">${groupe.map(p => carteHTML(p, false)).join("")}</div></section>`;
+    }
+  } else if (vue === "idees") {
+    // Les idées les plus récentes d'abord
+    const groupe = liste.sort((a, b) => (b.cree || "").localeCompare(a.cree || "") || a.nom.localeCompare(b.nom, "fr"));
+    if (groupe.length) h = `<div class="liste">${groupe.map(p => carteHTML(p, false)).join("")}</div>`;
+  } else {
+    // Terminés : les derniers finis d'abord
+    const groupe = liste.sort((a, b) => (b.maj || "").localeCompare(a.maj || "") || a.nom.localeCompare(b.nom, "fr"));
+    if (groupe.length) h = `<div class="liste">${groupe.map(p => carteHTML(p, false)).join("")}</div>`;
+  }
+  if (!h) {
+    h = recherche
+      ? `<div class="vide"><b>Rien trouvé</b>Essaie un autre mot.</div>`
+      : vue === "idees"
+        ? `<div class="vide"><b>Pas encore d'idée notée</b>Tape-la juste au-dessus : un nom suffit, les détails viendront plus tard.</div>`
+        : `<div class="vide"><b>Rien ici pour l'instant</b>Le bouton + ajoute un projet.</div>`;
+  }
+  $("contenu").innerHTML = h;
+}
+
+/* ---------- 5. ACTIONS ---------- */
+
+// Un seul écouteur pour toutes les cartes (délégation : les cartes sont redessinées souvent)
+$("contenu").addEventListener("click", ev => {
+  const lancer = ev.target.closest("[data-lancer]");
+  if (lancer) {
+    // « Lancer ▸ » sur une idée : elle passe en « À commencer » sans ouvrir la fiche
+    const id = lancer.dataset.lancer;
+    const nom = etat.projets[id].nom;
+    modifier(e => { if (e.projets[id]) { e.projets[id].statut = "a-commencer"; e.projets[id].maj = aujourdhui(); } });
+    afficherToast("« " + nom + " » passe en À commencer", () =>
+      modifier(e => { if (e.projets[id]) e.projets[id].statut = "idee"; }));
+    return;
+  }
+  const carte = ev.target.closest(".carte");
+  if (carte) ouvrirFiche(carte.dataset.id);
+});
+
+document.querySelector(".segments").addEventListener("click", ev => {
+  const b = ev.target.closest("button");
+  if (!b) return;
+  vue = b.dataset.vue;
+  garderVue();
+  afficher();
+});
+$("filtres").addEventListener("click", ev => {
+  const b = ev.target.closest("button");
+  if (!b) return;
+  categorie = b.dataset.cat;
+  garderVue();
+  afficher();
+});
+$("recherche").addEventListener("input", ev => { recherche = ev.target.value; afficher(); });
+
+function garderVue() { try { localStorage.setItem(VUE_LOCALE, JSON.stringify({ vue, categorie })); } catch {} }
+function lireVue() {
+  try { const v = JSON.parse(localStorage.getItem(VUE_LOCALE)); if (v) { vue = v.vue || vue; categorie = v.categorie || ""; } } catch {}
+}
+
+// Saisie rapide d'une idée (vue Idées) : la catégorie choisie, sinon « Perso »
+$("vite").addEventListener("submit", ev => {
+  ev.preventDefault();
+  const nom = $("vite-texte").value.trim();
+  if (!nom) return;
+  const id = nouvelId(nom), jour = aujourdhui();
+  modifier(e => { e.projets[id] = { nom, cat: categorie || "perso", statut: "idee", prio: "", note: "", lien: "", cree: jour, maj: jour }; });
+  $("vite-texte").value = "";
+});
+
+/* ---------- 6. LA FICHE ---------- */
+
+// Remplit une rangée de boutons-choix ; « actif » = valeur choisie
+function remplirChoix(conteneur, options, actif, surChoix) {
+  conteneur.innerHTML = options.map(o =>
+    `<button type="button" data-v="${o.id}" aria-pressed="${o.id === actif}" ${o.c ? `style="--c:${o.c}"` : ""}>
+       ${o.c ? `<span class="point" style="--c:${o.c}"></span>` : ""}${o.nom}</button>`).join("");
+  conteneur.onclick = ev => {
+    const b = ev.target.closest("button");
+    if (!b) return;
+    surChoix(b.dataset.v);
+    conteneur.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  };
+}
+
+function ouvrirFiche(id) {
+  ouvert = id || null;
+  const p = id ? etat.projets[id] : null;
+  // Nouveau projet : statut selon la vue ouverte
+  brouillon = p ? { ...p } : {
+    nom: "", cat: categorie || "perso",
+    statut: vue === "idees" ? "idee" : vue === "finis" ? "termine" : "a-commencer",
+    prio: "", note: "", lien: "",
+  };
+  $("fiche-titre").textContent = p ? "Projet" : (brouillon.statut === "idee" ? "Nouvelle idée" : "Nouveau projet");
+  $("f-nom").value = brouillon.nom;
+  $("f-note").value = brouillon.note || "";
+  $("f-lien").value = brouillon.lien || "";
+  majLien();
+  remplirChoix($("f-cat"), CATEGORIES, brouillon.cat, v => brouillon.cat = v);
+  remplirChoix($("f-statut"), STATUTS, brouillon.statut, v => brouillon.statut = v);
+  remplirChoix($("f-prio"), PRIORITES.map(x => ({ id: x, nom: x || "Aucune" })), brouillon.prio || "", v => brouillon.prio = v);
+  $("f-suppr").hidden = !p;
+  $("f-dates").textContent = p ? `Créé le ${dateLongue(p.cree)} · modifié ${depuis(p.maj)}` : "";
+  // Le bouton retour du téléphone doit fermer la fiche, pas quitter l'appli :
+  // on ajoute une étape à l'historique, que « retour » retire (voir popstate)
+  history.pushState({ fiche: 1 }, "");
+  $("fiche").showModal();
+  if (!p) setTimeout(() => $("f-nom").focus(), 50);
+}
+const dateLongue = d => d ? new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "?";
+
+// Le lien « Ouvrir » n'apparaît que si un lien est saisi
+function majLien() {
+  const l = $("f-lien").value.trim();
+  $("f-ouvrir").hidden = !l;
+  $("f-ouvrir").href = l || "#";
+}
+$("f-lien").addEventListener("input", majLien);
+
+function fermerFiche() {
+  if ($("fiche").open) $("fiche").close();
+}
+$("fiche").addEventListener("close", () => { if (history.state && history.state.fiche) history.back(); });
+window.addEventListener("popstate", () => { fermerFiche(); if ($("synchro").open) $("synchro").close(); });
+$("f-fermer").onclick = fermerFiche;
+
+$("form-fiche").addEventListener("submit", ev => {
+  ev.preventDefault();
+  const nom = $("f-nom").value.trim();
+  if (!nom) { $("f-nom").focus(); return; }
+  const b = { ...brouillon, nom, note: $("f-note").value.trim(), lien: $("f-lien").value.trim(), maj: aujourdhui() };
+  if (!b.cree) b.cree = aujourdhui();
+  const id = ouvert || nouvelId(nom);
+  fermerFiche();
+  // Si on change de statut, on suit le projet dans sa nouvelle vue
+  const nouvelleVue = STATUT[b.statut].vue;
+  if (nouvelleVue !== vue) { vue = nouvelleVue; garderVue(); }
+  modifier(e => { e.projets[id] = b; });
+});
+
+// Supprimer : pas de « Êtes-vous sûr ? », mais « Annuler » pendant 6 s
+$("f-suppr").onclick = () => {
+  const id = ouvert, garde = structuredClone(etat.projets[id]);
+  fermerFiche();
+  modifier(e => { delete e.projets[id]; });
+  afficherToast("« " + garde.nom + " » supprimé", () => modifier(e => { e.projets[id] = garde; }));
+};
+
+$("fab").onclick = () => ouvrirFiche(null);
+
+/* ---------- 7. MESSAGE « ANNULER » ---------- */
+let minuteurToast = null, actionAnnuler = null;
+function afficherToast(texte, annuler) {
+  $("toast-texte").textContent = texte;
+  $("toast-annuler").hidden = !annuler;
+  actionAnnuler = annuler;
+  $("toast").hidden = false;
+  clearTimeout(minuteurToast);
+  minuteurToast = setTimeout(() => { $("toast").hidden = true; actionAnnuler = null; }, 6000);
+}
+$("toast-annuler").onclick = () => {
+  $("toast").hidden = true;
+  clearTimeout(minuteurToast);
+  if (actionAnnuler) actionAnnuler();
+  actionAnnuler = null;
+};
+
+/* ---------- 8. EXPORT TEXTE ----------
+   Fabrique la liste en texte (par catégorie puis statut) et l'ouvre dans
+   la feuille de partage du téléphone (mail, WhatsApp, Claude…), sinon la copie. */
+$("btn-export").onclick = async () => {
+  const lignes = ["Mes projets — " + dateLongue(aujourdhui()), ""];
+  for (const c of CATEGORIES) {
+    const dansCat = Object.values(etat.projets).filter(p => p.cat === c.id);
+    if (!dansCat.length) continue;
+    lignes.push("## " + c.nom);
+    for (const s of STATUTS) {
+      const groupe = trier(dansCat.filter(p => p.statut === s.id));
+      if (!groupe.length) continue;
+      lignes.push(s.nom + " :");
+      for (const p of groupe) lignes.push("- " + p.nom + (p.prio ? " (" + p.prio + ")" : "") + (p.note ? " — " + p.note.replace(/\s+/g, " ") : ""));
+    }
+    lignes.push("");
+  }
+  const texte = lignes.join("\n");
+  try {
+    if (navigator.share) { await navigator.share({ title: "Mes projets", text: texte }); return; }
+  } catch (err) { if (err.name === "AbortError") return; }
+  try { await navigator.clipboard.writeText(texte); afficherToast("Liste copiée"); }
+  catch { afficherToast("Impossible de copier"); }
+};
+
+/* ---------- 9. SYNCHRO (clé) ---------- */
+$("btn-synchro").onclick = () => {
+  const branche = PROJETS_URL !== "";
+  $("synchro-aide").textContent = branche
+    ? "Tape la clé du script Google « Mes projets » : tes projets seront les mêmes sur le téléphone et sur le PC."
+    : "La synchro n'est pas encore branchée : pour l'instant, la liste reste dans cet appareil. Il faut installer le script Google « Mes projets » (mode d'emploi dans outils/projets.gs) puis mettre son adresse dans PROJETS_URL.";
+  $("synchro-champ").hidden = !branche;
+  $("s-ok").hidden = !branche;
+  $("s-cle").value = lireCle();
+  history.pushState({ fiche: 1 }, "");
+  $("synchro").showModal();
+};
+$("synchro").addEventListener("close", () => { if (history.state && history.state.fiche) history.back(); });
+$("s-fermer").onclick = () => $("synchro").close();
+$("form-synchro").addEventListener("submit", ev => {
+  ev.preventDefault();
+  garderCle($("s-cle").value.trim());
+  $("synchro").close();
+  actualiser();
+});
+
+/* ---------- 10. DÉMARRAGE ---------- */
+function demarrer() {
+  $("version").textContent = VERSION;
+  // ?cle=… dans l'adresse : on l'enregistre puis on l'efface de l'adresse
+  const params = new URLSearchParams(location.search);
+  if (params.get("cle")) {
+    garderCle(params.get("cle"));
+    history.replaceState(null, "", location.pathname);
+  }
+  lireVue();
+  etat = normaliser(lireCache());
+  garderCache();
+  afficher();
+  actualiser();
+  // Retour sur l'appli (ex. le lendemain) : on relit la version commune
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) actualiser(); });
+}
+demarrer();
+
+// Service worker (PWA) : seulement en https (pas en test local)
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>

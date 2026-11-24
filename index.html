@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr — Page d'accueil des projets (marque SV)
-  Version 1.46.0
+  Version 1.47.0
   ------------------------------------------------------------
   Historique :
    • v1.0.0 : première page d'accueil
@@ -81,6 +81,7 @@
    • v1.44.2 : « Table de négociation » perd le petit micro (négociations enregistrées, plus d'agent vocal en direct)
    • v1.45.0 : ajout de « Bande-son » (le son des films et des séries, extrait par le NAS) dans « Outils »
    • v1.46.0 : ajout de « 7 villa Marcès » (site de présentation de l'appartement à vendre) dans « Sites & démos »
+   • v1.47.0 : ajout de « Mes projets » (suivi des projets et des idées) dans « Outils »
 
   À déposer dans le dépôt GitHub : svaug12345.github.io
   → c'est le fichier "index.html" à la racine.
@@ -739,7 +740,7 @@
 
     <!-- ===================== PIED DE PAGE ===================== -->
     <footer>
-      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.46.0</p>
+      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.47.0</p>
     </footer>
 
     <!--
@@ -777,6 +778,8 @@
       ============================================================
     */
     const PICTOS = {
+      // folder-kanban : la carte « Mes projets »
+      projets: `<path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" /> <path d="M8 10v4" /> <path d="M12 10v2" /> <path d="M16 10v6" />`,
       // building-2 : la carte « 7 villa Marcès »
       immeuble: `<path d="M10 12h4" /> <path d="M10 8h4" /> <path d="M14 21v-3a2 2 0 0 0-4 0v3" /> <path d="M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2" /> <path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16" />`,
       cone: `<path d="M16.05 10.966a5 2.5 0 0 1-8.1 0" /> <path d="m16.923 14.049 4.48 2.04a1 1 0 0 1 .001 1.831l-8.574 3.9a2 2 0 0 1-1.66 0l-8.574-3.91a1 1 0 0 1 0-1.83l4.484-2.04" /> <path d="M16.949 14.14a5 2.5 0 1 1-9.9 0L10.063 3.5a2 2 0 0 1 3.874 0z" /> <path d="M9.194 6.57a5 2.5 0 0 0 5.61 0" />`,  // traffic-cone
@@ -874,6 +877,11 @@
         desc: "Ce qui prend de la place sur le disque ou le téléphone",
         courte: "Qui prend la place ?",
         url: "disque/" },
+
+      { id: "projets",     nom: "Mes projets",  icone: "projets",
+        desc: "Les projets en cours, à commencer, en pause ou finis, et les idées notées au vol",
+        courte: "Projets et idées",
+        url: "projets/" },                   // données : script Google « Mes projets » (outils/projets.gs)
 
       { id: "journal",     nom: "Journal",      icone: "activite",
         desc: "Visites du site et état des services du NAS (accès par clé)",
@@ -1047,6 +1055,7 @@
       ============================================================
     */
     const MOTS_CLES = {
+      "projets":      "suivi projets idées idee todo kanban statut priorité priorite roadmap en cours pro perso louise",
       // Maison
       "famille":      "dashboard tableau de bord maison tv télé météo tâches corvées enfants voitures agenda anniversaires devoirs",
       "repas":        "menu menus cuisine plats recettes dîner diner courses supermarché liste idées manger semaine",
@@ -1119,7 +1128,7 @@
     const ORGANISATION = {
       rubriques: [
         { nom: "Maison", projets: ["famille", "repas", "cartable", "voitures", "mediatheque", "photos"] },
-        { nom: "Outils", projets: ["qr", "pressoir", "mp3", "bande-son", "place-nette", "paraphe", "journal"] },
+        { nom: "Outils", projets: ["qr", "pressoir", "mp3", "bande-son", "place-nette", "paraphe", "projets", "journal"] },
         { nom: "Famille & amis", projets: ["code", "revisions", "nego-papa", "foot-chats", "petite-souris", "monique", "grand-verdict", "sos-amitie"] },
         { nom: "Carrefour", projets: ["veille", "fournisseurs", "nexus", "equipe-nexus", "prospection-nexus", "salle-negociation", "table-negociation", "magasin-3d", "pochpoch"] },
         { nom: "Formation", projets: ["epuration", "entretien-tuteur", "fart"] },
