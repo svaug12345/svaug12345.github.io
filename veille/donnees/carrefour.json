@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-24T15:58+00:00",
+ "maj": "2026-11-25T01:28+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -49,6 +49,68 @@
   }
  ],
  "articles": [
+  {
+   "id": "25f4c091043c",
+   "titre": "Office Depot : clap de fin pour l’enseigne qui ferme ses 27 derniers magasins et son site marchand",
+   "lien": "https://www.lsa-conso.fr/distributeurs-non-alimentaires/office-depot-clap-de-fin-pour-lenseigne-qui-ferme-ses-27-derniers-magasins-et-son-site-marchand.CVCNBZCCHVEKXAVSYJ6WNX3OT4.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-24T18:20+00:00",
+   "vu_le": "2026-11-25T01:28+00:00",
+   "resume": "",
+   "enrichi": "2026-11-25"
+  },
+  {
+   "id": "3bf1b9aa4330",
+   "titre": "Carrefour reprend la main sur l'Atacadão d'Aulnay-sous-Bois",
+   "lien": "https://www.lineaires.com/la-distribution/carrefour-reprend-la-main-sur-l-atacadao-d-aulnay-sous-bois",
+   "source": "lineaires",
+   "media": "Lineaires",
+   "site": "lineaires.com",
+   "date": "2026-11-24T18:08+00:00",
+   "vu_le": "2026-11-25T01:28+00:00",
+   "resume": "Carrefour reprend les parts de son partenaire marocain LabelVie dans le fonds de commerce de l'unique Atacadão français qui avait ouvert en juin 2024. Faute de",
+   "enrichi": "2026-11-25",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/231f2418-0393-481c-900d-f33701633e3c.jpg.webp?itok=_sB1M7mI"
+  },
+  {
+   "id": "e98a3eeadd1b",
+   "titre": "Après Carrefour, Decathlon ciblé par une cyberattaque faisant fuiter les données personnelles de 163 000 clients",
+   "lien": "https://www.lsa-conso.fr/distributeurs-non-alimentaires/mode-sport/decathlon/apres-carrefour-decathlon-cible-par-une-cyberattaque-faisant-fuiter-les-donnees-personnelles-de-163-000-clients.HEQKFRLC65CINF7HEUNHZM5SS4.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-24T16:26+00:00",
+   "vu_le": "2026-11-25T01:28+00:00",
+   "resume": "",
+   "enrichi": "2026-11-25"
+  },
+  {
+   "id": "3868b514be09",
+   "titre": "\"Elle disait que sa voiture avait un souci\" : une conductrice fauche deux piétons et s'encastre dans un supermarché près de Bordeaux",
+   "lien": "https://france3-regions.franceinfo.fr/nouvelle-aquitaine/gironde/bordeaux/elle-disait-que-sa-voiture-avait-un-souci-une-conductrice-fauche-deux-pietons-et-s-encastre-dans-un-supermarche-pres-de-bordeaux-3455135.html",
+   "source": "autres",
+   "media": "France 3 Régions",
+   "site": "france3-regions.franceinfo.fr",
+   "date": "2026-11-24T13:42+00:00",
+   "vu_le": "2026-11-25T01:28+00:00",
+   "resume": "Deux personnes ont été très grièvement blessées ce mardi 24 novembre à Lormont en Gironde, après avoir été percutées par une voiture sur le parking du centre commercial des Quatre pavillons. Au volant, la conductrice aurait...",
+   "enrichi": "2026-11-25",
+   "image": "https://france3-regions.franceinfo.fr/image/Lg0TDmcKvYiCoccZBWF5AbIK9so/930x620/regions/2026/11/24/6b05a4b5dbd61239025016.jpg"
+  },
+  {
+   "id": "b39dbd1f511e",
+   "titre": "Seconde main : derrière le lancement de la toute nouvelle enseigne Mod’Up, un géant européen qui trie plus de 100 000 tonnes de textiles par an [Exclusif]",
+   "lien": "https://www.lsa-conso.fr/distributeurs-non-alimentaires/seconde-main-derriere-le-lancement-de-la-toute-nouvelle-enseigne-modup-un-geant-europeen-qui-trie-plus-de-100-000-tonnes-de-textiles-par-an-exclusif.4UCS3YAA6VDVXP53INASPR6WHY.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-24T12:30+00:00",
+   "vu_le": "2026-11-25T01:28+00:00",
+   "resume": "",
+   "enrichi": "2026-11-25"
+  },
   {
    "id": "a748954922ca",
    "titre": "Carrefour lance Gus Mia, son concept de restauration façon IKEA dès novembre",
@@ -184,6 +246,19 @@
    "vu_le": "2026-11-23T16:09+00:00",
    "resume": "",
    "enrichi": "2026-11-23"
+  },
+  {
+   "id": "c473cf50b481",
+   "titre": "Pour les fêtes, le cadeau qu’on veut : - 50 % d’animaux tués",
+   "lien": "https://www.l214.com/stop-intensif/carrefour-noel-2026/",
+   "source": "autres",
+   "media": "L214",
+   "site": "l214.com",
+   "date": "2026-11-23T13:35+00:00",
+   "vu_le": "2026-11-25T01:28+00:00",
+   "resume": "Pour les fêtes, nous faisons un vœu simple : Carrefour doit s’engager à réduire de 50 % le nombre d’animaux tués, en respectant les critères du Plant Protein Pact (PPP)",
+   "enrichi": "2026-11-25",
+   "image": "https://www.l214.com/wp-content/uploads/2026/11/plumes-carrefour-noel-web-visuel-de-partage-fb-et-x-600x314-1.jpg"
   },
   {
    "id": "41e37c608398",
@@ -4209,6 +4284,18 @@
    "enrichi": "2026-11-24"
   },
   {
+   "id": "780779625626",
+   "titre": "Carrefour cède les murs de 35 magasins pour 290 M€ et en restera locataire",
+   "lien": "https://www.ideal-investisseur.fr/actions-b/carrefour-cede-les-murs-de-35-magasins-pour-290-m-et-en-restera-locataire/26780.html",
+   "source": "autres",
+   "media": "Idéal Investisseur",
+   "site": "ideal-investisseur.fr",
+   "date": "2026-10-09T07:00+00:00",
+   "vu_le": "2026-11-25T01:28+00:00",
+   "resume": "",
+   "enrichi": "2026-11-25"
+  },
+  {
    "id": "1f1c20672c78",
    "titre": "Prix des carburants : Carrefour, Auchan, Lidl, les aides proposées aux salariés de la grande distribution",
    "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/prix-des-carburants-carrefour-auchan-lidl-les-aides-proposees-aux-salaries-de-la-grande-distribution.DA4BSEEZ6FCL5NCGM74OJ3IF5E.html",
@@ -4352,35 +4439,41 @@
   {
    "id": "be05e8aba1f7",
    "titre": "Carrefour veut reconquérir le non-alimentaire, format par format",
-   "lien": "https://news.google.com/rss/articles/CBMiugFBVV95cUxNTjZuWUIzZURDT1BrZGtwVmUwaGdJVEtBZmE1YXpwbTlrSjMxQ0FwWG9hYnRKbFdGdHBUM0tBQmM2UlNxVXlKb1hmLXRodHpja015cThnSWtXZUNLUU9qUS1SOHYwVkVJeVNFWWZ6cmJHMEZzZzV4eWNQTmNhR0Mza3lkalFyQjJLWlQ1YUhra3AwUFV2WDNIVlVYZ1ZibUJqczh1U3EyX1JOV081YWxOS2JxbUlWaDJLN2c?oc=5",
+   "lien": "https://www.jebosseengrandedistribution.fr/2026/10/07/carrefour-veut-reconquerir-le-non-alimentaire-format-par-format/",
    "source": "autres",
    "media": "Je Bosse en Grande Distribution",
    "site": "jebosseengrandedistribution.fr",
    "date": "2026-10-07T07:00+00:00",
    "vu_le": "2026-11-24T15:58+00:00",
-   "resume": ""
+   "resume": "Le non-al pèse 16 % du CA des hypers Carrefour, mais 6 % seulement en Market. Lors de sa plénière fournisseurs, l'enseigne a détaillé son plan de reconquête format par format, et ce qu'elle attend des marques.",
+   "enrichi": "2026-11-25",
+   "image": "https://storage.ghost.io/c/ed/da/edda0153-be11-4643-9318-2cb198c66e7f/content/images/2026/10/Illustration-blog--12-.jpg"
   },
   {
    "id": "21878a368be9",
    "titre": "Forfaits de supermarché : Carrefour revient à 6,90 €, Auchan riposte à 5,99 €",
-   "lien": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxOTVBUMkJSWllXNlJrVE5PbHRJYkpGaEFiSHJ1QXVEQnJEdlFpalNkWUJxcTczWl9NS3NXTXA5OC15WnlJd0trX19iSDZWYWJsaVFCNnpDNmZkTTJBc050OWlaNF9iOUZSN194U21yeG55anJoRkZKMk92NDdFUU9mVE00TW9SOXBOaUg2TndnMW5RSC1xQTB0dU5YY2hYODZNYmFuTW9ta0dIdw?oc=5",
+   "lien": "https://www.jechange.fr/telecom/mobile/news/forfaits-supermarche-carrefour-mobile-6-90-auchan-telecom-5-99",
    "source": "autres",
    "media": "JeChange",
    "site": "jechange.fr",
    "date": "2026-10-07T07:00+00:00",
    "vu_le": "2026-11-24T15:58+00:00",
-   "resume": ""
+   "resume": "Carrefour Mobile relance 20 Go à 6,90 € sur le réseau Orange avec 1 € de cagnotte par mois. Auchan Télécom répond le même jour : 5,99 € avec sa carte Waaoh!.",
+   "enrichi": "2026-11-25",
+   "image": "https://images.jechange.fr/www.jechange.fr/news/v2/forfaits-supermarche-carrefour-mobile-6-90-auchan-telecom-5-99.jpg"
   },
   {
    "id": "6f38eb9c6545",
    "titre": "Votre supérette de quartier bientôt remplacé par un magasin Carrefour ? Les CocciMarket dans le viseur de l'enseigne",
-   "lien": "https://news.google.com/rss/articles/CBMipAJBVV95cUxQajRiVFNFM3RYbElURFRHMUxwWkFfeUxYNldTRGd5MkZOakpXNWtUdml2eDZHUEE5X0RTQnF6U1h6UmNpd1MwX2J4RmFhODhiUnc4ZGVkcFQ1SC1wNTBleGNMMExackN4d3N3ZlNQeG9ndU1SMEMwTElHWEhfelFFNTFBM1VTNk1nQWxxQ3NjTjcxYWlkbERqaHpiVkxXNFM1ejRZX1hjOGVTN0dxOGFGZkZydHdQckwwZTB2YzVmbnFtZFZSdU5tcEM4YTdZZWNrUFBmYVdiYzluR2pWSHBSVi1YaEF4MDZuM21xOXRXT0JoYzZCWEtyNVJkZ3FJVEdwdWYybWh2Ykh2WFY2TEhmNVNPdkxYTEpfV2hMTl82b0VTOHdp?oc=5",
+   "lien": "https://www.boursorama.com/budget/conso/actualites/votre-superette-de-quartier-bientot-remplace-par-un-magasin-carrefour-les-coccimarket-dans-le-viseur-de-l-enseigne-cc6133b4cd22dc47a4fc1c620c3e1c4b",
    "source": "autres",
    "media": "Boursorama",
    "site": "boursorama.com",
    "date": "2026-10-06T07:00+00:00",
    "vu_le": "2026-11-24T15:58+00:00",
-   "resume": ""
+   "resume": "Carrefour a engagé le 1er octobre des négociations pour racheter Codifrance, la centrale d'achat qui approvisionne 3 000 points de vente en France dont les magasins Coccinelle ou CocciMarket. L'opération, estimée à 155 millions d'euros, doit renforcer la position",
+   "enrichi": "2026-11-25",
+   "image": "https://www.boursorama.com/static/i/content/images/1/f/0/1f0ab74145e6c516c378032c256545f5-1600x1059.jpg"
   },
   {
    "id": "09d6496f8f0e",
@@ -4420,13 +4513,15 @@
   {
    "id": "e58916afe969",
    "titre": "Votre Coccinelle ou CocciMarket bientôt remplacé par un Carrefour? Ce que ce projet de rachat changerait pour vous",
-   "lien": "https://news.google.com/rss/articles/CBMiogJBVV95cUxNaGpFWWE1M25zc0RtTWMxTHZENngwRjVNTkVMa1BUajZzSjUyckNhVEN4QUtjUFJjbi1SdEFOV1IwRGl5d2Uzb0xxaDloR2t5WGZ0SVcyUTlsWS1PMjdkSXlVMXZmNWd5eW9aZ2RBc0VNcHl4WUFka2hhcDVyanFaXzNxcGV3aDZUNXhOSWxYLXdsbUthVEZtVGFKcWktX3puQ213WmhRbHo1bHJ1OS1hcEFueE92dHVoTDdEeU5JcHJaeG5neTl5UGpqcmxvdDU5aXd4bHBpMEFJQ19CZ0U3Q3FlYVJjbGpGRzRCV2daZjAwTUJ6WDd5VV9jOUd3WmFOT0s5Uko4dXMxN2V0UnYwNVhLX1VQQ19xeTRnNHpCalh3dw?oc=5",
+   "lien": "https://rmc.bfmtv.com/conso/alimentation/grande-distribution/votre-coccinelle-ou-cocci-market-bientot-remplace-par-un-carrefour-ce-que-ce-projet-de-rachat-changerait-pour-vous_AN-202610050601.html",
    "source": "autres",
    "media": "RMC",
    "site": "rmc.bfmtv.com",
    "date": "2026-10-05T07:00+00:00",
    "vu_le": "2026-11-24T15:58+00:00",
-   "resume": ""
+   "resume": "Carrefour est en négociations pour racheter Codifrance, entreprise de distribution comptant près de 800 magasins, dont des enseignes Coccinelle, CocciMarket ou encore VivEco. Carrefour pourrait ainsi renforcer sa position dans les zones touristiques et rurales, en y développant ses enseignes...",
+   "enrichi": "2026-11-25",
+   "image": "https://io-fsly-bfmtv.cdn.nextradiotv.com/ntez3MB6GuD0HaRDZRNJHc1XvYY=/0x106:2048x1258/2048x0/images/enseigne-Cocci-marlet-2359605.jpg"
   },
   {
    "id": "86f05a497e61",
@@ -4467,13 +4562,15 @@
   {
    "id": "1b3210c28ebf",
    "titre": "Grande distribution 2025 : quels gagnants et perdants du secteur ?",
-   "lien": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxNZFN5V2lOc3pOcE9qWDBTd0gyUm1PUDNDZ1pKeE1VSXZBbmdiR3FJVXF3aFJHV05lT3VwSkxXNldTYjk4V2NEN2FqVzlzbGoxTDN4YnhvdEpMd3poZTU5WkxyNVcyYnpIUGJKcFB0R0o4YktOUEptTGxxZHF4dWxFTWZFODd5aDRUaEVJOE1HX2t2U2R2WDlDZEtBbm5TbHRnbHBBbG03WmY2MFJGQ0RZN2pBeG1kX2dLRmRiUE83SEl1QkFMVW1jQ3Jrc1hpWGZPOUh3MnVB?oc=5",
+   "lien": "https://www.republikgroup.com/articles/917e8991-b6b2-f111-a6a7-6045bd9f5987/grande-distribution-2025-quels-gagnants-et-perdants-du-secteur-",
    "source": "autres",
    "media": "www.republikgroup.com",
    "site": "republikgroup.com",
    "date": "2026-10-04T02:50+00:00",
    "vu_le": "2026-11-24T15:58+00:00",
-   "resume": ""
+   "resume": "La grande distribution entre dans une nouvelle phase. Entre ralentissement de la croissance, consolidation accélérée et modèles sous tension, les dynamiques divergent fortement. Certains acteurs tirent parti du marché, quand d’autres cherchent encore leur équilibre. Qui sont les gagnants et les perdants de l’année ?",
+   "enrichi": "2026-11-25",
+   "image": "https://static.inwink.com/a37e7b3a-3c11-444e-8684-39edf2ad3de3/836fa240-11a3-447f-9fc8-309f035b3e3a"
   },
   {
    "id": "f58b60389534",
@@ -4528,24 +4625,28 @@
   {
    "id": "8e63511c5c75",
    "titre": "Leclerc, Carrefour... L'enseigne de vêtements thermiques Damart arrive en supermarchés, avec des produits en dessous de 20 euros",
-   "lien": "https://news.google.com/rss/articles/CBMikgJBVV95cUxPaHlmcy1JZElmTTg4ZG9vM2h2STJlVGRWeFl6OEpVLWM4bTFTazlxcVZhZWFORnJRMXpMQWVvWWNkWFgtbDJ6bE82empCMVB3M3NlRENIMFNIM2VMamw0a2txOG1fdmR3MXBnRVJkZVlDUUVNYzJLVUk2N2dRNE92QlBkRTQyUElXZkxTalNZOWJEenNaOVdneGlyQ2VCSklySDI5eGVwNVc3TDhPSHpuUGMxT2dKeEJzRHU5ZHNaREk4RVYxSEo0QnpMOUZpQUNyME1IZVRHVVJ5Z0ZBM2wxel9NNFBsWVVTVnlOc1ViNWdXeDA1QlZ2TFctWEoweXFtWExWWXU1T3pweWhLd1Nkbnln?oc=5",
+   "lien": "https://rmc.bfmtv.com/conso/habillement/leclerc-carrefour-l-enseigne-de-vetements-thermiques-damart-arrive-en-supermarches-avec-des-produits-en-dessous-de-20-euros_AV-202610010705.html",
    "source": "autres",
    "media": "RMC",
    "site": "rmc.bfmtv.com",
    "date": "2026-10-01T07:00+00:00",
    "vu_le": "2026-11-24T15:58+00:00",
-   "resume": ""
+   "resume": "Historiquement présente via ses catalogues et ses magasins, puis en ligne, Damart arrive dans les supermarchés dès la mi-octobre. La célèbre marque de vêtements thermiques tente de se relancer, en s'adressant à un public plus large et plus jeune et en sortant de nouveaux produits. Explications.",
+   "enrichi": "2026-11-25",
+   "image": "https://io-fsly-bfmtv.cdn.nextradiotv.com/30MBWuwmmXGsxRh5BDJMlJ9f_rA=/0x458:1152x1106/1152x0/images/Damart-2357681.jpg"
   },
   {
    "id": "c4c96fc1d923",
    "titre": "L'hypermarché Carrefour d'Antibes épinglé pour l'utilisation de pièges à colle dans ses locaux",
-   "lien": "https://news.google.com/rss/articles/CBMiogJBVV95cUxPYjg1Y3RLa0FoR2JYY3dTdC1heG5TbnZ2SFBabXlKdXU4ZFhuOG1UM3FyQ2NWU09yMVlucW5iT0JENG1YcE9URi1Gem1sSUd5eXlLMDZyT2lCamw3WE14NkVTZnprNHUwRnRodXZCUmp1LUNYTkduU3h4YUpEWmxoVkI0MGczSVdTUGhFQ0EzbjNQUmhoSUpEUF93bWxUenhTYTJYczJHNzdkN1gtb2M4UTJ4N1lqYWd6VU1xaGEtQW5kcHFoQWM2eHFUSGV4c1pqekZabXczcXRhblF4bmtxSDFIUTJoSW1IOWtyZUNpOGlQX3A0TjRqd3phUDNSMzdUNnpuenQ4TzhhTFIyLVl5WVNDVDU4NzFvNzFYT2lpRERYQQ?oc=5",
+   "lien": "https://france3-regions.franceinfo.fr/provence-alpes-cote-d-azur/alpes-maritimes/antibes/l-hypermarche-carrefour-d-antibes-epingle-pour-l-utilisation-de-pieges-a-colle-dans-ses-locaux-3424982.html",
    "source": "autres",
    "media": "France 3 Régions",
    "site": "france3-regions.franceinfo.fr",
    "date": "2026-10-01T07:00+00:00",
    "vu_le": "2026-11-24T15:58+00:00",
-   "resume": ""
+   "resume": "L'association antispéciste Futur a publié plusieurs vidéos montrant rongeurs et oiseaux morts ou à l'agonie, coincés dans ces pièges très controversés. Elles auraient été filmées au sein de l'enseigne antiboise, qui assume.",
+   "enrichi": "2026-11-25",
+   "image": "https://france3-regions.franceinfo.fr/image/W5olRcYAbhodFKE2dNasbe8PH44/930x620/regions/2026/09/29/6abbd6666de40149280344.jpg"
   },
   {
    "id": "7b0f3d26adba",
@@ -4620,24 +4721,28 @@
   {
    "id": "fe691d26271e",
    "titre": "Carrefour veut racheter le distributeur Codifrance (Coccimarket, Coccinelle) pour 155 millions d'euros (presse",
-   "lien": "https://news.google.com/rss/articles/CBMikgJBVV95cUxQZUV3cGswbWoxUWNxaC01Q1JJekloSmxGMFRMcFJoXzFPQ2RIaFdyRGpRYUZMbVNsVFc3Q3RKRW9Cajl3a3F2MGItb2k5QlNleXVZSFhOUnBJalF2M2R0V2kwYTZ3UjBVNjlUZmowS1JuRGFNdXg1OHFKWWpPX2FLenJMcFZraEZfZWpjdXQtYTFORTRQLXpyWHB4ZTVSSWRBMEg2d21LTjlJMS1mUFRXOUFOa2tibzZPYTRJN2lrblRySS1MMWxKam9LRHdtTEdsUWZCSzNIdnpBQTM2ckN3YnFhYy1GeDBBZ0gxX24zVHh3Tm1TMFJoX0RmUi1HWmNweTBqVWd4c0prUnBHX2dESXJn0gGXAkFVX3lxTE5aUVpGRnRUeFBNcThFZnd0bi0zVExfNnhUb2lJdDFwTXR6VHd1TEtKXy11MWpmU1NZRnM3dkQ0VGpzaGNVNTU5TGNoTzhYcnFIOEN3MWlfUTcwMkZuVEV2bko2LTZKbS1oZ2NrQXpteWZGdTkweFlYWXd4ZkNucTRHbU14cl96M2VfeWx3OEJPZ3VjcndlQ2NzOHF6d19RTE56ZE85V1ptUzR4eWFld3hHZGloOENVQ1FxRmVTblIwZVZyRkI2eUpBY0NfQ1NEeUlpdXhDTE5BcFFUZnRJY1pTWnJLUXhBTFpwUGJsTzdFTHlkTV9TVHYyY1hUNmdLWnNpZDBIZHNYb0ZpVXVyXzB3VTJ6VVp2UQ?oc=5",
+   "lien": "https://www.boursorama.com/bourse/actualites/carrefour-veut-racheter-le-distributeur-codifrance-coccimarket-coccinelle-pour-155-millions-d-euros-presse-70a5fc3ed654b1737e1214a045b60f45",
    "source": "autres",
    "media": "Boursorama",
    "site": "boursorama.com",
    "date": "2026-09-29T07:00+00:00",
    "vu_le": "2026-11-24T15:58+00:00",
-   "resume": ""
+   "resume": "Le géant français de la distribution Carrefour souhaite acheter pour 155 millions d'euros le distributeur spécialisé dans le commerce de proximité Codifrance et son réseau de 3.000 supérettes, dont Coccimarket et Coccinelle, au groupe belge Colruyt, selon des informations",
+   "enrichi": "2026-11-25",
+   "image": "https://www.boursorama.com/static/i/content/images/2/3/4/234d070b5109e8f13913a9aa555d5397-1200x800.jpg"
   },
   {
    "id": "cc97148ee1ba",
    "titre": "Les 8 plus grands hypermarchés de France en 2026",
-   "lien": "https://news.google.com/rss/articles/CBMipgFBVV95cUxQUzJKeVZROFlVdDJELUhSTmh2dDdzVzVwX3V3RXVHMzlYWEZwQThBa2NXX3VHYk1IZjZtdjhDT28zdzZKRFFLVlZWYUI5cU9lY3VqMW5PblNScGhiR0lWVnNCYXJEVzVHQmltR21CQ0RhV2dLU0gwckl3ZDAwNFIwYzl6dTRLaGZ6bGJKV2lKOTBNckJVUEhKYnE5NmgyQWxvWTdHU3J3?oc=5",
+   "lien": "https://www.jebosseengrandedistribution.fr/2026/09/28/les-8-plus-grands-hypermarches-de-france-en-2026/",
    "source": "autres",
    "media": "Je Bosse en Grande Distribution",
    "site": "jebosseengrandedistribution.fr",
    "date": "2026-09-28T07:00+00:00",
    "vu_le": "2026-11-24T15:58+00:00",
-   "resume": ""
+   "resume": "Carrefour Villiers-en-Bière, Auchan Noyelles-Godault, Carrefour Vitrolles… Les 8 plus grands hypermarchés de France dépassent encore les 15 000 m², au moment où le secteur réduit ses surfaces.",
+   "enrichi": "2026-11-25",
+   "image": "https://storage.ghost.io/c/ed/da/edda0153-be11-4643-9318-2cb198c66e7f/content/images/2026/09/Illustration-blog-1.jpg"
   },
   {
    "id": "25ee7f04ced6",
