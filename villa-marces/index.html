@@ -2,7 +2,7 @@
 <!--
   ============================================================
   « 7 villa Marcès » — site de présentation de l'appartement à vendre
-  Version 1.12.0 – 23/11/2026
+  Version 1.13.0 – 25/11/2026
   En ligne : https://baiji.fr/villa-marces/
   ------------------------------------------------------------
   Historique :
@@ -51,6 +51,9 @@
    • 1.12.0 : page Financier — nouvelle carte « Diagnostics » : résultats de novembre 2020
              (DPE D / GES B, électricité sans anomalie, pas d'amiante repéré), chacun marqué
              « À renouveler » ; surface loi Carrez : « Certificat à renouveler ».
+   • 1.13.0 : mention discrète « Photo non contractuelle » (pastille .nc) posée sur chaque photo :
+             ouverture, présentation, les deux niveaux, galerie, photo agrandie ; « Images non
+             contractuelles » sur la visite à 360°, « Vidéo non contractuelle » sur le film.
 
   COMMENT C'EST FAIT (pour s'y retrouver) :
    • Une page principale autonome : HTML + CSS + JavaScript, sans outil de construction
@@ -210,6 +213,7 @@
     /* ---------- Présentation : texte + photo ---------- */
     .duo { display: grid; gap: 28px; align-items: center; }
     .duo img { border-radius: var(--rayon); width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+    .duo .photo, .niveau .photo { position: relative; }
 
     /* ---------- Les deux niveaux ---------- */
     .niveaux { display: grid; gap: 20px; margin-top: 28px; }
@@ -226,9 +230,19 @@
 
     /* ---------- Vidéo ---------- */
     /* Cadre au format 16/9 : l'iframe du lecteur le remplit entièrement */
-    .film { margin-top: 26px; border-radius: var(--rayon); overflow: hidden; background: #111; aspect-ratio: 16 / 9; }
+    .film { position: relative; margin-top: 26px; border-radius: var(--rayon); overflow: hidden; background: #111; aspect-ratio: 16 / 9; }
     .film iframe { display: block; width: 100%; height: 100%; border: 0; }
     .film-lien { margin: 12px 0 0; font-size: .92rem; color: var(--encre-2); }
+
+    /* ---------- Mention « non contractuelle » ----------
+       Petite pastille discrète dans un coin de chaque photo, de la visite 360° et du film.
+       pointer-events: none = elle ne gêne ni le clic sur la photo ni le lecteur vidéo. */
+    .nc { position: absolute; top: 10px; right: 10px; z-index: 3; pointer-events: none;
+      font: 600 .68rem/1 var(--texte); letter-spacing: .02em; color: rgba(255, 255, 255, .92);
+      background: rgba(20, 28, 25, .5); padding: 5px 8px; border-radius: 999px; }
+    .nc.gauche { right: auto; left: 10px; }
+    .agrandi .nc { top: 18px; right: auto; left: 14px; }
+    .galerie .nc { top: 6px; right: 6px; font-size: .58rem; padding: 3px 6px; background: rgba(20, 28, 25, .4); }
 
     /* ---------- Galerie ---------- */
     .galerie { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 28px; }
@@ -397,6 +411,7 @@
     <!-- ================= Ouverture ================= -->
     <div class="ouverture">
       <img src="vues/terrasse-facade.jpg" alt="La terrasse du séjour à la tombée du jour, baies vitrées éclairées et store déployé" width="1600" height="1000" fetchpriority="high">
+      <span class="nc">Photo non contractuelle</span>
       <div class="contenu">
         <p class="annonce">Bientôt en vente</p>
         <p class="lieu">Saint-Mandé (94160)</p>
@@ -433,7 +448,7 @@
           <p class="chapeau">Au sommet d'un immeuble en pierre de taille de 1989, petite copropriété de sept logements, cet appartement d'architecte occupe les deux derniers niveaux. On y vit comme dans une maison : les pièces de jour s'ouvrent de plain-pied sur une terrasse arborée, la véranda prolonge le séjour toute l'année, et l'étage réunit les chambres au calme.</p>
           <p class="chapeau">Orienté ouest, sud et est, il reçoit la lumière du matin au soir. Les nombreux rangements intégrés, le double box et la cave en font un vrai appartement familial.</p>
         </div>
-        <img src="vues/sejour-terrasse.jpg" alt="Le séjour parqueté ouvert sur la véranda et la terrasse" width="1600" height="1000" loading="lazy">
+        <div class="photo"><img src="vues/sejour-terrasse.jpg" alt="Le séjour parqueté ouvert sur la véranda et la terrasse" width="1600" height="1000" loading="lazy"><span class="nc">Photo non contractuelle</span></div>
       </div>
     </section>
 
@@ -444,7 +459,7 @@
         <h2>Deux niveaux, deux ambiances</h2>
         <div class="niveaux">
           <article class="niveau">
-            <img src="vues/veranda.jpg" alt="La véranda vitrée, avec vue sur les immeubles voisins" width="1600" height="1000" loading="lazy">
+            <div class="photo"><img src="vues/veranda.jpg" alt="La véranda vitrée, avec vue sur les immeubles voisins" width="1600" height="1000" loading="lazy"><span class="nc">Photo non contractuelle</span></div>
             <div class="corps">
               <p class="etage">3ᵉ étage · 90,7 m² habitables</p>
               <h3>Les pièces de vie, de plain-pied sur la terrasse</h3>
@@ -459,7 +474,7 @@
             </div>
           </article>
           <article class="niveau">
-            <img src="vues/chambre5.jpg" alt="Une chambre de l'étage, parquetée, avec baie vitrée sur sa terrasse" width="1600" height="1000" loading="lazy">
+            <div class="photo"><img src="vues/chambre5.jpg" alt="Une chambre de l'étage, parquetée, avec baie vitrée sur sa terrasse" width="1600" height="1000" loading="lazy"><span class="nc">Photo non contractuelle</span></div>
             <div class="corps">
               <p class="etage">4ᵉ étage · 59,8 m² habitables</p>
               <h3>L'étage des chambres</h3>
@@ -491,6 +506,7 @@
              le lecteur de Drive dans une iframe. L'adresse est posée par le script (VIDEO_DRIVE). -->
         <div class="film">
           <iframe id="film" title="Vidéo de visite du 7 villa Marcès" loading="lazy" allow="fullscreen; autoplay" allowfullscreen></iframe>
+          <span class="nc gauche">Vidéo non contractuelle</span>
         </div>
         <p class="film-lien">La vidéo ne s'affiche pas ? <a id="film-lien" href="#" target="_blank" rel="noopener">L'ouvrir dans Google Drive</a></p>
       </div>
@@ -515,6 +531,7 @@
 
         <div class="ecran">
           <div id="panorama"></div>
+          <span class="nc">Images non contractuelles</span>
           <!-- Écran d'attente : disparaît au premier appui -->
           <div class="attente" id="attente">
             <img src="vues/sejour.jpg" alt="" loading="lazy">
@@ -668,6 +685,7 @@
     <div class="cadre">
       <button class="fermer" id="agrandi-fermer" type="button" aria-label="Fermer">✕</button>
       <img id="agrandi-image" src="" alt="">
+      <span class="nc">Photo non contractuelle</span>
       <div class="bas">
         <button id="agrandi-avant" type="button" aria-label="Photo précédente">‹</button>
         <p id="agrandi-legende"></p>
@@ -680,7 +698,7 @@
   <script src="lib/pannellum.js"></script>
   <script>
     "use strict";
-    const VERSION = "1.12.0";
+    const VERSION = "1.13.0";
 
     // ============================================================
     // CE QU'ON PEUT MODIFIER SANS TOUCHER AU RESTE
@@ -800,7 +818,7 @@
       bouton.type = "button";
       bouton.innerHTML =
         `<img src="vues/${fichier}.jpg" alt="${legende}" width="${largeur}" height="${hauteur}" loading="lazy">` +
-        `<span class="legende">${legende}</span>`;
+        `<span class="legende">${legende}</span><span class="nc">Photo non contractuelle</span>`;
       bouton.addEventListener("click", () => agrandir(numero));
       galerie.append(bouton);
     });
