@@ -2,7 +2,7 @@
 <!--
   ============================================================
   « 7 villa Marcès » — site de présentation de l'appartement à vendre
-  Version 1.13.0 – 25/11/2026
+  Version 1.14.0 – 25/11/2026
   En ligne : https://baiji.fr/villa-marces/
   ------------------------------------------------------------
   Historique :
@@ -54,6 +54,9 @@
    • 1.13.0 : mention discrète « Photo non contractuelle » (pastille .nc) posée sur chaque photo :
              ouverture, présentation, les deux niveaux, galerie, photo agrandie ; « Images non
              contractuelles » sur la visite à 360°, « Vidéo non contractuelle » sur le film.
+   • 1.14.0 : la vidéo est hébergée SUR LE SITE (video/visite.mp4, 720p allégée, avec la
+             mention « Vidéo non contractuelle » incrustée dans l'image) et lue par le lecteur
+             du navigateur (<video>) ; plus de lecteur Google Drive (VIDEO_DRIVE supprimé).
 
   COMMENT C'EST FAIT (pour s'y retrouver) :
    • Une page principale autonome : HTML + CSS + JavaScript, sans outil de construction
@@ -69,7 +72,7 @@
    • La visite à 360° utilise la bibliothèque libre Pannellum (licence MIT),
      copiée dans lib/ : aucun service extérieur n'est nécessaire.
    • TOUT LE CONTENU MODIFIABLE est regroupé en bas de page, dans le <script> :
-       CONTACT (courriel, téléphone), INTERET_URL (formulaire), PRIX, VIDEO_DRIVE (film),
+       CONTACT (courriel, téléphone), INTERET_URL (formulaire), PRIX, VIDEO (film),
        PHOTOS (galerie), SCENES (visite 360°).
    • Les surfaces viennent du descriptif du bien et de l'avis de valeur de 2011 :
      elles sont INDICATIVES tant qu'un mesurage Carrez récent n'est pas reporté ici.
@@ -231,7 +234,7 @@
     /* ---------- Vidéo ---------- */
     /* Cadre au format 16/9 : l'iframe du lecteur le remplit entièrement */
     .film { position: relative; margin-top: 26px; border-radius: var(--rayon); overflow: hidden; background: #111; aspect-ratio: 16 / 9; }
-    .film iframe { display: block; width: 100%; height: 100%; border: 0; }
+    .film video { display: block; width: 100%; height: 100%; background: #111; }
     .film-lien { margin: 12px 0 0; font-size: .92rem; color: var(--encre-2); }
 
     /* ---------- Mention « non contractuelle » ----------
@@ -502,13 +505,15 @@
         <p class="surtitre">Vidéo</p>
         <h2>La visite en film</h2>
         <p class="chapeau">Parcourez l'appartement en vidéo, de l'entrée aux terrasses.</p>
-        <!-- Le film est rangé dans Google Drive (trop lourd pour le dépôt du site) : on affiche
-             le lecteur de Drive dans une iframe. L'adresse est posée par le script (VIDEO_DRIVE). -->
+        <!-- Le film est dans le dossier video/ du site (version allégée 720p, environ 25 Mo,
+             fabriquée par le projet « visite-video-villa-marces »). La mention « Vidéo non
+             contractuelle » est incrustée dans l'image. preload="none" : rien n'est téléchargé
+             tant que le visiteur n'appuie pas sur lecture ; l'affiche (poster) s'affiche avant. -->
         <div class="film">
-          <iframe id="film" title="Vidéo de visite du 7 villa Marcès" loading="lazy" allow="fullscreen; autoplay" allowfullscreen></iframe>
-          <span class="nc gauche">Vidéo non contractuelle</span>
+          <video id="film" controls preload="none" playsinline poster="video/visite-affiche.jpg"
+                 aria-label="Vidéo de visite du 7 villa Marcès"></video>
         </div>
-        <p class="film-lien">La vidéo ne s'affiche pas ? <a id="film-lien" href="#" target="_blank" rel="noopener">L'ouvrir dans Google Drive</a></p>
+        <p class="film-lien">Vidéo non contractuelle. <a id="film-lien" href="#" target="_blank" rel="noopener">Ouvrir la vidéo seule</a></p>
       </div>
     </section>
 
@@ -698,7 +703,7 @@
   <script src="lib/pannellum.js"></script>
   <script>
     "use strict";
-    const VERSION = "1.13.0";
+    const VERSION = "1.14.0";
 
     // ============================================================
     // CE QU'ON PEUT MODIFIER SANS TOUCHER AU RESTE
@@ -721,11 +726,9 @@
     // Prix affiché dans la fiche ("" = « Sur demande »). Ex. "1 250 000 €"
     const PRIX = "";
 
-    // Film de la visite : identifiant du fichier dans Google Drive (la suite de lettres
-    // entre « /d/ » et « /view » dans son lien de partage). Le fichier doit rester partagé
-    // « toute personne disposant du lien », sinon les visiteurs verront une demande d'accès.
+    // Film de la visite : fichier dans le dossier du site (MP4 H.264, à garder sous 50 Mo).
     // "" = la rubrique Vidéo (et ses liens) est masquée.
-    const VIDEO_DRIVE = "1oMgbEknSBu6EEuoXKIoq6qsEwSppaXj9";
+    const VIDEO = "video/visite.mp4";
 
     // Photos de la galerie, dans l'ordre d'affichage : [fichier dans vues/, légende, largeur, hauteur]
     // (largeur et hauteur en pixels ; sans elles : 1600 × 1000, la taille des vues tirées des panoramas).
@@ -794,12 +797,12 @@
     // ============================================================
     // VIDÉO
     // ------------------------------------------------------------
-    // « /preview » = le lecteur seul, fait pour être intégré dans une
-    // autre page ; « /view » = la page Drive complète (lien de secours).
+    // Le lecteur du navigateur (<video>) lit le fichier du site ;
+    // le lien sous la vidéo ouvre le fichier seul (plein écran, téléchargement).
     // ============================================================
-    if (VIDEO_DRIVE) {
-      $("film").src = `https://drive.google.com/file/d/${VIDEO_DRIVE}/preview`;
-      $("film-lien").href = `https://drive.google.com/file/d/${VIDEO_DRIVE}/view`;
+    if (VIDEO) {
+      $("film").src = VIDEO;
+      $("film-lien").href = VIDEO;
     } else {
       $("video").hidden = true;
       document.querySelectorAll('a[href="#video"]').forEach((lien) => { lien.hidden = true; });
