@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-25T01:28+00:00",
+ "maj": "2026-11-26T01:01+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -44,11 +44,135 @@
    "site": "",
    "couleur": "#5d7277",
    "autres": true,
-   "ok": true,
-   "erreurs": []
+   "ok": false,
+   "erreurs": [
+    "\"groupe Carrefour\" OR \"Alexandre Bompard\" : HTTP Error 429: Too Many Requests"
+   ]
   }
  ],
  "articles": [
+  {
+   "id": "036a5253acfc",
+   "titre": "[Exclusif] Les grandes annonces de Thierry Cotillard au Congrès des Mousquetaires : rachat de Chronodrive, partenariat Anthropic, retail media, achats, cybersécurité...",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/les-mousquetaires/intermarche/exclusif-les-grandes-annonces-de-thierry-cotillard-au-congres-des-mousquetaires-rachat-de-chronodrive-partenariat-anthropic-retail-media-achats-cybersecurite.55XW52C7DZEM7BHCL4RZDJ5MLM.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-25T17:00+00:00",
+   "vu_le": "2026-11-26T01:01+00:00",
+   "resume": "",
+   "enrichi": "2026-11-26"
+  },
+  {
+   "id": "1a5e6bf638af",
+   "titre": "Négociations commerciales : pourquoi 50 patrons de la distribution européenne se mobilisent contre la suppression du seuil de 350 millions d’euros",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/negociations-commerciales-pourquoi-50-patrons-de-la-distribution-europeenne-se-mobilisent-contre-la-suppression-du-seuil-de-350-millions-deuros.LM2NQIDNARCPTPFQUYX7MAE45Y.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-25T16:33+00:00",
+   "vu_le": "2026-11-26T01:01+00:00",
+   "resume": "",
+   "enrichi": "2026-11-26"
+  },
+  {
+   "id": "0ef1d24f3900",
+   "titre": "Chez Carrefour, payez-vous une consigne sans le savoir ?",
+   "lien": "https://www.60millions-mag.com/aliments-boissons/article/chez-carrefour-payez-vous-une-consigne-sans-le-savoir-20261125/",
+   "source": "autres",
+   "media": "60 Millions de Consommateurs",
+   "site": "60millions-mag.com",
+   "date": "2026-11-25T15:52+00:00",
+   "vu_le": "2026-11-26T01:01+00:00",
+   "resume": "Un euro en plus ici ou là. Le distributeur propose, depuis plusieurs années, un système de réemploi avec la start-up Loop. Mais nous avons repéré des couacs dans certains magasins. Explications.",
+   "enrichi": "2026-11-26",
+   "image": "https://www.60millions-mag.com/media/2026/11/Carrefour-enseigne.jpg"
+  },
+  {
+   "id": "86a409047dc2",
+   "titre": "Grand Frais ouvre à Clichy : snacking, traiteur, épicerie, les nouvelles armes de la conquête urbaine de l’enseigne",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/grand-frais-ouvre-a-clichy-snacking-traiteur-epicerie-les-nouvelles-armes-de-la-conquete-urbaine-de-lenseigne.5P2VPJNTV5A4DBT543QETOVS4E.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-25T15:24+00:00",
+   "vu_le": "2026-11-26T01:01+00:00",
+   "resume": "",
+   "enrichi": "2026-11-26"
+  },
+  {
+   "id": "221249b08143",
+   "titre": "Rachat de Codifrance, nouvelles enseignes, développement accéléré : comment Carrefour cherche à étendre son emprise sur la proximité",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/rachat-de-codifrance-nouvelles-enseignes-developpement-accelere-comment-carrefour-cherche-a-etendre-son-emprise-sur-la-proximite.YPLJ4VIWXVHIBF6FM73DAC4KOI.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-25T10:37+00:00",
+   "vu_le": "2026-11-26T01:01+00:00",
+   "resume": "",
+   "enrichi": "2026-11-26"
+  },
+  {
+   "id": "57d308069e37",
+   "titre": "Florence Audoyer-Missakian, directrice générale, présente son plan pour faire grandir Pepsico France après une année 2026 « exceptionnelle »",
+   "lien": "https://www.lsa-conso.fr/agro-industriel/boissons-et-liquides/pepsico/florence-audoyer-missakian-directrice-generale-devoile-son-plan-pour-faire-grandir-pepsico-france-apres-une-annee-2026-exceptionnelle.Q5VAZTUIXZHEBISKT32ZIEUBNI.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-25T10:17+00:00",
+   "vu_le": "2026-11-26T01:01+00:00",
+   "resume": "",
+   "enrichi": "2026-11-26"
+  },
+  {
+   "id": "0d89075cf214",
+   "titre": "Rémy Cointreau : à l’aube d’un plan de croissance et de transformation offensif, le groupe voit son chiffre d’affaires progresser de 4,4 % au premier semestre, tiré par le cognac",
+   "lien": "https://www.lsa-conso.fr/agro-industriel/boissons-et-liquides/remy-cointreau-a-laube-dun-plan-de-croissance-et-de-transformation-offensif-le-groupe-voit-son-chiffre-daffaires-progresser-de-44-au-premier-semestre-tire-par-le-cognac.CPNDY3BRTFG7PH5CLNUTL66WVA.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-25T09:47+00:00",
+   "vu_le": "2026-11-26T01:01+00:00",
+   "resume": "",
+   "enrichi": "2026-11-26"
+  },
+  {
+   "id": "a5259e7a37dc",
+   "titre": "[ RETAIL INSIDE ] Bordeaux-Bouliac : l’hyper Auchan revient en mode “waouh”",
+   "lien": "https://www.olivierdauvers.fr/2026/11/24/retail-inside-bordeaux-bouliac-lhyper-auchan-revient-en-mode-waouh/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-25T06:45+00:00",
+   "vu_le": "2026-11-26T01:01+00:00",
+   "resume": "Aujourd’hui, direction Bordeaux-Bouliac : comme ça, vous visiterez le dernier concept d’hypermarché Auchan en même temps que le conseil d’administration du groupe, le jour de la “réouverture” officielle ! Non, ne dites rien, ça me fait plaisir… C’est donc un nouveau concept, mais il ne faut pas s’imaginer que toutes les installations mises en scène …",
+   "enrichi": "2026-11-26",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/auchanbouliac1-1024x768.png"
+  },
+  {
+   "id": "5dd17cbdaf55",
+   "titre": "Yuka : en ajoutant les avis clients à son application, l’entreprise veut confronter sa note à l’expérience des consommateurs",
+   "lien": "https://www.lsa-conso.fr/industries-non-alimentaires/dph/yuka-en-ajoutant-les-avis-clients-a-son-application-lentreprise-veut-confronter-sa-note-a-lexperience-des-consommateurs.66IKYZSXZ5EDTDRJ4GVRI2JX6U.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-25T05:39+00:00",
+   "vu_le": "2026-11-26T01:01+00:00",
+   "resume": "",
+   "enrichi": "2026-11-26"
+  },
+  {
+   "id": "280c525fdbe5",
+   "titre": "Passé de Carrefour à U Express, un ancien franchisé échappe pour l’instant au retour forcé à la maison",
+   "lien": "https://www.lsa-conso.fr/franchise/passe-de-carrefour-a-u-express-un-ancien-franchise-echappe-pour-linstant-au-retour-force-a-la-maison.SIPPPSAWAFAL7DC7SSY4RSTF74.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-25T04:55+00:00",
+   "vu_le": "2026-11-26T01:01+00:00",
+   "resume": "",
+   "enrichi": "2026-11-26"
+  },
   {
    "id": "25f4c091043c",
    "titre": "Office Depot : clap de fin pour l’enseigne qui ferme ses 27 derniers magasins et son site marchand",
@@ -161,6 +285,18 @@
    "vu_le": "2026-11-24T15:58+00:00",
    "resume": "",
    "enrichi": "2026-11-24"
+  },
+  {
+   "id": "3fcf78a03f6d",
+   "titre": "Bricolage : chez Kingfisher (Castorama et Brico Dépôt), Thierry Garnier termine son mandat de PDG sur une note positive, malgré le ralentissement en France",
+   "lien": "https://www.lsa-conso.fr/distributeurs-non-alimentaires/bricolage-chez-kingfisher-castorama-et-brico-depot-thierry-garnier-termine-son-mandat-de-pdg-sur-une-note-positive-malgre-le-ralentissement-en-france.YT5NXDCE4FHMZKM6LASTMQDKE4.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-24T09:30+00:00",
+   "vu_le": "2026-11-26T01:01+00:00",
+   "resume": "",
+   "enrichi": "2026-11-26"
   },
   {
    "id": "849c90f54435",
@@ -980,6 +1116,18 @@
    "resume": "Vous l'attendez depuis des années et le grand jour approche enfin ! À quelques heures de la sortie de GTA VI, les fans sont nombreux à vouloir mettre la main sur leur exemplaire. Mais avant de vous précipiter en magasin, encore faut-il savoir quelle enseigne propose le prix le plus bas !",
    "enrichi": "2026-11-20",
    "image": "https://assets.afcdn.com/story/20261118/2334962_w1500h844c1cx600cy338cxt0cyt0cxb1200cyb675.webp"
+  },
+  {
+   "id": "f2e2cfb4151f",
+   "titre": "Carrefour-Codifrance : 7 chiffres clés sur le rachat",
+   "lien": "https://www.republikgroup.com/en/articles/79fbf946-b5cb-f111-bf5c-000d3a2339c7/carrefour-codifrance-les-chiffres-cles-d-une-acquisition-a-152-millions-d-euros",
+   "source": "autres",
+   "media": "republikgroup.com",
+   "site": "republikgroup.com",
+   "date": "2026-11-19T05:06+00:00",
+   "vu_le": "2026-11-26T01:01+00:00",
+   "resume": "",
+   "enrichi": "2026-11-26"
   },
   {
    "id": "b93c1be6f026",
@@ -3426,6 +3574,19 @@
    "image": "https://images.midilibre.fr/api/v1/images/view/6ae87d00221b7e1ffa0549f0/hd/image.jpg?v=1"
   },
   {
+   "id": "3b0ea849938a",
+   "titre": "Leclerc et Carrefour voient débarquer un concurrent : Grand Frais va ouvrir un nouveau supermarché dans le Gard",
+   "lien": "https://actu.fr/occitanie/les-angles_30011/leclerc-et-carrefour-voient-debarquer-un-concurrent-grand-frais-va-ouvrir-un-nouveau-supermarche-dans-le-gard_64999761.html",
+   "source": "autres",
+   "media": "Actu.fr",
+   "site": "actu.fr",
+   "date": "2026-11-02T08:00+00:00",
+   "vu_le": "2026-11-26T01:01+00:00",
+   "resume": "Un nouveau magasin Grand Frais va ouvrir ses portes dans une zone du Gard où Leclerc et Carrefour ont la main mise : la frontière avec le Vaucluse.",
+   "enrichi": "2026-11-26",
+   "image": "https://static.actu.fr/uploads/2026/08/eee664b82db96c90764b82db98e076v.jpg"
+  },
+  {
    "id": "01d4e1d8c642",
    "titre": "La MINUTE RETAIL : Le choix, jusqu’où ? Exemple chez Carrefour…",
    "lien": "https://www.olivierdauvers.fr/2026/10/30/la-minute-retail-le-choix-jusquou-exemple-chez-carrefour/",
@@ -3670,6 +3831,19 @@
    "image": "https://medias.france.tv/rryDyeD1u1cefWa6CSYtaU2sVpo/880x0/filters:quality(85):format(jpeg)/g/7/s/phpwzxs7g.jpg"
   },
   {
+   "id": "66d9dc46cb24",
+   "titre": "La grande distribution a peur qu'on lui impose des hausses de prix: Carrefour, Leclerc et leurs concurrents menacent de boycotter une réunion avec le gouvernement",
+   "lien": "https://www.bfmtv.com/economie/entreprises/la-grande-distribution-a-peur-qu-on-lui-impose-des-hausses-de-prix-carrefour-leclerc-et-leurs-concurrents-menacent-de-boycotter-une-reunion-avec-le-gouvernement_AD-202610230385.html",
+   "source": "autres",
+   "media": "BFM",
+   "site": "bfmtv.com",
+   "date": "2026-10-23T07:00+00:00",
+   "vu_le": "2026-11-26T01:01+00:00",
+   "resume": "La Fédération du commerce et de la distribution (FCD) a menacé vendredi de ne pas participer au comité de préparation des négociations commerciales prévu la semaine prochaine à Bercy sous l'égide des ministres du Commerce et de l'Agriculture.",
+   "enrichi": "2026-11-26",
+   "image": "https://io-fsly-bfmtv.cdn.nextradiotv.com/S35holUZHiIimy0HzrJqJ0w71Wc=/0x0:2048x1152/2048x0/images/Supermarche-2231037.jpg"
+  },
+  {
    "id": "71812157c429",
    "titre": "Carrefour : quels sont les 32 magasins français concernés par la toute dernière cession de murs décidée par le groupe ?",
    "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/carrefour-quels-sont-les-32-magasins-francais-concernes-par-la-toute-derniere-cession-de-murs-decidee-par-le-groupe.HKYOH52LTVDD7NZ76S7P45QWSI.html",
@@ -3895,6 +4069,19 @@
    "resume": "Parmi les nombreuses cibles des vandales, samedi 17 octobre, des magasins de proximité Carrefour à Paris et dans les grandes métropoles régionales, pillés et parfois saccagés.",
    "enrichi": "2026-11-24",
    "image": "https://images.ladepeche.fr/api/v1/images/view/6ad55c85c31168d7de0fcaf0/hd/image.jpg?v=1"
+  },
+  {
+   "id": "98ac3c299fea",
+   "titre": "Quetigny. Intrusion et vols à l’hypermarché Carrefour : le procureur évoque « une délinquance d’opportunité »",
+   "lien": "https://www.bienpublic.com/economie/2026/10/19/intrusion-et-vols-a-l-hypermarche-carrefour-le-procureur-evoque-une-delinquance-d-opportunite",
+   "source": "autres",
+   "media": "Le Bien Public",
+   "site": "bienpublic.com",
+   "date": "2026-10-19T07:00+00:00",
+   "vu_le": "2026-11-26T01:01+00:00",
+   "resume": "L’hypermarché Carrefour de Quetigny a aussi été visé par des dégradations et des vols samedi 17 octobre dans la soirée.",
+   "enrichi": "2026-11-26",
+   "image": "https://cdn-s-www.bienpublic.com/images/7AA454D5-2883-468D-8E4B-02EA4B652F9B/FB1200/photo-1792437863.jpg"
   },
   {
    "id": "f01358788ff6",
@@ -4403,6 +4590,19 @@
    "enrichi": "2026-11-24"
   },
   {
+   "id": "7f56b1b1999d",
+   "titre": "En 1969, l’ouverture à Mérignac du plus grand hypermarché Carrefour de la région bordelaise, avec garderie, laverie et plus de 35 000 articles proposés aux clients",
+   "lien": "https://www.sudouest.fr/gironde/merignac/en-1969-l-ouverture-a-merignac-du-plus-grand-hypermarche-carrefour-de-la-region-bordelais-avec-garderie-laverie-et-plus-de-35-000-articles-proposes-aux-clients-30945110.php",
+   "source": "autres",
+   "media": "Sud Ouest",
+   "site": "sudouest.fr",
+   "date": "2026-10-08T07:00+00:00",
+   "vu_le": "2026-11-26T01:01+00:00",
+   "resume": "DANS LES ARCHIVES – Le 8 octobre 1969, le nouveau magasin Carrefour ouvrait ses portes à Mérignac en Gironde. La veille, il était inauguré. Récit avec l’article paru à l’époque",
+   "enrichi": "2026-11-26",
+   "image": "https://media.sudouest.fr/30945110/1200x-1/carrefour-1969001-3-1600.jpg"
+  },
+  {
    "id": "36ef22324228",
    "titre": "Des casiers Carrefour City en gare : ça se tente, mais…",
    "lien": "https://www.olivierdauvers.fr/2026/10/07/des-casiers-carrefour-city-en-gare-ca-se-tente-mais/",
@@ -4649,6 +4849,19 @@
    "image": "https://france3-regions.franceinfo.fr/image/W5olRcYAbhodFKE2dNasbe8PH44/930x620/regions/2026/09/29/6abbd6666de40149280344.jpg"
   },
   {
+   "id": "e342dfe8fb71",
+   "titre": "Damart entre dans les rayons de Carrefour, Leclerc et les magasins U à partir du 5 octobre",
+   "lien": "https://www.sudouest.fr/economie/commerces/damart-entre-dans-les-rayons-de-carrefour-leclerc-et-les-magasins-u-a-partir-du-5-octobre-30871511.php",
+   "source": "autres",
+   "media": "Sud Ouest",
+   "site": "sudouest.fr",
+   "date": "2026-10-01T07:00+00:00",
+   "vu_le": "2026-11-26T01:01+00:00",
+   "resume": "Sans renoncer à ses magasins ou à la vente par correspondance qui ont fait son succès depuis plus de 70 ans, la marque au slogan « Froid, moi ? Jamais ! » se vendra à partir du lundi 5 octobre dans plus d’un millier de grandes surfaces et dans les magasins de La Halle",
+   "enrichi": "2026-11-26",
+   "image": "https://media.sudouest.fr/30871511/1200x-1/magasin-damart.jpg"
+  },
+  {
    "id": "7b0f3d26adba",
    "titre": "Prosol (Grand Frais) : deux nouveaux directeurs généraux nommés cet été, Michel Biero qui rentre au Codir, la gouvernance évolue notablement",
    "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/prosol-grand-frais-deux-nouveaux-directeurs-generaux-nommes-cet-ete-la-gouvernance-evolue-notablement.ABC6DQZ2GFFX3GRIH257TJFDCU.html",
@@ -4756,19 +4969,6 @@
    "resume": "Carrefour 2030 marque une nouvelle étape pour le distributeur. Recentrage sur trois pays, engagement annuel sur les prix, offensive sur le frais et pari massif sur l’intelligence artificielle : Alexandre Bompard assume une stratégie de conquête. Reste à savoir si l’exécution opérationnelle tiendra les promesses affichées.",
    "enrichi": "2026-11-19",
    "image": "https://cdn.inwink.com/a37e7b3a-3c11-444e-8684-39edf2ad3de3/55b3fbc3-0857-4830-92e2-83de5640242b"
-  },
-  {
-   "id": "37f1948165a2",
-   "titre": "Alexandre Bompard élu président de la Fédération du commerce et de la distribution",
-   "lien": "https://www.republikgroup.com/articles/2501adbf-bdb2-f111-a6a7-6045bd9f5987/alexandre-bompard-elu-president-de-la-federation-du-commerce-et-de-la-distribution",
-   "source": "autres",
-   "media": "www.republikgroup.com",
-   "site": "republikgroup.com",
-   "date": "2026-09-26T08:28+00:00",
-   "vu_le": "2026-11-16T01:08+00:00",
-   "resume": "Les enseignes adhérentes à la Fédération du commerce et de la distribution ont élu Alexandre Bompard, PDG du groupe Carrefour, à la présidence de la FCD. Il succède à François Bouriez, administrateur du groupe Louis Delhaize.",
-   "enrichi": "2026-11-16",
-   "image": "https://cdn.inwink.com/a37e7b3a-3c11-444e-8684-39edf2ad3de3/65b980fd-092a-413b-a7c0-07490dc90276"
   }
  ]
 }
