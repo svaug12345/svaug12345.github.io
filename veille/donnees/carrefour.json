@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-26T01:01+00:00",
+ "maj": "2026-11-26T15:27+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -44,13 +44,99 @@
    "site": "",
    "couleur": "#5d7277",
    "autres": true,
-   "ok": false,
-   "erreurs": [
-    "\"groupe Carrefour\" OR \"Alexandre Bompard\" : HTTP Error 429: Too Many Requests"
-   ]
+   "ok": true,
+   "erreurs": []
   }
  ],
  "articles": [
+  {
+   "id": "7cd9c3bcd430",
+   "titre": "Carrefour s'apprête à reprendre le contrôle de l'unique supermarché Atacadão français",
+   "lien": "https://www.freshplaza.fr/article/9896753/carrefour-s-apprete-a-reprendre-le-controle-de-l-unique-supermarche-atacadao-francais/",
+   "source": "autres",
+   "media": "FreshPlaza.fr",
+   "site": "freshplaza.fr",
+   "date": "2026-11-26T11:56+00:00",
+   "vu_le": "2026-11-26T15:27+00:00",
+   "resume": "Un peu plus de deux ans après l'implantation d'Atacadão en France, Carrefour s'apprête à reprendre la main sur l'unique magasin de l'enseigne dans l'Hexagone. Le 16 novembre, l'Autorité de la…",
+   "enrichi": "2026-11-26",
+   "image": "https://www.freshplaza.fr/remote/https/agfstorage.blob.core.windows.net/misc/FP_fr/2026/11/26/WhatsAppImage2026-11-26at10.46.38.jpeg?preset=OgImage"
+  },
+  {
+   "id": "21ab756553fb",
+   "titre": "« Un Carrefour Market flambant neuf » : à Roulers, Krottegem retrouve son supermarché après quinze mois",
+   "lien": "https://lexpress-franchise.com/fr-be/actualites/carrefour-market-roulers-krottegem-reouverture/",
+   "source": "autres",
+   "media": "L’Express Franchise",
+   "site": "lexpress-franchise.com",
+   "date": "2026-11-26T10:53+00:00",
+   "vu_le": "2026-11-26T15:27+00:00",
+   "resume": "À Roulers, le Carrefour Market de l'Ardooisesteenweg rouvre le 26 novembre dans un bâtiment neuf de 1.200 m², après plus de quinze mois de fermeture.",
+   "enrichi": "2026-11-26",
+   "image": "https://lexpress-franchise.com/wp-content/uploads/2026/11/capture-decran-2026-11-26-a-11.52.10.png"
+  },
+  {
+   "id": "83c23ebe5b18",
+   "titre": "H.Market, les grandes ambitions du champion des grandes surfaces halal, dont Carrefour détient 10%",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/hmarket-les-grandes-ambitions-du-champion-des-grandes-surfaces-halal-dont-carrefour-detient-10.XI5QTUGPU5OUFFJAYOPRUIWJGU.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-26T10:27+00:00",
+   "vu_le": "2026-11-26T15:27+00:00",
+   "resume": "",
+   "enrichi": "2026-11-26"
+  },
+  {
+   "id": "037fb82e3c05",
+   "titre": "Lidl ouvre un magasin de déstockage à Niort : jusqu’à 50 % de remise sur le non-alimentaire",
+   "lien": "https://www.lsa-conso.fr/distributeurs-non-alimentaires/lidl-ouvre-un-magasin-de-destockage-a-niort-jusqua-50-de-remise-sur-le-non-alimentaire.D63ITI4YCVECPF62NW3YODUEGU.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-26T10:03+00:00",
+   "vu_le": "2026-11-26T15:27+00:00",
+   "resume": "",
+   "enrichi": "2026-11-26"
+  },
+  {
+   "id": "7c3132a06a96",
+   "titre": "Rachat de Chronodrive : d’Auchan à Intermarché, quels enjeux entourent la cession du spécialiste du drive ? [Carte, chiffres clés et analyse]",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/auchan/chronodrive/rachat-de-chronodrive-dauchan-a-intermarche-quels-enjeux-entourent-la-cession-du-specialiste-du-drive-carte-chiffres-cles-et-analyse.BIJCIOWTWZHG3A6SD73C7NHOYA.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-26T09:32+00:00",
+   "vu_le": "2026-11-26T15:27+00:00",
+   "resume": "",
+   "enrichi": "2026-11-26"
+  },
+  {
+   "id": "239a12b2d8a2",
+   "titre": "\"Des écarts parfois considérables\" : Carrefour et Lidl épinglés pour certains prix pratiqués dans les magasins de Nîmes",
+   "lien": "https://actu.fr/occitanie/nimes_30189/des-ecarts-parfois-considerables-carrefour-et-lidl-epingles-pour-certains-prix-pratiques-dans-les-magasins-de-nimes_65102777.html",
+   "source": "autres",
+   "media": "Actu.fr",
+   "site": "actu.fr",
+   "date": "2026-11-26T08:35+00:00",
+   "vu_le": "2026-11-26T15:27+00:00",
+   "resume": "Des relevés de prix ont montré d'importants écarts entre ce qui est payé au producteur et ce qui est payé en caisse dans un Carrefour et un Lidl de Nîmes (Gard).",
+   "enrichi": "2026-11-26",
+   "image": "https://static.actu.fr/uploads/2026/11/pf-1795681467.png"
+  },
+  {
+   "id": "2400294c7705",
+   "titre": "[ EXCLU ] Avec Chronodrive, Les Mousquetaires s'imposent en nouveau dauphin de Leclerc (et s'offrent l'outil qui leur manquait)",
+   "lien": "https://www.olivierdauvers.fr/2026/11/26/exclu-avec-chronodrive-les-mousquetaires-simposent-en-nouveau-dauphin-de-leclerc-et-soffrent-loutil-qui-leur-manquait/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-26T07:25+00:00",
+   "vu_le": "2026-11-26T15:27+00:00",
+   "resume": "Ça n’est qu’une demi surprise (certains se souviennent sans doute de mon pari 😉 ). Les Mousquetaires devraient s’offrir Chronodrive, le pure-player drive de la galaxie Auchan. Ce faisant ils vont enlever une épine (financière) du pied des Mulliez et s’imposer en nouveau dauphin de Leclerc avec, en cumulé, plus de 2,6 milliards d’euros de …",
+   "enrichi": "2026-11-26",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/DGC-Chrono-Inter-scaled.jpg"
+  },
   {
    "id": "036a5253acfc",
    "titre": "[Exclusif] Les grandes annonces de Thierry Cotillard au Congrès des Mousquetaires : rachat de Chronodrive, partenariat Anthropic, retail media, achats, cybersécurité...",
@@ -162,6 +248,18 @@
    "enrichi": "2026-11-26"
   },
   {
+   "id": "b81bb0e8c7a7",
+   "titre": "L'opération séduction loupée d'Alexandre Bompard pour prendre la place d'Intermarché chez Francap",
+   "lien": "https://www.lalettre.fr/fr/entreprises_grande-distribution-et-services/2026/11/25/l-operation-seduction-loupee-d-alexandre-bompard-pour-prendre-la-place-d-intermarche-chez-francap,110937082-art",
+   "source": "autres",
+   "media": "La Lettre",
+   "site": "lalettre.fr",
+   "date": "2026-11-25T05:20+00:00",
+   "vu_le": "2026-11-26T15:27+00:00",
+   "resume": "",
+   "enrichi": "2026-11-26"
+  },
+  {
    "id": "280c525fdbe5",
    "titre": "Passé de Carrefour à U Express, un ancien franchisé échappe pour l’instant au retour forcé à la maison",
    "lien": "https://www.lsa-conso.fr/franchise/passe-de-carrefour-a-u-express-un-ancien-franchise-echappe-pour-linstant-au-retour-force-a-la-maison.SIPPPSAWAFAL7DC7SSY4RSTF74.html",
@@ -172,6 +270,19 @@
    "vu_le": "2026-11-26T01:01+00:00",
    "resume": "",
    "enrichi": "2026-11-26"
+  },
+  {
+   "id": "b663bf33d685",
+   "titre": "Black Friday et achats de Noël : Leclerc, Carrefour et Auchan ouvrent certains magasins toute la journée ce dimanche 29 novembre",
+   "lien": "https://www.demotivateur.fr/lifestyle/dimanche-29-novembre-e-leclerc-ouvre-plusieurs-hypermarches-toute-la-journee-jusqu-a-20h-a-orly-et-vitry-sur-seine-51427",
+   "source": "autres",
+   "media": "Demotivateur",
+   "site": "demotivateur.fr",
+   "date": "2026-11-24T19:05+00:00",
+   "vu_le": "2026-11-26T15:27+00:00",
+   "resume": "En cette semaine du Black Friday, vous aurez tout votre temps pour faire vos courses puisque certains magasins Leclerc vont même ouvrir dimanche 29 novembre toute la journée.",
+   "enrichi": "2026-11-26",
+   "image": "https://www.demotivateur.fr/images-buzz/cover/enseigne-leclerc-7831bf979a68.jpg"
   },
   {
    "id": "25f4c091043c",
@@ -1153,6 +1264,18 @@
    "vu_le": "2026-11-19T14:30+00:00",
    "resume": "",
    "enrichi": "2026-11-19"
+  },
+  {
+   "id": "37f1948165a2",
+   "titre": "Alexandre Bompard élu président de la Fédération du commerce et de la distribution",
+   "lien": "https://www.republikgroup.com/fr/articles/2501adbf-bdb2-f111-a6a7-6045bd9f5987/alexandre-bompard-elu-president-de-la-federation-du-commerce-et-de-la-distribution",
+   "source": "autres",
+   "media": "www.republikgroup.com",
+   "site": "republikgroup.com",
+   "date": "2026-11-18T22:47+00:00",
+   "vu_le": "2026-11-26T15:27+00:00",
+   "resume": "",
+   "enrichi": "2026-11-26"
   },
   {
    "id": "ed61552900c2",
@@ -3660,6 +3783,18 @@
    "image": "https://static.actu.fr/uploads/2026/10/carrefour-market-saint-martin-dheres.png"
   },
   {
+   "id": "f11e11c1d3e9",
+   "titre": "Carrefour rappelle des bonbons qui contiennent des sulfites non indiqués sur l’emballage, pouvant causer des allergies",
+   "lien": "https://www.ouest-france.fr/economie/consommation/rappel-produit/carrefour-rappelle-des-bonbons-qui-contiennent-des-sulfites-non-indiques-sur-lemballage-pouvant-causer-des-allergies-9819d35a-d38b-11f1-807c-c0c44a88b55f",
+   "source": "autres",
+   "media": "Ouest-France",
+   "site": "ouest-france.fr",
+   "date": "2026-10-29T07:00+00:00",
+   "vu_le": "2026-11-26T15:27+00:00",
+   "resume": "",
+   "enrichi": "2026-11-26"
+  },
+  {
    "id": "59f71bf8d634",
    "titre": "Toc toc, y’a quelqu’un chez Carrefour ?",
    "lien": "https://www.olivierdauvers.fr/2026/10/28/toc-toc-ya-quelquun-chez-carrefour-4/",
@@ -4956,19 +5091,6 @@
    "resume": "Carrefour Villiers-en-Bière, Auchan Noyelles-Godault, Carrefour Vitrolles… Les 8 plus grands hypermarchés de France dépassent encore les 15 000 m², au moment où le secteur réduit ses surfaces.",
    "enrichi": "2026-11-25",
    "image": "https://storage.ghost.io/c/ed/da/edda0153-be11-4643-9318-2cb198c66e7f/content/images/2026/09/Illustration-blog-1.jpg"
-  },
-  {
-   "id": "25ee7f04ced6",
-   "titre": "Carrefour 2030 : que retenir du nouveau plan stratégique d’Alexandre Bompard ?",
-   "lien": "https://www.republikgroup.com/articles/284765ae-b6b2-f111-a6a7-6045bd9f5987/carrefour-2030-que-retenir-du-nouveau-plan-strategique-d-alexandre-bompard-",
-   "source": "autres",
-   "media": "www.republikgroup.com",
-   "site": "republikgroup.com",
-   "date": "2026-09-27T14:47+00:00",
-   "vu_le": "2026-11-19T14:30+00:00",
-   "resume": "Carrefour 2030 marque une nouvelle étape pour le distributeur. Recentrage sur trois pays, engagement annuel sur les prix, offensive sur le frais et pari massif sur l’intelligence artificielle : Alexandre Bompard assume une stratégie de conquête. Reste à savoir si l’exécution opérationnelle tiendra les promesses affichées.",
-   "enrichi": "2026-11-19",
-   "image": "https://cdn.inwink.com/a37e7b3a-3c11-444e-8684-39edf2ad3de3/55b3fbc3-0857-4830-92e2-83de5640242b"
   }
  ]
 }
