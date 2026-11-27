@@ -1,17 +1,16 @@
 <!DOCTYPE html>
 <!--
-  Cadeaux — idées de cadeaux, Noëls et anniversaires
-  Version 1.0.1
+  Cadeaux — idées de cadeaux et Noëls
+  Version 1.1.0
   ------------------------------------------------------------
-  Quatre vues (contrôle en haut) :
+  Trois vues (contrôle en haut) :
    • Idées     : la boîte à idées. On note en vitesse (« Juju - défonceuse » range
                  l'idée chez Juju), puis « Noël ▸ » la retient pour le Noël en cours ;
    • Noël      : une année de Noël, personne par personne : ce qui est à acheter,
                  acheté, reçu ; les idées de la boîte se déplient sous chaque nom ;
-   • Anniv.    : les prochains anniversaires, du plus proche au plus lointain,
-                 avec les cadeaux prévus et les idées de la personne ;
-   • Personnes : la liste des gens, leur date d'anniversaire et ce qu'on leur a
-                 déjà offert, année par année.
+   • Personnes : la liste des gens et ce qu'on leur a déjà offert, année par année.
+  Chaque groupe (une personne) se replie d'un appui sur sa flèche ; « Tout
+  réduire » replie tout d'un coup.
   Toucher une idée = sa fiche (texte, pour qui, statut, occasion, note, lien).
   La fiche prévient si la personne a déjà eu quelque chose de ressemblant.
 
@@ -28,6 +27,11 @@
    • v1.0.1 : adresse du script Google écrite dans la page (plus que la clé à
               saisir) ; message clair quand le script refuse l'accès ; message
               « boîte vide » qui n'est plus coupé en deux sur grand écran
+   • v1.1.0 : groupes repliables + bouton « Tout réduire / Tout déplier » ;
+              les idées des personnes « plus dans mes listes » sont visibles en
+              fin de page (section repliée) ; pastilles de filtre sur plusieurs
+              lignes sur grand écran (plus de prénom coupé) ; vue Anniv. et
+              dates d'anniversaire retirées (demande de Seb)
 -->
 <html lang="fr">
 <head>
@@ -214,6 +218,11 @@
     .groupe h2 .qui { background: none; border: 0; padding: 0; font-weight: 800; text-align: left; }
     .groupe h2 small { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 500; }
     .groupe h2 .pousse { flex: 1; }
+    /* Flèche qui replie / déplie un groupe */
+    .groupe h2 .pli { border: 0; background: none; padding: 2px 4px 2px 0; color: var(--muted); font-size: .8rem; }
+    /* Ligne du bouton « Tout réduire » */
+    .outils-liste { display: flex; justify-content: flex-end; margin: -4px 0 8px; }
+    .outils-liste button { border: 0; background: none; color: var(--teal); font-weight: 700; font-size: .82rem; padding: 4px 2px; }
     .point { width: 9px; height: 9px; border-radius: 50%; background: var(--c); flex: none; }
     .liste { display: grid; gap: 8px; }
 
@@ -365,12 +374,16 @@
       .vite, .annee { max-width: 640px; }
       /* Les groupes (une personne = un groupe) se rangent en colonnes */
       #contenu.colonnes { column-count: 2; column-gap: 20px; }
-      #contenu.colonnes .vide { column-span: all; }
+      #contenu.colonnes .vide, #contenu.colonnes details.anciens { column-span: all; }
+      /* Les groupes rangés dans « Plus dans mes listes » gardent leurs colonnes */
+      details.anciens .cols { column-count: 2; column-gap: 20px; }
+      /* Grand écran : les pastilles passent à la ligne au lieu d'être coupées */
+      .filtres { flex-wrap: wrap; overflow: visible; }
       .gens { grid-template-columns: repeat(4, 1fr); }
       dialog { margin: auto; border-radius: 20px; }
     }
     @media (min-width: 1100px) {
-      #contenu.colonnes { column-count: 3; }
+      #contenu.colonnes, details.anciens .cols { column-count: 3; }
       .gens { grid-template-columns: repeat(6, 1fr); }
     }
   </style>
@@ -388,7 +401,6 @@
     <div class="segments" role="group" aria-label="Vue">
       <button data-vue="idees">Idées</button>
       <button data-vue="noel">Noël</button>
-      <button data-vue="anniv">Anniv.</button>
       <button data-vue="gens">Personnes</button>
     </div>
     <input class="recherche" id="recherche" type="search" placeholder="Chercher une idée, une personne…" autocomplete="off">
@@ -406,6 +418,9 @@
 
   <!-- Pastilles de filtre (personnes dans Idées, statuts dans Noël) -->
   <div class="filtres" id="filtres" role="group" aria-label="Filtre"></div>
+
+  <!-- « Tout réduire / Tout déplier » (vues Idées et Noël) -->
+  <div class="outils-liste" id="outils-liste" hidden><button id="btn-replier"></button></div>
 
   <main id="contenu"></main>
 
@@ -463,20 +478,13 @@
   </form>
 </dialog>
 
-<!-- Fiche d'une personne : nom, anniversaire, ce qu'on lui a déjà offert -->
+<!-- Fiche d'une personne : nom, dans mes listes ou non, ce qu'on lui a déjà offert -->
 <dialog id="personne">
   <form class="fiche" id="form-personne" method="dialog">
     <h3 id="p-titre">Personne</h3>
     <div class="champ">
       <span class="label">Prénom</span>
       <input type="text" id="p-nom" required autocomplete="off">
-    </div>
-    <div class="champ">
-      <span class="label">Anniversaire</span>
-      <div class="deux">
-        <select id="p-jour" aria-label="Jour"></select>
-        <select id="p-mois" aria-label="Mois"></select>
-      </div>
     </div>
     <div class="champ">
       <span class="label">Dans mes listes</span>
@@ -521,14 +529,14 @@
    CADEAUX — le code
    Tout l'état tient dans un objet « etat », enregistré d'un bloc
    (dans le téléphone, et dans le Google Sheet si la synchro est branchée) :
-     etat.personnes = { id: { nom, anniv: "MM-JJ", rang, archive } }
+     etat.personnes = { id: { nom, rang, archive } }
      etat.idees     = { id: { texte, qui, statut, occ, annee, note, lien, cree, maj } }
    Une « idée » est une ligne de cadeau, quel que soit son avancement :
      • dans la boîte à idées : statut « idee », pas d'occasion ;
-     • retenue pour une occasion : occ = "noel" ou "anniv", annee = 2026… ;
+     • retenue pour un Noël : occ = "noel", annee = 2026… ;
        son statut suit alors l'achat (à acheter → acheté → reçu).
    ============================================================== */
-const VERSION = "1.0.1";
+const VERSION = "1.1.0";
 
 /* ---------- 1. RÉGLAGES ----------
    Adresse /exec du script Google « Cadeaux » (code dans outils/cadeaux.gs).
@@ -539,6 +547,7 @@ const URL_LOCALE = "cadeaux.url";     // adresse du script, si elle n'est pas é
 const CLE_LOCALE = "cadeaux.cle";     // la clé, gardée dans l'appareil
 const CACHE_LOCAL = "cadeaux.etat";   // dernière copie des données (marche hors ligne)
 const VUE_LOCALE = "cadeaux.vue";     // dernière vue choisie
+const REPLIS_LOCAL = "cadeaux.replis"; // groupes repliés (gardés d'une visite à l'autre)
 
 /* Les statuts d'une idée. « c » = couleur (variables CSS). */
 const STATUTS = [
@@ -558,16 +567,17 @@ const estFait = i => i.statut === "achete" || i.statut === "recu";
 const OCCASIONS = [
   { id: "",      nom: "Boîte à idées" },
   { id: "noel",  nom: "Noël" },
-  { id: "anniv", nom: "Anniv." },
 ];
-const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
 
 let etat = null;                 // les données affichées
-let vue = "idees";               // idees | noel | anniv | gens
+let vue = "idees";               // idees | noel | gens
 let filtre = "";                 // pastille choisie (dépend de la vue)
 let recherche = "";
 let anneeNoel = noelCourant();   // l'année affichée dans la vue Noël
-let deplie = new Set();          // personnes dont les idées sont dépliées (Noël, Anniv.)
+let deplie = new Set();          // personnes dont les idées sont dépliées (vue Noël)
+let replies = new Set();         // groupes repliés, ex. "idees:juju" ou "noel:juju"
+let affiches = [];               // clés des groupes dessinés à l'écran (pour « Tout réduire »)
+let anciensOuverts = false;      // section « Plus dans mes listes » ouverte ?
 let ouvert = null;               // id de l'idée ouverte dans la fiche (null = nouvelle)
 let brouillon = null;            // copie modifiée dans la fiche, avant « Enregistrer »
 let personneOuverte = null;      // id de la personne ouverte (null = nouvelle)
@@ -598,23 +608,6 @@ function joursAvant(date) {
   const a = new Date(); a.setHours(0, 0, 0, 0);
   return Math.round((date - a) / 86400000);
 }
-// Prochain anniversaire d'une personne (objet Date), ou null si pas de date
-function prochainAnniv(p) {
-  if (!p.anniv) return null;
-  const [m, j] = p.anniv.split("-").map(Number);
-  const a = new Date(); a.setHours(0, 0, 0, 0);
-  let d = new Date(a.getFullYear(), m - 1, j);
-  if (d < a) d = new Date(a.getFullYear() + 1, m - 1, j);
-  return d;
-}
-const dateAnniv = p => { const [m, j] = p.anniv.split("-").map(Number); return (j === 1 ? "1er" : j) + " " + MOIS[m - 1]; };
-function dansCombien(n) {
-  if (n === 0) return "aujourd'hui";
-  if (n === 1) return "demain";
-  if (n < 60) return "dans " + n + " j";
-  return "dans " + Math.round(n / 30) + " mois";
-}
-
 /* ---------- 3. STOCKAGE (même principe que « Mes projets ») ----------
    • Copie locale (localStorage) : affichage immédiat et hors ligne.
    • Script Google : la version commune au téléphone et au PC. Chaque action
@@ -802,7 +795,14 @@ function carteHTML(i, bouton, avecQui, libelleRetenir) {
   </div>`;
 }
 
-/* Le bloc d'une personne pour une occasion (vues Noël et Anniv.) :
+/* En-tête de groupe : la flèche replie / déplie. On note au passage la clé du
+   groupe dans « affiches », pour que « Tout réduire » sache quoi replier. */
+function fleche(cle) {
+  affiches.push(cle);
+  return `<button class="pli" data-action="replier" data-g="${html(cle)}" aria-label="Replier ou déplier">${replies.has(cle) ? "▸" : "▾"}</button>`;
+}
+
+/* Le bloc d'une personne pour un Noël :
    ses cadeaux retenus, puis ses idées à déplier et le bouton « + Ajouter ». */
 function blocPersonne(p, occ, annee, sousTitre, toutes, modifiable) {
   const retenus = pourOccasion(toutes, occ, annee).filter(i => i.qui === p.id);
@@ -810,7 +810,12 @@ function blocPersonne(p, occ, annee, sousTitre, toutes, modifiable) {
   const ouvertIci = deplie.has(p.id);
   const fait = retenus.filter(estFait).length;
   const compte = retenus.length ? `${fait}/${retenus.filter(i => i.statut !== "abandonne").length}` : "";
-  let h = `<section class="groupe"><h2>
+  const cle = "noel:" + p.id;
+  // Groupe replié : seulement la ligne du prénom, avec ses compteurs
+  if (replies.has(cle)) return `<section class="groupe"><h2>${fleche(cle)}
+      <button class="qui" data-action="personne" data-p="${html(p.id)}">${html(p.nom)}</button>
+      <span class="pousse"></span><small>${compte || (boite.length ? pluriel(boite.length, "idée") : "")}</small></h2></section>`;
+  let h = `<section class="groupe"><h2>${fleche(cle)}
       <button class="qui" data-action="personne" data-p="${html(p.id)}">${html(p.nom)}</button>
       <small>${html(sousTitre || "")}</small><span class="pousse"></span><small>${compte}</small></h2>
     <div class="liste">${retenus.map(i => carteHTML(i, "etat")).join("")}</div>`;
@@ -832,6 +837,7 @@ function afficher() {
   document.querySelectorAll(".segments button").forEach(b => b.setAttribute("aria-pressed", b.dataset.vue === vue));
   $("vite").hidden = $("vite-aide").hidden = vue !== "idees";
   $("annee").hidden = vue !== "noel";
+  affiches = [];
   $("fab").setAttribute("aria-label", vue === "gens" ? "Nouvelle personne" : "Nouvelle idée");
   // Les vues en « groupes par personne » se rangent en colonnes sur tablette
   $("contenu").className = vue === "gens" ? "" : "colonnes";
@@ -845,22 +851,33 @@ function afficher() {
     const gens = personnes(true);
     const actifs = gens.filter(p => !p.archive && boite.some(i => i.qui === p.id));
     const nbSans = boite.filter(i => !i.qui || !etat.personnes[i.qui]).length;
-    const nbAnciens = boite.filter(i => (etat.personnes[i.qui] || {}).archive).length;
+    const anciens = gens.filter(p => p.archive && boite.some(i => i.qui === p.id));
     pastilles = [{ id: "", nom: "Tout" }];
     if (nbSans) pastilles.push({ id: "_sans", nom: "Sans destinataire " + nbSans });
     actifs.forEach(p => pastilles.push({ id: p.id, nom: p.nom + " " + boite.filter(i => i.qui === p.id).length }));
-    if (nbAnciens) pastilles.push({ id: "_anciens", nom: "Autres " + nbAnciens });
     if (!pastilles.some(x => x.id === filtre)) filtre = "";
 
-    const groupe = (titre, liste, pid) => liste.length ? `<section class="groupe"><h2>
+    const groupe = (titre, liste, pid) => {
+      if (!liste.length) return "";
+      const cle = "idees:" + (pid || "_sans");
+      const tete = `<h2>${fleche(cle)}
         ${pid ? `<button class="qui" data-action="personne" data-p="${html(pid)}">${html(titre)}</button>` : html(titre)}
-        <span class="pousse"></span><small>${liste.length}</small></h2>
+        <span class="pousse"></span><small>${liste.length}</small></h2>`;
+      if (replies.has(cle)) return `<section class="groupe">${tete}</section>`;
+      return `<section class="groupe">${tete}
         <div class="liste">${liste.sort((a, b) => (b.cree || "").localeCompare(a.cree || "") || a.texte.localeCompare(b.texte, "fr"))
-          .map(i => carteHTML(i, i.qui ? "retenir" : "")).join("")}</div></section>` : "";
+          .map(i => carteHTML(i, i.qui ? "retenir" : "")).join("")}</div></section>`;
+    };
     if (!filtre || filtre === "_sans") h += groupe("Sans destinataire", boite.filter(i => !i.qui || !etat.personnes[i.qui]));
     for (const p of gens) {
-      const montre = filtre === p.id || (!filtre && !p.archive) || (filtre === "_anciens" && p.archive);
-      if (montre) h += groupe(p.nom, boite.filter(i => i.qui === p.id), p.id);
+      if (!p.archive && (!filtre || filtre === p.id)) h += groupe(p.nom, boite.filter(i => i.qui === p.id), p.id);
+    }
+    // En fin de page : les idées des personnes « plus dans mes listes », repliées
+    if (!filtre && anciens.length) {
+      const nb = boite.filter(i => (etat.personnes[i.qui] || {}).archive).length;
+      h += `<details class="anciens" id="anciens" ${anciensOuverts || recherche ? "open" : ""}>
+        <summary>Plus dans mes listes · ${pluriel(anciens.length, "personne")}, ${pluriel(nb, "idée")}</summary>
+        <div class="cols">${anciens.map(p => groupe(p.nom, boite.filter(i => i.qui === p.id), p.id)).join("")}</div></details>`;
     }
     if (!h) h = recherche
       ? `<div class="vide"><b>Rien trouvé</b>Essaie un autre mot.</div>`
@@ -898,21 +915,6 @@ function afficher() {
     }
     if (!h) h = `<div class="vide"><b>Rien ici</b>${courant ? "Ajoute d'abord des personnes dans l'onglet Personnes." : "Aucun cadeau noté pour ce Noël."}</div>`;
 
-  } else if (vue === "anniv") {
-    /* ----- Anniversaires, du plus proche au plus lointain ----- */
-    const gens = personnes(false);
-    const dates = gens.filter(p => p.anniv).map(p => ({ p, d: prochainAnniv(p) })).sort((a, b) => a.d - b.d);
-    for (const { p, d } of dates) {
-      h += blocPersonne(p, "anniv", d.getFullYear(), dateAnniv(p) + " · " + dansCombien(joursAvant(d)), toutes, true);
-    }
-    const sansDate = gens.filter(p => !p.anniv);
-    if (sansDate.length) {
-      h += `<section class="groupe"><h2>Date à renseigner <span class="pousse"></span><small>${sansDate.length}</small></h2>
-        <div class="filtres" style="flex-wrap:wrap">${sansDate.map(p =>
-          `<button class="pastille" data-action="personne" data-p="${html(p.id)}">${html(p.nom)}</button>`).join("")}</div></section>`;
-    }
-    if (!gens.length) h = `<div class="vide"><b>Personne pour l'instant</b>Ajoute des personnes dans l'onglet Personnes.</div>`;
-
   } else {
     /* ----- Personnes ----- */
     const tout = Object.values(etat.idees);
@@ -920,7 +922,6 @@ function afficher() {
       const siennes = tout.filter(i => i.qui === p.id);
       const nbIdees = siennes.filter(dansBoite).length, nbFaits = siennes.filter(estFait).length;
       return `<button data-action="personne" data-p="${html(p.id)}"><b>${html(p.nom)}</b>
-        <span>${p.anniv ? "🎂 " + dateAnniv(p) : "anniversaire ?"}</span>
         <span>${pluriel(nbIdees, "idée")} · ${nbFaits} offert${nbFaits > 1 ? "s" : ""}</span></button>`;
     };
     const filtrees = personnes(true).filter(p => !recherche || simple(p.nom).includes(simple(recherche)));
@@ -934,7 +935,22 @@ function afficher() {
   $("filtres").innerHTML = pastilles.length > 1 ? pastilles.map(x =>
     `<button class="pastille" data-f="${html(x.id)}" aria-pressed="${filtre === x.id}">${html(x.nom)}</button>`).join("") : "";
   $("contenu").innerHTML = h;
+  // La section « Plus dans mes listes » se souvient d'être ouverte quand la page est redessinée
+  const a = $("anciens");
+  if (a) a.addEventListener("toggle", () => { anciensOuverts = a.open; });
+  // Bouton « Tout réduire » : devient « Tout déplier » quand tout est déjà replié
+  $("outils-liste").hidden = vue === "gens" || affiches.length < 2;
+  $("btn-replier").textContent = affiches.every(c => replies.has(c)) ? "Tout déplier ▾" : "Tout réduire ▸";
 }
+
+// Les groupes repliés sont gardés dans l'appareil (pas dans le Sheet : c'est de l'affichage)
+function garderReplis() { garder(REPLIS_LOCAL, JSON.stringify([...replies])); }
+$("btn-replier").onclick = () => {
+  const toutReplie = affiches.every(c => replies.has(c));
+  affiches.forEach(c => toutReplie ? replies.delete(c) : replies.add(c));
+  garderReplis();
+  afficher();
+};
 
 /* ---------- 6. ACTIONS ---------- */
 
@@ -948,6 +964,12 @@ $("contenu").addEventListener("click", ev => {
   if (action === "ouvrir") ouvrirFiche(id);
   else if (action === "personne") ouvrirPersonne(b.dataset.p);
   else if (action === "ajouter") ouvrirFiche(null, { qui: b.dataset.p, occ: b.dataset.occ, annee: Number(b.dataset.annee), statut: "a-acheter" });
+  else if (action === "replier") {
+    const g = b.dataset.g;
+    replies.has(g) ? replies.delete(g) : replies.add(g);
+    garderReplis();
+    afficher();
+  }
   else if (action === "deplier") { deplie.has(b.dataset.p) ? deplie.delete(b.dataset.p) : deplie.add(b.dataset.p); afficher(); }
   else if (action === "cycle") {
     // Le bouton de statut : à acheter → acheté → reçu → à acheter
@@ -955,13 +977,13 @@ $("contenu").addEventListener("click", ev => {
     modifier(e => { if (e.idees[id]) { e.idees[id].statut = suivant; e.idees[id].maj = aujourdhui(); } });
   }
   else if (action === "retenir") {
-    // Une idée de la boîte est retenue pour une occasion : celle de la liste où
-    // elle est dépliée (Noël, Anniv.), sinon le Noël en cours (vue Idées).
+    // Une idée de la boîte est retenue pour un Noël : celui de la liste où elle
+    // est dépliée (vue Noël), sinon le Noël en cours (vue Idées).
     const zone = b.closest("[data-occ]");
     const occ = zone ? zone.dataset.occ : "noel", annee = zone ? Number(zone.dataset.annee) : noelCourant();
     const avant = structuredClone(etat.idees[id]);
     modifier(e => { if (e.idees[id]) Object.assign(e.idees[id], { occ, annee, statut: "a-acheter", maj: aujourdhui() }); });
-    afficherToast(`« ${avant.texte} » : à acheter pour ${occ === "noel" ? "Noël" : "l'anniversaire"} ${annee}`,
+    afficherToast(`« ${avant.texte} » : à acheter pour Noël ${annee}`,
       () => modifier(e => { e.idees[id] = avant; }));
   }
 });
@@ -1139,11 +1161,6 @@ function ouvrirPersonne(id) {
   const p = id ? etat.personnes[id] : null;
   $("p-titre").textContent = p ? p.nom : "Nouvelle personne";
   $("p-nom").value = p ? p.nom : "";
-  // Listes déroulantes jour / mois (« — » = date inconnue)
-  $("p-jour").innerHTML = `<option value="">Jour —</option>` + Array.from({ length: 31 }, (_, k) => `<option>${k + 1}</option>`).join("");
-  $("p-mois").innerHTML = `<option value="">Mois —</option>` + MOIS.map((m, k) => `<option value="${k + 1}">${m}</option>`).join("");
-  const [m, j] = p && p.anniv ? p.anniv.split("-").map(Number) : ["", ""];
-  $("p-jour").value = j; $("p-mois").value = m;
   archivee = !!(p && p.archive);
   remplirChoix($("p-archive"), [{ id: "oui", nom: "Oui" }, { id: "non", nom: "Non, plus maintenant" }], archivee ? "non" : "oui", v => archivee = v === "non");
 
@@ -1166,8 +1183,6 @@ $("form-personne").addEventListener("submit", ev => {
   ev.preventDefault();
   const nom = $("p-nom").value.trim();
   if (!nom) { $("p-nom").focus(); return; }
-  const j = Number($("p-jour").value), m = Number($("p-mois").value);
-  const anniv = j && m ? String(m).padStart(2, "0") + "-" + String(j).padStart(2, "0") : "";
   const id = personneOuverte || nouvelId(nom);
   $("personne").close();
   modifier(e => {
@@ -1175,7 +1190,6 @@ $("form-personne").addEventListener("submit", ev => {
     const rangs = Object.values(e.personnes).map(p => p.rang ?? 0);
     const p = e.personnes[id] || { rang: rangs.length ? Math.max(...rangs) + 1 : 0 };
     p.nom = nom;
-    if (anniv) p.anniv = anniv; else delete p.anniv;
     if (archivee) p.archive = 1; else delete p.archive;
     e.personnes[id] = p;
   });
@@ -1255,7 +1269,8 @@ function demarrer() {
   if (params.get("url") && /^https:\/\/script\.google\.com\//.test(params.get("url"))) garder(URL_LOCALE, params.get("url"));
   if (params.get("cle") || params.get("url")) history.replaceState(null, "", location.pathname);
   const v = lire(VUE_LOCALE);
-  if (["idees", "noel", "anniv", "gens"].includes(v)) vue = v;
+  if (["idees", "noel", "gens"].includes(v)) vue = v;
+  try { replies = new Set(JSON.parse(lire(REPLIS_LOCAL) || "[]")); } catch { replies = new Set(); }
   etat = normaliser(lireCache());
   afficher();
   actualiser();
