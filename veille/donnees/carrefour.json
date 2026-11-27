@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-26T15:27+00:00",
+ "maj": "2026-11-27T01:02+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -49,6 +49,54 @@
   }
  ],
  "articles": [
+  {
+   "id": "d089c46f03c3",
+   "titre": "« Il y en avait plein dans les paquets de sucre » : des rayons de ce supermarché de Loire-Antlantique infestés d’excréments de rongeurs",
+   "lien": "https://www.ouest-france.fr/economie/entreprises/carrefour/il-y-en-avait-plein-dans-les-paquets-de-sucre-des-excrements-de-rongeurs-trouves-dans-les-rayons-de-ce-supermarche-de-loire-atlantique-6d6d03b8-e8e2-11f1-86c1-70195b4d2e52",
+   "source": "autres",
+   "media": "Ouest-France",
+   "site": "ouest-france.fr",
+   "date": "2026-11-26T18:00+00:00",
+   "vu_le": "2026-11-27T01:02+00:00",
+   "resume": "",
+   "enrichi": "2026-11-27"
+  },
+  {
+   "id": "33fbb8331ac4",
+   "titre": "Vols à l’étalage : les tentatives détectées bondissent de 48 % dans les magasins alimentaires",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/vols-a-letalage-les-tentatives-detectees-bondissent-de-48-dans-les-magasins-alimentaires.3CCV7JIQBVGLDFO3TMZBGLEQPI.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-26T17:02+00:00",
+   "vu_le": "2026-11-27T01:02+00:00",
+   "resume": "",
+   "enrichi": "2026-11-27"
+  },
+  {
+   "id": "222e1f240d92",
+   "titre": "Après Niort, découvrez où Lidl va ouvrir son prochain magasin outlet",
+   "lien": "https://www.lsa-conso.fr/distributeurs-non-alimentaires/apres-niort-decouvrez-ou-lidl-va-ouvrir-son-prochain-magasin-outlet.BQW6NTBDZBEG5GEQ3JMMTKQVRQ.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-26T17:02+00:00",
+   "vu_le": "2026-11-27T01:02+00:00",
+   "resume": "",
+   "enrichi": "2026-11-27"
+  },
+  {
+   "id": "e535b57cb82f",
+   "titre": "Grande distribution : E.Leclerc, Coopérative U, Plesio, Grand Frais, pourquoi ils sont tous au Salon des Maires de France",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/grande-distribution-eleclerc-cooperative-u-plesio-grand-frais-pourquoi-ils-sont-tous-au-salon-des-maires-de-france.U3UZNI2SQBEJXEOVSTC4QS3CMM.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-26T16:09+00:00",
+   "vu_le": "2026-11-27T01:02+00:00",
+   "resume": "",
+   "enrichi": "2026-11-27"
+  },
   {
    "id": "7cd9c3bcd430",
    "titre": "Carrefour s'apprête à reprendre le contrôle de l'unique supermarché Atacadão français",
@@ -1188,6 +1236,18 @@
    "vu_le": "2026-11-19T14:30+00:00",
    "resume": "",
    "enrichi": "2026-11-19"
+  },
+  {
+   "id": "25ee7f04ced6",
+   "titre": "Carrefour 2030 : que retenir du nouveau plan stratégique d’Alexandre Bompard ?",
+   "lien": "https://www.republikgroup.com/en/articles/284765ae-b6b2-f111-a6a7-6045bd9f5987/Carrefour%202030%20:%20que%20retenir%20du%20nouveau%20plan%20strat%C3%A9gique%20d%E2%80%99Alexandre%20Bompard%20",
+   "source": "autres",
+   "media": "republikgroup.com",
+   "site": "republikgroup.com",
+   "date": "2026-11-19T07:27+00:00",
+   "vu_le": "2026-11-27T01:02+00:00",
+   "resume": "",
+   "enrichi": "2026-11-27"
   },
   {
    "id": "debc0a0df4c7",
