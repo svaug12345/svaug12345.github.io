@@ -1,6 +1,6 @@
 /* ============================================================
    Cadeaux — script Google Apps Script
-   Version 1.0.0
+   Version 1.0.1
    ------------------------------------------------------------
    Garde les données de l'appli « Cadeaux » (baiji.fr/cadeaux/) : idées de
    cadeaux, Noëls, anniversaires. Les mêmes sur le téléphone ET sur le PC.
@@ -35,6 +35,7 @@
    Historique :
     • 1.0.0 : lecture (GET) et enregistrement (POST) protégés par la clé,
               données découpées en morceaux dans la colonne A
+    • 1.0.1 : la coupe ne tombe plus jamais au milieu d'un emoji
    ============================================================ */
 
 const ONGLET = "Cadeaux";
@@ -103,8 +104,15 @@ function lireTexte() {
 // Découpe le texte en morceaux et les écrit en A1, A2… ; vide les anciennes cellules en trop
 function ecrireTexte(texte) {
   const lignes = [];
-  for (let debut = 0; debut < texte.length; debut += TAILLE_MORCEAU) {
-    lignes.push([texte.slice(debut, debut + TAILLE_MORCEAU)]);
+  let debut = 0;
+  while (debut < texte.length) {
+    let fin = Math.min(debut + TAILLE_MORCEAU, texte.length);
+    // Un emoji (🙄) occupe DEUX cases dans un texte JavaScript. Si la coupe tombe
+    // entre les deux, on recule d'une case : sinon l'emoji serait abîmé.
+    const code = texte.charCodeAt(fin - 1);
+    if (fin < texte.length && code >= 0xD800 && code <= 0xDBFF) fin--;
+    lignes.push([texte.slice(debut, fin)]);
+    debut = fin;
   }
   while (lignes.length < MORCEAUX_MAX) lignes.push([""]);
   const f = feuille();
