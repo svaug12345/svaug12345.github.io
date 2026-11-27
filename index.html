@@ -2,7 +2,7 @@
 <!--
   ============================================================
   baiji.fr — Page d'accueil des projets (marque SV)
-  Version 1.47.0
+  Version 1.48.0
   ------------------------------------------------------------
   Historique :
    • v1.0.0 : première page d'accueil
@@ -82,6 +82,7 @@
    • v1.45.0 : ajout de « Bande-son » (le son des films et des séries, extrait par le NAS) dans « Outils »
    • v1.46.0 : ajout de « 7 villa Marcès » (site de présentation de l'appartement à vendre) dans « Sites & démos »
    • v1.47.0 : ajout de « Mes projets » (suivi des projets et des idées) dans « Outils »
+   • v1.48.0 : ajout de « Cadeaux » (idées de cadeaux, Noëls et anniversaires) dans « Maison »
 
   À déposer dans le dépôt GitHub : svaug12345.github.io
   → c'est le fichier "index.html" à la racine.
@@ -740,7 +741,7 @@
 
     <!-- ===================== PIED DE PAGE ===================== -->
     <footer>
-      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.47.0</p>
+      <p>Réalisé sous la marque <span class="marque">SV</span> · baiji.fr · v1.48.0</p>
     </footer>
 
     <!--
@@ -778,6 +779,8 @@
       ============================================================
     */
     const PICTOS = {
+      // gift : la carte « Cadeaux »
+      cadeau: `<path d="M12 7v14" /> <path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8" /> <path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5" /> <rect x="3" y="7" width="18" height="4" rx="1" />`,
       // folder-kanban : la carte « Mes projets »
       projets: `<path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" /> <path d="M8 10v4" /> <path d="M12 10v2" /> <path d="M16 10v6" />`,
       // building-2 : la carte « 7 villa Marcès »
@@ -877,6 +880,11 @@
         desc: "Ce qui prend de la place sur le disque ou le téléphone",
         courte: "Qui prend la place ?",
         url: "disque/" },
+
+      { id: "cadeaux",     nom: "Cadeaux",      icone: "cadeau",
+        desc: "Les idées de cadeaux notées au vol, les Noëls et les anniversaires à préparer",
+        courte: "Idées, Noël, anniv.",
+        url: "cadeaux/" },                   // données : script Google « Cadeaux » (outils/cadeaux.gs)
 
       { id: "projets",     nom: "Mes projets",  icone: "projets",
         desc: "Les projets en cours, à commencer, en pause ou finis, et les idées notées au vol",
@@ -1055,6 +1063,7 @@
       ============================================================
     */
     const MOTS_CLES = {
+      "cadeaux":      "cadeaux cadeau idées idee noel noël anniversaire anniversaires offrir liste achats pere noel famille",
       "projets":      "suivi projets idées idee todo kanban statut priorité priorite roadmap en cours pro perso louise",
       // Maison
       "famille":      "dashboard tableau de bord maison tv télé météo tâches corvées enfants voitures agenda anniversaires devoirs",
@@ -1127,7 +1136,7 @@
     // >>> ORGANISATION (bloc remplaçable en entier)
     const ORGANISATION = {
       rubriques: [
-        { nom: "Maison", projets: ["famille", "repas", "cartable", "voitures", "mediatheque", "photos"] },
+        { nom: "Maison", projets: ["famille", "repas", "cadeaux", "cartable", "voitures", "mediatheque", "photos"] },
         { nom: "Outils", projets: ["qr", "pressoir", "mp3", "bande-son", "place-nette", "paraphe", "projets", "journal"] },
         { nom: "Famille & amis", projets: ["code", "revisions", "nego-papa", "foot-chats", "petite-souris", "monique", "grand-verdict", "sos-amitie"] },
         { nom: "Carrefour", projets: ["veille", "fournisseurs", "nexus", "equipe-nexus", "prospection-nexus", "salle-negociation", "table-negociation", "magasin-3d", "pochpoch"] },
