@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Cadeaux — idées de cadeaux et Noëls
-  Version 1.3.0
+  Version 1.3.1
   ------------------------------------------------------------
   Trois vues (contrôle en haut) :
    • Idées     : la boîte à idées. On note en vitesse (« Juju - défonceuse » range
@@ -40,6 +40,9 @@
               la ligne reste prête pour la suivante ; toutes les personnes de
               mes listes sont affichées, même sans idée ; les idées d'une
               personne sont rangées de la plus ancienne à la plus récente
+   • v1.3.1 : toucher un prénom (vues Idées et Noël) ouvre ou referme sa liste,
+              comme la flèche ; la fiche de la personne s'ouvre depuis l'onglet
+              Personnes
 -->
 <html lang="fr">
 <head>
@@ -562,7 +565,7 @@
      • retenue pour un Noël : occ = "noel", annee = 2026… ;
        son statut suit alors l'achat (à acheter → acheté → reçu).
    ============================================================== */
-const VERSION = "1.3.0";
+const VERSION = "1.3.1";
 
 /* ---------- 1. RÉGLAGES ----------
    Adresse /exec du script Google « Cadeaux » (code dans outils/cadeaux.gs).
@@ -826,7 +829,8 @@ function carteHTML(i, bouton, avecQui, libelleRetenir) {
   </div>`;
 }
 
-/* En-tête de groupe : la flèche replie / déplie. On note au passage la clé du
+/* En-tête de groupe : la flèche ET le prénom replient / déplient (même action
+   « replier » : après « Tout réduire », toucher un prénom ouvre sa liste). On note au passage la clé du
    groupe dans « affiches », pour que « Tout réduire » sache quoi replier. */
 function fleche(cle) {
   affiches.push(cle);
@@ -844,10 +848,10 @@ function blocPersonne(p, occ, annee, sousTitre, toutes, modifiable) {
   const cle = "noel:" + p.id;
   // Groupe replié : seulement la ligne du prénom, avec ses compteurs
   if (replies.has(cle)) return `<section class="groupe"><h2>${fleche(cle)}
-      <button class="qui" data-action="personne" data-p="${html(p.id)}">${html(p.nom)}</button>
+      <button class="qui" data-action="replier" data-g="${html(cle)}">${html(p.nom)}</button>
       <span class="pousse"></span><small>${compte || (boite.length ? pluriel(boite.length, "idée") : "")}</small></h2></section>`;
   let h = `<section class="groupe"><h2>${fleche(cle)}
-      <button class="qui" data-action="personne" data-p="${html(p.id)}">${html(p.nom)}</button>
+      <button class="qui" data-action="replier" data-g="${html(cle)}">${html(p.nom)}</button>
       <small>${html(sousTitre || "")}</small><span class="pousse"></span><small>${compte}</small></h2>
     <div class="liste">${retenus.map(i => carteHTML(i, "etat")).join("")}</div>`;
   if (!retenus.length && !modifiable) h += `<div class="rien">Rien de noté.</div>`;
@@ -899,7 +903,7 @@ function afficher() {
       if (!liste.length && !(toujours && !recherche)) return "";
       const cle = "idees:" + (pid || "_sans");
       const tete = `<h2>${fleche(cle)}
-        ${pid ? `<button class="qui" data-action="personne" data-p="${html(pid)}">${html(titre)}</button>` : html(titre)}
+        <button class="qui" data-action="replier" data-g="${html(cle)}">${html(titre)}</button>
         <span class="pousse"></span><small>${liste.length || ""}</small></h2>`;
       if (replies.has(cle)) return `<section class="groupe">${tete}</section>`;
       // Ordre : d'abord les idées sans date (l'historique, par ordre alphabétique),
