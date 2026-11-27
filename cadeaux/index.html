@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Cadeaux — idées de cadeaux, Noëls et anniversaires
-  Version 1.0.0
+  Version 1.0.1
   ------------------------------------------------------------
   Quatre vues (contrôle en haut) :
    • Idées     : la boîte à idées. On note en vitesse (« Juju - défonceuse » range
@@ -25,6 +25,9 @@
    • v1.0.0 : première version (vues Idées / Noël / Anniv. / Personnes, fiche,
               saisie rapide « Qui - idée », alerte « déjà offert », export texte,
               synchro Google Sheet, bloc TABLETTE, installable)
+   • v1.0.1 : adresse du script Google écrite dans la page (plus que la clé à
+              saisir) ; message clair quand le script refuse l'accès ; message
+              « boîte vide » qui n'est plus coupé en deux sur grand écran
 -->
 <html lang="fr">
 <head>
@@ -362,6 +365,7 @@
       .vite, .annee { max-width: 640px; }
       /* Les groupes (une personne = un groupe) se rangent en colonnes */
       #contenu.colonnes { column-count: 2; column-gap: 20px; }
+      #contenu.colonnes .vide { column-span: all; }
       .gens { grid-template-columns: repeat(4, 1fr); }
       dialog { margin: auto; border-radius: 20px; }
     }
@@ -524,13 +528,13 @@
      • retenue pour une occasion : occ = "noel" ou "anniv", annee = 2026… ;
        son statut suit alors l'achat (à acheter → acheté → reçu).
    ============================================================== */
-const VERSION = "1.0.0";
+const VERSION = "1.0.1";
 
 /* ---------- 1. RÉGLAGES ----------
    Adresse /exec du script Google « Cadeaux » (code dans outils/cadeaux.gs).
-   Vide = on prend celle saisie dans « Synchro » (gardée dans l'appareil) ;
-   sans adresse du tout, les données restent dans l'appareil. */
-const CADEAUX_URL = "";
+   (Ce n'est pas un secret : sans la clé, le script ne répond rien d'utile.)
+   Vide = on prend celle saisie dans « Synchro » (gardée dans l'appareil). */
+const CADEAUX_URL = "https://script.google.com/macros/s/AKfycbwR5Wft-6W3rGvMszdPm1oLxq0uS6DSOuY16Q6SXgMWRl9k5VHV3mOMVAaf-0z2lC8/exec";
 const URL_LOCALE = "cadeaux.url";     // adresse du script, si elle n'est pas écrite ci-dessus
 const CLE_LOCALE = "cadeaux.cle";     // la clé, gardée dans l'appareil
 const CACHE_LOCAL = "cadeaux.etat";   // dernière copie des données (marche hors ligne)
@@ -704,7 +708,13 @@ async function actualiser() {
     etatSynchro("Synchronisé", "ok");
   } catch (err) {
     const mauvaiseCle = String(err.message).includes("clé");
-    etatSynchro(mauvaiseCle ? "Clé incorrecte" : "Hors ligne : dernière version connue", "err");
+    // Le téléphone a du réseau mais le script ne répond pas en JSON : presque
+    // toujours un déploiement qui n'est pas ouvert à « Tout le monde » (Google
+    // renvoie alors sa page de connexion, que le navigateur bloque).
+    const refuse = !mauvaiseCle && navigator.onLine;
+    etatSynchro(mauvaiseCle ? "Clé incorrecte (bouton Synchro)"
+      : refuse ? "Script Google injoignable : accès « Tout le monde » ?"
+      : "Hors ligne : dernière version connue", "err");
   }
 }
 
