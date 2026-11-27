@@ -1,6 +1,6 @@
 /* ============================================================
    Mes projets — script Google Apps Script
-   Version 1.1.0
+   Version 1.1.1
    ------------------------------------------------------------
    Relie la page « Mes projets » (baiji.fr/projets/) au Google Sheet
    « Mes projets » du Drive de Seb : les mêmes projets et idées sur le
@@ -30,7 +30,9 @@
         clasp create --title "Mes projets" --parentId <ID du Sheet>
         (copier ce fichier en Code.js + appsscript.json) puis clasp push ;
     • ou à la main : ouvrir le Sheet → Extensions → Apps Script → coller.
-    Puis : Paramètres du projet → Propriétés du script → CLE = un mot de passe ;
+    Puis : Paramètres du projet → Propriétés du script → CLE = un mot de passe
+    (et, si le script n'est pas lié au Sheet, SHEET_ID = l'identifiant du Sheet,
+    la longue suite de caractères de son adresse entre /d/ et /edit) ;
     Déployer → Nouveau déploiement → Application web (Exécuter en tant que :
     Moi ; Accès : Tout le monde) → copier l'adresse /exec dans PROJETS_URL
     de projets/index.html. Sur chaque appareil : baiji.fr/projets/?cle=LA-CLE.
@@ -39,6 +41,8 @@
     • 1.0.0 : tout l'état en JSON dans la cellule A1 (copie de repas.gs)
     • 1.1.0 : un vrai tableau, une ligne par projet (lisible et modifiable
               à la main, lisible par Claude)
+    • 1.1.1 : le Sheet peut aussi être ouvert par son identifiant (propriété
+              SHEET_ID) quand le script n'est pas lié au Sheet
    ============================================================ */
 
 const ONGLET = "Projets";
@@ -151,7 +155,11 @@ function cleValide(cle) {
 
 // L'onglet « Projets » (créé avec son en-tête s'il n'existe pas)
 function feuille() {
-  const classeur = SpreadsheetApp.getActiveSpreadsheet();
+  // Script lié au Sheet : getActiveSpreadsheet() le donne. Sinon (script autonome),
+  // on l'ouvre par son identifiant, rangé dans la propriété SHEET_ID — pas dans ce
+  // fichier, qui est public.
+  const id = PropertiesService.getScriptProperties().getProperty("SHEET_ID");
+  const classeur = id ? SpreadsheetApp.openById(id) : SpreadsheetApp.getActiveSpreadsheet();
   let f = classeur.getSheetByName(ONGLET);
   if (!f) {
     f = classeur.insertSheet(ONGLET);
