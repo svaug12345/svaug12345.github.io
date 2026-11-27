@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Cadeaux — idées de cadeaux et Noëls
-  Version 1.2.0
+  Version 1.3.0
   ------------------------------------------------------------
   Trois vues (contrôle en haut) :
    • Idées     : la boîte à idées. On note en vitesse (« Juju - défonceuse » range
@@ -35,6 +35,11 @@
    • v1.2.0 : ARCHIVER une idée de la boîte (bouton dans sa fiche) : elle quitte
               la boîte et les suggestions de Noël, et se retrouve en bas de la
               vue Idées dans « Idées archivées », d'où on peut la remettre
+   • v1.3.0 : une ligne vide « Nouvelle idée pour … » à la fin de la liste de
+              chaque personne (vue Idées) : on tape, Entrée, l'idée s'ajoute et
+              la ligne reste prête pour la suivante ; toutes les personnes de
+              mes listes sont affichées, même sans idée ; les idées d'une
+              personne sont rangées de la plus ancienne à la plus récente
 -->
 <html lang="fr">
 <head>
@@ -259,7 +264,20 @@
     }
     .etat.plein { background: var(--c); color: #fff; }
 
-    /* Sous chaque personne (Noël, Anniv.) : idées à déplier et « + Ajouter » */
+    /* La ligne vide en fin de liste : une carte en pointillés dans laquelle on écrit */
+    .ajout { display: flex; gap: 6px; }
+    .ajout input {
+      flex: 1; min-width: 0; border: 1px dashed var(--line); background: none;
+      border-radius: 12px; padding: 10px 12px; outline: none; font-size: .95rem;
+    }
+    .ajout input:focus { border-color: var(--s-idee); background: var(--card); }
+    .ajout button {
+      border: 0; border-radius: 12px; padding: 0 12px; background: var(--s-idee); color: #fff;
+      font-weight: 800; font-size: 1.1rem; display: none;
+    }
+    .ajout:focus-within button { display: block; }   /* le « + » n'apparaît que quand on écrit */
+
+    /* Sous chaque personne (vue Noël) : idées à déplier et « + Ajouter » */
     .sous { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
     .sous button {
       border: 1px dashed var(--line); background: none; border-radius: 10px;
@@ -544,7 +562,7 @@
      • retenue pour un Noël : occ = "noel", annee = 2026… ;
        son statut suit alors l'achat (à acheter → acheté → reçu).
    ============================================================== */
-const VERSION = "1.2.0";
+const VERSION = "1.3.0";
 
 /* ---------- 1. RÉGLAGES ----------
    Adresse /exec du script Google « Cadeaux » (code dans outils/cadeaux.gs).
@@ -734,7 +752,7 @@ const nomDe = id => (etat.personnes[id] || {}).nom || "";
 function idees() {
   const mots = simple(recherche).split(/\s+/).filter(Boolean);
   return Object.entries(etat.idees)
-    .map(([id, i]) => ({ id, ...i }))
+    .map(([id, i], rang) => ({ id, ...i, rang }))   // rang = ordre d'arrivée dans les données
     .filter(i => {
       if (!mots.length) return true;
       const texte = simple(i.texte + " " + (i.note || "") + " " + nomDe(i.qui));
@@ -851,6 +869,11 @@ function afficher() {
   $("vite").hidden = $("vite-aide").hidden = vue !== "idees";
   $("annee").hidden = vue !== "noel";
   affiches = [];
+  /* La liste va être redessinée (elle l'est aussi quand la synchro se termine,
+     une seconde après une action). Si on est en train d'écrire dans une ligne
+     vide, on retient laquelle et ce qui est tapé, pour tout remettre ensuite. */
+  const enCours = document.activeElement && document.activeElement.closest ? document.activeElement.closest("form.ajout") : null;
+  const saisie = enCours ? { p: enCours.dataset.p, texte: enCours.querySelector("input").value } : null;
   $("fab").setAttribute("aria-label", vue === "gens" ? "Nouvelle personne" : "Nouvelle idée");
   // Les vues en « groupes par personne » se rangent en colonnes sur tablette
   $("contenu").className = vue === "gens" ? "" : "colonnes";
@@ -870,20 +893,32 @@ function afficher() {
     actifs.forEach(p => pastilles.push({ id: p.id, nom: p.nom + " " + boite.filter(i => i.qui === p.id).length }));
     if (!pastilles.some(x => x.id === filtre)) filtre = "";
 
-    const groupe = (titre, liste, pid) => {
-      if (!liste.length) return "";
+    /* Un groupe = une personne. « toujours » = on l'affiche même sans idée, pour
+       sa ligne vide (pas pendant une recherche : on ne montre que ce qui est trouvé). */
+    const groupe = (titre, liste, pid, toujours) => {
+      if (!liste.length && !(toujours && !recherche)) return "";
       const cle = "idees:" + (pid || "_sans");
       const tete = `<h2>${fleche(cle)}
         ${pid ? `<button class="qui" data-action="personne" data-p="${html(pid)}">${html(titre)}</button>` : html(titre)}
-        <span class="pousse"></span><small>${liste.length}</small></h2>`;
+        <span class="pousse"></span><small>${liste.length || ""}</small></h2>`;
       if (replies.has(cle)) return `<section class="groupe">${tete}</section>`;
+      // Ordre : d'abord les idées sans date (l'historique, par ordre alphabétique),
+      // puis de la plus ancienne à la plus récente : la dernière notée arrive en
+      // bas, juste au-dessus de la ligne vide.
+      // Deux idées notées le même jour restent dans leur ordre d'arrivée (rang).
+      liste.sort((a, b) => (a.cree || "").localeCompare(b.cree || "")
+        || (a.cree ? a.rang - b.rang : a.texte.localeCompare(b.texte, "fr")));
       return `<section class="groupe">${tete}
-        <div class="liste">${liste.sort((a, b) => (b.cree || "").localeCompare(a.cree || "") || a.texte.localeCompare(b.texte, "fr"))
-          .map(i => carteHTML(i, i.qui ? "retenir" : "")).join("")}</div></section>`;
+        <div class="liste">${liste.map(i => carteHTML(i, i.qui ? "retenir" : "")).join("")}
+          <form class="ajout" data-p="${html(pid || "")}">
+            <input type="text" autocomplete="off" enterkeyhint="done" aria-label="Nouvelle idée${pid ? " pour " + html(titre) : ""}"
+              placeholder="${pid ? "Nouvelle idée pour " + html(titre) + "…" : "Nouvelle idée sans destinataire…"}">
+            <button type="submit" aria-label="Ajouter">+</button>
+          </form></div></section>`;
     };
-    if (!filtre || filtre === "_sans") h += groupe("Sans destinataire", boite.filter(i => !i.qui || !etat.personnes[i.qui]));
+    if (!filtre || filtre === "_sans") h += groupe("Sans destinataire", boite.filter(i => !i.qui || !etat.personnes[i.qui]), "", true);
     for (const p of gens) {
-      if (!p.archive && (!filtre || filtre === p.id)) h += groupe(p.nom, boite.filter(i => i.qui === p.id), p.id);
+      if (!p.archive && (!filtre || filtre === p.id)) h += groupe(p.nom, boite.filter(i => i.qui === p.id), p.id, true);
     }
     // En fin de page : les idées des personnes « plus dans mes listes », repliées
     if (!filtre && anciens.length) {
@@ -957,6 +992,10 @@ function afficher() {
   $("filtres").innerHTML = pastilles.length > 1 ? pastilles.map(x =>
     `<button class="pastille" data-f="${html(x.id)}" aria-pressed="${filtre === x.id}">${html(x.nom)}</button>`).join("") : "";
   $("contenu").innerHTML = h;
+  if (saisie) {
+    const f = [...document.querySelectorAll("form.ajout")].find(x => x.dataset.p === saisie.p);
+    if (f) { const champ = f.querySelector("input"); champ.value = saisie.texte; champ.focus({ preventScroll: true }); }
+  }
   // La section « Plus dans mes listes » se souvient d'être ouverte quand la page est redessinée
   const a = $("anciens");
   if (a) a.addEventListener("toggle", () => { anciensOuverts = a.open; });
@@ -1048,18 +1087,43 @@ $("vite-texte").addEventListener("input", ev => {
     ? `Pour <b>${html(nomDe(a.qui))}</b> : ${html(a.texte)}`
     : "Sans destinataire (commence par un prénom pour la ranger).";
 });
+// Ajoute une idée dans la boîte (pour « qui », ou sans destinataire) et prévient
+// si la personne a déjà eu quelque chose de ressemblant.
+function noterIdee(texte, qui, lien) {
+  const id = nouvelId(texte), jour = aujourdhui();
+  const ligne = { texte, qui, statut: "idee", cree: jour, maj: jour };
+  if (lien) ligne.lien = lien;
+  const deja = ressemblants(texte, qui, id);
+  modifier(e => { e.idees[id] = ligne; });
+  if (deja.length) afficherToast(`${nomDe(qui)} : déjà « ${deja[0].texte} » (${quand(deja[0])})`);
+}
+
+// Saisie rapide du haut : « Prénom - idée »
 $("vite").addEventListener("submit", ev => {
   ev.preventDefault();
   const a = analyser($("vite-texte").value.trim());
   if (!a.texte) return;
-  const id = nouvelId(a.texte), jour = aujourdhui();
-  const ligne = { texte: a.texte, qui: a.qui, statut: "idee", cree: jour, maj: jour };
-  if (a.lien) ligne.lien = a.lien;
-  const deja = ressemblants(a.texte, a.qui, id);
-  modifier(e => { e.idees[id] = ligne; });
+  noterIdee(a.texte, a.qui, a.lien);
   $("vite-texte").value = ""; $("vite-aide").textContent = "";
-  // On prévient tout de suite si la personne a déjà eu quelque chose de ressemblant
-  if (deja.length) afficherToast(`${nomDe(a.qui)} : déjà « ${deja[0].texte} » (${quand(deja[0])})`);
+});
+
+/* Ligne vide en fin de liste d'une personne : l'idée est pour elle, pas besoin
+   de retaper son prénom. Les formulaires sont redessinés à chaque affichage,
+   d'où un seul écouteur sur tout le contenu (délégation). Après l'ajout, le
+   curseur reste dans la ligne vide de la même personne (voir le début et la
+   fin de afficher()) : on peut enchaîner les idées. */
+$("contenu").addEventListener("submit", ev => {
+  const f = ev.target.closest("form.ajout");
+  if (!f) return;
+  ev.preventDefault();
+  const qui = f.dataset.p;
+  let lien = "";
+  // Un lien collé dans le texte est rangé dans le champ « lien »
+  const texte = f.querySelector("input").value.replace(/https?:\/\/\S+/, l => { lien = l; return ""; }).trim() || (lien ? "Lien" : "");
+  if (!texte) return;
+  // On vide la ligne AVANT d'ajouter : afficher() la retrouvera vide, curseur dedans
+  f.querySelector("input").value = "";
+  noterIdee(texte[0].toUpperCase() + texte.slice(1), qui, lien);
 });
 
 /* ---------- 7. LA FICHE D'UNE IDÉE ---------- */
