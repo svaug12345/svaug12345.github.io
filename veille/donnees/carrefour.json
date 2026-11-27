@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-27T15:17+00:00",
+ "maj": "2026-11-27T23:32+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -49,6 +49,56 @@
   }
  ],
  "articles": [
+  {
+   "id": "cfc28a2aaf64",
+   "titre": "Vos courses en 2027 : Leclerc, Carrefour, Intermarché, U et Auchan s'unissent pour freiner les hausses de prix",
+   "lien": "https://www.capital.fr/conso/vos-courses-en-2027-leclerc-carrefour-intermarche-u-et-auchan-s-unissent-pour-freiner-les-hausses-de-prix-1532229",
+   "source": "autres",
+   "media": "Capital.fr",
+   "site": "capital.fr",
+   "date": "2026-11-27T18:09+00:00",
+   "vu_le": "2026-11-27T23:32+00:00",
+   "resume": "Des hausses de prix sont à prévoir en rayon. Mais les patrons des enseignes de la grande distribution s’unissent pour mettre la pression sur les industriels, avant l’ouverture des négociations commerciales.",
+   "enrichi": "2026-11-27",
+   "image": "https://www.capital.fr/imgre/fit/~1~cap~2026~11~27~89820f74-6e43-4949-b785-272280adc32d.jpeg/1200x630/focus-point/50%2C50/vos-courses-en-2027-leclerc-carrefour-intermarche-u-et-auchan-s-unissent-pour-freiner-les-hausses-de-prix.jpg"
+  },
+  {
+   "id": "3c1eeb782865",
+   "titre": "Dominique Schelcher et Michel-Edouard Leclerc, en tête : les distributeurs trustent le classement Challenges des patrons les plus influents",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/dominique-schelcher-et-michel-edouard-leclerc-en-tete-les-distributeurs-trustent-le-classement-challenges-des-patrons-les-plus-influents.BMI2FUBCWNETTFAY6YWHOPVP7E.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-27T17:31+00:00",
+   "vu_le": "2026-11-27T23:32+00:00",
+   "resume": "Avec cinq représentants dans le top 20 et les deux premières places, la distribution occupe une place majeure dans le palmarès des patrons les plus influents, établi par Challenges et le cabinet Suasoria. Preuve que les questions du quotidien sont clés dans le débat public actuel. Dominique Schelcher, le patron de Coopérative U, s’impose.",
+   "enrichi": "2026-11-27",
+   "image": "https://www.lsa-conso.fr/resizer/v2/VVFV5L4OARFTZFM4X6ETWXJPM4.png?smart=true&auth=a6029d6afc1ccdc3c5095fbc575efcc187c7ec31335307d2614f7f3fa1dc7b1c&width=1200&height=630"
+  },
+  {
+   "id": "4bfb58ddbc6a",
+   "titre": "Thierry Cotillard, président des Mousquetaires (Intermarché, Netto, Bricomarché...) en piste pour un deuxième mandat, avec trois chantiers clés identifiés",
+   "lien": "https://www.lsa-conso.fr/distributeurs-alimentaires/thierry-cotillard-president-des-mousquetaires-intermarche-netto-bricomarche-en-piste-pour-un-deuxieme-mandat-avec-trois-chantiers-cles-identifies.CV3G2ZGUGJC6HHO36MS2PLQYOY.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-27T16:10+00:00",
+   "vu_le": "2026-11-27T23:32+00:00",
+   "resume": "",
+   "enrichi": "2026-11-27"
+  },
+  {
+   "id": "aa2126b63b14",
+   "titre": "Négociations commerciales 2027 : la DGCCRF dévoile ses lignes directrices, les demandes de baisses de prix devront être justifiées",
+   "lien": "https://www.lsa-conso.fr/agro-industriel/negociations-commerciales-2027-la-dgccrf-devoile-ses-lignes-directrices-les-baisses-de-prix-devront-etre-justifiees.WAGKIW6NGVDF7OVH45VXTEZYSM.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-27T16:01+00:00",
+   "vu_le": "2026-11-27T23:32+00:00",
+   "resume": "",
+   "enrichi": "2026-11-27"
+  },
   {
    "id": "5512c0af06cc",
    "titre": "Négociations commerciales : découvrez la lettre de Carrefour, Intermarché, E.Leclerc, Coopérative U et Auchan qui met les industriels sous pression",
@@ -3716,6 +3766,19 @@
    "enrichi": "2026-11-11"
   },
   {
+   "id": "ac49665a3ab9",
+   "titre": "Greenvolt va équiper d’ombrières solaires les parkings de 120 magasins Carrefour",
+   "lien": "https://www.lechodusolaire.fr/greenvolt-va-equiper-dombrieres-solaires-les-parkings-de-120-magasins-carrefour/",
+   "source": "autres",
+   "media": "L'Echo du Solaire",
+   "site": "lechodusolaire.fr",
+   "date": "2026-11-03T10:24+00:00",
+   "vu_le": "2026-11-27T23:32+00:00",
+   "resume": "Le Portugais Greenvolt, par sa filiale Greenvolt Next, a signé un accord avec Carrefour Property, la branche immobilière du groupe Carrefour, pour déployer des ombrières photovoltaïques sur les parkings de 120 magasins détenus en pleine propriété par l’enseigne en France. Le programme représente une capacité d’environ 25 MWc, soit quelque 45 000 panneaux. L’accord fait […]",
+   "enrichi": "2026-11-27",
+   "image": "https://www.lechodusolaire.fr/wp-content/uploads/2026/10/greenvolt-carrefour-ombrieres.jpg"
+  },
+  {
    "id": "23749da2bb39",
    "titre": "Carrefour : \" D'ici 2030, nous atteindrons l'objectif d'être présents dans 60 pays \"",
    "lien": "https://www.lineaires.com/la-distribution/carrefour-d-ici-2030-nous-atteindrons-l-objectif-d-etre-presents-dans-60-pays",
@@ -4405,6 +4468,19 @@
    "image": "https://cdn-s-www.bienpublic.com/images/7AA454D5-2883-468D-8E4B-02EA4B652F9B/FB1200/photo-1792437863.jpg"
   },
   {
+   "id": "719056ac2a9f",
+   "titre": "Codifrance : la liste des magasins Panier Sympa, VivÉco et Épi Service repris par Carrefour",
+   "lien": "https://www.jebosseengrandedistribution.fr/2026/10/19/codifrance-la-liste-des-magasins-panier-sympa-viveco-et-epi-service/",
+   "source": "autres",
+   "media": "Je Bosse en Grande Distribution",
+   "site": "jebosseengrandedistribution.fr",
+   "date": "2026-10-19T07:00+00:00",
+   "vu_le": "2026-11-27T23:32+00:00",
+   "resume": "Carrefour a annoncé le 19 octobre 2026 le rachat de Codifrance, grossiste de proximité filiale du belge Colruyt, pour une valeur d'entreprise de 152 millions d'euros. Codifrance approvisionne plus de 3 000 supérettes en France, dont environ 800 sous ses propres enseignes. Nous avons recensé 377 magasins Panier",
+   "enrichi": "2026-11-27",
+   "image": "https://storage.ghost.io/c/ed/da/edda0153-be11-4643-9318-2cb198c66e7f/content/images/2026/10/Illustration-blog--3--2.jpg"
+  },
+  {
    "id": "f01358788ff6",
    "titre": "Alexandre Bompard, PDG de Carrefour, dresse le bilan des dégradations commises le 17 octobre",
    "lien": "https://www.bfmtv.com/economie/video-alexandre-bompard-pdg-de-carrefour-dresse-le-bilan-des-degradations-commises-le-17-octobre_VN-202610180240.html",
@@ -4719,6 +4795,19 @@
    "image": "https://www.challenges.fr/_ipx/f_jpg&enlarge_true&s_1200x630/cha/static/2026-10/62845.HR_2.jpeg%3FVersionId=tVstYZ2qmbYUWnbalzWBVLa8kFjTRb2y"
   },
   {
+   "id": "60343b6ef9f0",
+   "titre": "Cyberattaque sur les frigos : plusieurs magasins Intermarché et Carrefour Market de Seine-Maritime et de l'Eure touchés",
+   "lien": "https://www.ici.fr/normandie/seine-maritime-76/grand-couronne/cyberattaque-sur-les-frigos-l-intermarche-de-grand-couronne-jette-tous-ses-produits-frais-et-surgeles-1495694",
+   "source": "autres",
+   "media": "ici.fr",
+   "site": "ici.fr",
+   "date": "2026-10-12T07:00+00:00",
+   "vu_le": "2026-11-27T23:32+00:00",
+   "resume": "Une cyberattaque d",
+   "enrichi": "2026-11-27",
+   "image": "https://www.ici.fr/pikapi/images/8c08953c-48ba-455f-b18c-e06b7575f903/1200x630?webp=false"
+  },
+  {
    "id": "d08030a6a635",
    "titre": "En Isère, une pétition contre des pièges à colle vendus en supermarché",
    "lien": "https://www.20minutes.fr/societe/4252869-20261011-isere-carrefour-market-soupconne-vendre-pieges-colle-enseigne-conteste-faits",
@@ -4741,6 +4830,19 @@
    "resume": "",
    "site": "lsa-conso.fr",
    "enrichi": "2026-11-11"
+  },
+  {
+   "id": "5fc1db96ba12",
+   "titre": "12 octobre en Espagne : Mercadona, Lidl, Carrefour… quels magasins seront ouverts lundi ?",
+   "lien": "https://lepetitjournal.com/madrid/actualites/12-octobre-espagne-supermarches-ouverts-mercadona-lidl-carrefour-455894",
+   "source": "autres",
+   "media": "Lepetitjournal.com",
+   "site": "lepetitjournal.com",
+   "date": "2026-10-10T07:00+00:00",
+   "vu_le": "2026-11-27T23:32+00:00",
+   "resume": "Le 12 octobre 2026 est férié en Espagne. Mercadona, Lidl, Carrefour, Aldi, Consum : découvrez quels supermarchés ouvrent et les transports perturbés.",
+   "enrichi": "2026-11-27",
+   "image": "https://backoffice.lepetitjournal.com/sites/default/files/2026-10/12octobre-espagne-ouvertures%281%29.png"
   },
   {
    "id": "39889ed0dbae",
@@ -4802,6 +4904,19 @@
    "vu_le": "2026-11-25T01:28+00:00",
    "resume": "",
    "enrichi": "2026-11-25"
+  },
+  {
+   "id": "fb71a800a49e",
+   "titre": "Carrefour va ouvrir neuf magasins Carrefour City dans les aéroports de Roissy et d’Orly",
+   "lien": "https://lexpress-franchise.com/actualites/ouverture-carrefour-city-aeroports-roissy-et-orly/",
+   "source": "autres",
+   "media": "L’Express Franchise",
+   "site": "lexpress-franchise.com",
+   "date": "2026-10-09T07:00+00:00",
+   "vu_le": "2026-11-27T23:32+00:00",
+   "resume": "Carrefour exploitera neuf Carrefour City à Roissy et Orly pendant huit ans, dont six en location-gérance, et vise 100 ouvertures par an dans les transports.",
+   "enrichi": "2026-11-27",
+   "image": "https://lexpress-franchise.com/wp-content/uploads/2026/10/carrefour-city-gare-passants-flous.jpeg"
   },
   {
    "id": "1f1c20672c78",
