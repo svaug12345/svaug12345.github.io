@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<!--
+  Cadeaux — idées de cadeaux, Noëls et anniversaires
+  Version 1.0.0
+  ------------------------------------------------------------
+  Quatre vues (contrôle en haut) :
+   • Idées     : la boîte à idées. On note en vitesse (« Juju - défonceuse » range
+                 l'idée chez Juju), puis « Noël ▸ » la retient pour le Noël en cours ;
+   • Noël      : une année de Noël, personne par personne : ce qui est à acheter,
+                 acheté, reçu ; les idées de la boîte se déplient sous chaque nom ;
+   • Anniv.    : les prochains anniversaires, du plus proche au plus lointain,
+                 avec les cadeaux prévus et les idées de la personne ;
+   • Personnes : la liste des gens, leur date d'anniversaire et ce qu'on leur a
+                 déjà offert, année par année.
+  Toucher une idée = sa fiche (texte, pour qui, statut, occasion, note, lien).
+  La fiche prévient si la personne a déjà eu quelque chose de ressemblant.
+
+  Données : comme « Mes projets », dans un Google Sheet via le script
+  « Cadeaux » (code : outils/cadeaux.gs). Sans script, tout marche mais
+  reste dans l'appareil.
+  ⚠️ Le dépôt est PUBLIC : AUCUN prénom ni AUCUNE idée dans ce fichier.
+  La liste de départ (historique des Noëls) est déjà dans le Google Sheet.
+
+  Historique :
+   • v1.0.0 : première version (vues Idées / Noël / Anniv. / Personnes, fiche,
+              saisie rapide « Qui - idée », alerte « déjà offert », export texte,
+              synchro Google Sheet, bloc TABLETTE, installable)
+-->
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Cadeaux</title>
+  <meta name="description" content="Idées de cadeaux, Noëls et anniversaires.">
+
+  <!-- Page perso : pas dans les moteurs de recherche -->
+  <meta name="robots" content="noindex">
+
+  <!--
+    PWA = page installable sur téléphone (menu du navigateur → « Installer l'application »).
+    Fichiers fabriqués par outils/generer-pwa.py :
+     • manifest.webmanifest : nom, couleurs, icônes de l'appli ;
+     • icones/ : les icônes (apple-touch-icon = celle des iPhone) ;
+     • sw.js : le service worker, enregistré en bas de page.
+  -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+  <link rel="icon" href="icones/icone-192.png">
+  <meta name="theme-color" content="#0f7c7b">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- Compteur de visites de baiji.fr (voir /journal.js) -->
+  <script src="/journal.js" defer></script>
+
+  <!-- Polices de la charte SV : Manrope (texte) + JetBrains Mono (petites étiquettes) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+
+  <style>
+    /* =========================================================
+       1. COULEURS ET POLICES (variables CSS)
+       ========================================================= */
+    :root {
+      --bg: #f3f6f6;
+      --card: #ffffff;
+      --ink: #12302f;
+      --muted: #5b7574;
+      --line: #dbe6e5;
+      --teal: #0f7c7b;
+      --teal-deep: #0b4f55;
+      --teal-soft: #e2f0ef;
+      --on-teal: #ffffff;
+      --danger: #c2413a;
+      --alerte-fond: #fdf1dc;
+      --alerte-texte: #7a4a00;
+      /* Une couleur par statut : les mêmes que dans le classeur d'origine
+         (orange = à acheter, bleu = acheté, vert = reçu, gris = pas acheté) */
+      --s-idee: #8a6fd1;
+      --s-acheter: #d9660b;
+      --s-achete: #2f6fb5;
+      --s-recu: #2f8f4e;
+      --s-abandon: #9a9f9e;
+      --sans: "Manrope", "Segoe UI", system-ui, sans-serif;
+      --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", monospace;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1a1a;
+        --card: #142424;
+        --ink: #e3efee;
+        --muted: #93abaa;
+        --line: #24393a;
+        --teal: #3fb4ae;
+        --teal-deep: #0b4f55;
+        --teal-soft: #173332;
+        --on-teal: #062222;
+        --alerte-fond: #3a2c10;
+        --alerte-texte: #f2cf8a;
+        --s-idee: #a993e6;
+        --s-acheter: #f08a52;
+        --s-achete: #6ea6e6;
+        --s-recu: #5cc07c;
+        --s-abandon: #7f8c8b;
+      }
+    }
+
+    /* =========================================================
+       2. BASE
+       ========================================================= */
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }   /* indispensable : certains blocs sont en flex */
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+    }
+    button, input, textarea, select { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    .page {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: calc(16px + env(safe-area-inset-top)) 16px calc(110px + env(safe-area-inset-bottom));
+    }
+    .label {                       /* petites étiquettes en capitales espacées (charte SV) */
+      font-family: var(--mono);
+      font-size: .68rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+    }
+
+    /* =========================================================
+       3. EN-TÊTE, VUES, FILTRES
+       ========================================================= */
+    header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    header h1 { margin: 0; font-size: 1.6rem; font-weight: 800; letter-spacing: -.02em; flex: 1; }
+    .icone-btn {
+      width: 40px; height: 40px; border-radius: 12px;
+      border: 1px solid var(--line); background: var(--card);
+      display: grid; place-items: center;
+    }
+    .icone-btn svg { width: 20px; height: 20px; }
+    svg.ico { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* Contrôle segmenté Idées / Noël / Anniv. / Personnes */
+    .segments {
+      display: flex; background: var(--card); border: 1px solid var(--line);
+      border-radius: 14px; padding: 4px; gap: 4px; margin-bottom: 10px;
+    }
+    .segments button {
+      flex: 1; border: 0; background: none; border-radius: 10px; padding: 9px 2px;
+      font-weight: 700; font-size: .86rem; color: var(--muted);
+    }
+    .segments button[aria-pressed="true"] { background: var(--teal); color: var(--on-teal); }
+
+    /* Pastilles de filtre : une rangée qui défile sur le côté */
+    .filtres { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; margin-bottom: 10px; scrollbar-width: none; }
+    .filtres::-webkit-scrollbar { display: none; }
+    .pastille {
+      flex: none; border: 1px solid var(--line); background: var(--card);
+      border-radius: 999px; padding: 6px 12px; font-size: .85rem; font-weight: 600;
+    }
+    .pastille[aria-pressed="true"] { border-color: var(--teal); background: var(--teal-soft); color: var(--teal); }
+
+    .recherche {
+      width: 100%; border: 1px solid var(--line); background: var(--card);
+      border-radius: 12px; padding: 10px 12px; margin-bottom: 14px; outline: none;
+    }
+    .recherche:focus { border-color: var(--teal); }
+
+    /* Saisie rapide d'une idée */
+    .vite { display: flex; gap: 8px; margin-bottom: 6px; }
+    .vite input {
+      flex: 1; min-width: 0; border: 1px dashed var(--s-idee); background: var(--card);
+      border-radius: 12px; padding: 11px 12px; outline: none;
+    }
+    .vite button {
+      border: 0; border-radius: 12px; padding: 0 16px; background: var(--s-idee); color: #fff;
+      font-weight: 800; font-size: .78rem; letter-spacing: .08em; text-transform: uppercase;
+    }
+    .vite-aide { font-size: .78rem; color: var(--muted); margin: 0 2px 14px; min-height: 1.2em; }
+    .vite-aide b { color: var(--s-idee); }
+
+    /* Bandeau de l'année de Noël : flèches, titre, avancement */
+    .annee {
+      display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; gap: 8px;
+      background: var(--teal-deep); color: #fff; border-radius: 16px; padding: 12px; margin-bottom: 12px;
+    }
+    .annee button { width: 40px; height: 40px; border-radius: 12px; border: 0; background: rgba(255,255,255,.12); color: #fff; font-size: 1.2rem; }
+    .annee button:disabled { opacity: .3; }
+    .annee .titre { text-align: center; }
+    .annee .titre b { display: block; font-size: 1.25rem; font-weight: 800; }
+    .annee .titre span { font-size: .8rem; opacity: .85; }
+    .jauge { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: rgba(255,255,255,.18); overflow: hidden; }
+    .jauge i { display: block; height: 100%; background: #7fe0c0; border-radius: 3px; }
+
+    /* =========================================================
+       4. GROUPES ET CARTES
+       ========================================================= */
+    .groupe { margin-bottom: 18px; break-inside: avoid; }
+    .groupe h2 {
+      display: flex; align-items: center; gap: 8px;
+      margin: 0 2px 8px; font-size: .95rem; font-weight: 800;
+    }
+    .groupe h2 .qui { background: none; border: 0; padding: 0; font-weight: 800; text-align: left; }
+    .groupe h2 small { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 500; }
+    .groupe h2 .pousse { flex: 1; }
+    .point { width: 9px; height: 9px; border-radius: 50%; background: var(--c); flex: none; }
+    .liste { display: grid; gap: 8px; }
+
+    .carte {
+      position: relative; display: flex; gap: 8px; align-items: center;
+      background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+      padding: 0 10px 0 5px; overflow: hidden;
+    }
+    .carte::before {               /* bande de couleur du statut, à gauche */
+      content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--c);
+    }
+    .carte .corps {                /* la zone qu'on touche pour ouvrir la fiche */
+      flex: 1; min-width: 0; text-align: left; border: 0; background: none; padding: 11px 4px 11px 11px;
+    }
+    .carte .nom { font-weight: 700; font-size: .96rem; overflow-wrap: anywhere; }
+    .carte.barre .nom { text-decoration: line-through; color: var(--muted); font-weight: 600; }
+    .carte .meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; align-items: center; }
+    .carte .meta:empty { display: none; }
+    .carte .note {
+      margin-top: 5px; font-size: .84rem; color: var(--muted);
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .tag {
+      font-family: var(--mono); font-size: .64rem; text-transform: uppercase; letter-spacing: .08em;
+      border-radius: 6px; padding: 2px 6px; background: var(--teal-soft); color: var(--teal);
+    }
+    /* Bouton à droite d'une carte : statut (un appui = étape suivante) ou « Noël ▸ » */
+    .etat, .retenir {
+      flex: none; border: 1px solid var(--c); color: var(--c); background: none;
+      border-radius: 10px; padding: 6px 9px; font-weight: 700; font-size: .76rem;
+    }
+    .etat.plein { background: var(--c); color: #fff; }
+
+    /* Sous chaque personne (Noël, Anniv.) : idées à déplier et « + Ajouter » */
+    .sous { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+    .sous button {
+      border: 1px dashed var(--line); background: none; border-radius: 10px;
+      padding: 7px 10px; font-size: .82rem; font-weight: 700; color: var(--muted);
+    }
+    .sous button.idees { border-color: var(--s-idee); color: var(--s-idee); }
+    .rien { font-size: .85rem; color: var(--muted); padding: 2px; }
+
+    /* Vue Personnes : petites cartes */
+    .gens { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .gens button {
+      text-align: left; background: var(--card); border: 1px solid var(--line);
+      border-radius: 12px; padding: 10px 12px; min-width: 0;
+    }
+    .gens b { display: block; font-size: .98rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .gens span { display: block; font-size: .76rem; color: var(--muted); }
+    details.anciens { margin-top: 18px; }
+    details.anciens summary { color: var(--muted); font-weight: 700; font-size: .9rem; padding: 6px 2px; }
+
+    .vide { text-align: center; color: var(--muted); padding: 30px 10px; }
+    .vide b { display: block; color: var(--ink); font-size: 1.05rem; margin-bottom: 4px; }
+
+    /* Bouton flottant « + » */
+    .fab {
+      position: fixed; right: 18px; bottom: calc(18px + env(safe-area-inset-bottom));
+      width: 58px; height: 58px; border-radius: 18px; border: 0;
+      background: var(--teal); color: var(--on-teal);
+      box-shadow: 0 8px 22px rgba(15, 124, 123, .35);
+      display: grid; place-items: center; z-index: 5;
+    }
+    .fab svg { width: 28px; height: 28px; }
+
+    /* Pied de page */
+    footer { text-align: center; margin-top: 26px; font-size: .8rem; color: var(--muted); }
+    footer button { border: 0; background: none; color: var(--teal); font-weight: 700; padding: 4px 6px; }
+    #etat-synchro.ok { color: var(--s-recu); }
+    #etat-synchro.err { color: var(--danger); }
+
+    /* =========================================================
+       5. FICHES (<dialog>) — montent du bas sur téléphone
+       ========================================================= */
+    dialog {
+      border: 0; padding: 0; margin: auto auto 0; width: 100%; max-width: 560px;
+      max-height: 92vh; border-radius: 20px 20px 0 0;
+      background: var(--card); color: var(--ink);
+    }
+    dialog::backdrop { background: rgba(5, 20, 20, .45); }
+    .fiche { padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); }
+    .fiche h3 { margin: 0 0 14px; font-size: 1.15rem; }
+    .champ { margin-bottom: 14px; }
+    .champ > .label { display: block; margin-bottom: 6px; }
+    .champ input[type=text], .champ input[type=url], .champ input[type=number],
+    .champ input[type=password], .champ textarea, .champ select {
+      width: 100%; border: 1px solid var(--line); background: var(--bg);
+      border-radius: 10px; padding: 10px 12px; outline: none;
+    }
+    .champ input:focus, .champ textarea:focus, .champ select:focus { border-color: var(--teal); }
+    .champ textarea { min-height: 76px; resize: vertical; }
+    .deux { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    /* Occasion : les trois boutons, et la case de l'année à droite */
+    .occasion { display: flex; gap: 10px; align-items: flex-start; }
+    .occasion .choix { flex: 1; }
+    .champ .occasion input { width: 92px; flex: none; }
+    .choix { display: flex; flex-wrap: wrap; gap: 6px; }
+    .choix button {
+      border: 1px solid var(--line); background: var(--bg); border-radius: 999px;
+      padding: 7px 12px; font-size: .85rem; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .choix button[aria-pressed="true"] { border-color: var(--c, var(--teal)); background: var(--c, var(--teal)); color: #fff; }
+    .choix button[aria-pressed="true"] .point { background: #fff; }
+    .ligne-lien { display: flex; gap: 8px; }
+    .ligne-lien input { flex: 1; min-width: 0; }
+    .ligne-lien a {
+      flex: none; display: grid; place-items: center; padding: 0 12px; border-radius: 10px;
+      border: 1px solid var(--line); color: var(--teal); text-decoration: none; font-weight: 700; font-size: .85rem;
+    }
+    /* Alerte « déjà offert » de la fiche */
+    .alerte {
+      background: var(--alerte-fond); color: var(--alerte-texte);
+      border-radius: 10px; padding: 9px 12px; font-size: .85rem; margin: -6px 0 14px;
+    }
+    .actions { display: flex; gap: 8px; margin-top: 18px; }
+    .btn {
+      border: 0; border-radius: 12px; padding: 12px 16px; font-weight: 800;
+      font-size: .78rem; letter-spacing: .08em; text-transform: uppercase;
+    }
+    .btn.plein { background: var(--teal); color: var(--on-teal); flex: 1; }
+    .btn.leger { background: var(--bg); border: 1px solid var(--line); }
+    .btn.rouge { background: none; color: var(--danger); border: 1px solid var(--danger); }
+    .dates { font-size: .75rem; color: var(--muted); margin-top: 10px; }
+    .aide { font-size: .85rem; color: var(--muted); margin: 0 0 12px; }
+    /* Historique d'une personne : une ligne par année */
+    .histo { margin: 0 0 6px; padding: 0; list-style: none; font-size: .88rem; }
+    .histo li { padding: 6px 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: 52px 1fr; gap: 8px; }
+    .histo b { font-family: var(--mono); font-size: .76rem; color: var(--muted); padding-top: 2px; }
+
+    /* Message « Annuler » en bas */
+    #toast {
+      position: fixed; left: 50%; transform: translateX(-50%);
+      bottom: calc(90px + env(safe-area-inset-bottom)); z-index: 20;
+      background: var(--ink); color: var(--bg); border-radius: 12px;
+      padding: 10px 14px; display: flex; gap: 14px; align-items: center;
+      max-width: calc(100% - 32px); font-size: .9rem;
+    }
+    #toast button { border: 0; background: none; color: var(--teal-soft); font-weight: 800; text-transform: uppercase; letter-spacing: .06em; font-size: .78rem; }
+
+    /* =========================================================
+       6. TABLETTE (≥ 760 px) — le téléphone ne change pas
+       ========================================================= */
+    @media (min-width: 760px) {
+      .page { max-width: 1180px; padding-left: 28px; padding-right: 28px; }
+      .barre { display: grid; grid-template-columns: 420px 1fr; gap: 12px; align-items: center; margin-bottom: 14px; }
+      .barre .segments, .barre .recherche { margin-bottom: 0; }
+      .vite, .annee { max-width: 640px; }
+      /* Les groupes (une personne = un groupe) se rangent en colonnes */
+      #contenu.colonnes { column-count: 2; column-gap: 20px; }
+      .gens { grid-template-columns: repeat(4, 1fr); }
+      dialog { margin: auto; border-radius: 20px; }
+    }
+    @media (min-width: 1100px) {
+      #contenu.colonnes { column-count: 3; }
+      .gens { grid-template-columns: repeat(6, 1fr); }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>Cadeaux</h1>
+    <button class="icone-btn" id="btn-export" aria-label="Exporter la liste" title="Exporter la liste (texte)">
+      <svg class="ico" viewBox="0 0 24 24"><path d="M12 2v13"/><path d="m16 6-4-4-4 4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg>
+    </button>
+  </header>
+
+  <div class="barre">
+    <div class="segments" role="group" aria-label="Vue">
+      <button data-vue="idees">Idées</button>
+      <button data-vue="noel">Noël</button>
+      <button data-vue="anniv">Anniv.</button>
+      <button data-vue="gens">Personnes</button>
+    </div>
+    <input class="recherche" id="recherche" type="search" placeholder="Chercher une idée, une personne…" autocomplete="off">
+  </div>
+
+  <!-- Saisie rapide : seulement dans la vue Idées -->
+  <form class="vite" id="vite" hidden>
+    <input id="vite-texte" type="text" placeholder="Prénom - idée…" autocomplete="off" enterkeyhint="done">
+    <button type="submit">Noter</button>
+  </form>
+  <p class="vite-aide" id="vite-aide" hidden></p>
+
+  <!-- Bandeau de l'année : seulement dans la vue Noël (rempli par afficher()) -->
+  <div class="annee" id="annee" hidden></div>
+
+  <!-- Pastilles de filtre (personnes dans Idées, statuts dans Noël) -->
+  <div class="filtres" id="filtres" role="group" aria-label="Filtre"></div>
+
+  <main id="contenu"></main>
+
+  <footer>
+    <span id="etat-synchro">Enregistré sur cet appareil</span> ·
+    <button id="btn-synchro">Synchro</button> · v<span id="version"></span>
+  </footer>
+</div>
+
+<button class="fab" id="fab" aria-label="Ajouter">
+  <svg class="ico" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+</button>
+
+<!-- Fiche d'une idée (création et modification) -->
+<dialog id="fiche">
+  <form class="fiche" id="form-fiche" method="dialog">
+    <h3 id="fiche-titre">Idée</h3>
+    <div class="champ">
+      <span class="label">Idée de cadeau</span>
+      <input type="text" id="f-texte" required autocomplete="off">
+    </div>
+    <div class="champ">
+      <span class="label">Pour qui</span>
+      <select id="f-qui"></select>
+    </div>
+    <div class="alerte" id="f-alerte" hidden></div>
+    <div class="champ">
+      <span class="label">Statut</span>
+      <div class="choix" id="f-statut"></div>
+    </div>
+    <div class="champ">
+      <span class="label">Occasion</span>
+      <div class="occasion">
+        <div class="choix" id="f-occ"></div>
+        <input type="number" id="f-annee" min="2000" max="2100" inputmode="numeric" aria-label="Année">
+      </div>
+    </div>
+    <div class="champ">
+      <span class="label">Note (taille, couleur, où l'acheter, prix…)</span>
+      <textarea id="f-note"></textarea>
+    </div>
+    <div class="champ">
+      <span class="label">Lien</span>
+      <div class="ligne-lien">
+        <input type="url" id="f-lien" placeholder="https://…" autocomplete="off">
+        <a id="f-ouvrir" target="_blank" rel="noopener">Ouvrir</a>
+      </div>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn rouge" id="f-suppr">Supprimer</button>
+      <button type="button" class="btn leger" id="f-fermer">Fermer</button>
+      <button type="submit" class="btn plein" id="f-ok">Enregistrer</button>
+    </div>
+    <div class="dates" id="f-dates"></div>
+  </form>
+</dialog>
+
+<!-- Fiche d'une personne : nom, anniversaire, ce qu'on lui a déjà offert -->
+<dialog id="personne">
+  <form class="fiche" id="form-personne" method="dialog">
+    <h3 id="p-titre">Personne</h3>
+    <div class="champ">
+      <span class="label">Prénom</span>
+      <input type="text" id="p-nom" required autocomplete="off">
+    </div>
+    <div class="champ">
+      <span class="label">Anniversaire</span>
+      <div class="deux">
+        <select id="p-jour" aria-label="Jour"></select>
+        <select id="p-mois" aria-label="Mois"></select>
+      </div>
+    </div>
+    <div class="champ">
+      <span class="label">Dans mes listes</span>
+      <div class="choix" id="p-archive"></div>
+    </div>
+    <div class="champ" id="p-histo-champ">
+      <span class="label">Déjà offert</span>
+      <ul class="histo" id="p-histo"></ul>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn rouge" id="p-suppr">Supprimer</button>
+      <button type="button" class="btn leger" id="p-fermer">Fermer</button>
+      <button type="submit" class="btn plein">Enregistrer</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Réglage de la synchro (adresse et clé du script Google) -->
+<dialog id="synchro">
+  <form class="fiche" id="form-synchro" method="dialog">
+    <h3>Synchro téléphone ↔ PC</h3>
+    <p class="aide" id="synchro-aide"></p>
+    <div class="champ" id="synchro-url-champ">
+      <span class="label">Adresse du script (finit par /exec)</span>
+      <input type="url" id="s-url" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off">
+    </div>
+    <div class="champ">
+      <span class="label">Clé</span>
+      <input type="password" id="s-cle" autocomplete="off">
+    </div>
+    <div class="actions">
+      <button type="button" class="btn leger" id="s-fermer">Fermer</button>
+      <button type="submit" class="btn plein">Enregistrer</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" hidden role="status"><span id="toast-texte"></span><button id="toast-annuler">Annuler</button></div>
+
+<script>
+/* ==============================================================
+   CADEAUX — le code
+   Tout l'état tient dans un objet « etat », enregistré d'un bloc
+   (dans le téléphone, et dans le Google Sheet si la synchro est branchée) :
+     etat.personnes = { id: { nom, anniv: "MM-JJ", rang, archive } }
+     etat.idees     = { id: { texte, qui, statut, occ, annee, note, lien, cree, maj } }
+   Une « idée » est une ligne de cadeau, quel que soit son avancement :
+     • dans la boîte à idées : statut « idee », pas d'occasion ;
+     • retenue pour une occasion : occ = "noel" ou "anniv", annee = 2026… ;
+       son statut suit alors l'achat (à acheter → acheté → reçu).
+   ============================================================== */
+const VERSION = "1.0.0";
+
+/* ---------- 1. RÉGLAGES ----------
+   Adresse /exec du script Google « Cadeaux » (code dans outils/cadeaux.gs).
+   Vide = on prend celle saisie dans « Synchro » (gardée dans l'appareil) ;
+   sans adresse du tout, les données restent dans l'appareil. */
+const CADEAUX_URL = "";
+const URL_LOCALE = "cadeaux.url";     // adresse du script, si elle n'est pas écrite ci-dessus
+const CLE_LOCALE = "cadeaux.cle";     // la clé, gardée dans l'appareil
+const CACHE_LOCAL = "cadeaux.etat";   // dernière copie des données (marche hors ligne)
+const VUE_LOCALE = "cadeaux.vue";     // dernière vue choisie
+
+/* Les statuts d'une idée. « c » = couleur (variables CSS). */
+const STATUTS = [
+  { id: "idee",      nom: "Idée",       c: "var(--s-idee)" },
+  { id: "a-acheter", nom: "À acheter",  c: "var(--s-acheter)" },
+  { id: "achete",    nom: "Acheté",     c: "var(--s-achete)" },
+  { id: "recu",      nom: "Reçu",       c: "var(--s-recu)" },
+  { id: "abandonne", nom: "Pas acheté", c: "var(--s-abandon)" },
+];
+const STATUT = Object.fromEntries(STATUTS.map(s => [s.id, s]));
+const RANG_STATUT = Object.fromEntries(STATUTS.map((s, i) => [s.id, i]));
+// Un appui sur le bouton de statut d'une carte fait avancer d'une étape
+const SUIVANT = { "idee": "a-acheter", "a-acheter": "achete", "achete": "recu", "recu": "a-acheter", "abandonne": "a-acheter" };
+// « Fait » = le cadeau est en main (acheté ou reçu)
+const estFait = i => i.statut === "achete" || i.statut === "recu";
+
+const OCCASIONS = [
+  { id: "",      nom: "Boîte à idées" },
+  { id: "noel",  nom: "Noël" },
+  { id: "anniv", nom: "Anniv." },
+];
+const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+
+let etat = null;                 // les données affichées
+let vue = "idees";               // idees | noel | anniv | gens
+let filtre = "";                 // pastille choisie (dépend de la vue)
+let recherche = "";
+let anneeNoel = noelCourant();   // l'année affichée dans la vue Noël
+let deplie = new Set();          // personnes dont les idées sont dépliées (Noël, Anniv.)
+let ouvert = null;               // id de l'idée ouverte dans la fiche (null = nouvelle)
+let brouillon = null;            // copie modifiée dans la fiche, avant « Enregistrer »
+let personneOuverte = null;      // id de la personne ouverte (null = nouvelle)
+
+/* ---------- 2. PETITS OUTILS ---------- */
+const $ = id => document.getElementById(id);
+// Texte sans accents ni majuscules, pour chercher « noel » et trouver « Noël »
+const simple = t => (t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/œ/g, "oe");
+// Identifiant unique (lettres du texte + morceau aléatoire)
+const nouvelId = t => (simple(t).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 24) || "x")
+                      + "-" + Math.random().toString(36).slice(2, 6);
+// La date du jour, AAAA-MM-JJ, à l'heure du téléphone (pas en heure universelle)
+function aujourdhui() {
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+// Échappe le texte avant de le mettre dans du HTML (sinon un « < » casserait la page)
+const html = t => String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const pluriel = (n, mot) => n + " " + mot + (n > 1 ? "s" : "");
+
+// Le Noël « en cours » : celui de cette année (en janvier, encore celui d'avant)
+function noelCourant() {
+  const d = new Date();
+  return d.getMonth() === 0 ? d.getFullYear() - 1 : d.getFullYear();
+}
+// Nombre de jours entre aujourd'hui et une date (minuit à minuit)
+function joursAvant(date) {
+  const a = new Date(); a.setHours(0, 0, 0, 0);
+  return Math.round((date - a) / 86400000);
+}
+// Prochain anniversaire d'une personne (objet Date), ou null si pas de date
+function prochainAnniv(p) {
+  if (!p.anniv) return null;
+  const [m, j] = p.anniv.split("-").map(Number);
+  const a = new Date(); a.setHours(0, 0, 0, 0);
+  let d = new Date(a.getFullYear(), m - 1, j);
+  if (d < a) d = new Date(a.getFullYear() + 1, m - 1, j);
+  return d;
+}
+const dateAnniv = p => { const [m, j] = p.anniv.split("-").map(Number); return (j === 1 ? "1er" : j) + " " + MOIS[m - 1]; };
+function dansCombien(n) {
+  if (n === 0) return "aujourd'hui";
+  if (n === 1) return "demain";
+  if (n < 60) return "dans " + n + " j";
+  return "dans " + Math.round(n / 30) + " mois";
+}
+
+/* ---------- 3. STOCKAGE (même principe que « Mes projets ») ----------
+   • Copie locale (localStorage) : affichage immédiat et hors ligne.
+   • Script Google : la version commune au téléphone et au PC. Chaque action
+     relit d'abord le serveur, rejoue SA modification dessus, puis renvoie
+     le tout (voir modifier()) : on n'écrase pas ce qu'un autre appareil
+     vient d'ajouter. */
+function lire(cle) { try { return localStorage.getItem(cle) || ""; } catch { return ""; } }
+function garder(cle, v) { try { localStorage.setItem(cle, v); } catch {} }
+const lireCle = () => lire(CLE_LOCALE);
+const urlScript = () => CADEAUX_URL || lire(URL_LOCALE);
+function lireCache() { try { return JSON.parse(localStorage.getItem(CACHE_LOCAL)); } catch { return null; } }
+function garderCache() { garder(CACHE_LOCAL, JSON.stringify(etat)); }
+
+const partage = () => urlScript() !== "" && lireCle() !== "";
+
+async function chargerServeur() {
+  const r = await fetch(urlScript() + "?cle=" + encodeURIComponent(lireCle()), { cache: "no-store" });
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.erreur || "erreur");
+  return j.etat;   // objet, ou null si le Sheet est encore vide
+}
+// « text/plain » évite la requête de vérification CORS que Apps Script ne sait pas traiter
+async function envoyerServeur(e) {
+  const r = await fetch(urlScript(), {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ cle: lireCle(), etat: e }),
+  });
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.erreur || "erreur");
+}
+
+// Complète un état vide ou incomplet (aucune donnée de départ : le dépôt est public)
+function normaliser(e) {
+  e = e && typeof e === "object" ? e : {};
+  e.personnes = e.personnes || {};
+  e.idees = e.idees || {};
+  return e;
+}
+// Un état « vide » = ni personne ni idée (appareil neuf, ou Sheet pas encore rempli)
+const estVide = e => !e || (!Object.keys(e.personnes || {}).length && !Object.keys(e.idees || {}).length);
+
+function etatSynchro(texte, classe) {
+  const el = $("etat-synchro");
+  el.textContent = texte;
+  el.className = classe || "";
+}
+
+/* modifier(fn) : LA fonction par laquelle passent toutes les actions.
+   « fn » reçoit l'état et le modifie ; elle est jouée deux fois : tout de suite
+   sur la copie de l'appareil (affichage immédiat), puis sur la version fraîche
+   du serveur avant de la renvoyer. */
+let file = Promise.resolve();    // les envois se suivent, jamais deux en même temps
+function modifier(fn) {
+  fn(etat);
+  garderCache();
+  afficher();
+  if (!partage()) return;
+  file = file.then(async () => {
+    try {
+      etatSynchro("Enregistrement…", "");
+      const frais = normaliser(await chargerServeur());
+      fn(frais);
+      await envoyerServeur(frais);
+      etat = frais;
+      garderCache();
+      afficher();
+      etatSynchro("Synchronisé", "ok");
+    } catch (err) {
+      etatSynchro("Hors ligne : modification gardée ici", "err");
+    }
+  });
+}
+
+// Relit la version commune (au démarrage et au retour sur l'appli)
+async function actualiser() {
+  if (!partage()) {
+    etatSynchro(urlScript() ? "Synchro : clé à saisir" : "Enregistré sur cet appareil", "");
+    return;
+  }
+  try {
+    const distant = await chargerServeur();
+    if (!estVide(distant)) {
+      etat = normaliser(distant);
+    } else if (!estVide(etat)) {
+      // Sheet encore vide : on y envoie ce qu'on a dans l'appareil
+      await envoyerServeur(etat);
+    }
+    garderCache();
+    afficher();
+    etatSynchro("Synchronisé", "ok");
+  } catch (err) {
+    const mauvaiseCle = String(err.message).includes("clé");
+    etatSynchro(mauvaiseCle ? "Clé incorrecte" : "Hors ligne : dernière version connue", "err");
+  }
+}
+
+/* ---------- 4. LIRE LES DONNÉES ---------- */
+
+// Les personnes, dans l'ordre de la liste (rang), puis par prénom
+function personnes(avecArchives) {
+  return Object.entries(etat.personnes)
+    .map(([id, p]) => ({ id, ...p }))
+    .filter(p => avecArchives || !p.archive)
+    .sort((a, b) => (a.rang ?? 999) - (b.rang ?? 999) || a.nom.localeCompare(b.nom, "fr"));
+}
+const nomDe = id => (etat.personnes[id] || {}).nom || "";
+// Toutes les idées, avec leur id, filtrées par la recherche
+function idees() {
+  const mots = simple(recherche).split(/\s+/).filter(Boolean);
+  return Object.entries(etat.idees)
+    .map(([id, i]) => ({ id, ...i }))
+    .filter(i => {
+      if (!mots.length) return true;
+      const texte = simple(i.texte + " " + (i.note || "") + " " + nomDe(i.qui));
+      return mots.every(m => texte.includes(m));   // chaque mot tapé doit apparaître
+    });
+}
+// La boîte à idées : pas encore retenues pour une occasion
+const dansBoite = i => i.statut === "idee" && !i.occ;
+// Les lignes d'une occasion donnée (ex. Noël 2026), les plus avancées en dernier
+const pourOccasion = (liste, occ, annee) => liste
+  .filter(i => i.occ === occ && i.annee === annee)
+  .sort((a, b) => RANG_STATUT[a.statut] - RANG_STATUT[b.statut] || a.texte.localeCompare(b.texte, "fr"));
+
+/* Reconnaît « Juju - défonceuse », « Juju défonceuse » ou « Juju : défonceuse » :
+   si le début du texte est le prénom d'une personne connue, l'idée est pour elle.
+   On essaie les prénoms les plus longs d'abord (« Marie Christine » avant « Marie »).
+   Un lien collé dans le texte est rangé dans le champ « lien ». */
+function analyser(texte) {
+  let lien = "";
+  texte = texte.replace(/https?:\/\/\S+/, l => { lien = l; return ""; }).trim();
+  const s = simple(texte);
+  const connus = personnes(true).sort((a, b) => b.nom.length - a.nom.length);
+  for (const p of connus) {
+    const n = simple(p.nom);
+    if (s.startsWith(n) && /^[\s\-–—:,]/.test(s.slice(n.length))) {
+      const reste = texte.slice(p.nom.length).replace(/^[\s\-–—:,]+/, "");
+      if (reste) return { qui: p.id, texte: reste[0].toUpperCase() + reste.slice(1), lien };
+    }
+  }
+  return { qui: "", texte: texte || (lien ? "Lien" : ""), lien };
+}
+
+/* Ce que la personne a déjà eu (ou qu'on a déjà noté pour elle) et qui ressemble
+   au texte : même texte, l'un contenu dans l'autre, ou un mot long en commun. */
+function ressemblants(texte, qui, saufId) {
+  const s = simple(texte).trim();
+  if (!qui || s.length < 3) return [];
+  const mots = s.split(/[^a-z0-9]+/).filter(m => m.length >= 5);
+  return Object.entries(etat.idees)
+    .filter(([id, i]) => id !== saufId && i.qui === qui && (i.annee || estFait(i)))
+    .filter(([, i]) => {
+      const t = simple(i.texte);
+      return t === s || (s.length >= 4 && t.includes(s)) || (t.length >= 4 && s.includes(t)) || mots.some(m => t.includes(m));
+    })
+    .map(([, i]) => i)
+    .sort((a, b) => (b.annee || 0) - (a.annee || 0));
+}
+const quand = i => i.occ === "noel" && i.annee ? "Noël " + i.annee : i.occ === "anniv" && i.annee ? "anniv. " + i.annee : "sans date";
+
+/* ---------- 5. AFFICHAGE ---------- */
+
+/* Une carte d'idée. « bouton » dit ce qu'on met à droite :
+   "etat" = le statut (un appui = étape suivante), "retenir" = « Noël ▸ ». */
+function carteHTML(i, bouton, avecQui, libelleRetenir) {
+  const s = STATUT[i.statut] || STATUT.idee;
+  const droite = bouton === "etat"
+    ? `<button class="etat ${estFait(i) ? "plein" : ""}" data-action="cycle" title="Étape suivante">${s.nom}</button>`
+    : bouton === "retenir"
+      ? `<button class="retenir" data-action="retenir" style="--c:var(--s-idee)">${libelleRetenir || "Noël ▸"}</button>`
+      : "";
+  return `<div class="carte ${i.statut === "abandonne" ? "barre" : ""}" data-id="${html(i.id)}" style="--c:${s.c}">
+    <button class="corps" data-action="ouvrir">
+      <div class="nom">${html(i.texte)}</div>
+      <div class="meta">${avecQui && i.qui ? `<span class="tag">${html(nomDe(i.qui))}</span>` : ""}${i.lien ? `<span class="tag">lien</span>` : ""}</div>
+      ${i.note ? `<div class="note">${html(i.note)}</div>` : ""}
+    </button>${droite}
+  </div>`;
+}
+
+/* Le bloc d'une personne pour une occasion (vues Noël et Anniv.) :
+   ses cadeaux retenus, puis ses idées à déplier et le bouton « + Ajouter ». */
+function blocPersonne(p, occ, annee, sousTitre, toutes, modifiable) {
+  const retenus = pourOccasion(toutes, occ, annee).filter(i => i.qui === p.id);
+  const boite = toutes.filter(i => i.qui === p.id && dansBoite(i));
+  const ouvertIci = deplie.has(p.id);
+  const fait = retenus.filter(estFait).length;
+  const compte = retenus.length ? `${fait}/${retenus.filter(i => i.statut !== "abandonne").length}` : "";
+  let h = `<section class="groupe"><h2>
+      <button class="qui" data-action="personne" data-p="${html(p.id)}">${html(p.nom)}</button>
+      <small>${html(sousTitre || "")}</small><span class="pousse"></span><small>${compte}</small></h2>
+    <div class="liste">${retenus.map(i => carteHTML(i, "etat")).join("")}</div>`;
+  if (!retenus.length && !modifiable) h += `<div class="rien">Rien de noté.</div>`;
+  if (modifiable) {
+    h += `<div class="sous">
+        ${boite.length ? `<button class="idees" data-action="deplier" data-p="${html(p.id)}">${ouvertIci ? "▾" : "▸"} ${pluriel(boite.length, "idée")}</button>` : ""}
+        <button data-action="ajouter" data-p="${html(p.id)}" data-occ="${occ}" data-annee="${annee}">+ Ajouter</button>
+      </div>`;
+    if (ouvertIci && boite.length) {
+      h += `<div class="liste" style="margin-top:8px" data-occ="${occ}" data-annee="${annee}">
+        ${boite.map(i => carteHTML(i, "retenir", false, "Retenir ▸")).join("")}</div>`;
+    }
+  }
+  return h + `</section>`;
+}
+
+function afficher() {
+  document.querySelectorAll(".segments button").forEach(b => b.setAttribute("aria-pressed", b.dataset.vue === vue));
+  $("vite").hidden = $("vite-aide").hidden = vue !== "idees";
+  $("annee").hidden = vue !== "noel";
+  $("fab").setAttribute("aria-label", vue === "gens" ? "Nouvelle personne" : "Nouvelle idée");
+  // Les vues en « groupes par personne » se rangent en colonnes sur tablette
+  $("contenu").className = vue === "gens" ? "" : "colonnes";
+
+  const toutes = idees();
+  let h = "", pastilles = [];
+
+  if (vue === "idees") {
+    /* ----- Boîte à idées : groupée par personne ----- */
+    const boite = toutes.filter(dansBoite);
+    const gens = personnes(true);
+    const actifs = gens.filter(p => !p.archive && boite.some(i => i.qui === p.id));
+    const nbSans = boite.filter(i => !i.qui || !etat.personnes[i.qui]).length;
+    const nbAnciens = boite.filter(i => (etat.personnes[i.qui] || {}).archive).length;
+    pastilles = [{ id: "", nom: "Tout" }];
+    if (nbSans) pastilles.push({ id: "_sans", nom: "Sans destinataire " + nbSans });
+    actifs.forEach(p => pastilles.push({ id: p.id, nom: p.nom + " " + boite.filter(i => i.qui === p.id).length }));
+    if (nbAnciens) pastilles.push({ id: "_anciens", nom: "Autres " + nbAnciens });
+    if (!pastilles.some(x => x.id === filtre)) filtre = "";
+
+    const groupe = (titre, liste, pid) => liste.length ? `<section class="groupe"><h2>
+        ${pid ? `<button class="qui" data-action="personne" data-p="${html(pid)}">${html(titre)}</button>` : html(titre)}
+        <span class="pousse"></span><small>${liste.length}</small></h2>
+        <div class="liste">${liste.sort((a, b) => (b.cree || "").localeCompare(a.cree || "") || a.texte.localeCompare(b.texte, "fr"))
+          .map(i => carteHTML(i, i.qui ? "retenir" : "")).join("")}</div></section>` : "";
+    if (!filtre || filtre === "_sans") h += groupe("Sans destinataire", boite.filter(i => !i.qui || !etat.personnes[i.qui]));
+    for (const p of gens) {
+      const montre = filtre === p.id || (!filtre && !p.archive) || (filtre === "_anciens" && p.archive);
+      if (montre) h += groupe(p.nom, boite.filter(i => i.qui === p.id), p.id);
+    }
+    if (!h) h = recherche
+      ? `<div class="vide"><b>Rien trouvé</b>Essaie un autre mot.</div>`
+      : `<div class="vide"><b>La boîte à idées est vide</b>Note une idée juste au-dessus : « Prénom - idée », ou l'idée seule.</div>`;
+
+  } else if (vue === "noel") {
+    /* ----- Noël d'une année ----- */
+    const lignes = pourOccasion(toutes, "noel", anneeNoel);
+    const courant = anneeNoel >= noelCourant();          // passé = lecture de l'historique
+    const retenus = lignes.filter(i => i.statut !== "abandonne" && i.statut !== "idee");
+    const faits = lignes.filter(estFait).length;
+    const annees = Object.values(etat.idees).filter(i => i.occ === "noel" && i.annee).map(i => i.annee);
+    const mini = Math.min(anneeNoel, ...annees), maxi = Math.max(noelCourant() + 1, ...annees);
+    const j = joursAvant(new Date(anneeNoel, 11, 25));
+    $("annee").innerHTML = `
+      <button data-pas="-1" aria-label="Année précédente" ${anneeNoel <= mini ? "disabled" : ""}>‹</button>
+      <div class="titre"><b>Noël ${anneeNoel}</b>
+        <span>${retenus.length ? `${faits} sur ${retenus.length} en main` : "rien de retenu"}${j >= 0 ? " · J-" + j : ""}</span></div>
+      <button data-pas="1" aria-label="Année suivante" ${anneeNoel >= maxi ? "disabled" : ""}>›</button>
+      <div class="jauge"><i style="width:${retenus.length ? Math.round(100 * faits / retenus.length) : 0}%"></i></div>`;
+
+    const aAcheter = lignes.filter(i => i.statut === "a-acheter").length;
+    pastilles = [{ id: "", nom: "Tout le monde" }];
+    if (courant) pastilles.push({ id: "_acheter", nom: "À acheter " + aAcheter }, { id: "_sans", nom: "Sans cadeau" });
+    if (!pastilles.some(x => x.id === filtre)) filtre = "";
+
+    for (const p of personnes(true)) {
+      const siens = lignes.filter(i => i.qui === p.id);
+      // Année en cours : toutes les personnes de la liste ; année passée : celles qui ont eu quelque chose
+      if (!siens.length && (!courant || p.archive)) continue;
+      if (filtre === "_acheter" && !siens.some(i => i.statut === "a-acheter")) continue;
+      if (filtre === "_sans" && siens.some(i => i.statut !== "abandonne")) continue;
+      if (recherche && !siens.length && !simple(p.nom).includes(simple(recherche))) continue;
+      h += blocPersonne(p, "noel", anneeNoel, "", toutes, courant);
+    }
+    if (!h) h = `<div class="vide"><b>Rien ici</b>${courant ? "Ajoute d'abord des personnes dans l'onglet Personnes." : "Aucun cadeau noté pour ce Noël."}</div>`;
+
+  } else if (vue === "anniv") {
+    /* ----- Anniversaires, du plus proche au plus lointain ----- */
+    const gens = personnes(false);
+    const dates = gens.filter(p => p.anniv).map(p => ({ p, d: prochainAnniv(p) })).sort((a, b) => a.d - b.d);
+    for (const { p, d } of dates) {
+      h += blocPersonne(p, "anniv", d.getFullYear(), dateAnniv(p) + " · " + dansCombien(joursAvant(d)), toutes, true);
+    }
+    const sansDate = gens.filter(p => !p.anniv);
+    if (sansDate.length) {
+      h += `<section class="groupe"><h2>Date à renseigner <span class="pousse"></span><small>${sansDate.length}</small></h2>
+        <div class="filtres" style="flex-wrap:wrap">${sansDate.map(p =>
+          `<button class="pastille" data-action="personne" data-p="${html(p.id)}">${html(p.nom)}</button>`).join("")}</div></section>`;
+    }
+    if (!gens.length) h = `<div class="vide"><b>Personne pour l'instant</b>Ajoute des personnes dans l'onglet Personnes.</div>`;
+
+  } else {
+    /* ----- Personnes ----- */
+    const tout = Object.values(etat.idees);
+    const carte = p => {
+      const siennes = tout.filter(i => i.qui === p.id);
+      const nbIdees = siennes.filter(dansBoite).length, nbFaits = siennes.filter(estFait).length;
+      return `<button data-action="personne" data-p="${html(p.id)}"><b>${html(p.nom)}</b>
+        <span>${p.anniv ? "🎂 " + dateAnniv(p) : "anniversaire ?"}</span>
+        <span>${pluriel(nbIdees, "idée")} · ${nbFaits} offert${nbFaits > 1 ? "s" : ""}</span></button>`;
+    };
+    const filtrees = personnes(true).filter(p => !recherche || simple(p.nom).includes(simple(recherche)));
+    const actifs = filtrees.filter(p => !p.archive), anciens = filtrees.filter(p => p.archive);
+    if (actifs.length) h += `<div class="gens">${actifs.map(carte).join("")}</div>`;
+    if (anciens.length) h += `<details class="anciens" ${recherche ? "open" : ""}><summary>Plus dans mes listes · ${anciens.length}</summary>
+        <div class="gens">${anciens.map(carte).join("")}</div></details>`;
+    if (!h) h = `<div class="vide"><b>Personne pour l'instant</b>Le bouton + ajoute quelqu'un.</div>`;
+  }
+
+  $("filtres").innerHTML = pastilles.length > 1 ? pastilles.map(x =>
+    `<button class="pastille" data-f="${html(x.id)}" aria-pressed="${filtre === x.id}">${html(x.nom)}</button>`).join("") : "";
+  $("contenu").innerHTML = h;
+}
+
+/* ---------- 6. ACTIONS ---------- */
+
+// Un seul écouteur pour tout le contenu (délégation : les cartes sont redessinées souvent)
+$("contenu").addEventListener("click", ev => {
+  const b = ev.target.closest("[data-action]");
+  if (!b) return;
+  const carte = b.closest(".carte"), id = carte && carte.dataset.id;
+  const action = b.dataset.action;
+
+  if (action === "ouvrir") ouvrirFiche(id);
+  else if (action === "personne") ouvrirPersonne(b.dataset.p);
+  else if (action === "ajouter") ouvrirFiche(null, { qui: b.dataset.p, occ: b.dataset.occ, annee: Number(b.dataset.annee), statut: "a-acheter" });
+  else if (action === "deplier") { deplie.has(b.dataset.p) ? deplie.delete(b.dataset.p) : deplie.add(b.dataset.p); afficher(); }
+  else if (action === "cycle") {
+    // Le bouton de statut : à acheter → acheté → reçu → à acheter
+    const suivant = SUIVANT[etat.idees[id].statut];
+    modifier(e => { if (e.idees[id]) { e.idees[id].statut = suivant; e.idees[id].maj = aujourdhui(); } });
+  }
+  else if (action === "retenir") {
+    // Une idée de la boîte est retenue pour une occasion : celle de la liste où
+    // elle est dépliée (Noël, Anniv.), sinon le Noël en cours (vue Idées).
+    const zone = b.closest("[data-occ]");
+    const occ = zone ? zone.dataset.occ : "noel", annee = zone ? Number(zone.dataset.annee) : noelCourant();
+    const avant = structuredClone(etat.idees[id]);
+    modifier(e => { if (e.idees[id]) Object.assign(e.idees[id], { occ, annee, statut: "a-acheter", maj: aujourdhui() }); });
+    afficherToast(`« ${avant.texte} » : à acheter pour ${occ === "noel" ? "Noël" : "l'anniversaire"} ${annee}`,
+      () => modifier(e => { e.idees[id] = avant; }));
+  }
+});
+
+document.querySelector(".segments").addEventListener("click", ev => {
+  const b = ev.target.closest("button");
+  if (!b) return;
+  vue = b.dataset.vue; filtre = "";
+  garder(VUE_LOCALE, vue);
+  afficher();
+  window.scrollTo(0, 0);
+});
+$("filtres").addEventListener("click", ev => {
+  const b = ev.target.closest("button");
+  if (!b) return;
+  filtre = b.dataset.f;
+  afficher();
+});
+$("annee").addEventListener("click", ev => {
+  const b = ev.target.closest("button");
+  if (!b) return;
+  anneeNoel += Number(b.dataset.pas); filtre = "";
+  afficher();
+});
+$("recherche").addEventListener("input", ev => { recherche = ev.target.value; afficher(); });
+
+// Saisie rapide : pendant qu'on tape, on dit pour qui l'idée sera rangée
+$("vite-texte").addEventListener("input", ev => {
+  const a = analyser(ev.target.value);
+  $("vite-aide").innerHTML = !ev.target.value.trim() ? "" : a.qui
+    ? `Pour <b>${html(nomDe(a.qui))}</b> : ${html(a.texte)}`
+    : "Sans destinataire (commence par un prénom pour la ranger).";
+});
+$("vite").addEventListener("submit", ev => {
+  ev.preventDefault();
+  const a = analyser($("vite-texte").value.trim());
+  if (!a.texte) return;
+  const id = nouvelId(a.texte), jour = aujourdhui();
+  const ligne = { texte: a.texte, qui: a.qui, statut: "idee", cree: jour, maj: jour };
+  if (a.lien) ligne.lien = a.lien;
+  const deja = ressemblants(a.texte, a.qui, id);
+  modifier(e => { e.idees[id] = ligne; });
+  $("vite-texte").value = ""; $("vite-aide").textContent = "";
+  // On prévient tout de suite si la personne a déjà eu quelque chose de ressemblant
+  if (deja.length) afficherToast(`${nomDe(a.qui)} : déjà « ${deja[0].texte} » (${quand(deja[0])})`);
+});
+
+/* ---------- 7. LA FICHE D'UNE IDÉE ---------- */
+
+// Remplit une rangée de boutons-choix ; « actif » = valeur choisie
+function remplirChoix(conteneur, options, actif, surChoix) {
+  conteneur.innerHTML = options.map(o =>
+    `<button type="button" data-v="${o.id}" aria-pressed="${o.id === actif}" ${o.c ? `style="--c:${o.c}"` : ""}>
+       ${o.c ? `<span class="point" style="--c:${o.c}"></span>` : ""}${o.nom}</button>`).join("");
+  conteneur.onclick = ev => {
+    const b = ev.target.closest("button");
+    if (!b) return;
+    surChoix(b.dataset.v);
+    conteneur.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  };
+}
+
+// Ouvre une <dialog> ; le bouton retour du téléphone doit la fermer, pas quitter
+// l'appli : on ajoute une étape à l'historique, que « retour » retire (voir popstate)
+function ouvrirDialogue(d) {
+  history.pushState({ fiche: 1 }, "");
+  d.showModal();
+}
+["fiche", "personne", "synchro"].forEach(nom =>
+  $(nom).addEventListener("close", () => { if (history.state && history.state.fiche) history.back(); }));
+window.addEventListener("popstate", () => ["fiche", "personne", "synchro"].forEach(nom => { if ($(nom).open) $(nom).close(); }));
+
+function ouvrirFiche(id, depart) {
+  ouvert = id || null;
+  const i = id ? etat.idees[id] : null;
+  // Nouvelle idée : dans la boîte, sauf si on arrive de « + Ajouter » d'une occasion
+  brouillon = i ? { ...i } : { texte: "", qui: "", statut: "idee", occ: "", annee: null, note: "", lien: "", ...(depart || {}) };
+  $("fiche-titre").textContent = i ? "Idée de cadeau" : "Nouvelle idée";
+  $("f-texte").value = brouillon.texte;
+  $("f-note").value = brouillon.note || "";
+  $("f-lien").value = brouillon.lien || "";
+  majLien();
+  // Liste des personnes (celles des listes d'abord, puis les anciennes)
+  const gens = personnes(true);
+  $("f-qui").innerHTML = `<option value="">— Sans destinataire —</option>` +
+    gens.filter(p => !p.archive).map(p => `<option value="${html(p.id)}">${html(p.nom)}</option>`).join("") +
+    `<optgroup label="Plus dans mes listes">` +
+    gens.filter(p => p.archive).map(p => `<option value="${html(p.id)}">${html(p.nom)}</option>`).join("") + `</optgroup>`;
+  $("f-qui").value = brouillon.qui || "";
+  remplirChoix($("f-statut"), STATUTS, brouillon.statut, v => {
+    brouillon.statut = v;
+    // « À acheter » sans occasion n'a pas de sens : on propose le Noël en cours
+    if (v !== "idee" && !brouillon.occ) { brouillon.occ = "noel"; brouillon.annee = noelCourant(); majOccasion(); }
+  });
+  majOccasion();
+  majAlerte();
+  $("f-suppr").hidden = !i;
+  $("f-dates").textContent = i && i.cree ? "Notée le " + new Date(i.cree).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "";
+  ouvrirDialogue($("fiche"));
+  if (!i) setTimeout(() => $("f-texte").focus(), 50);
+}
+
+// Rangée « Occasion » + case de l'année (cachée pour la boîte à idées)
+function majOccasion() {
+  remplirChoix($("f-occ"), OCCASIONS, brouillon.occ || "", v => {
+    brouillon.occ = v;
+    if (v && !brouillon.annee) brouillon.annee = noelCourant();
+    if (v && brouillon.statut === "idee") { brouillon.statut = "a-acheter"; remplirStatut(); }
+    if (!v) { brouillon.statut = "idee"; remplirStatut(); }
+    $("f-annee").hidden = !v;
+    $("f-annee").value = brouillon.annee || "";
+  });
+  $("f-annee").hidden = !brouillon.occ;
+  $("f-annee").value = brouillon.annee || "";
+}
+function remplirStatut() {
+  $("f-statut").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x.dataset.v === brouillon.statut));
+}
+$("f-annee").addEventListener("input", ev => { brouillon.annee = Number(ev.target.value) || null; });
+
+// L'alerte « déjà offert » se met à jour quand on change le texte ou la personne
+function majAlerte() {
+  const deja = ressemblants($("f-texte").value, $("f-qui").value, ouvert).slice(0, 3);
+  $("f-alerte").hidden = !deja.length;
+  if (deja.length) $("f-alerte").innerHTML = `Déjà noté pour ${html(nomDe($("f-qui").value))} : ` +
+    deja.map(i => `« ${html(i.texte)} » (${quand(i)}, ${STATUT[i.statut].nom.toLowerCase()})`).join(", ");
+}
+$("f-texte").addEventListener("input", majAlerte);
+$("f-qui").addEventListener("change", majAlerte);
+
+// Le lien « Ouvrir » n'apparaît que si un lien est saisi
+function majLien() {
+  const l = $("f-lien").value.trim();
+  $("f-ouvrir").hidden = !l;
+  $("f-ouvrir").href = l || "#";
+}
+$("f-lien").addEventListener("input", majLien);
+$("f-fermer").onclick = () => $("fiche").close();
+
+$("form-fiche").addEventListener("submit", ev => {
+  ev.preventDefault();
+  const texte = $("f-texte").value.trim();
+  if (!texte) { $("f-texte").focus(); return; }
+  const jour = aujourdhui();
+  const b = { ...brouillon, texte, qui: $("f-qui").value, note: $("f-note").value.trim(), lien: $("f-lien").value.trim(), maj: jour };
+  if (!b.cree) b.cree = jour;
+  if (!b.occ) { b.occ = ""; b.annee = null; }
+  // On ne garde pas les champs vides : le Sheet reste léger
+  for (const k of ["note", "lien", "occ", "annee"]) if (!b[k]) delete b[k];
+  delete b.id;
+  const id = ouvert || nouvelId(texte);
+  $("fiche").close();
+  modifier(e => { e.idees[id] = b; });
+});
+
+// Supprimer : pas de « Êtes-vous sûr ? », mais « Annuler » pendant 6 s
+$("f-suppr").onclick = () => {
+  const id = ouvert, garde = structuredClone(etat.idees[id]);
+  $("fiche").close();
+  modifier(e => { delete e.idees[id]; });
+  afficherToast("« " + garde.texte + " » supprimée", () => modifier(e => { e.idees[id] = garde; }));
+};
+
+$("fab").onclick = () => {
+  if (vue === "gens") return ouvrirPersonne(null);
+  // Dans Noël, le + prépare une ligne « à acheter » pour l'année affichée
+  if (vue === "noel") return ouvrirFiche(null, { occ: "noel", annee: anneeNoel, statut: "a-acheter" });
+  ouvrirFiche(null, { qui: etat.personnes[filtre] ? filtre : "" });
+};
+
+/* ---------- 8. LA FICHE D'UNE PERSONNE ---------- */
+let archivee = false;
+function ouvrirPersonne(id) {
+  personneOuverte = id || null;
+  const p = id ? etat.personnes[id] : null;
+  $("p-titre").textContent = p ? p.nom : "Nouvelle personne";
+  $("p-nom").value = p ? p.nom : "";
+  // Listes déroulantes jour / mois (« — » = date inconnue)
+  $("p-jour").innerHTML = `<option value="">Jour —</option>` + Array.from({ length: 31 }, (_, k) => `<option>${k + 1}</option>`).join("");
+  $("p-mois").innerHTML = `<option value="">Mois —</option>` + MOIS.map((m, k) => `<option value="${k + 1}">${m}</option>`).join("");
+  const [m, j] = p && p.anniv ? p.anniv.split("-").map(Number) : ["", ""];
+  $("p-jour").value = j; $("p-mois").value = m;
+  archivee = !!(p && p.archive);
+  remplirChoix($("p-archive"), [{ id: "oui", nom: "Oui" }, { id: "non", nom: "Non, plus maintenant" }], archivee ? "non" : "oui", v => archivee = v === "non");
+
+  // Historique : ce qui a été acheté ou reçu, année par année (la plus récente d'abord)
+  const siennes = p ? Object.values(etat.idees).filter(i => i.qui === id) : [];
+  const parAnnee = {};
+  siennes.filter(estFait).forEach(i => (parAnnee[i.annee || "—"] = parAnnee[i.annee || "—"] || []).push(i.texte));
+  const annees = Object.keys(parAnnee).sort((a, b) => (Number(b) || 0) - (Number(a) || 0));
+  $("p-histo-champ").hidden = !p;
+  $("p-histo").innerHTML = annees.length
+    ? annees.map(a => `<li><b>${a}</b><span>${parAnnee[a].map(html).join(" · ")}</span></li>`).join("")
+    : `<li><b>—</b><span>Rien de noté comme offert.</span></li>`;
+  // On ne peut supprimer que quelqu'un qui n'a aucune ligne (sinon : « plus dans mes listes »)
+  $("p-suppr").hidden = !p || siennes.length > 0;
+  ouvrirDialogue($("personne"));
+  if (!p) setTimeout(() => $("p-nom").focus(), 50);
+}
+$("p-fermer").onclick = () => $("personne").close();
+$("form-personne").addEventListener("submit", ev => {
+  ev.preventDefault();
+  const nom = $("p-nom").value.trim();
+  if (!nom) { $("p-nom").focus(); return; }
+  const j = Number($("p-jour").value), m = Number($("p-mois").value);
+  const anniv = j && m ? String(m).padStart(2, "0") + "-" + String(j).padStart(2, "0") : "";
+  const id = personneOuverte || nouvelId(nom);
+  $("personne").close();
+  modifier(e => {
+    // Nouvelle personne : rangée à la fin de la liste
+    const rangs = Object.values(e.personnes).map(p => p.rang ?? 0);
+    const p = e.personnes[id] || { rang: rangs.length ? Math.max(...rangs) + 1 : 0 };
+    p.nom = nom;
+    if (anniv) p.anniv = anniv; else delete p.anniv;
+    if (archivee) p.archive = 1; else delete p.archive;
+    e.personnes[id] = p;
+  });
+});
+$("p-suppr").onclick = () => {
+  const id = personneOuverte, garde = structuredClone(etat.personnes[id]);
+  $("personne").close();
+  modifier(e => { delete e.personnes[id]; });
+  afficherToast("« " + garde.nom + " » supprimé(e)", () => modifier(e => { e.personnes[id] = garde; }));
+};
+
+/* ---------- 9. MESSAGE « ANNULER » ---------- */
+let minuteurToast = null, actionAnnuler = null;
+function afficherToast(texte, annuler) {
+  $("toast-texte").textContent = texte;
+  $("toast-annuler").hidden = !annuler;
+  actionAnnuler = annuler;
+  $("toast").hidden = false;
+  clearTimeout(minuteurToast);
+  minuteurToast = setTimeout(() => { $("toast").hidden = true; actionAnnuler = null; }, 6000);
+}
+$("toast-annuler").onclick = () => {
+  $("toast").hidden = true;
+  clearTimeout(minuteurToast);
+  if (actionAnnuler) actionAnnuler();
+  actionAnnuler = null;
+};
+
+/* ---------- 10. EXPORT TEXTE ----------
+   La liste du Noël affiché (ou en cours), personne par personne, ouverte dans
+   la feuille de partage du téléphone (mail, WhatsApp, Claude…), sinon copiée. */
+$("btn-export").onclick = async () => {
+  const annee = vue === "noel" ? anneeNoel : noelCourant();
+  const lignes = ["Cadeaux — Noël " + annee, ""];
+  const toutes = Object.values(etat.idees);
+  for (const p of personnes(false)) {
+    const retenus = toutes.filter(i => i.qui === p.id && i.occ === "noel" && i.annee === annee && i.statut !== "abandonne");
+    const boite = toutes.filter(i => i.qui === p.id && dansBoite(i));
+    if (!retenus.length && !boite.length) continue;
+    lignes.push(p.nom + " :");
+    retenus.forEach(i => lignes.push("- [" + STATUT[i.statut].nom + "] " + i.texte));
+    if (boite.length) lignes.push("  idées : " + boite.map(i => i.texte).join(", "));
+  }
+  const texte = lignes.join("\n");
+  try {
+    if (navigator.share) { await navigator.share({ title: "Cadeaux", text: texte }); return; }
+  } catch (err) { if (err.name === "AbortError") return; }
+  try { await navigator.clipboard.writeText(texte); afficherToast("Liste copiée"); }
+  catch { afficherToast("Impossible de copier"); }
+};
+
+/* ---------- 11. SYNCHRO (adresse et clé) ---------- */
+$("btn-synchro").onclick = () => {
+  $("synchro-aide").textContent = CADEAUX_URL
+    ? "Tape la clé du script Google « Cadeaux » : la liste sera la même sur le téléphone et sur le PC."
+    : "Colle l'adresse du script Google « Cadeaux » (mode d'emploi dans outils/cadeaux.gs) et sa clé : la liste sera la même sur le téléphone et sur le PC. Sans elles, elle reste dans cet appareil.";
+  $("synchro-url-champ").hidden = CADEAUX_URL !== "";
+  $("s-url").value = lire(URL_LOCALE);
+  $("s-cle").value = lireCle();
+  ouvrirDialogue($("synchro"));
+};
+$("s-fermer").onclick = () => $("synchro").close();
+$("form-synchro").addEventListener("submit", ev => {
+  ev.preventDefault();
+  if (!CADEAUX_URL) garder(URL_LOCALE, $("s-url").value.trim());
+  garder(CLE_LOCALE, $("s-cle").value.trim());
+  $("synchro").close();
+  actualiser();
+});
+
+/* ---------- 12. DÉMARRAGE ---------- */
+function demarrer() {
+  $("version").textContent = VERSION;
+  // ?cle=… et ?url=… dans l'adresse : on les enregistre puis on les efface de l'adresse
+  const params = new URLSearchParams(location.search);
+  if (params.get("cle")) garder(CLE_LOCALE, params.get("cle"));
+  if (params.get("url") && /^https:\/\/script\.google\.com\//.test(params.get("url"))) garder(URL_LOCALE, params.get("url"));
+  if (params.get("cle") || params.get("url")) history.replaceState(null, "", location.pathname);
+  const v = lire(VUE_LOCALE);
+  if (["idees", "noel", "anniv", "gens"].includes(v)) vue = v;
+  etat = normaliser(lireCache());
+  afficher();
+  actualiser();
+  // Retour sur l'appli (ex. le lendemain) : on relit la version commune
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) actualiser(); });
+}
+demarrer();
+
+// Service worker (PWA) : seulement en https (pas en test local)
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
