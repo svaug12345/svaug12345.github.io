@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Cadeaux — idées de cadeaux et Noëls
-  Version 1.1.0
+  Version 1.2.0
   ------------------------------------------------------------
   Trois vues (contrôle en haut) :
    • Idées     : la boîte à idées. On note en vitesse (« Juju - défonceuse » range
@@ -32,6 +32,9 @@
               fin de page (section repliée) ; pastilles de filtre sur plusieurs
               lignes sur grand écran (plus de prénom coupé) ; vue Anniv. et
               dates d'anniversaire retirées (demande de Seb)
+   • v1.2.0 : ARCHIVER une idée de la boîte (bouton dans sa fiche) : elle quitte
+              la boîte et les suggestions de Noël, et se retrouve en bas de la
+              vue Idées dans « Idées archivées », d'où on peut la remettre
 -->
 <html lang="fr">
 <head>
@@ -274,6 +277,10 @@
     .gens b { display: block; font-size: .98rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .gens span { display: block; font-size: .76rem; color: var(--muted); }
     details.anciens { margin-top: 18px; }
+    /* Cartes rangées directement dans une section repliée (idées archivées) */
+    details.anciens .cols > .carte { margin-bottom: 8px; break-inside: avoid; }
+    /* Bouton discret de la fiche : « Archiver cette idée » */
+    .lien-btn { border: 0; background: none; color: var(--muted); font-weight: 700; font-size: .85rem; padding: 6px 0; text-decoration: underline; }
     details.anciens summary { color: var(--muted); font-weight: 700; font-size: .9rem; padding: 6px 2px; }
 
     .vide { text-align: center; color: var(--muted); padding: 30px 10px; }
@@ -469,6 +476,7 @@
         <a id="f-ouvrir" target="_blank" rel="noopener">Ouvrir</a>
       </div>
     </div>
+    <button type="button" class="lien-btn" id="f-archiver" hidden></button>
     <div class="actions">
       <button type="button" class="btn rouge" id="f-suppr">Supprimer</button>
       <button type="button" class="btn leger" id="f-fermer">Fermer</button>
@@ -530,13 +538,13 @@
    Tout l'état tient dans un objet « etat », enregistré d'un bloc
    (dans le téléphone, et dans le Google Sheet si la synchro est branchée) :
      etat.personnes = { id: { nom, rang, archive } }
-     etat.idees     = { id: { texte, qui, statut, occ, annee, note, lien, cree, maj } }
+     etat.idees     = { id: { texte, qui, statut, occ, annee, note, lien, cree, maj, archive } }
    Une « idée » est une ligne de cadeau, quel que soit son avancement :
      • dans la boîte à idées : statut « idee », pas d'occasion ;
      • retenue pour un Noël : occ = "noel", annee = 2026… ;
        son statut suit alors l'achat (à acheter → acheté → reçu).
    ============================================================== */
-const VERSION = "1.1.0";
+const VERSION = "1.2.0";
 
 /* ---------- 1. RÉGLAGES ----------
    Adresse /exec du script Google « Cadeaux » (code dans outils/cadeaux.gs).
@@ -578,6 +586,7 @@ let deplie = new Set();          // personnes dont les idées sont dépliées (v
 let replies = new Set();         // groupes repliés, ex. "idees:juju" ou "noel:juju"
 let affiches = [];               // clés des groupes dessinés à l'écran (pour « Tout réduire »)
 let anciensOuverts = false;      // section « Plus dans mes listes » ouverte ?
+let archiveesOuvertes = false;   // section « Idées archivées » ouverte ?
 let ouvert = null;               // id de l'idée ouverte dans la fiche (null = nouvelle)
 let brouillon = null;            // copie modifiée dans la fiche, avant « Enregistrer »
 let personneOuverte = null;      // id de la personne ouverte (null = nouvelle)
@@ -733,7 +742,9 @@ function idees() {
     });
 }
 // La boîte à idées : pas encore retenues pour une occasion
-const dansBoite = i => i.statut === "idee" && !i.occ;
+const dansBoite = i => i.statut === "idee" && !i.occ && !i.archive;
+// Une idée archivée : mise de côté, ni supprimée ni proposée (elle garde sa fiche)
+const estArchivee = i => i.statut === "idee" && !i.occ && !!i.archive;
 // Les lignes d'une occasion donnée (ex. Noël 2026), les plus avancées en dernier
 const pourOccasion = (liste, occ, annee) => liste
   .filter(i => i.occ === occ && i.annee === annee)
@@ -785,7 +796,9 @@ function carteHTML(i, bouton, avecQui, libelleRetenir) {
     ? `<button class="etat ${estFait(i) ? "plein" : ""}" data-action="cycle" title="Étape suivante">${s.nom}</button>`
     : bouton === "retenir"
       ? `<button class="retenir" data-action="retenir" style="--c:var(--s-idee)">${libelleRetenir || "Noël ▸"}</button>`
-      : "";
+      : bouton === "remettre"
+        ? `<button class="retenir" data-action="remettre" style="--c:var(--muted)">Remettre</button>`
+        : "";
   return `<div class="carte ${i.statut === "abandonne" ? "barre" : ""}" data-id="${html(i.id)}" style="--c:${s.c}">
     <button class="corps" data-action="ouvrir">
       <div class="nom">${html(i.texte)}</div>
@@ -882,6 +895,15 @@ function afficher() {
     if (!h) h = recherche
       ? `<div class="vide"><b>Rien trouvé</b>Essaie un autre mot.</div>`
       : `<div class="vide"><b>La boîte à idées est vide</b>Note une idée juste au-dessus : « Prénom - idée », ou l'idée seule.</div>`;
+    // Tout en bas : les idées archivées (celles de la personne filtrée, s'il y a un filtre)
+    const archivees = toutes.filter(estArchivee).filter(i =>
+      !filtre || (filtre === "_sans" ? !i.qui : i.qui === filtre));
+    if (archivees.length) {
+      h += `<details class="anciens" id="archivees" ${archiveesOuvertes || recherche ? "open" : ""}>
+        <summary>Idées archivées · ${archivees.length}</summary>
+        <div class="cols">${archivees.sort((x, y) => nomDe(x.qui).localeCompare(nomDe(y.qui), "fr") || x.texte.localeCompare(y.texte, "fr"))
+          .map(i => carteHTML(i, "remettre", true)).join("")}</div></details>`;
+    }
 
   } else if (vue === "noel") {
     /* ----- Noël d'une année ----- */
@@ -938,6 +960,8 @@ function afficher() {
   // La section « Plus dans mes listes » se souvient d'être ouverte quand la page est redessinée
   const a = $("anciens");
   if (a) a.addEventListener("toggle", () => { anciensOuverts = a.open; });
+  const ar = $("archivees");
+  if (ar) ar.addEventListener("toggle", () => { archiveesOuvertes = ar.open; });
   // Bouton « Tout réduire » : devient « Tout déplier » quand tout est déjà replié
   $("outils-liste").hidden = vue === "gens" || affiches.length < 2;
   $("btn-replier").textContent = affiches.every(c => replies.has(c)) ? "Tout déplier ▾" : "Tout réduire ▸";
@@ -964,6 +988,13 @@ $("contenu").addEventListener("click", ev => {
   if (action === "ouvrir") ouvrirFiche(id);
   else if (action === "personne") ouvrirPersonne(b.dataset.p);
   else if (action === "ajouter") ouvrirFiche(null, { qui: b.dataset.p, occ: b.dataset.occ, annee: Number(b.dataset.annee), statut: "a-acheter" });
+  else if (action === "remettre") {
+    // Une idée archivée revient dans la boîte à idées
+    const texte = etat.idees[id].texte;
+    modifier(e => { if (e.idees[id]) { delete e.idees[id].archive; e.idees[id].maj = aujourdhui(); } });
+    afficherToast("« " + texte + " » remise dans la boîte",
+      () => modifier(e => { if (e.idees[id]) e.idees[id].archive = 1; }));
+  }
   else if (action === "replier") {
     const g = b.dataset.g;
     replies.has(g) ? replies.delete(g) : replies.add(g);
@@ -1081,6 +1112,10 @@ function ouvrirFiche(id, depart) {
   majOccasion();
   majAlerte();
   $("f-suppr").hidden = !i;
+  // « Archiver » : seulement pour une idée déjà enregistrée et encore dans la boîte
+  // (une idée retenue pour un Noël a son statut « Pas acheté » pour ça)
+  $("f-archiver").hidden = !i || !(dansBoite(i) || estArchivee(i));
+  $("f-archiver").textContent = i && i.archive ? "Remettre dans la boîte à idées" : "Archiver cette idée";
   $("f-dates").textContent = i && i.cree ? "Notée le " + new Date(i.cree).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "";
   ouvrirDialogue($("fiche"));
   if (!i) setTimeout(() => $("f-texte").focus(), 50);
@@ -1131,6 +1166,8 @@ $("form-fiche").addEventListener("submit", ev => {
   const b = { ...brouillon, texte, qui: $("f-qui").value, note: $("f-note").value.trim(), lien: $("f-lien").value.trim(), maj: jour };
   if (!b.cree) b.cree = jour;
   if (!b.occ) { b.occ = ""; b.annee = null; }
+  // Une idée qu'on retient pour un Noël sort des archives
+  if (b.occ || b.statut !== "idee") delete b.archive;
   // On ne garde pas les champs vides : le Sheet reste léger
   for (const k of ["note", "lien", "occ", "annee"]) if (!b[k]) delete b[k];
   delete b.id;
@@ -1138,6 +1175,15 @@ $("form-fiche").addEventListener("submit", ev => {
   $("fiche").close();
   modifier(e => { e.idees[id] = b; });
 });
+
+// Archiver / remettre depuis la fiche (sans enregistrer les autres champs), avec « Annuler »
+$("f-archiver").onclick = () => {
+  const id = ouvert, etait = !!etat.idees[id].archive, texte = etat.idees[id].texte;
+  const poser = (e, v) => { if (!e.idees[id]) return; if (v) e.idees[id].archive = 1; else delete e.idees[id].archive; e.idees[id].maj = aujourdhui(); };
+  $("fiche").close();
+  modifier(e => poser(e, !etait));
+  afficherToast("« " + texte + " » " + (etait ? "remise dans la boîte" : "archivée"), () => modifier(e => poser(e, etait)));
+};
 
 // Supprimer : pas de « Êtes-vous sûr ? », mais « Annuler » pendant 6 s
 $("f-suppr").onclick = () => {
