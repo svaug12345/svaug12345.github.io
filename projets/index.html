@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Mes projets — suivi des projets et des idées de projets
-  Version 1.1.0
+  Version 1.2.0
   ------------------------------------------------------------
   Trois vues (contrôle en haut) :
    • En cours  : les projets actifs, rangés par statut (à finaliser, en cours,
@@ -25,6 +25,7 @@
               bloc TABLETTE, installable)
    • v1.1.0 : statut « À vérifier » ; le script Google « Mes projets » passe à un
               vrai tableau (une ligne par projet, voir outils/projets.gs v1.1.0)
+   • v1.2.0 : synchro BRANCHÉE sur le Google Sheet « Mes projets » (PROJETS_URL)
 -->
 <html lang="fr">
 <head>
@@ -429,12 +430,12 @@
    Tout l'état tient dans un objet « etat », enregistré d'un bloc
    (dans le téléphone, et dans le Google Sheet si la synchro est branchée).
    ============================================================== */
-const VERSION = "1.1.0";
+const VERSION = "1.2.0";
 
 /* ---------- 1. RÉGLAGES ----------
    Adresse /exec du script Google « Mes projets » (code dans outils/projets.gs).
    Vide = pas de synchro : les données restent dans l'appareil. */
-const PROJETS_URL = "";
+const PROJETS_URL = "https://script.google.com/macros/s/AKfycbwi_mzxEQluWO3R1tBRbOHLZfF6EljqTzIpJXiO7SqhjMqrXS8CpKw5s7F8Sb3_N57e/exec";
 const CLE_LOCALE = "projets.cle";     // la clé, gardée dans l'appareil
 const CACHE_LOCAL = "projets.etat";   // dernière copie des données (marche hors ligne)
 const VUE_LOCALE = "projets.vue";     // dernière vue et catégorie choisies
