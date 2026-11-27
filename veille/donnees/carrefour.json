@@ -1,6 +1,6 @@
 {
  "version": "2.4.0",
- "maj": "2026-11-27T01:02+00:00",
+ "maj": "2026-11-27T15:17+00:00",
  "id": "carrefour",
  "nom": "Carrefour",
  "mots_cles": [
@@ -49,6 +49,93 @@
   }
  ],
  "articles": [
+  {
+   "id": "5512c0af06cc",
+   "titre": "Négociations commerciales : découvrez la lettre de Carrefour, Intermarché, E.Leclerc, Coopérative U et Auchan qui met les industriels sous pression",
+   "lien": "https://www.lsa-conso.fr/agro-industriel/negociations-commerciales-decouvrez-la-lettre-de-carrefour-intermarche-eleclerc-cooperative-u-et-auchan-qui-met-les-industriels-sous-pression.BHLQO73MIJCCXGMCQTSPJFYGLI.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-27T13:49+00:00",
+   "vu_le": "2026-11-27T15:17+00:00",
+   "resume": "",
+   "enrichi": "2026-11-27"
+  },
+  {
+   "id": "c8c138b07dbb",
+   "titre": "En images : les lauréats des REF d’Or 2026",
+   "lien": "https://www.lineaires.com/la-distribution/en-images-les-laureats-des-ref-d-or-2026",
+   "source": "lineaires",
+   "media": "Lineaires",
+   "site": "lineaires.com",
+   "date": "2026-11-27T12:21+00:00",
+   "vu_le": "2026-11-27T15:17+00:00",
+   "resume": "À l’occasion du Retail Execution Forum (REF), organisé à Paris par Linéaires et les Éditions Dauvers, s’est déroulée la remise de prix des REF d’Or. Ils",
+   "enrichi": "2026-11-27",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/6f64614f-5bfb-47d7-b2a6-deed79383c4d.jpg.webp?itok=ginO9s9t"
+  },
+  {
+   "id": "8882dd4faf18",
+   "titre": "C’était le Retail Forum 2026, hier, et c’était bien (j’assume) !",
+   "lien": "https://www.olivierdauvers.fr/2026/11/27/cetait-le-retail-forum-2026-hier-et-cetait-bien-jassume/",
+   "source": "dauvers",
+   "media": "Olivier Dauvers",
+   "site": "olivierdauvers.fr",
+   "date": "2026-11-27T11:46+00:00",
+   "vu_le": "2026-11-27T15:17+00:00",
+   "resume": "Il fait partie de mes petits plaisirs de la fin d’année, je ne vais ni le bouder ni m’en cacher : le Retail Forum (8e édition) que nous coorganisons avec Externis et Linéaires. Un après-midi pour faire le bilan de l’année, parler des enjeux en perspectives de 2027, discuter à bâtons rompus avec des patrons …",
+   "enrichi": "2026-11-27",
+   "image": "https://www.olivierdauvers.fr/wp-content/uploads/2026/11/REF-2026-Mise-en-page-1-scaled.jpg"
+  },
+  {
+   "id": "8126ea711964",
+   "titre": "Leclerc, Intermarché, Carrefour ou Auchan ? Voici les supermarchés les moins chers des Pyrénées-Orientales",
+   "lien": "https://actu.fr/occitanie/perpignan_66136/leclerc-intermarche-carrefour-ou-auchan-voici-les-supermarches-les-moins-chers-des-pyrenees-orientales_65108238.html",
+   "source": "autres",
+   "media": "Actu.fr",
+   "site": "actu.fr",
+   "date": "2026-11-27T11:07+00:00",
+   "vu_le": "2026-11-27T15:17+00:00",
+   "resume": "Pour aider les consommateurs, l'association UFC-Que Choisir a dévoilé son classement des supermarchés les moins chers de France. On fait le point dans les Pyrénées-Orientales.",
+   "enrichi": "2026-11-27",
+   "image": "https://static.actu.fr/uploads/2026/11/photo-2026-11-27-11-58-31.jpg"
+  },
+  {
+   "id": "1499de374fb8",
+   "titre": "Sport : les adhérents de Céraclès Coopérative approuvent à plus de 98 % le partenariat stratégique avec Decathlon",
+   "lien": "https://www.lsa-conso.fr/distributeurs-non-alimentaires/mode-sport/sport-les-adherents-de-ceracles-cooperative-approuvent-a-plus-de-98-le-partenariat-strategique-avec-decathlon.NJNPVNI56RDWVB47R5YTYWBROI.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-27T09:50+00:00",
+   "vu_le": "2026-11-27T15:17+00:00",
+   "resume": "",
+   "enrichi": "2026-11-27"
+  },
+  {
+   "id": "f78d7e3b3601",
+   "titre": "Nomination : l’ex patron d’Amazon France, Frédéric Duval, rejoint une plateforme spécialisée dans l’agriculture en ligne",
+   "lien": "https://www.lsa-conso.fr/nominations-organisation/nominations/nomination-lex-patron-damazon-france-frederic-duval-rejoint-une-plateforme-specialisee-dans-lagriculture-en-ligne.OUTQA63KIZG2JAXIJUNVVR7BDY.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-27T08:24+00:00",
+   "vu_le": "2026-11-27T15:17+00:00",
+   "resume": "",
+   "enrichi": "2026-11-27"
+  },
+  {
+   "id": "5fca302a7cdd",
+   "titre": "Portrait : Vincent Justin, de l’antigaspi aux vêtements de seconde main chez Kiabi",
+   "lien": "https://www.lsa-conso.fr/metiers/management/portrait-vincent-justin-de-lantigaspi-aux-vetements-de-seconde-main-chez-kiabi.2DK4OGCLTVJ4XCRIKACCDO3VX4.html",
+   "source": "lsa",
+   "media": "LSA conso",
+   "site": "lsa-conso.fr",
+   "date": "2026-11-27T04:00+00:00",
+   "vu_le": "2026-11-27T15:17+00:00",
+   "resume": "",
+   "enrichi": "2026-11-27"
+  },
   {
    "id": "d089c46f03c3",
    "titre": "« Il y en avait plein dans les paquets de sucre » : des rayons de ce supermarché de Loire-Antlantique infestés d’excréments de rongeurs",
@@ -136,6 +223,19 @@
    "enrichi": "2026-11-26"
   },
   {
+   "id": "a5da62d64ff4",
+   "titre": "Leclerc prend de nouveaux engagements en faveur des PME",
+   "lien": "https://www.lineaires.com/la-distribution/leclerc-prend-de-nouveaux-engagements-en-faveur-des-pme",
+   "source": "lineaires",
+   "media": "Lineaires",
+   "site": "lineaires.com",
+   "date": "2026-11-26T10:15+00:00",
+   "vu_le": "2026-11-27T15:17+00:00",
+   "resume": "Présent pour la première fois avec un stand au Salon des maires, Leclerc y a annoncé le renforcement d'engagements en faveur des PME à partir du 1er janvier 2027. Le",
+   "enrichi": "2026-11-27",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/e4ee1960-2e23-456a-9b8a-fe901c1a38f7.jpg.webp?itok=xD6dvMJY"
+  },
+  {
    "id": "037fb82e3c05",
    "titre": "Lidl ouvre un magasin de déstockage à Niort : jusqu’à 50 % de remise sur le non-alimentaire",
    "lien": "https://www.lsa-conso.fr/distributeurs-non-alimentaires/lidl-ouvre-un-magasin-de-destockage-a-niort-jusqua-50-de-remise-sur-le-non-alimentaire.D63ITI4YCVECPF62NW3YODUEGU.html",
@@ -158,6 +258,19 @@
    "vu_le": "2026-11-26T15:27+00:00",
    "resume": "",
    "enrichi": "2026-11-26"
+  },
+  {
+   "id": "a357bc5a0543",
+   "titre": "IA : les Mousquetaires nouent un partenariat avec Anthropic",
+   "lien": "https://www.lineaires.com/la-distribution/ia-les-mousquetaires-nouent-un-partenariat-avec-anthropic",
+   "source": "lineaires",
+   "media": "Lineaires",
+   "site": "lineaires.com",
+   "date": "2026-11-26T09:18+00:00",
+   "vu_le": "2026-11-27T15:17+00:00",
+   "resume": "Le distributeur accélère sur l'IA avec le déploiement à partir de janvier 2027 de l'utilisation de l'outil Claude (Anthropic) dans 500 de ses points de vente et",
+   "enrichi": "2026-11-27",
+   "image": "https://www.lineaires.com/sites/lineaires/files/styles/large/public/2026-11/6a0f66af-bd13-4315-a298-766d50856002.jpg.webp?itok=eFo4o8Sc"
   },
   {
    "id": "239a12b2d8a2",
@@ -456,6 +569,19 @@
    "vu_le": "2026-11-26T01:01+00:00",
    "resume": "",
    "enrichi": "2026-11-26"
+  },
+  {
+   "id": "cf74752d46c9",
+   "titre": "Lidl, Aldi ou E.Leclerc : voici le supermarchés le moins cher de France en 2026",
+   "lien": "https://www.topsante.com/nutrition_et_recettes/bien_choisir_ses_aliments/lidl-aldi-ou-e-leclerc-voici-le-supermarches-le-moins-cher-de-france-en-2026-1000728",
+   "source": "autres",
+   "media": "Top Santé",
+   "site": "topsante.com",
+   "date": "2026-11-24T05:56+00:00",
+   "vu_le": "2026-11-27T15:17+00:00",
+   "resume": "Alors que le budget consacré aux courses reste une préoccupation pour de nombreux ménages, quelles enseignes proposent les prix les plus bas en 2026 ? Une nouvelle étude menée par le blog Radin Malin dévoile son classement. Alors que le budget consacré aux courses reste une préoccupation pour de nombreux ménages, quelles enseignes proposent les prix les plus bas en 2026 ? Une nouvelle étude menée…",
+   "enrichi": "2026-11-27",
+   "image": "https://sf2.topsante.com/wp-content/uploads/topsante/2026/10/ces-fruits-et-legumes-pourraient-couter-plus-cher-au-supermarche-cet-automne-voici-pourquoi.jpeg"
   },
   {
    "id": "849c90f54435",
@@ -5138,19 +5264,6 @@
    "resume": "Le géant français de la distribution Carrefour souhaite acheter pour 155 millions d'euros le distributeur spécialisé dans le commerce de proximité Codifrance et son réseau de 3.000 supérettes, dont Coccimarket et Coccinelle, au groupe belge Colruyt, selon des informations",
    "enrichi": "2026-11-25",
    "image": "https://www.boursorama.com/static/i/content/images/2/3/4/234d070b5109e8f13913a9aa555d5397-1200x800.jpg"
-  },
-  {
-   "id": "cc97148ee1ba",
-   "titre": "Les 8 plus grands hypermarchés de France en 2026",
-   "lien": "https://www.jebosseengrandedistribution.fr/2026/09/28/les-8-plus-grands-hypermarches-de-france-en-2026/",
-   "source": "autres",
-   "media": "Je Bosse en Grande Distribution",
-   "site": "jebosseengrandedistribution.fr",
-   "date": "2026-09-28T07:00+00:00",
-   "vu_le": "2026-11-24T15:58+00:00",
-   "resume": "Carrefour Villiers-en-Bière, Auchan Noyelles-Godault, Carrefour Vitrolles… Les 8 plus grands hypermarchés de France dépassent encore les 15 000 m², au moment où le secteur réduit ses surfaces.",
-   "enrichi": "2026-11-25",
-   "image": "https://storage.ghost.io/c/ed/da/edda0153-be11-4643-9318-2cb198c66e7f/content/images/2026/09/Illustration-blog-1.jpg"
   }
  ]
 }
