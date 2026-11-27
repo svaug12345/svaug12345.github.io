@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <!--
   Mes projets — suivi des projets et des idées de projets
-  Version 1.0.0
+  Version 1.1.0
   ------------------------------------------------------------
   Trois vues (contrôle en haut) :
    • En cours  : les projets actifs, rangés par statut (à finaliser, en cours,
-                 à commencer, en pause), P1 d'abord ;
+                 à commencer, en pause, à vérifier), P1 d'abord ;
    • Idées     : les idées notées en vitesse (champ « Noter une idée »),
                  avec un bouton « Lancer » qui les passe en « À commencer » ;
    • Terminés  : les projets finis (« archivé » = en production, terminé,
@@ -23,6 +23,8 @@
    • v1.0.0 : première version (vues En cours / Idées / Terminés, fiche,
               filtres, recherche, export texte, synchro Google Sheet,
               bloc TABLETTE, installable)
+   • v1.1.0 : statut « À vérifier » ; le script Google « Mes projets » passe à un
+              vrai tableau (une ligne par projet, voir outils/projets.gs v1.1.0)
 -->
 <html lang="fr">
 <head>
@@ -77,6 +79,7 @@
       --s-commencer: #2f6fb5;
       --s-pause: #9a8f7a;
       --s-fini: #2f8f4e;
+      --s-verifier: #b08900;
       --sans: "Manrope", "Segoe UI", system-ui, sans-serif;
       --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", monospace;
     }
@@ -97,6 +100,7 @@
         --s-commencer: #6ea6e6;
         --s-pause: #b3a990;
         --s-fini: #5cc07c;
+        --s-verifier: #e0b93a;
       }
     }
 
@@ -425,7 +429,7 @@
    Tout l'état tient dans un objet « etat », enregistré d'un bloc
    (dans le téléphone, et dans le Google Sheet si la synchro est branchée).
    ============================================================== */
-const VERSION = "1.0.0";
+const VERSION = "1.1.0";
 
 /* ---------- 1. RÉGLAGES ----------
    Adresse /exec du script Google « Mes projets » (code dans outils/projets.gs).
@@ -449,6 +453,7 @@ const STATUTS = [
   { id: "en-cours",    nom: "En cours",    c: "var(--s-cours)",     vue: "actifs" },
   { id: "a-commencer", nom: "À commencer", c: "var(--s-commencer)", vue: "actifs" },
   { id: "en-pause",    nom: "En pause",    c: "var(--s-pause)",     vue: "actifs" },
+  { id: "a-verifier",  nom: "À vérifier",  c: "var(--s-verifier)",  vue: "actifs" },  // statut flou, à clarifier
   { id: "idee",        nom: "Idée",        c: "var(--s-idee)",      vue: "idees" },
   { id: "termine",     nom: "Terminé",     c: "var(--s-fini)",      vue: "finis" },
 ];

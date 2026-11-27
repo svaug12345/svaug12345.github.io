@@ -1,75 +1,144 @@
 /* ============================================================
    Mes projets — script Google Apps Script
-   Version 1.0.0
+   Version 1.1.0
    ------------------------------------------------------------
-   Garde la liste de l'appli « Mes projets » (baiji.fr/projets/) pour
-   retrouver les mêmes projets et idées sur le téléphone ET sur le PC.
-   (Copie du script « Repas famille », outils/repas.gs.)
+   Relie la page « Mes projets » (baiji.fr/projets/) au Google Sheet
+   « Mes projets » du Drive de Seb : les mêmes projets et idées sur le
+   téléphone, sur le PC… et lisibles par Claude (connecteur Google Sheets).
 
    Pourquoi un Google Sheet et pas un fichier du dépôt ? Le dépôt GitHub
    est PUBLIC : tout ce qui y est écrit se lit par n'importe qui. Le Sheet,
-   lui, reste dans le Drive de Seb, et le script exige une clé.
+   lui, reste privé dans le Drive, et le script exige une clé.
 
-   Tout tient dans UNE cellule (A1 de l'onglet « Projets ») : un texte JSON
-   avec tous les projets. Une cellule accepte 50 000 caractères : de quoi
-   noter plusieurs centaines de projets et d'idées.
+   LE TABLEAU (onglet « Projets ») : UNE LIGNE PAR PROJET, lisible à l'œil
+   et modifiable à la main :
+     id | Nom | Catégorie | Statut | Priorité | Notes | Lien | Créé | Modifié
+   • id        : identifiant fixe (ne pas le changer, la page s'en sert) ;
+                 une ligne ajoutée à la main sans id en reçoit un tout seul ;
+   • Catégorie : Pro / Perso / Louise ;
+   • Statut    : En cours, À finaliser, À commencer, En pause, À vérifier,
+                 Idée, Terminé (écrits en clair : le script les traduit en
+                 codes pour la page, voir STATUTS) ;
+   • Priorité  : P1, P2, P3 ou vide ; dates au format AAAA-MM-JJ.
 
-   INSTALLATION (une seule fois, ~5 min) :
-    1. Créer un Google Sheet vide, par ex. « Mes projets ».
-    2. Menu Extensions → Apps Script ; remplacer le code par ce fichier.
-    3. Roue dentée « Paramètres du projet » → « Propriétés du script » →
-       ajouter CLE = un mot de passe à toi (long, ex. « trois-mots-au-hasard-42 »).
-    4. Bouton « Déployer » → « Nouveau déploiement » → type « Application web » :
-         Exécuter en tant que : Moi
-         Qui a accès : Tout le monde
-       → autoriser, puis copier l'adresse qui finit par /exec.
-    5. Coller cette adresse dans PROJETS_URL de projets/index.html (ou la donner à Claude).
-    6. Sur chaque appareil : ouvrir baiji.fr/projets/?cle=LA-CLE une fois
-       (ou toucher « Synchro » en bas de la page et taper la clé).
+   La page, elle, échange toujours le même « état » JSON qu'avec la v1.0.0
+   ({projets: {id: {nom, cat, statut, prio, note, lien, cree, maj}}}) :
+   c'est ce script qui fait la traduction tableau ↔ JSON.
 
-   Pour modifier le script plus tard : « Déployer » → « Gérer les déploiements »
-   → crayon → Version : « Nouvelle version » (l'adresse /exec ne change pas).
+   INSTALLATION (une seule fois) — le script doit être LIÉ au Sheet :
+    • avec Clasp, depuis un dossier vide :
+        clasp create --title "Mes projets" --parentId <ID du Sheet>
+        (copier ce fichier en Code.js + appsscript.json) puis clasp push ;
+    • ou à la main : ouvrir le Sheet → Extensions → Apps Script → coller.
+    Puis : Paramètres du projet → Propriétés du script → CLE = un mot de passe ;
+    Déployer → Nouveau déploiement → Application web (Exécuter en tant que :
+    Moi ; Accès : Tout le monde) → copier l'adresse /exec dans PROJETS_URL
+    de projets/index.html. Sur chaque appareil : baiji.fr/projets/?cle=LA-CLE.
 
    Historique :
-    • 1.0.0 : lecture (GET) et enregistrement (POST) protégés par la clé
+    • 1.0.0 : tout l'état en JSON dans la cellule A1 (copie de repas.gs)
+    • 1.1.0 : un vrai tableau, une ligne par projet (lisible et modifiable
+              à la main, lisible par Claude)
    ============================================================ */
 
 const ONGLET = "Projets";
-const TAILLE_MAX = 45000;   // marge sous la limite de 50 000 caractères d'une cellule
+const COLONNES = ["id", "Nom", "Catégorie", "Statut", "Priorité", "Notes", "Lien", "Créé", "Modifié"];
 
-/* ---- Lecture : GET ?cle=… → { ok: true, etat: {...} | null } ---- */
+/* Traductions texte du tableau ↔ code de la page */
+const STATUTS = {
+  "À finaliser": "a-finaliser", "En cours": "en-cours", "À commencer": "a-commencer",
+  "En pause": "en-pause", "À vérifier": "a-verifier", "Idée": "idee", "Terminé": "termine",
+};
+const CATEGORIES = { "Pro": "pro", "Perso": "perso", "Louise": "louise" };
+
+/* ---- Lecture : GET ?cle=… → { ok: true, etat: {...} } ---- */
 function doGet(e) {
   const p = (e && e.parameter) || {};
   if (!cleValide(p.cle)) return repondre({ ok: false, erreur: "clé incorrecte" });
-  const texte = cellule().getValue();
-  let etat = null;
-  try { etat = texte ? JSON.parse(texte) : null; } catch (err) { etat = null; }
-  return repondre({ ok: true, etat: etat });
+  return repondre({ ok: true, etat: lireTableau() });
 }
 
 /* ---- Enregistrement : POST {cle, etat} → { ok: true } ----
-   L'appli envoie en « text/plain » : on lit donc e.postData.contents à la main. */
+   La page envoie en « text/plain » (sinon Apps Script refuse la requête
+   de vérification CORS) : on lit donc e.postData.contents à la main. */
 function doPost(e) {
   let corps;
   try { corps = JSON.parse(e.postData.contents); }
   catch (err) { return repondre({ ok: false, erreur: "requête illisible" }); }
 
   if (!cleValide(corps.cle)) return repondre({ ok: false, erreur: "clé incorrecte" });
-  if (!corps.etat || typeof corps.etat !== "object") return repondre({ ok: false, erreur: "données manquantes" });
+  if (!corps.etat || typeof corps.etat !== "object" || !corps.etat.projets) {
+    return repondre({ ok: false, erreur: "données manquantes" });
+  }
 
-  const texte = JSON.stringify(corps.etat);
-  if (texte.length > TAILLE_MAX) return repondre({ ok: false, erreur: "données trop grosses" });
-
-  // Verrou : si deux téléphones enregistrent en même temps, ils passent l'un après l'autre
+  // Verrou : si deux appareils enregistrent en même temps, ils passent l'un après l'autre
   const verrou = LockService.getScriptLock();
   verrou.waitLock(10000);
-  try {
-    cellule().setValue(texte);
-    cellule().offset(0, 1).setValue(new Date());   // B1 = date du dernier enregistrement
-  } finally {
-    verrou.releaseLock();
-  }
+  try { ecrireTableau(corps.etat.projets); }
+  finally { verrou.releaseLock(); }
   return repondre({ ok: true });
+}
+
+/* ---- Tableau → état de la page ---- */
+function lireTableau() {
+  const f = feuille();
+  const lignes = f.getDataRange().getValues().slice(1);   // on saute la ligne d'en-tête
+  const projets = {};
+  let idsAjoutes = false;
+
+  lignes.forEach(function (l, i) {
+    const nom = texte(l[1]);
+    if (!nom) return;                       // ligne vide : ignorée
+    let id = texte(l[0]);
+    if (!id) {                              // ligne ajoutée à la main : on lui donne un id
+      id = slug(nom) + "-" + Math.random().toString(36).slice(2, 6);
+      f.getRange(i + 2, 1).setValue(id);
+      idsAjoutes = true;
+    }
+    projets[id] = {
+      nom: nom,
+      cat: CATEGORIES[texte(l[2])] || "perso",
+      statut: STATUTS[texte(l[3])] || "en-cours",
+      prio: texte(l[4]).toUpperCase(),
+      note: texte(l[5]),
+      lien: texte(l[6]),
+      cree: date(l[7]),
+      maj: date(l[8]),
+    };
+  });
+  if (idsAjoutes) SpreadsheetApp.flush();
+  // depart: 1 = la page ne remet jamais sa liste de départ par-dessus
+  return { projets: projets, depart: 1 };
+}
+
+/* ---- État de la page → tableau (réécrit en entier, trié) ---- */
+function ecrireTableau(projets) {
+  const versTexte = inverser(STATUTS), versCat = inverser(CATEGORIES);
+  const ordreStatut = Object.keys(STATUTS);              // ordre d'affichage des statuts
+  const ordreCat = Object.keys(CATEGORIES);
+  const rang = function (prio) { return prio ? ["P1", "P2", "P3"].indexOf(prio) : 9; };
+
+  const lignes = Object.keys(projets).map(function (id) {
+    const p = projets[id];
+    return [id, p.nom || "", versCat[p.cat] || "Perso", versTexte[p.statut] || "En cours",
+            p.prio || "", p.note || "", p.lien || "", p.cree || "", p.maj || ""];
+  });
+  // Tri : catégorie, puis statut, puis priorité, puis nom
+  lignes.sort(function (a, b) {
+    return ordreCat.indexOf(a[2]) - ordreCat.indexOf(b[2])
+        || ordreStatut.indexOf(a[3]) - ordreStatut.indexOf(b[3])
+        || rang(a[4]) - rang(b[4])
+        || a[1].localeCompare(b[1], "fr");
+  });
+
+  const f = feuille();
+  const dernier = f.getLastRow();
+  if (dernier > 1) f.getRange(2, 1, dernier - 1, COLONNES.length).clearContent();
+  if (lignes.length) {
+    const zone = f.getRange(2, 1, lignes.length, COLONNES.length);
+    zone.offset(0, 7, lignes.length, 2).setNumberFormat("@");   // dates gardées en texte
+    zone.setValues(lignes);
+  }
 }
 
 /* ---- Petits outils ---- */
@@ -80,11 +149,38 @@ function cleValide(cle) {
   return !!attendue && cle === attendue;
 }
 
-// La cellule A1 de l'onglet « Projets » (créé s'il n'existe pas)
-function cellule() {
+// L'onglet « Projets » (créé avec son en-tête s'il n'existe pas)
+function feuille() {
   const classeur = SpreadsheetApp.getActiveSpreadsheet();
-  const feuille = classeur.getSheetByName(ONGLET) || classeur.insertSheet(ONGLET);
-  return feuille.getRange("A1");
+  let f = classeur.getSheetByName(ONGLET);
+  if (!f) {
+    f = classeur.insertSheet(ONGLET);
+    f.appendRow(COLONNES);
+    f.setFrozenRows(1);
+  }
+  return f;
+}
+
+// Valeur de cellule → texte propre
+function texte(v) { return v === null || v === undefined ? "" : String(v).trim(); }
+
+// Une date tapée à la main devient un objet Date dans Sheets : on la remet en AAAA-MM-JJ
+function date(v) {
+  if (v instanceof Date) return Utilities.formatDate(v, "Europe/Paris", "yyyy-MM-dd");
+  return texte(v);
+}
+
+// « Électronique ESP32 » → « electronique-esp32 »
+function slug(t) {
+  return t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
+          .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 30) || "projet";
+}
+
+// {"En cours": "en-cours"} → {"en-cours": "En cours"}
+function inverser(o) {
+  const r = {};
+  Object.keys(o).forEach(function (k) { r[o[k]] = k; });
+  return r;
 }
 
 // Réponse JSON (Apps Script ajoute lui-même l'autorisation CORS)
