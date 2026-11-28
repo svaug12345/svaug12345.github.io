@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Cadeaux — idées de cadeaux et Noëls
-  Version 1.4.0
+  Version 1.4.1
   ------------------------------------------------------------
   Quatre vues (contrôle en haut) :
    • Idées     : la boîte à idées. On note en vitesse (« Juju - défonceuse » range
@@ -50,6 +50,9 @@
               chaque personne ; un appui sur « ＋ Noter » met l'idée dans sa boîte
               (elle passe alors à « Notée ✓ »). L'analyse elle-même est dans le
               Google Sheet, pas dans cette page (dépôt public)
+   • v1.4.1 : analyse enrichie : les idées ajoutées par une nouvelle recherche
+              portent l'étiquette « nouveau » (pastille « Nouveautés » pour ne
+              voir qu'elles) et un lien vers l'article qui les a inspirées
 -->
 <html lang="fr">
 <head>
@@ -405,6 +408,8 @@
     /* Dans l'analyse, le « pourquoi » se lit en entier (pas coupé à 2 lignes) */
     .carte.propo .note { display: block; }
     .carte.propo.notee { opacity: .6; }
+    .tag.neuf { background: var(--s-idee); color: #fff; }
+    a.tag { text-decoration: none; }
     .carte.propo .retenir:disabled { border-style: dashed; }
 
     /* Message « Annuler » en bas */
@@ -587,14 +592,15 @@
      etat.personnes = { id: { nom, rang, archive } }
      etat.idees     = { id: { texte, qui, statut, occ, annee, note, lien, cree, maj, archive } }
      etat.analyse   = { date, constats [texte], tendances [{t, s, u}], note, top [texte],
-                        menage [texte], groupes [{ qui, nom, fil, idees [{t, p, prix}] }] }
+                        menage [texte], sources { clé: {n: nom, u: adresse} },
+                        groupes [{ qui, nom, fil, idees [{t, p, prix, n: 1 si nouvelle, s: clé de source}] }] }
                       (facultatif : écrit dans le Google Sheet par Claude, lu par l'onglet Analyse)
    Une « idée » est une ligne de cadeau, quel que soit son avancement :
      • dans la boîte à idées : statut « idee », pas d'occasion ;
      • retenue pour un Noël : occ = "noel", annee = 2026… ;
        son statut suit alors l'achat (à acheter → acheté → reçu).
    ============================================================== */
-const VERSION = "1.4.0";
+const VERSION = "1.4.1";
 
 /* ---------- 1. RÉGLAGES ----------
    Adresse /exec du script Google « Cadeaux » (code dans outils/cadeaux.gs).
@@ -1031,11 +1037,21 @@ function afficher() {
         ${liste("Petit ménage suggéré", (a.menage || []).map(c => `<li>${html(c)}</li>`))}
         ${a.note ? `<p class="petit">${html(a.note)}</p>` : ""}</div>`;
       const cherche = simple(recherche);
+      // Pastilles : tout, ou seulement les idées ajoutées par la dernière recherche (n: 1)
+      const nbNouvelles = a.groupes.reduce((t, g) => t + (g.idees || []).filter(x => x.n).length, 0);
+      if (nbNouvelles) pastilles = [{ id: "", nom: "Tout" }, { id: "_nouveau", nom: "Nouveautés " + nbNouvelles }];
+      if (!pastilles.some(x => x.id === filtre)) filtre = "";
+      // Lien vers l'article d'où vient l'idée (seulement une adresse https du Sheet)
+      const source = x => {
+        const s = x.s && a.sources && a.sources[x.s];
+        return s && /^https:\/\//.test(s.u || "") ? `<a class="tag" href="${html(s.u)}" target="_blank" rel="noopener">${html(s.n || "source")} ↗</a>` : "";
+      };
       // Textes déjà dans les listes de chaque personne (pour afficher « Notée ✓ »)
       const dejaLa = new Set(toutes.map(i => (i.qui || "") + "|" + simple(i.texte)));
       a.groupes.forEach((g, n) => {
         const qui = quiDe(g);
         let idees = (g.idees || []).map((x, k) => ({ ...x, k }));
+        if (filtre === "_nouveau") idees = idees.filter(x => x.n);
         // Recherche : le prénom garde tout le groupe, sinon seulement les idées qui correspondent
         if (cherche && !simple(g.nom).includes(cherche)) idees = idees.filter(x => simple(x.t + " " + (x.p || "")).includes(cherche));
         if (!idees.length) return;
@@ -1049,7 +1065,7 @@ function afficher() {
             const notee = dejaLa.has(qui + "|" + simple(x.t));
             return `<div class="carte propo ${notee ? "notee" : ""}" style="--c:var(--s-idee)">
               <div class="corps"><div class="nom">${html(x.t)}</div>
-                <div class="meta">${x.prix ? `<span class="tag">${html(x.prix)}</span>` : ""}</div>
+                <div class="meta">${x.n ? `<span class="tag neuf">nouveau</span>` : ""}${x.prix ? `<span class="tag">${html(x.prix)}</span>` : ""}${source(x)}</div>
                 ${x.p ? `<div class="note">${html(x.p)}</div>` : ""}</div>
               <button class="retenir" data-action="noter" data-g="${n}" data-k="${x.k}" style="--c:var(--s-idee)" ${notee ? "disabled" : ""}>${notee ? "Notée ✓" : "＋ Noter"}</button>
             </div>`;
