@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <!--
   Cadeaux — idées de cadeaux et Noëls
-  Version 1.3.1
+  Version 1.4.0
   ------------------------------------------------------------
-  Trois vues (contrôle en haut) :
+  Quatre vues (contrôle en haut) :
    • Idées     : la boîte à idées. On note en vitesse (« Juju - défonceuse » range
                  l'idée chez Juju), puis « Noël ▸ » la retient pour le Noël en cours ;
    • Noël      : une année de Noël, personne par personne : ce qui est à acheter,
                  acheté, reçu ; les idées de la boîte se déplient sous chaque nom ;
-   • Personnes : la liste des gens et ce qu'on leur a déjà offert, année par année.
+   • Personnes : la liste des gens et ce qu'on leur a déjà offert, année par année ;
+   • Analyse   : des idées proposées personne par personne (historique + tendances),
+                 préparées avec Claude et rangées dans le Google Sheet (etat.analyse).
+                 « ＋ Noter » range l'idée dans la boîte de la personne.
   Chaque groupe (une personne) se replie d'un appui sur sa flèche ; « Tout
   réduire » replie tout d'un coup.
   Toucher une idée = sa fiche (texte, pour qui, statut, occasion, note, lien).
@@ -43,6 +46,10 @@
    • v1.3.1 : toucher un prénom (vues Idées et Noël) ouvre ou referme sa liste,
               comme la flèche ; la fiche de la personne s'ouvre depuis l'onglet
               Personnes
+   • v1.4.0 : onglet « Analyse » : constats, tendances et idées proposées pour
+              chaque personne ; un appui sur « ＋ Noter » met l'idée dans sa boîte
+              (elle passe alors à « Notée ✓ »). L'analyse elle-même est dans le
+              Google Sheet, pas dans cette page (dépôt public)
 -->
 <html lang="fr">
 <head>
@@ -382,6 +389,24 @@
     .histo li { padding: 6px 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: 52px 1fr; gap: 8px; }
     .histo b { font-family: var(--mono); font-size: .76rem; color: var(--muted); padding-top: 2px; }
 
+    /* Onglet Analyse : l'encadré du haut (constats, tendances) et le prix d'une idée */
+    .bilan {
+      background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+      padding: 12px 14px; margin-bottom: 16px; font-size: .9rem;
+    }
+    .bilan > b { display: block; margin-bottom: 2px; }
+    .bilan .quand { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+    .bilan details { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 8px; }
+    .bilan summary { font-weight: 700; cursor: pointer; }
+    .bilan ul, .bilan ol { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 6px; }
+    .bilan a { color: var(--teal); }
+    .bilan .petit { color: var(--muted); font-size: .8rem; margin: 10px 0 0; }
+    .fil { color: var(--muted); font-size: .84rem; margin: -2px 0 8px; }
+    /* Dans l'analyse, le « pourquoi » se lit en entier (pas coupé à 2 lignes) */
+    .carte.propo .note { display: block; }
+    .carte.propo.notee { opacity: .6; }
+    .carte.propo .retenir:disabled { border-style: dashed; }
+
     /* Message « Annuler » en bas */
     #toast {
       position: fixed; left: 50%; transform: translateX(-50%);
@@ -430,6 +455,7 @@
       <button data-vue="idees">Idées</button>
       <button data-vue="noel">Noël</button>
       <button data-vue="gens">Personnes</button>
+      <button data-vue="analyse">Analyse</button>
     </div>
     <input class="recherche" id="recherche" type="search" placeholder="Chercher une idée, une personne…" autocomplete="off">
   </div>
@@ -560,12 +586,15 @@
    (dans le téléphone, et dans le Google Sheet si la synchro est branchée) :
      etat.personnes = { id: { nom, rang, archive } }
      etat.idees     = { id: { texte, qui, statut, occ, annee, note, lien, cree, maj, archive } }
+     etat.analyse   = { date, constats [texte], tendances [{t, s, u}], note, top [texte],
+                        menage [texte], groupes [{ qui, nom, fil, idees [{t, p, prix}] }] }
+                      (facultatif : écrit dans le Google Sheet par Claude, lu par l'onglet Analyse)
    Une « idée » est une ligne de cadeau, quel que soit son avancement :
      • dans la boîte à idées : statut « idee », pas d'occasion ;
      • retenue pour un Noël : occ = "noel", annee = 2026… ;
        son statut suit alors l'achat (à acheter → acheté → reçu).
    ============================================================== */
-const VERSION = "1.3.1";
+const VERSION = "1.4.0";
 
 /* ---------- 1. RÉGLAGES ----------
    Adresse /exec du script Google « Cadeaux » (code dans outils/cadeaux.gs).
@@ -599,7 +628,7 @@ const OCCASIONS = [
 ];
 
 let etat = null;                 // les données affichées
-let vue = "idees";               // idees | noel | gens
+let vue = "idees";               // idees | noel | gens | analyse
 let filtre = "";                 // pastille choisie (dépend de la vue)
 let recherche = "";
 let anneeNoel = noelCourant();   // l'année affichée dans la vue Noël
@@ -807,6 +836,14 @@ function ressemblants(texte, qui, saufId) {
 }
 const quand = i => i.occ === "noel" && i.annee ? "Noël " + i.annee : i.occ === "anniv" && i.annee ? "anniv. " + i.annee : "sans date";
 
+/* La personne d'un groupe de l'analyse : son identifiant s'il existe encore,
+   sinon quelqu'un qui porte ce prénom, sinon "" (idée sans destinataire). */
+function quiDe(g) {
+  if (g.qui && etat.personnes[g.qui]) return g.qui;
+  const trouve = Object.entries(etat.personnes).find(([, p]) => simple(p.nom) === simple(g.nom));
+  return trouve ? trouve[0] : "";
+}
+
 /* ---------- 5. AFFICHAGE ---------- */
 
 /* Une carte d'idée. « bouton » dit ce qu'on met à droite :
@@ -976,6 +1013,52 @@ function afficher() {
     }
     if (!h) h = `<div class="vide"><b>Rien ici</b>${courant ? "Ajoute d'abord des personnes dans l'onglet Personnes." : "Aucun cadeau noté pour ce Noël."}</div>`;
 
+  } else if (vue === "analyse") {
+    /* ----- Analyse : idées proposées, personne par personne -----
+       Tout vient de etat.analyse (rangé dans le Google Sheet). La page ne
+       contient aucune idée : elle sait seulement les dessiner. */
+    const a = etat.analyse;
+    if (!a || !Array.isArray(a.groupes)) {
+      h = `<div class="vide"><b>Pas encore d'analyse</b>Demande à Claude d'analyser tes listes : il la rangera ici.</div>`;
+    } else {
+      const liste = (t, items, ord) => items && items.length
+        ? `<details><summary>${t}</summary><${ord ? "ol" : "ul"}>${items.join("")}</${ord ? "ol" : "ul"}></details>` : "";
+      const jour = a.date ? new Date(a.date + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "";
+      h += `<div class="bilan" style="column-span:all"><span class="quand">Analyse du ${html(jour)}</span>
+        ${liste("Ce que disent tes listes", (a.constats || []).map(c => `<li>${html(c)}</li>`))}
+        ${liste("Tendances de l'année", (a.tendances || []).map(t => `<li>${html(t.t)} ${/^https:\/\//.test(t.u || "") ? `<a href="${html(t.u)}" target="_blank" rel="noopener">${html(t.s || "source")}</a>` : html(t.s || "")}</li>`))}
+        ${liste("Les dix à retenir", (a.top || []).map(c => `<li>${html(c)}</li>`), true)}
+        ${liste("Petit ménage suggéré", (a.menage || []).map(c => `<li>${html(c)}</li>`))}
+        ${a.note ? `<p class="petit">${html(a.note)}</p>` : ""}</div>`;
+      const cherche = simple(recherche);
+      // Textes déjà dans les listes de chaque personne (pour afficher « Notée ✓ »)
+      const dejaLa = new Set(toutes.map(i => (i.qui || "") + "|" + simple(i.texte)));
+      a.groupes.forEach((g, n) => {
+        const qui = quiDe(g);
+        let idees = (g.idees || []).map((x, k) => ({ ...x, k }));
+        // Recherche : le prénom garde tout le groupe, sinon seulement les idées qui correspondent
+        if (cherche && !simple(g.nom).includes(cherche)) idees = idees.filter(x => simple(x.t + " " + (x.p || "")).includes(cherche));
+        if (!idees.length) return;
+        const cle = "analyse:" + n;
+        const restantes = idees.filter(x => !dejaLa.has(qui + "|" + simple(x.t))).length;
+        h += `<section class="groupe"><h2>${fleche(cle)}
+            <button class="qui" data-action="replier" data-g="${html(cle)}">${html(g.nom)}</button>
+            <span class="pousse"></span><small>${restantes ? pluriel(restantes, "idée") : "tout noté"}</small></h2>`;
+        if (!replies.has(cle)) {
+          h += `${g.fil ? `<p class="fil">${html(g.fil)}</p>` : ""}<div class="liste">` + idees.map(x => {
+            const notee = dejaLa.has(qui + "|" + simple(x.t));
+            return `<div class="carte propo ${notee ? "notee" : ""}" style="--c:var(--s-idee)">
+              <div class="corps"><div class="nom">${html(x.t)}</div>
+                <div class="meta">${x.prix ? `<span class="tag">${html(x.prix)}</span>` : ""}</div>
+                ${x.p ? `<div class="note">${html(x.p)}</div>` : ""}</div>
+              <button class="retenir" data-action="noter" data-g="${n}" data-k="${x.k}" style="--c:var(--s-idee)" ${notee ? "disabled" : ""}>${notee ? "Notée ✓" : "＋ Noter"}</button>
+            </div>`;
+          }).join("") + `</div>`;
+        }
+        h += `</section>`;
+      });
+    }
+
   } else {
     /* ----- Personnes ----- */
     const tout = Object.values(etat.idees);
@@ -1006,7 +1089,7 @@ function afficher() {
   const ar = $("archivees");
   if (ar) ar.addEventListener("toggle", () => { archiveesOuvertes = ar.open; });
   // Bouton « Tout réduire » : devient « Tout déplier » quand tout est déjà replié
-  $("outils-liste").hidden = vue === "gens" || affiches.length < 2;
+  $("outils-liste").hidden = vue === "gens" || affiches.length < 2;   // Idées, Noël, Analyse
   $("btn-replier").textContent = affiches.every(c => replies.has(c)) ? "Tout déplier ▾" : "Tout réduire ▸";
 }
 
@@ -1037,6 +1120,14 @@ $("contenu").addEventListener("click", ev => {
     modifier(e => { if (e.idees[id]) { delete e.idees[id].archive; e.idees[id].maj = aujourdhui(); } });
     afficherToast("« " + texte + " » remise dans la boîte",
       () => modifier(e => { if (e.idees[id]) e.idees[id].archive = 1; }));
+  }
+  else if (action === "noter") {
+    // Une idée de l'analyse va dans la boîte de la personne, avec son « pourquoi » en note
+    const g = etat.analyse.groupes[Number(b.dataset.g)], x = g.idees[Number(b.dataset.k)];
+    const qui = quiDe(g);
+    const nouvelle = noterIdee(x.t, qui, "", [x.p, x.prix].filter(Boolean).join(" · "));
+    afficherToast(qui ? `Notée pour ${nomDe(qui)}` : "Notée dans la boîte (sans destinataire)",
+      () => modifier(e => { delete e.idees[nouvelle]; }));
   }
   else if (action === "replier") {
     const g = b.dataset.g;
@@ -1093,13 +1184,15 @@ $("vite-texte").addEventListener("input", ev => {
 });
 // Ajoute une idée dans la boîte (pour « qui », ou sans destinataire) et prévient
 // si la personne a déjà eu quelque chose de ressemblant.
-function noterIdee(texte, qui, lien) {
+function noterIdee(texte, qui, lien, note) {
   const id = nouvelId(texte), jour = aujourdhui();
   const ligne = { texte, qui, statut: "idee", cree: jour, maj: jour };
   if (lien) ligne.lien = lien;
+  if (note) ligne.note = note;
   const deja = ressemblants(texte, qui, id);
   modifier(e => { e.idees[id] = ligne; });
   if (deja.length) afficherToast(`${nomDe(qui)} : déjà « ${deja[0].texte} » (${quand(deja[0])})`);
+  return id;
 }
 
 // Saisie rapide du haut : « Prénom - idée »
@@ -1383,7 +1476,7 @@ function demarrer() {
   if (params.get("url") && /^https:\/\/script\.google\.com\//.test(params.get("url"))) garder(URL_LOCALE, params.get("url"));
   if (params.get("cle") || params.get("url")) history.replaceState(null, "", location.pathname);
   const v = lire(VUE_LOCALE);
-  if (["idees", "noel", "gens"].includes(v)) vue = v;
+  if (["idees", "noel", "gens", "analyse"].includes(v)) vue = v;
   try { replies = new Set(JSON.parse(lire(REPLIS_LOCAL) || "[]")); } catch { replies = new Set(); }
   etat = normaliser(lireCache());
   afficher();
