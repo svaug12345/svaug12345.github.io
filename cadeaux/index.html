@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Cadeaux — idées de cadeaux et Noëls
-  Version 1.4.1
+  Version 1.5.0
   ------------------------------------------------------------
   Quatre vues (contrôle en haut) :
    • Idées     : la boîte à idées. On note en vitesse (« Juju - défonceuse » range
@@ -53,6 +53,11 @@
    • v1.4.1 : analyse enrichie : les idées ajoutées par une nouvelle recherche
               portent l'étiquette « nouveau » (pastille « Nouveautés » pour ne
               voir qu'elles) et un lien vers l'article qui les a inspirées
+   • v1.5.0 : UN LIEN SUR CHAQUE IDÉE. Sur chaque carte, un petit bouton rond :
+              flèche ↗ = la page exacte (le lien de la fiche, ou le champ « u »
+              d'une idée de l'analyse), loupe = à défaut, une recherche Google
+              toute prête sur le texte de l'idée. « ＋ Noter » recopie le lien
+              exact dans la fiche.
 -->
 <html lang="fr">
 <head>
@@ -409,6 +414,14 @@
     .carte.propo .note { display: block; }
     .carte.propo.notee { opacity: .6; }
     .tag.neuf { background: var(--s-idee); color: #fff; }
+    /* Bouton rond « voir » d'une carte : flèche = page exacte, loupe = recherche */
+    .carte .voir {
+      flex: none; align-self: center; width: 38px; height: 38px; margin-right: 6px;
+      display: grid; place-items: center; border-radius: 50%;
+      border: 1.5px solid var(--line, #d5dedd); color: var(--muted); text-decoration: none;
+    }
+    .carte .voir.exact { border-color: var(--s-idee); color: var(--s-idee); }
+    .carte .voir svg { width: 17px; height: 17px; }
     a.tag { text-decoration: none; }
     .carte.propo .retenir:disabled { border-style: dashed; }
 
@@ -600,7 +613,7 @@
      • retenue pour un Noël : occ = "noel", annee = 2026… ;
        son statut suit alors l'achat (à acheter → acheté → reçu).
    ============================================================== */
-const VERSION = "1.4.1";
+const VERSION = "1.5.0";
 
 /* ---------- 1. RÉGLAGES ----------
    Adresse /exec du script Google « Cadeaux » (code dans outils/cadeaux.gs).
@@ -852,6 +865,22 @@ function quiDe(g) {
 
 /* ---------- 5. AFFICHAGE ---------- */
 
+/* Le lien d'une idée, en petit bouton rond.
+   - « lien » rempli (adresse https) : flèche vers la page exacte ;
+   - sinon : loupe = recherche Google sur le texte de l'idée. L'adresse est
+     fabriquée ici, à l'affichage : rien n'est enregistré, et encodeURIComponent
+     rend le texte inoffensif dans une adresse (espaces, accents, « & »…).
+   Un <a> ordinaire : il s'ouvre dans un nouvel onglet, sans passer par
+   l'écouteur de clics de la page (il n'a pas de data-action). */
+const PICTO_FLECHE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>`;
+const PICTO_LOUPE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>`;
+function lienHTML(texte, lien) {
+  const exact = /^https?:\/\//.test(lien || "");
+  const adresse = exact ? lien : "https://www.google.com/search?q=" + encodeURIComponent(texte);
+  const titre = exact ? "Voir la page" : "Chercher sur le web";
+  return `<a class="voir ${exact ? "exact" : ""}" href="${html(adresse)}" target="_blank" rel="noopener" title="${titre}" aria-label="${titre}">${exact ? PICTO_FLECHE : PICTO_LOUPE}</a>`;
+}
+
 /* Une carte d'idée. « bouton » dit ce qu'on met à droite :
    "etat" = le statut (un appui = étape suivante), "retenir" = « Noël ▸ ». */
 function carteHTML(i, bouton, avecQui, libelleRetenir) {
@@ -868,7 +897,7 @@ function carteHTML(i, bouton, avecQui, libelleRetenir) {
       <div class="nom">${html(i.texte)}</div>
       <div class="meta">${avecQui && i.qui ? `<span class="tag">${html(nomDe(i.qui))}</span>` : ""}${i.lien ? `<span class="tag">lien</span>` : ""}</div>
       ${i.note ? `<div class="note">${html(i.note)}</div>` : ""}
-    </button>${droite}
+    </button>${lienHTML(i.texte, i.lien)}${droite}
   </div>`;
 }
 
@@ -1067,6 +1096,7 @@ function afficher() {
               <div class="corps"><div class="nom">${html(x.t)}</div>
                 <div class="meta">${x.n ? `<span class="tag neuf">nouveau</span>` : ""}${x.prix ? `<span class="tag">${html(x.prix)}</span>` : ""}${source(x)}</div>
                 ${x.p ? `<div class="note">${html(x.p)}</div>` : ""}</div>
+              ${lienHTML(x.t, x.u)}
               <button class="retenir" data-action="noter" data-g="${n}" data-k="${x.k}" style="--c:var(--s-idee)" ${notee ? "disabled" : ""}>${notee ? "Notée ✓" : "＋ Noter"}</button>
             </div>`;
           }).join("") + `</div>`;
@@ -1141,7 +1171,7 @@ $("contenu").addEventListener("click", ev => {
     // Une idée de l'analyse va dans la boîte de la personne, avec son « pourquoi » en note
     const g = etat.analyse.groupes[Number(b.dataset.g)], x = g.idees[Number(b.dataset.k)];
     const qui = quiDe(g);
-    const nouvelle = noterIdee(x.t, qui, "", [x.p, x.prix].filter(Boolean).join(" · "));
+    const nouvelle = noterIdee(x.t, qui, /^https:\/\//.test(x.u || "") ? x.u : "", [x.p, x.prix].filter(Boolean).join(" · "));
     afficherToast(qui ? `Notée pour ${nomDe(qui)}` : "Notée dans la boîte (sans destinataire)",
       () => modifier(e => { delete e.idees[nouvelle]; }));
   }
