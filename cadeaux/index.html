@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   Cadeaux — idées de cadeaux et Noëls
-  Version 1.5.0
+  Version 1.6.0
   ------------------------------------------------------------
   Quatre vues (contrôle en haut) :
    • Idées     : la boîte à idées. On note en vitesse (« Juju - défonceuse » range
@@ -58,6 +58,12 @@
               d'une idée de l'analyse), loupe = à défaut, une recherche Google
               toute prête sur le texte de l'idée. « ＋ Noter » recopie le lien
               exact dans la fiche.
+   • v1.6.0 : MODE « FLASH » (bouton éclair en haut) : la réflexion rapide sur
+              téléphone. Plein écran, UNE personne et UNE idée à la fois, les
+              personnes sans cadeau d'abord. Deux gros boutons sous le pouce
+              (Passer / Retenir pour Noël), ou glisser la carte à gauche / à
+              droite. Les idées viennent de la boîte de la personne puis de
+              l'onglet Analyse ; une ligne permet d'en noter une à la volée.
 -->
 <html lang="fr">
 <head>
@@ -425,6 +431,65 @@
     a.tag { text-decoration: none; }
     .carte.propo .retenir:disabled { border-style: dashed; }
 
+    /* =========================================================
+       MODE FLASH — plein écran sur téléphone, tout sous le pouce
+       ========================================================= */
+    #btn-flash { background: var(--teal); color: #fff; border-color: var(--teal); }
+    dialog#flash {                  /* plein écran : on annule la « feuille du bas » */
+      width: 100%; max-width: 560px; height: 100dvh; max-height: 100dvh;
+      margin: 0 auto; border-radius: 0; background: var(--bg);
+    }
+    .flash { height: 100%; display: flex; flex-direction: column;
+             padding: 12px 14px calc(12px + env(safe-area-inset-bottom)); gap: 10px; }
+    .fl-tete { display: flex; align-items: center; gap: 10px; }
+    .fl-tete .fl-qui { flex: 1; min-width: 0; }
+    .fl-tete b { display: block; font-size: 1.45rem; line-height: 1.15; overflow-wrap: anywhere; }
+    .fl-tete small { color: var(--muted); font-size: .8rem; }
+    #fl-compte { font-family: "JetBrains Mono", monospace; font-size: .8rem; color: var(--muted); }
+    .fl-jauge { height: 4px; border-radius: 4px; background: var(--line); overflow: hidden; }
+    .fl-jauge i { display: block; height: 100%; width: 0; background: var(--teal); transition: width .25s; }
+    .fl-prevu { font-size: .82rem; color: var(--muted); min-height: 1.2em; overflow-wrap: anywhere; }
+    .fl-prevu b { color: var(--ink); font-weight: 700; }
+    /* La scène : la carte prend toute la place qui reste */
+    .fl-scene { flex: 1; min-height: 0; display: flex; position: relative; }
+    .fl-carte {
+      flex: 1; display: flex; flex-direction: column; gap: 10px; overflow: auto;
+      background: var(--card); border: 1px solid var(--line); border-radius: 18px;
+      padding: 18px; touch-action: pan-y;        /* le doigt peut glisser de côté */
+      box-shadow: 0 6px 20px rgba(5, 20, 20, .08); will-change: transform;
+    }
+    .fl-carte .fl-texte { font-size: 1.35rem; font-weight: 800; line-height: 1.25; overflow-wrap: anywhere; }
+    .fl-carte .fl-pourquoi { color: var(--muted); font-size: .98rem; line-height: 1.45; }
+    .fl-carte .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .fl-carte .fl-lien { margin-top: auto; display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: .85rem; }
+    .fl-carte .voir { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%;
+                      border: 1.5px solid var(--line); color: var(--muted); text-decoration: none; }
+    .fl-carte .voir.exact { border-color: var(--s-idee); color: var(--s-idee); }
+    .fl-carte .voir svg { width: 19px; height: 19px; }
+    .fl-carte.vide { align-items: center; justify-content: center; text-align: center; color: var(--muted); }
+    .fl-carte.vide .gros { font-size: 2.2rem; }
+    /* Pendant le glissement : le bord annonce ce qui va se passer */
+    .fl-carte.vers-oui { border-color: var(--teal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 30%, transparent); }
+    .fl-carte.vers-non { opacity: .6; }
+    .fl-ajout { display: flex; gap: 8px; }
+    .fl-ajout input { flex: 1; min-width: 0; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+                      border-radius: 12px; padding: 12px 14px; font-size: 1rem; outline: none; }
+    .fl-ajout input:focus { border-color: var(--teal); }
+    .fl-ajout button, .fl-actions button, .fl-bas button {
+      border-radius: 14px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; font-size: .82rem;
+    }
+    .fl-ajout button { border: 1px solid var(--line); background: var(--card); color: var(--ink); padding: 0 16px; }
+    /* Les deux gros boutons : 60 px de haut, faciles au pouce */
+    .fl-actions { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
+    .fl-actions button { height: 60px; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); }
+    .fl-actions #fl-retenir { background: var(--teal); border-color: var(--teal); color: #fff; }
+    .fl-actions button:disabled { opacity: .35; }
+    .fl-bas { display: flex; justify-content: space-between; gap: 10px; }
+    .fl-bas button { border: 0; background: none; color: var(--muted); padding: 10px 6px; }
+    .fl-bas #fl-suiv { color: var(--teal); }
+    /* En mode Flash le message « Annuler » s'affiche EN HAUT, pour ne pas cacher les boutons */
+    dialog#flash #toast { bottom: auto; top: calc(70px + env(safe-area-inset-top)); }
+
     /* Message « Annuler » en bas */
     #toast {
       position: fixed; left: 50%; transform: translateX(-50%);
@@ -463,6 +528,9 @@
 <div class="page">
   <header>
     <h1>Cadeaux</h1>
+    <button class="icone-btn" id="btn-flash" aria-label="Mode Flash : une idée à la fois" title="Mode Flash : une personne, une idée à la fois">
+      <svg class="ico" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>
+    </button>
     <button class="icone-btn" id="btn-export" aria-label="Exporter la liste" title="Exporter la liste (texte)">
       <svg class="ico" viewBox="0 0 24 24"><path d="M12 2v13"/><path d="m16 6-4-4-4 4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/></svg>
     </button>
@@ -507,6 +575,32 @@
 </button>
 
 <!-- Fiche d'une idée (création et modification) -->
+<!-- MODE FLASH : plein écran, une personne et une idée à la fois (voir section 11 du script) -->
+<dialog id="flash">
+  <div class="flash">
+    <div class="fl-tete">
+      <button class="icone-btn" id="fl-fermer" aria-label="Fermer le mode Flash">✕</button>
+      <div class="fl-qui"><b id="fl-nom"></b><small id="fl-etat"></small></div>
+      <span id="fl-compte"></span>
+    </div>
+    <div class="fl-jauge"><i id="fl-barre"></i></div>
+    <div class="fl-prevu" id="fl-prevu"></div>
+    <div class="fl-scene" id="fl-scene"></div>
+    <form class="fl-ajout" id="fl-ajout" autocomplete="off">
+      <input type="text" id="fl-idee" placeholder="Une idée qui te vient…" enterkeyhint="done">
+      <button>Noter</button>
+    </form>
+    <div class="fl-actions">
+      <button id="fl-passer">Passer</button>
+      <button id="fl-retenir">Retenir pour Noël</button>
+    </div>
+    <div class="fl-bas">
+      <button id="fl-prec">‹ Précédente</button>
+      <button id="fl-suiv">Personne suivante ›</button>
+    </div>
+  </div>
+</dialog>
+
 <dialog id="fiche">
   <form class="fiche" id="form-fiche" method="dialog">
     <h3 id="fiche-titre">Idée</h3>
@@ -613,7 +707,7 @@
      • retenue pour un Noël : occ = "noel", annee = 2026… ;
        son statut suit alors l'achat (à acheter → acheté → reçu).
    ============================================================== */
-const VERSION = "1.5.0";
+const VERSION = "1.6.0";
 
 /* ---------- 1. RÉGLAGES ----------
    Adresse /exec du script Google « Cadeaux » (code dans outils/cadeaux.gs).
@@ -1137,6 +1231,8 @@ function afficher() {
   // Bouton « Tout réduire » : devient « Tout déplier » quand tout est déjà replié
   $("outils-liste").hidden = vue === "gens" || affiches.length < 2;   // Idées, Noël, Analyse
   $("btn-replier").textContent = affiches.every(c => replies.has(c)) ? "Tout déplier ▾" : "Tout réduire ▸";
+  // Le mode Flash, s'il est ouvert, suit les données (une idée retenue disparaît de la pile)
+  if ($("flash").open) dessinerFlash();
 }
 
 // Les groupes repliés sont gardés dans l'appareil (pas dans le Sheet : c'est de l'affichage)
@@ -1290,9 +1386,9 @@ function ouvrirDialogue(d) {
   history.pushState({ fiche: 1 }, "");
   d.showModal();
 }
-["fiche", "personne", "synchro"].forEach(nom =>
+["fiche", "personne", "synchro", "flash"].forEach(nom =>
   $(nom).addEventListener("close", () => { if (history.state && history.state.fiche) history.back(); }));
-window.addEventListener("popstate", () => ["fiche", "personne", "synchro"].forEach(nom => { if ($(nom).open) $(nom).close(); }));
+window.addEventListener("popstate", () => ["fiche", "personne", "synchro", "flash"].forEach(nom => { if ($(nom).open) $(nom).close(); }));
 
 function ouvrirFiche(id, depart) {
   ouvert = id || null;
@@ -1470,6 +1566,197 @@ $("toast-annuler").onclick = () => {
   if (actionAnnuler) actionAnnuler();
   actionAnnuler = null;
 };
+
+/* ---------- 11. MODE FLASH ----------
+   La réflexion rapide sur téléphone : UNE personne et UNE idée à la fois.
+   - flashGens  : la liste des personnes, photographiée à l'ouverture (elle ne
+                  bouge plus pendant le tour) ; celles qui n'ont encore rien
+                  pour ce Noël passent en premier ;
+   - flashRang  : où on en est dans cette liste ;
+   - flashVues  : les idées « passées » pendant ce tour (oubliées à la fermeture :
+                  passer n'efface rien, l'idée reste dans la boîte ou l'analyse).
+   La « pile » d'une personne = ses idées de la boîte (les plus récentes d'abord)
+   puis les suggestions de l'onglet Analyse qu'elle n'a pas déjà dans ses listes. */
+let flashGens = [], flashRang = 0, flashRetenues = 0;
+const flashVues = new Set();
+
+// Ce qui est déjà prévu pour une personne au Noël en cours (hors « abandonné »)
+function prevuPour(qui) {
+  const annee = noelCourant();
+  return Object.values(etat.idees).filter(i => i.qui === qui && i.occ === "noel" && i.annee === annee && i.statut !== "abandonne");
+}
+
+// La pile d'idées à passer en revue pour une personne
+function pileFlash(qui) {
+  const cartes = [];
+  // 1) sa boîte à idées, la plus récente d'abord
+  Object.entries(etat.idees).map(([id, i], rang) => ({ id, ...i, rang }))
+    .filter(i => i.qui === qui && dansBoite(i)).sort((a, b) => b.rang - a.rang)
+    .forEach(i => cartes.push({ cle: "b:" + i.id, id: i.id, t: i.texte, p: i.note || "", u: i.lien || "", boite: true }));
+  // 2) les suggestions de l'analyse, sauf celles déjà dans ses listes
+  const deja = new Set(Object.values(etat.idees).filter(i => i.qui === qui).map(i => simple(i.texte)));
+  ((etat.analyse || {}).groupes || []).forEach(g => {
+    if (quiDe(g) !== qui) return;
+    (g.idees || []).forEach(x => {
+      if (!deja.has(simple(x.t))) cartes.push({ cle: "a:" + qui + ":" + simple(x.t), t: x.t, p: x.p || "", prix: x.prix || "", u: x.u || "", neuf: !!x.n });
+    });
+  });
+  return cartes.filter(c => !flashVues.has(c.cle));
+}
+
+function ouvrirFlash() {
+  // Sans cadeau d'abord, puis les autres ; dans chaque groupe, l'ordre habituel
+  const gens = personnes(false);
+  flashGens = [...gens.filter(p => !prevuPour(p.id).length), ...gens.filter(p => prevuPour(p.id).length)].map(p => p.id);
+  if (!flashGens.length) { afficherToast("Ajoute d'abord des personnes (onglet Personnes)"); return; }
+  flashRang = 0; flashRetenues = 0; flashVues.clear();
+  ouvrirDialogue($("flash"));
+  // Une <dialog> ouverte passe au-dessus de TOUTE la page : le message « Annuler »
+  // doit donc être rangé dedans pour rester visible et cliquable ; on le rend à
+  // la page à la fermeture (voir l'écouteur « close » plus bas).
+  $("flash").appendChild($("toast"));
+  dessinerFlash();
+}
+
+let carteFlash = null;            // la carte affichée (null = pile vide ou tour fini)
+function dessinerFlash() {
+  const fini = flashRang >= flashGens.length;
+  const scene = $("fl-scene");
+  $("fl-ajout").hidden = fini;
+  $("fl-prec").disabled = flashRang === 0;
+  $("fl-barre").style.width = Math.round(100 * Math.min(flashRang, flashGens.length) / flashGens.length) + "%";
+  if (fini) {
+    // Bilan du tour : ce qui a été retenu, et qui reste sans rien
+    const sans = personnes(false).filter(p => !prevuPour(p.id).length);
+    carteFlash = null;
+    $("fl-nom").textContent = "Tour terminé";
+    $("fl-etat").textContent = "Noël " + noelCourant();
+    $("fl-compte").textContent = "";
+    $("fl-prevu").textContent = "";
+    scene.innerHTML = `<div class="fl-carte vide"><div class="gros">🎁</div>
+      <div class="fl-texte">${pluriel(flashRetenues, "idée")} ${flashRetenues > 1 ? "retenues" : "retenue"}</div>
+      <div class="fl-pourquoi">${sans.length ? "Encore sans cadeau : " + html(sans.map(p => p.nom).join(", ")) : "Tout le monde a au moins une idée retenue."}</div></div>`;
+    $("fl-passer").disabled = true;
+    $("fl-retenir").disabled = false; $("fl-retenir").textContent = "Voir le Noël";
+    $("fl-suiv").textContent = "Recommencer ›";
+    return;
+  }
+  const qui = flashGens[flashRang], pile = pileFlash(qui), prevu = prevuPour(qui);
+  carteFlash = pile[0] || null;
+  $("fl-nom").textContent = nomDe(qui);
+  $("fl-etat").textContent = pile.length ? pluriel(pile.length, "idée") + " à voir" : "plus d'idée à voir";
+  $("fl-compte").textContent = (flashRang + 1) + " / " + flashGens.length;
+  $("fl-prevu").innerHTML = prevu.length ? "Déjà prévu : <b>" + html(prevu.map(i => i.texte).join(" · ")) + "</b>" : "Rien de prévu pour l'instant";
+  $("fl-idee").placeholder = "Une idée pour " + nomDe(qui) + "…";
+  $("fl-suiv").textContent = flashRang === flashGens.length - 1 ? "Terminer ›" : "Personne suivante ›";
+  $("fl-retenir").textContent = "Retenir pour Noël";
+  $("fl-passer").disabled = $("fl-retenir").disabled = !carteFlash;
+  if (!carteFlash) {
+    scene.innerHTML = `<div class="fl-carte vide"><div class="gros">💡</div>
+      <div class="fl-pourquoi">Plus d'idée à voir pour ${html(nomDe(qui))}.<br>Note-en une ci-dessous, ou passe à la personne suivante.</div></div>`;
+    return;
+  }
+  const c = carteFlash;
+  scene.innerHTML = `<div class="fl-carte" id="fl-carte">
+      <div class="meta"><span class="tag">${c.boite ? "Ta liste" : "Suggestion"}</span>${c.neuf ? `<span class="tag neuf">nouveau</span>` : ""}${c.prix ? `<span class="tag">${html(c.prix)}</span>` : ""}</div>
+      <div class="fl-texte">${html(c.t)}</div>
+      ${c.p ? `<div class="fl-pourquoi">${html(c.p)}</div>` : ""}
+      <div class="fl-lien">${lienHTML(c.t, c.u)}<span>${/^https?:\/\//.test(c.u) ? "Voir la page" : "Chercher sur le web"}</span></div>
+    </div>`;
+  glisserFlash($("fl-carte"));
+}
+
+// « Retenir » : l'idée devient « à acheter » pour le Noël en cours
+function retenirFlash() {
+  if (flashRang >= flashGens.length) {          // écran de bilan : le bouton mène à la vue Noël
+    $("flash").close();
+    vue = "noel"; anneeNoel = noelCourant(); filtre = ""; garder(VUE_LOCALE, vue); afficher();
+    return;
+  }
+  const c = carteFlash, qui = flashGens[flashRang], annee = noelCourant(), jour = aujourdhui();
+  if (!c) return;
+  flashRetenues++;
+  if (c.boite) {
+    const avant = structuredClone(etat.idees[c.id]);
+    modifier(e => { if (e.idees[c.id]) { Object.assign(e.idees[c.id], { occ: "noel", annee, statut: "a-acheter", maj: jour }); delete e.idees[c.id].archive; } });
+    afficherToast(`${nomDe(qui)} : « ${c.t} » à acheter`, () => { flashRetenues--; modifier(e => { e.idees[c.id] = avant; }); });
+  } else {
+    // Une suggestion de l'analyse : on crée la ligne directement « à acheter »
+    const id = nouvelId(c.t), ligne = { texte: c.t, qui, statut: "a-acheter", occ: "noel", annee, cree: jour, maj: jour };
+    const note = [c.p, c.prix].filter(Boolean).join(" · ");
+    if (note) ligne.note = note;
+    if (/^https:\/\//.test(c.u)) ligne.lien = c.u;
+    modifier(e => { e.idees[id] = ligne; });
+    afficherToast(`${nomDe(qui)} : « ${c.t} » à acheter`, () => { flashRetenues--; modifier(e => { delete e.idees[id]; }); });
+  }
+}
+// « Passer » : on ne touche à rien, la carte sort juste de la pile de ce tour
+function passerFlash() {
+  if (!carteFlash) return;
+  flashVues.add(carteFlash.cle);
+  dessinerFlash();
+}
+function allerFlash(pas) {
+  if (flashRang >= flashGens.length && pas > 0) { ouvrirFlashRecommencer(); return; }
+  flashRang = Math.max(0, Math.min(flashGens.length, flashRang + pas));
+  dessinerFlash();
+}
+function ouvrirFlashRecommencer() { flashRang = 0; flashVues.clear(); dessinerFlash(); }
+
+/* Glisser la carte : à droite = retenir, à gauche = passer.
+   Pointer events = un seul code pour le doigt et la souris. On ne retient le
+   geste que s'il est surtout horizontal (sinon c'est un défilement du texte). */
+const SEUIL_FLASH = 80;           // pixels à parcourir pour valider le geste
+function glisserFlash(carte) {
+  let x0 = null, y0 = 0, dx = 0;
+  carte.addEventListener("pointerdown", ev => {
+    if (ev.target.closest("a")) return;       // le bouton lien reste un lien
+    x0 = ev.clientX; y0 = ev.clientY; dx = 0;
+  });
+  carte.addEventListener("pointermove", ev => {
+    if (x0 === null) return;
+    dx = ev.clientX - x0;
+    if (Math.abs(dx) < 12 || Math.abs(dx) < Math.abs(ev.clientY - y0)) return;
+    carte.setPointerCapture(ev.pointerId);
+    carte.style.transform = `translateX(${dx}px) rotate(${dx / 30}deg)`;
+    carte.classList.toggle("vers-oui", dx > SEUIL_FLASH);
+    carte.classList.toggle("vers-non", dx < -SEUIL_FLASH);
+  });
+  const fin = () => {
+    if (x0 === null) return;
+    x0 = null;
+    if (dx > SEUIL_FLASH) retenirFlash();
+    else if (dx < -SEUIL_FLASH) passerFlash();
+    else { carte.style.transform = ""; carte.classList.remove("vers-oui", "vers-non"); }
+  };
+  carte.addEventListener("pointerup", fin);
+  carte.addEventListener("pointercancel", fin);
+}
+
+$("btn-flash").onclick = ouvrirFlash;
+$("fl-fermer").onclick = () => $("flash").close();
+$("flash").addEventListener("close", () => document.body.appendChild($("toast")));
+$("fl-retenir").onclick = retenirFlash;
+$("fl-passer").onclick = passerFlash;
+$("fl-suiv").onclick = () => allerFlash(1);
+$("fl-prec").onclick = () => allerFlash(-1);
+// Une idée qui vient pendant le tour : notée dans la boîte de la personne,
+// elle arrive en haut de sa pile (prête à être retenue)
+$("fl-ajout").addEventListener("submit", ev => {
+  ev.preventDefault();
+  const texte = $("fl-idee").value.trim();
+  if (!texte || flashRang >= flashGens.length) return;
+  noterIdee(texte[0].toUpperCase() + texte.slice(1), flashGens[flashRang]);
+  $("fl-idee").value = ""; $("fl-idee").blur();
+});
+// Au clavier (ordinateur) : ← passer, → retenir, ↓ personne suivante, ↑ précédente
+$("flash").addEventListener("keydown", ev => {
+  if (ev.target.tagName === "INPUT") return;
+  if (ev.key === "ArrowRight") retenirFlash();
+  else if (ev.key === "ArrowLeft") passerFlash();
+  else if (ev.key === "ArrowDown") allerFlash(1);
+  else if (ev.key === "ArrowUp") allerFlash(-1);
+});
 
 /* ---------- 10. EXPORT TEXTE ----------
    La liste du Noël affiché (ou en cours), personne par personne, ouverte dans
